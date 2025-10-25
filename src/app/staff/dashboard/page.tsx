@@ -84,14 +84,14 @@ export default function StaffDashboardPage() {
       {/* Upcoming Jobs */}
       <Card className="border-2 border-border">
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <div className="p-2 bg-primary/10 rounded-lg">
                 <Calendar className="h-5 w-5 text-primary" />
               </div>
               <CardTitle>Today's Schedule</CardTitle>
             </div>
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost" size="sm" className="w-full sm:w-auto">
               View All
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
@@ -102,27 +102,52 @@ export default function StaffDashboardPage() {
             {upcomingJobs.map((job) => (
               <Card key={job.id} className="hover:shadow-md transition-shadow border-border">
                 <CardContent className="p-4">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
+                  {/* Desktop/Tablet Layout */}
+                  <div className="hidden sm:flex items-start justify-between gap-4">
+                    <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-2">
-                        <h3 className="font-semibold text-foreground">{job.service}</h3>
-                        <Badge variant={job.status === 'confirmed' ? 'default' : 'secondary'}>
+                        <h3 className="font-semibold text-foreground truncate">{job.service}</h3>
+                        <Badge variant={job.status === 'confirmed' ? 'default' : 'secondary'} className="flex-shrink-0">
                           {job.status}
                         </Badge>
                       </div>
                       <div className="space-y-1">
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <Clock className="h-4 w-4" />
+                          <Clock className="h-4 w-4 flex-shrink-0" />
                           <span>{job.time}</span>
                         </div>
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <MapPin className="h-4 w-4" />
-                          <span>{job.location}</span>
+                          <MapPin className="h-4 w-4 flex-shrink-0" />
+                          <span className="truncate">{job.location}</span>
                         </div>
                         <p className="text-sm text-muted-foreground">Customer: {job.customer}</p>
                       </div>
                     </div>
-                    <Button size="sm">
+                    <Button size="sm" className="flex-shrink-0">
+                      View Details
+                    </Button>
+                  </div>
+
+                  {/* Mobile Layout */}
+                  <div className="sm:hidden space-y-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <h3 className="font-semibold text-foreground flex-1 min-w-0">{job.service}</h3>
+                      <Badge variant={job.status === 'confirmed' ? 'default' : 'secondary'} className="flex-shrink-0">
+                        {job.status}
+                      </Badge>
+                    </div>
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Clock className="h-4 w-4 flex-shrink-0" />
+                        <span>{job.time}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <MapPin className="h-4 w-4 flex-shrink-0" />
+                        <span>{job.location}</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">Customer: {job.customer}</p>
+                    </div>
+                    <Button size="sm" className="w-full">
                       View Details
                     </Button>
                   </div>

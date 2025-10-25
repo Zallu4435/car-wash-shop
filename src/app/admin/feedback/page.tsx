@@ -91,16 +91,32 @@ export default function AdminFeedbackPage() {
     }
   };
 
-  const getTypeBadgeClass = (type: string) => {
+  const getTypeStyle = (type: string) => {
     switch (type) {
       case 'Compliment':
-        return 'bg-green-100 dark:bg-green-950/30 text-green-600 dark:text-green-400';
+        return {
+          backgroundColor: 'hsl(160 60% 45% / 0.1)',
+          color: 'hsl(160 60% 45%)',
+          borderColor: 'hsl(160 60% 45% / 0.3)'
+        };
       case 'Suggestion':
-        return 'bg-blue-100 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400';
+        return {
+          backgroundColor: 'hsl(221 83% 53% / 0.1)',
+          color: 'hsl(221 83% 53%)',
+          borderColor: 'hsl(221 83% 53% / 0.3)'
+        };
       case 'Bug':
-        return 'bg-red-100 dark:bg-red-950/30 text-red-600 dark:text-red-400';
+        return {
+          backgroundColor: 'hsl(0 63% 55% / 0.1)',
+          color: 'hsl(0 63% 55%)',
+          borderColor: 'hsl(0 63% 55% / 0.3)'
+        };
       default:
-        return '';
+        return {
+          backgroundColor: 'hsl(var(--muted))',
+          color: 'hsl(var(--muted-foreground))',
+          borderColor: 'hsl(var(--border))'
+        };
     }
   };
 
@@ -114,11 +130,11 @@ export default function AdminFeedbackPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="border-2">
+        <Card className="border-2 border-border">
           <CardContent className="p-6">
             <div className="flex items-center gap-3 mb-2">
-              <div className="p-3 bg-blue-100 dark:bg-blue-950/30 rounded-xl">
-                <MessageSquare className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+              <div className="p-3 rounded-xl" style={{ backgroundColor: 'hsl(221 83% 53% / 0.1)' }}>
+                <MessageSquare className="h-6 w-6" style={{ color: 'hsl(221 83% 53%)' }} />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Total Feedback</p>
@@ -128,11 +144,11 @@ export default function AdminFeedbackPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-2">
+        <Card className="border-2 border-border">
           <CardContent className="p-6">
             <div className="flex items-center gap-3 mb-2">
-              <div className="p-3 bg-yellow-100 dark:bg-yellow-950/30 rounded-xl">
-                <Star className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
+              <div className="p-3 rounded-xl" style={{ backgroundColor: 'hsl(43 74% 66% / 0.15)' }}>
+                <Star className="h-6 w-6" style={{ color: 'hsl(43 74% 66%)' }} />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Avg Rating</p>
@@ -142,25 +158,27 @@ export default function AdminFeedbackPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-2">
+        <Card className="border-2 border-border">
           <CardContent className="p-6">
             <div className="flex items-center gap-3 mb-2">
-              <div className="p-3 bg-green-100 dark:bg-green-950/30 rounded-xl">
-                <ThumbsUp className="h-6 w-6 text-green-600 dark:text-green-400" />
+              <div className="p-3 rounded-xl" style={{ backgroundColor: 'hsl(160 60% 45% / 0.1)' }}>
+                <ThumbsUp className="h-6 w-6" style={{ color: 'hsl(160 60% 45%)' }} />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Compliments</p>
               </div>
             </div>
-            <p className="text-3xl font-bold text-green-600 dark:text-green-400">{compliments}</p>
+            <p className="text-3xl font-bold" style={{ color: 'hsl(160 60% 45%)' }}>
+              {compliments}
+            </p>
           </CardContent>
         </Card>
 
-        <Card className="border-2">
+        <Card className="border-2 border-border">
           <CardContent className="p-6">
             <div className="flex items-center gap-3 mb-2">
-              <div className="p-3 bg-purple-100 dark:bg-purple-950/30 rounded-xl">
-                <Lightbulb className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+              <div className="p-3 rounded-xl" style={{ backgroundColor: 'hsl(280 65% 60% / 0.1)' }}>
+                <Lightbulb className="h-6 w-6" style={{ color: 'hsl(280 65% 60%)' }} />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Suggestions</p>
@@ -172,11 +190,11 @@ export default function AdminFeedbackPage() {
       </div>
 
       {/* Feedback List */}
-      <Card className="border-2">
+      <Card className="border-2 border-border">
         <CardHeader>
           <div className="flex items-center gap-2">
-            <div className="p-2 bg-primary/10 rounded-lg">
-              <MessageSquare className="h-5 w-5 text-primary" />
+            <div className="p-2 rounded-lg" style={{ backgroundColor: 'hsl(var(--primary) / 0.1)' }}>
+              <MessageSquare className="h-5 w-5" style={{ color: 'hsl(var(--primary))' }} />
             </div>
             <CardTitle>Recent Feedback</CardTitle>
           </div>
@@ -221,61 +239,74 @@ export default function AdminFeedbackPage() {
 
           {/* Feedback Items */}
           {filteredFeedback.length === 0 ? (
-            <div className="text-center py-12">
+            <div className="text-center py-12 bg-muted/30 rounded-xl border-2 border-dashed border-border">
               <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-foreground mb-2">No feedback found</h3>
               <p className="text-muted-foreground">Try adjusting your filters</p>
             </div>
           ) : (
             <div className="space-y-3">
-              {filteredFeedback.map((item) => (
-                <Card key={item.id} className="border-2 hover:shadow-md transition-all">
-                  <CardContent className="p-5">
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                          <Users className="h-5 w-5 text-primary" />
+              {filteredFeedback.map((item) => {
+                const typeStyle = getTypeStyle(item.type);
+                return (
+                  <Card key={item.id} className="border-2 border-border hover:shadow-lg transition-all">
+                    <CardContent className="p-5">
+                      <div className="flex items-start justify-between mb-3 flex-wrap gap-3">
+                        <div className="flex items-center gap-3">
+                          <div 
+                            className="w-10 h-10 rounded-full flex items-center justify-center"
+                            style={{ backgroundColor: 'hsl(var(--primary) / 0.1)' }}
+                          >
+                            <Users className="h-5 w-5" style={{ color: 'hsl(var(--primary))' }} />
+                          </div>
+                          <div>
+                            <p className="font-semibold text-foreground">{item.customer}</p>
+                            <p className="text-xs text-muted-foreground">{item.service}</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-semibold text-foreground">{item.customer}</p>
-                          <p className="text-xs text-muted-foreground">{item.service}</p>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Badge 
+                            variant="outline"
+                            style={{
+                              backgroundColor: typeStyle.backgroundColor,
+                              color: typeStyle.color,
+                              borderColor: typeStyle.borderColor
+                            }}
+                          >
+                            <span className="flex items-center gap-1">
+                              {getTypeIcon(item.type)}
+                              {item.type}
+                            </span>
+                          </Badge>
+                          <span className="text-sm text-muted-foreground">{item.date}</span>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Badge className={getTypeBadgeClass(item.type)}>
-                          <span className="flex items-center gap-1">
-                            {getTypeIcon(item.type)}
-                            {item.type}
-                          </span>
-                        </Badge>
-                        <span className="text-sm text-muted-foreground">{item.date}</span>
-                      </div>
-                    </div>
 
-                    <p className="text-sm text-foreground mb-3">{item.message}</p>
+                      <p className="text-sm text-foreground mb-3">{item.message}</p>
 
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1">
-                        {Array.from({ length: 5 }).map((_, i) => (
-                          <Star 
-                            key={i} 
-                            className={`h-4 w-4 ${
-                              i < item.rating 
-                                ? 'fill-yellow-400 text-yellow-400' 
-                                : 'text-gray-300 dark:text-gray-600'
-                            }`} 
-                          />
-                        ))}
-                        <span className="text-sm font-semibold text-foreground ml-2">{item.rating}/5</span>
+                      <div className="flex items-center justify-between flex-wrap gap-3">
+                        <div className="flex items-center gap-1">
+                          {Array.from({ length: 5 }).map((_, i) => (
+                            <Star 
+                              key={i} 
+                              className="h-4 w-4"
+                              style={{
+                                fill: i < item.rating ? 'hsl(43 74% 66%)' : 'transparent',
+                                color: i < item.rating ? 'hsl(43 74% 66%)' : 'hsl(var(--muted-foreground) / 0.3)'
+                              }}
+                            />
+                          ))}
+                          <span className="text-sm font-semibold text-foreground ml-2">{item.rating}/5</span>
+                        </div>
+                        <Button variant="outline" size="sm">
+                          <MessageSquare className="mr-2 h-4 w-4" />
+                          Reply
+                        </Button>
                       </div>
-                      <Button variant="outline" size="sm">
-                        <MessageSquare className="mr-2 h-4 w-4" />
-                        Reply
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           )}
         </CardContent>

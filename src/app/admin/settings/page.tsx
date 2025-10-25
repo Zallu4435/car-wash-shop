@@ -27,11 +27,14 @@ export default function SettingsPage() {
       </div>
 
       {/* Delivery Settings */}
-      <Card className="border-2">
+      <Card className="border-2 border-border">
         <CardHeader>
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-100 dark:bg-blue-950/30 rounded-lg">
-              <Truck className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            <div 
+              className="p-2 rounded-lg"
+              style={{ backgroundColor: 'hsl(221 83% 53% / 0.1)' }}
+            >
+              <Truck className="h-5 w-5" style={{ color: 'hsl(221 83% 53%)' }} />
             </div>
             <div>
               <CardTitle>Delivery Settings</CardTitle>
@@ -40,7 +43,7 @@ export default function SettingsPage() {
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label htmlFor="codFee">COD Delivery Fee (₹)</Label>
               <div className="relative">
@@ -62,22 +65,34 @@ export default function SettingsPage() {
 
           <Separator />
 
-          <div className="flex items-center justify-between p-4 bg-muted rounded-xl">
-            <div>
-              <Label htmlFor="enableCod" className="cursor-pointer">Enable COD</Label>
-              <p className="text-xs text-muted-foreground mt-1">Allow customers to pay on delivery</p>
+          <div className="flex items-center justify-between p-5 bg-muted rounded-xl border border-border">
+            <div className="flex-1 pr-4">
+              <Label htmlFor="enableCod" className="cursor-pointer text-base font-semibold">
+                Enable COD
+              </Label>
+              <p className="text-sm text-muted-foreground mt-1">
+                Allow customers to pay on delivery
+              </p>
             </div>
-            <Switch id="enableCod" checked={codEnabled} onCheckedChange={setCodEnabled} />
+            <Switch 
+              id="enableCod" 
+              checked={codEnabled} 
+              onCheckedChange={setCodEnabled}
+              className="flex-shrink-0" 
+            />
           </div>
         </CardContent>
       </Card>
 
       {/* Payment Settings */}
-      <Card className="border-2">
+      <Card className="border-2 border-border">
         <CardHeader>
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-green-100 dark:bg-green-950/30 rounded-lg">
-              <CreditCard className="h-5 w-5 text-green-600 dark:text-green-400" />
+            <div 
+              className="p-2 rounded-lg"
+              style={{ backgroundColor: 'hsl(160 60% 45% / 0.1)' }}
+            >
+              <CreditCard className="h-5 w-5" style={{ color: 'hsl(160 60% 45%)' }} />
             </div>
             <div>
               <CardTitle>Payment Settings</CardTitle>
@@ -94,21 +109,94 @@ export default function SettingsPage() {
 
           <Separator />
 
-          <div className="flex items-center justify-between p-4 bg-muted rounded-xl">
-            <div>
-              <Label htmlFor="enableAdvance" className="cursor-pointer">Allow Advance Payments</Label>
-              <p className="text-xs text-muted-foreground mt-1">Let customers pay partial amount upfront</p>
+          <div className="flex items-center justify-between p-5 bg-muted rounded-xl border border-border">
+            <div className="flex-1 pr-4">
+              <Label htmlFor="enableAdvance" className="cursor-pointer text-base font-semibold">
+                Allow Advance Payments
+              </Label>
+              <p className="text-sm text-muted-foreground mt-1">
+                Let customers pay partial amount upfront
+              </p>
             </div>
-            <Switch id="enableAdvance" checked={advancePaymentsEnabled} onCheckedChange={setAdvancePaymentsEnabled} />
+            <Switch 
+              id="enableAdvance" 
+              checked={advancePaymentsEnabled} 
+              onCheckedChange={setAdvancePaymentsEnabled}
+              className="flex-shrink-0"
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Additional Settings Card */}
+      <Card className="border-2 border-border">
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <div 
+              className="p-2 rounded-lg"
+              style={{ backgroundColor: 'hsl(280 65% 60% / 0.1)' }}
+            >
+              <Settings className="h-5 w-5" style={{ color: 'hsl(280 65% 60%)' }} />
+            </div>
+            <div>
+              <CardTitle>General Settings</CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">Configure general application settings</p>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Label htmlFor="taxRate">Tax Rate (%)</Label>
+              <Input id="taxRate" type="number" defaultValue="18" step="0.01" />
+              <p className="text-xs text-muted-foreground">GST/Tax percentage for orders</p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="cancellationWindow">Cancellation Window (hours)</Label>
+              <Input id="cancellationWindow" type="number" defaultValue="24" />
+              <p className="text-xs text-muted-foreground">Time limit for free cancellation</p>
+            </div>
+          </div>
+
+          <Separator />
+
+          <div className="space-y-4">
+            <div className="flex items-center justify-between p-5 bg-muted rounded-xl border border-border">
+              <div className="flex-1 pr-4">
+                <Label htmlFor="notifications" className="cursor-pointer text-base font-semibold">
+                  Email Notifications
+                </Label>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Send email updates to customers
+                </p>
+              </div>
+              <Switch id="notifications" defaultChecked className="flex-shrink-0" />
+            </div>
+
+            <div className="flex items-center justify-between p-5 bg-muted rounded-xl border border-border">
+              <div className="flex-1 pr-4">
+                <Label htmlFor="autoConfirm" className="cursor-pointer text-base font-semibold">
+                  Auto-confirm Bookings
+                </Label>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Automatically confirm new bookings
+                </p>
+              </div>
+              <Switch id="autoConfirm" defaultChecked className="flex-shrink-0" />
+            </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Save Button */}
-      <div className="flex gap-3">
+      <div className="flex gap-3 pb-6">
         <Button onClick={handleSave} size="lg" className="shadow-lg">
           <CheckCircle className="mr-2 h-5 w-5" />
           Save Settings
+        </Button>
+        <Button variant="outline" size="lg">
+          Reset to Defaults
         </Button>
       </div>
     </div>

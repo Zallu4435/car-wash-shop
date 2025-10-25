@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { getMockData } from '@/lib/api/mockData';
-import { Package, Calendar, ChevronRight, ShoppingBag, Car, Clock, ArrowRight } from 'lucide-react';
+import { Package, Calendar, ChevronRight, ShoppingBag, Car, Bike, Home, Clock, ArrowRight } from 'lucide-react';
 
 export default function OrdersLandingPage() {
   const orders = getMockData.orders();
@@ -14,34 +14,45 @@ export default function OrdersLandingPage() {
   const recentOrders = orders.slice(0, 3);
 
   // Count order types
-  const serviceOrders = orders.filter(order => 
-    order.items.some(item => item.name.toLowerCase().includes('wash') || item.name.toLowerCase().includes('service'))
+  const allServiceOrders = orders.filter(order => 
+    order.items.some(item => 
+      item.name.toLowerCase().includes('wash') || 
+      item.name.toLowerCase().includes('service') ||
+      item.name.toLowerCase().includes('cleaning')
+    )
   );
+  
   const productOrders = orders.filter(order => 
-    order.items.some(item => !item.name.toLowerCase().includes('wash') && !item.name.toLowerCase().includes('service'))
+    order.items.some(item => 
+      !item.name.toLowerCase().includes('wash') && 
+      !item.name.toLowerCase().includes('service') &&
+      !item.name.toLowerCase().includes('cleaning')
+    )
   );
 
   const getStatusVariant = (status: string) => {
     switch (status.toLowerCase()) {
       case 'delivered':
-        return 'success';
+      case 'completed':
+        return 'default';
       case 'pending':
-        return 'warning';
+      case 'processing':
+        return 'secondary';
       case 'cancelled':
         return 'destructive';
       default:
-        return 'default';
+        return 'outline';
     }
   };
 
   const orderCategories = [
     {
       id: 'services',
-      title: 'Car Wash Services',
-      description: 'View your service bookings and appointments',
+      title: 'All Services',
+      description: 'Car wash, bike service, and home cleaning',
       icon: Car,
-      count: serviceOrders.length,
-      color: 'bg-blue-100 dark:bg-blue-950/30',
+      count: allServiceOrders.length,
+      color: 'bg-blue-50 dark:bg-blue-950/20',
       iconColor: 'text-blue-600 dark:text-blue-400',
       href: '/orders/services',
     },
@@ -51,7 +62,7 @@ export default function OrdersLandingPage() {
       description: 'Track your product purchases and deliveries',
       icon: ShoppingBag,
       count: productOrders.length,
-      color: 'bg-purple-100 dark:bg-purple-950/30',
+      color: 'bg-purple-50 dark:bg-purple-950/20',
       iconColor: 'text-purple-600 dark:text-purple-400',
       href: '/orders/products',
     },
@@ -85,7 +96,7 @@ export default function OrdersLandingPage() {
                 const Icon = category.icon;
                 return (
                   <Link key={category.id} href={category.href}>
-                    <Card className="border-2 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 cursor-pointer group h-full">
+                    <Card className="border-2 border-border hover:shadow-xl hover:scale-[1.02] transition-all duration-300 cursor-pointer group h-full">
                       <CardContent className="p-8">
                         <div className="flex items-start justify-between mb-4">
                           <div className={`p-4 ${category.color} rounded-xl group-hover:scale-110 transition-transform`}>
@@ -144,7 +155,7 @@ export default function OrdersLandingPage() {
             {recentOrders.length > 0 ? (
               <div className="space-y-4">
                 {recentOrders.map((order) => (
-                  <Card key={order.id} className="hover:shadow-lg transition-shadow border-2">
+                  <Card key={order.id} className="hover:shadow-lg transition-shadow border-2 border-border">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4 pb-4 border-b border-border">
                         <div className="flex items-start gap-3">

@@ -92,11 +92,11 @@ export default function ProductsPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="border-2">
+        <Card className="border-2 border-border">
           <CardContent className="p-6">
             <div className="flex items-center gap-3 mb-2">
-              <div className="p-3 bg-blue-100 dark:bg-blue-950/30 rounded-xl">
-                <Package className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+              <div className="p-3 rounded-xl" style={{ backgroundColor: 'hsl(221 83% 53% / 0.1)' }}>
+                <Package className="h-6 w-6" style={{ color: 'hsl(221 83% 53%)' }} />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Total Products</p>
@@ -106,25 +106,27 @@ export default function ProductsPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-2">
+        <Card className="border-2 border-border">
           <CardContent className="p-6">
             <div className="flex items-center gap-3 mb-2">
-              <div className="p-3 bg-green-100 dark:bg-green-950/30 rounded-xl">
-                <TrendingUp className="h-6 w-6 text-green-600 dark:text-green-400" />
+              <div className="p-3 rounded-xl" style={{ backgroundColor: 'hsl(160 60% 45% / 0.1)' }}>
+                <TrendingUp className="h-6 w-6" style={{ color: 'hsl(160 60% 45%)' }} />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Inventory Value</p>
               </div>
             </div>
-            <p className="text-3xl font-bold text-primary">₹{totalValue.toLocaleString()}</p>
+            <p className="text-3xl font-bold" style={{ color: 'hsl(var(--primary))' }}>
+              ₹{totalValue.toLocaleString()}
+            </p>
           </CardContent>
         </Card>
 
-        <Card className="border-2">
+        <Card className="border-2 border-border">
           <CardContent className="p-6">
             <div className="flex items-center gap-3 mb-2">
-              <div className="p-3 bg-purple-100 dark:bg-purple-950/30 rounded-xl">
-                <Package className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+              <div className="p-3 rounded-xl" style={{ backgroundColor: 'hsl(280 65% 60% / 0.1)' }}>
+                <Package className="h-6 w-6" style={{ color: 'hsl(280 65% 60%)' }} />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Total Stock</p>
@@ -134,27 +136,29 @@ export default function ProductsPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-2">
+        <Card className="border-2 border-border">
           <CardContent className="p-6">
             <div className="flex items-center gap-3 mb-2">
-              <div className="p-3 bg-orange-100 dark:bg-orange-950/30 rounded-xl">
-                <AlertTriangle className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+              <div className="p-3 rounded-xl" style={{ backgroundColor: 'hsl(30 80% 55% / 0.1)' }}>
+                <AlertTriangle className="h-6 w-6" style={{ color: 'hsl(30 80% 55%)' }} />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Low Stock</p>
               </div>
             </div>
-            <p className="text-3xl font-bold text-orange-600 dark:text-orange-400">{lowStockItems}</p>
+            <p className="text-3xl font-bold" style={{ color: 'hsl(30 80% 55%)' }}>
+              {lowStockItems}
+            </p>
           </CardContent>
         </Card>
       </div>
 
       {/* Products List */}
-      <Card className="border-2">
+      <Card className="border-2 border-border">
         <CardHeader>
           <div className="flex items-center gap-2">
-            <div className="p-2 bg-primary/10 rounded-lg">
-              <Package className="h-5 w-5 text-primary" />
+            <div className="p-2 rounded-lg" style={{ backgroundColor: 'hsl(var(--primary) / 0.1)' }}>
+              <Package className="h-5 w-5" style={{ color: 'hsl(var(--primary))' }} />
             </div>
             <CardTitle>All Products</CardTitle>
           </div>
@@ -198,7 +202,7 @@ export default function ProductsPage() {
 
           {/* Products Grid */}
           {filteredProducts.length === 0 ? (
-            <div className="text-center py-12">
+            <div className="text-center py-12 bg-muted/30 rounded-xl border-2 border-dashed border-border">
               <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-foreground mb-2">No products found</h3>
               <p className="text-muted-foreground mb-4">Try adjusting your search or filters</p>
@@ -215,12 +219,12 @@ export default function ProductsPage() {
               {filteredProducts.map((product) => {
                 const stockStatus = product.stock > 10 ? 'good' : product.stock > 0 ? 'low' : 'out';
                 return (
-                  <Card key={product.id} className="border-2 hover:shadow-lg transition-all">
+                  <Card key={product.id} className="border-2 border-border hover:shadow-lg transition-all">
                     <CardContent className="p-5">
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex items-center gap-3">
-                          <div className="p-3 bg-primary/10 rounded-xl">
-                            <Package className="h-6 w-6 text-primary" />
+                          <div className="p-3 rounded-xl" style={{ backgroundColor: 'hsl(var(--primary) / 0.1)' }}>
+                            <Package className="h-6 w-6" style={{ color: 'hsl(var(--primary))' }} />
                           </div>
                           <div>
                             <h3 className="font-bold text-foreground">{product.name}</h3>
@@ -233,27 +237,46 @@ export default function ProductsPage() {
                       </div>
 
                       <div className="grid grid-cols-2 gap-3 mb-4">
-                        <div className="p-3 bg-muted rounded-lg">
+                        <div className="p-3 bg-muted rounded-lg border border-border">
                           <div className="flex items-center gap-2 mb-1">
                             <IndianRupee className="h-4 w-4 text-muted-foreground" />
                             <p className="text-xs text-muted-foreground">Price</p>
                           </div>
-                          <p className="text-lg font-bold text-primary">₹{product.price}</p>
+                          <p className="text-lg font-bold" style={{ color: 'hsl(var(--primary))' }}>
+                            ₹{product.price}
+                          </p>
                         </div>
-                        <div className={`p-3 rounded-lg ${
-                          stockStatus === 'good' ? 'bg-green-50 dark:bg-green-950/20' :
-                          stockStatus === 'low' ? 'bg-orange-50 dark:bg-orange-950/20' :
-                          'bg-red-50 dark:bg-red-950/20'
-                        }`}>
+                        <div 
+                          className="p-3 rounded-lg border"
+                          style={{
+                            backgroundColor: stockStatus === 'good' 
+                              ? 'hsl(160 60% 45% / 0.1)' 
+                              : stockStatus === 'low' 
+                              ? 'hsl(30 80% 55% / 0.1)' 
+                              : 'hsl(0 63% 55% / 0.1)',
+                            borderColor: stockStatus === 'good'
+                              ? 'hsl(160 60% 45% / 0.3)'
+                              : stockStatus === 'low'
+                              ? 'hsl(30 80% 55% / 0.3)'
+                              : 'hsl(0 63% 55% / 0.3)'
+                          }}
+                        >
                           <div className="flex items-center gap-2 mb-1">
                             <Package className="h-4 w-4 text-muted-foreground" />
                             <p className="text-xs text-muted-foreground">Stock</p>
                           </div>
-                          <p className={`text-lg font-bold ${
-                            stockStatus === 'good' ? 'text-green-600 dark:text-green-400' :
-                            stockStatus === 'low' ? 'text-orange-600 dark:text-orange-400' :
-                            'text-red-600 dark:text-red-400'
-                          }`}>{product.stock} units</p>
+                          <p 
+                            className="text-lg font-bold"
+                            style={{
+                              color: stockStatus === 'good'
+                                ? 'hsl(160 60% 45%)'
+                                : stockStatus === 'low'
+                                ? 'hsl(30 80% 55%)'
+                                : 'hsl(0 63% 55%)'
+                            }}
+                          >
+                            {product.stock} units
+                          </p>
                         </div>
                       </div>
 
@@ -279,7 +302,8 @@ export default function ProductsPage() {
                         <Button 
                           variant="outline" 
                           size="sm"
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20"
+                          style={{ color: 'hsl(0 63% 55%)' }}
+                          className="hover:bg-destructive/10 border-border"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>

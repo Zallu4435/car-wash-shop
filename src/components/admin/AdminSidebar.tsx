@@ -21,7 +21,8 @@ import {
   Ticket,
   Folder,
   Star,
-  X
+  X,
+  CreditCard
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils/cn';
@@ -41,6 +42,7 @@ const navigationGroups = [
       { name: 'Service Requests', href: '/admin/requests', icon: Calendar },
       { name: 'Slot Management', href: '/admin/slots', icon: Clock },
       { name: 'Orders', href: '/admin/orders', icon: ShoppingBag },
+      { name: 'Payments', href: '/admin/payments', icon: CreditCard },
     ]
   },
   {

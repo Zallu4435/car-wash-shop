@@ -5,12 +5,14 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Pagination } from '@/components/shared/crud/Pagination';
 import { getMockData } from '@/lib/api/mockData';
 import { Package, Calendar, ChevronRight, ShoppingBag, ArrowLeft, Search, Filter, X, Car } from 'lucide-react';
 import { useState } from 'react';
-import { Label } from '@radix-ui/react-label';
+
+const ITEMS_PER_PAGE = 6;
 
 export default function AllOrdersPage() {
   const orders = getMockData.orders();
@@ -19,34 +21,36 @@ export default function AllOrdersPage() {
   const [typeFilter, setTypeFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
-  const itemsPerPage = 5;
 
   // Filter orders
   const filteredOrders = orders.filter(order => {
     const matchesSearch = order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
       order.items.some(item => item.name.toLowerCase().includes(searchQuery.toLowerCase()));
     const matchesStatus = statusFilter === 'all' || order.status.toLowerCase() === statusFilter;
-    
+
     let matchesType = true;
     if (typeFilter === 'services') {
-      matchesType = order.items.some(item => 
-        item.name.toLowerCase().includes('wash') || item.name.toLowerCase().includes('service')
+      matchesType = order.items.some(item =>
+        item.name.toLowerCase().includes('wash') ||
+        item.name.toLowerCase().includes('service') ||
+        item.name.toLowerCase().includes('cleaning')
       );
     } else if (typeFilter === 'products') {
-      matchesType = order.items.some(item => 
-        !item.name.toLowerCase().includes('wash') && !item.name.toLowerCase().includes('service')
+      matchesType = order.items.some(item =>
+        !item.name.toLowerCase().includes('wash') &&
+        !item.name.toLowerCase().includes('service') &&
+        !item.name.toLowerCase().includes('cleaning')
       );
     }
-    
+
     return matchesSearch && matchesStatus && matchesType;
   });
 
   // Pagination
-  const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
-  const paginatedOrders = filteredOrders.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  const totalPages = Math.ceil(filteredOrders.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const paginatedOrders = filteredOrders.slice(startIndex, endIndex);
 
   // Reset to page 1 when filters change
   const handleFilterChange = (filterSetter: (value: string) => void, value: string) => {
@@ -66,20 +70,22 @@ export default function AllOrdersPage() {
   const getStatusVariant = (status: string) => {
     switch (status.toLowerCase()) {
       case 'delivered':
-        return 'success';
+      case 'completed':
+        return 'default';
       case 'pending':
-        return 'warning';
+      case 'processing':
+        return 'secondary';
       case 'cancelled':
         return 'destructive';
       default:
-        return 'default';
+        return 'outline';
     }
   };
 
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-0">
       {/* Header */}
-      <section className="bg-gradient-to-br from-primary/5 to-background border-b border-border">
+      <section className="bg-gradient-to-br from-teal-500/5 to-background border-b border-border">
         <div className="container-custom py-8 lg:py-12">
           <Button asChild variant="ghost" className="mb-4">
             <Link href="/orders">
@@ -88,8 +94,8 @@ export default function AllOrdersPage() {
             </Link>
           </Button>
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-primary/10 rounded-xl">
-              <Package className="h-8 w-8 text-primary" />
+            <div className="p-3 bg-teal-50 dark:bg-teal-950/20 rounded-xl">
+              <Package className="h-8 w-8 text-teal-600 dark:text-teal-400" />
             </div>
             <div>
               <h1 className="text-3xl md:text-4xl font-bold text-foreground">All Orders</h1>
@@ -105,7 +111,7 @@ export default function AllOrdersPage() {
       <section className="py-8 lg:py-12">
         <div className="container-custom">
           {/* Desktop Filters */}
-          <Card className="mb-6 border-2 hidden md:block">
+          <Card className="mb-6 border-2 border-border hidden md:block">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
@@ -138,7 +144,7 @@ export default function AllOrdersPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Types</SelectItem>
-                    <SelectItem value="services">Car Wash Services</SelectItem>
+                    <SelectItem value="services">Services</SelectItem>
                     <SelectItem value="products">Products</SelectItem>
                   </SelectContent>
                 </Select>
@@ -149,6 +155,7 @@ export default function AllOrdersPage() {
                   <SelectContent>
                     <SelectItem value="all">All Status</SelectItem>
                     <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
                     <SelectItem value="delivered">Delivered</SelectItem>
                     <SelectItem value="cancelled">Cancelled</SelectItem>
                   </SelectContent>
@@ -204,7 +211,7 @@ export default function AllOrdersPage() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">All Types</SelectItem>
-                        <SelectItem value="services">Car Wash Services</SelectItem>
+                        <SelectItem value="services">Services</SelectItem>
                         <SelectItem value="products">Products</SelectItem>
                       </SelectContent>
                     </Select>
@@ -219,6 +226,7 @@ export default function AllOrdersPage() {
                       <SelectContent>
                         <SelectItem value="all">All Status</SelectItem>
                         <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="completed">Completed</SelectItem>
                         <SelectItem value="delivered">Delivered</SelectItem>
                         <SelectItem value="cancelled">Cancelled</SelectItem>
                       </SelectContent>
@@ -253,20 +261,21 @@ export default function AllOrdersPage() {
             <>
               <div className="space-y-4 mb-8">
                 {paginatedOrders.map((order) => {
-                  const isService = order.items.some(item => 
-                    item.name.toLowerCase().includes('wash') || item.name.toLowerCase().includes('service')
+                  const isService = order.items.some(item =>
+                    item.name.toLowerCase().includes('wash') ||
+                    item.name.toLowerCase().includes('service') ||
+                    item.name.toLowerCase().includes('cleaning')
                   );
-                  
+
                   return (
-                    <Card key={order.id} className="hover:shadow-lg transition-shadow border-2">
+                    <Card key={order.id} className="hover:shadow-lg transition-shadow border-2 border-border">
                       <CardContent className="p-6">
                         <div className="flex items-start justify-between mb-4 pb-4 border-b border-border">
                           <div className="flex items-start gap-3">
-                            <div className={`p-2 rounded-lg ${
-                              isService 
-                                ? 'bg-blue-100 dark:bg-blue-950/30' 
-                                : 'bg-purple-100 dark:bg-purple-950/30'
-                            }`}>
+                            <div className={`p-2 rounded-lg ${isService
+                                ? 'bg-blue-50 dark:bg-blue-950/20'
+                                : 'bg-purple-50 dark:bg-purple-950/20'
+                              }`}>
                               {isService ? (
                                 <Car className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                               ) : (
@@ -288,7 +297,7 @@ export default function AllOrdersPage() {
                             {order.status}
                           </Badge>
                         </div>
-                        
+
                         <div className="space-y-2 mb-4 p-4 bg-muted rounded-xl">
                           {order.items.map((item) => (
                             <div key={item.id} className="flex justify-between text-sm">
@@ -322,19 +331,19 @@ export default function AllOrdersPage() {
                   currentPage={currentPage}
                   totalPages={totalPages}
                   onPageChange={setCurrentPage}
-                  itemsPerPage={itemsPerPage}
+                  itemsPerPage={ITEMS_PER_PAGE}
                   totalItems={filteredOrders.length}
                 />
               )}
             </>
           ) : (
-            <div className="text-center py-16">
-              <div className="inline-flex items-center justify-center w-20 h-20 bg-muted rounded-full mb-6">
+            <div className="text-center py-16 bg-muted/30 rounded-xl border-2 border-dashed border-border">
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-background rounded-full mb-6 shadow-sm">
                 <Package className="h-10 w-10 text-muted-foreground" />
               </div>
               <h2 className="text-2xl font-bold text-foreground mb-2">No orders found</h2>
               <p className="text-muted-foreground mb-8">
-                {hasActiveFilters 
+                {hasActiveFilters
                   ? 'Try adjusting your filters to find what you\'re looking for'
                   : 'Start shopping to see your orders here'}
               </p>

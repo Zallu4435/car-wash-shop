@@ -17,7 +17,11 @@ export default function ProductOrdersPage() {
 
   // Filter product orders
   const productOrders = orders.filter(order => 
-    order.items.some(item => !item.name.toLowerCase().includes('wash') && !item.name.toLowerCase().includes('service'))
+    order.items.some(item => 
+      !item.name.toLowerCase().includes('wash') && 
+      !item.name.toLowerCase().includes('service') &&
+      !item.name.toLowerCase().includes('cleaning')
+    )
   );
 
   // Apply filters
@@ -31,13 +35,15 @@ export default function ProductOrdersPage() {
   const getStatusVariant = (status: string) => {
     switch (status.toLowerCase()) {
       case 'delivered':
-        return 'success';
+      case 'completed':
+        return 'default';
       case 'pending':
-        return 'warning';
+      case 'processing':
+        return 'secondary';
       case 'cancelled':
         return 'destructive';
       default:
-        return 'default';
+        return 'outline';
     }
   };
 
@@ -53,12 +59,14 @@ export default function ProductOrdersPage() {
             </Link>
           </Button>
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-purple-100 dark:bg-purple-950/30 rounded-xl">
+            <div className="p-3 bg-purple-50 dark:bg-purple-950/20 rounded-xl">
               <ShoppingBag className="h-8 w-8 text-purple-600 dark:text-purple-400" />
             </div>
             <div>
               <h1 className="text-3xl md:text-4xl font-bold text-foreground">Product Orders</h1>
-              <p className="text-muted-foreground mt-1">{filteredOrders.length} product {filteredOrders.length === 1 ? 'order' : 'orders'}</p>
+              <p className="text-muted-foreground mt-1">
+                {filteredOrders.length} product {filteredOrders.length === 1 ? 'order' : 'orders'}
+              </p>
             </div>
           </div>
 
@@ -76,7 +84,7 @@ export default function ProductOrdersPage() {
       <section className="py-8 lg:py-12">
         <div className="container-custom">
           {/* Search and Filters */}
-          <Card className="mb-6 border-2">
+          <Card className="mb-6 border-2 border-border">
             <CardContent className="p-6">
               <div className="flex items-center gap-2 mb-4">
                 <Filter className="h-5 w-5 text-primary" />
@@ -99,6 +107,7 @@ export default function ProductOrdersPage() {
                   <SelectContent>
                     <SelectItem value="all">All Status</SelectItem>
                     <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
                     <SelectItem value="delivered">Delivered</SelectItem>
                     <SelectItem value="cancelled">Cancelled</SelectItem>
                   </SelectContent>
@@ -111,11 +120,11 @@ export default function ProductOrdersPage() {
           {filteredOrders.length > 0 ? (
             <div className="space-y-4">
               {filteredOrders.map((order) => (
-                <Card key={order.id} className="hover:shadow-lg transition-shadow border-2">
+                <Card key={order.id} className="hover:shadow-lg transition-shadow border-2 border-border">
                   <CardContent className="p-6">
                     <div className="flex items-start justify-between mb-4 pb-4 border-b border-border">
                       <div className="flex items-start gap-3">
-                        <div className="p-2 bg-purple-100 dark:bg-purple-950/30 rounded-lg">
+                        <div className="p-2 bg-purple-50 dark:bg-purple-950/20 rounded-lg">
                           <ShoppingBag className="h-5 w-5 text-purple-600 dark:text-purple-400" />
                         </div>
                         <div>
@@ -157,12 +166,16 @@ export default function ProductOrdersPage() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-16">
-              <div className="inline-flex items-center justify-center w-20 h-20 bg-muted rounded-full mb-6">
+            <div className="text-center py-16 bg-muted/30 rounded-xl border-2 border-dashed border-border">
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-background rounded-full mb-6 shadow-sm">
                 <Package className="h-10 w-10 text-muted-foreground" />
               </div>
               <h2 className="text-2xl font-bold text-foreground mb-2">No product orders found</h2>
-              <p className="text-muted-foreground mb-8">Shop products to see your orders here</p>
+              <p className="text-muted-foreground mb-8">
+                {searchQuery || statusFilter !== 'all'
+                  ? 'Try adjusting your filters'
+                  : 'Shop products to see your orders here'}
+              </p>
               <Button asChild size="lg">
                 <Link href="/products">Browse Products</Link>
               </Button>

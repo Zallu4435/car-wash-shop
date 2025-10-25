@@ -44,29 +44,61 @@ export default function TicketsPage() {
   const inProgressTickets = tickets.filter(t => t.status === 'in-progress').length;
   const resolvedTickets = tickets.filter(t => t.status === 'resolved').length;
 
-  const getPriorityColor = (priority: string) => {
+  const getPriorityStyle = (priority: string) => {
     switch (priority) {
       case 'high':
-        return 'bg-red-100 dark:bg-red-950/30 text-red-600 dark:text-red-400';
+        return {
+          backgroundColor: 'hsl(0 63% 55% / 0.1)',
+          color: 'hsl(0 63% 55%)',
+          borderColor: 'hsl(0 63% 55% / 0.3)'
+        };
       case 'medium':
-        return 'bg-orange-100 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400';
+        return {
+          backgroundColor: 'hsl(30 80% 55% / 0.1)',
+          color: 'hsl(30 80% 55%)',
+          borderColor: 'hsl(30 80% 55% / 0.3)'
+        };
       case 'low':
-        return 'bg-blue-100 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400';
+        return {
+          backgroundColor: 'hsl(221 83% 53% / 0.1)',
+          color: 'hsl(221 83% 53%)',
+          borderColor: 'hsl(221 83% 53% / 0.3)'
+        };
       default:
-        return '';
+        return {
+          backgroundColor: 'hsl(var(--muted))',
+          color: 'hsl(var(--muted-foreground))',
+          borderColor: 'hsl(var(--border))'
+        };
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusStyle = (status: string) => {
     switch (status) {
       case 'open':
-        return 'bg-orange-100 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400';
+        return {
+          backgroundColor: 'hsl(30 80% 55% / 0.1)',
+          color: 'hsl(30 80% 55%)',
+          borderColor: 'hsl(30 80% 55% / 0.3)'
+        };
       case 'in-progress':
-        return 'bg-blue-100 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400';
+        return {
+          backgroundColor: 'hsl(221 83% 53% / 0.1)',
+          color: 'hsl(221 83% 53%)',
+          borderColor: 'hsl(221 83% 53% / 0.3)'
+        };
       case 'resolved':
-        return 'bg-green-100 dark:bg-green-950/30 text-green-600 dark:text-green-400';
+        return {
+          backgroundColor: 'hsl(160 60% 45% / 0.1)',
+          color: 'hsl(160 60% 45%)',
+          borderColor: 'hsl(160 60% 45% / 0.3)'
+        };
       default:
-        return '';
+        return {
+          backgroundColor: 'hsl(var(--muted))',
+          color: 'hsl(var(--muted-foreground))',
+          borderColor: 'hsl(var(--border))'
+        };
     }
   };
 
@@ -80,11 +112,11 @@ export default function TicketsPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="border-2">
+        <Card className="border-2 border-border">
           <CardContent className="p-6">
             <div className="flex items-center gap-3 mb-2">
-              <div className="p-3 bg-blue-100 dark:bg-blue-950/30 rounded-xl">
-                <Ticket className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+              <div className="p-3 rounded-xl" style={{ backgroundColor: 'hsl(221 83% 53% / 0.1)' }}>
+                <Ticket className="h-6 w-6" style={{ color: 'hsl(221 83% 53%)' }} />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Total Tickets</p>
@@ -94,25 +126,27 @@ export default function TicketsPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-2">
+        <Card className="border-2 border-border">
           <CardContent className="p-6">
             <div className="flex items-center gap-3 mb-2">
-              <div className="p-3 bg-orange-100 dark:bg-orange-950/30 rounded-xl">
-                <AlertCircle className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+              <div className="p-3 rounded-xl" style={{ backgroundColor: 'hsl(30 80% 55% / 0.1)' }}>
+                <AlertCircle className="h-6 w-6" style={{ color: 'hsl(30 80% 55%)' }} />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Open</p>
               </div>
             </div>
-            <p className="text-3xl font-bold text-orange-600 dark:text-orange-400">{openTickets}</p>
+            <p className="text-3xl font-bold" style={{ color: 'hsl(30 80% 55%)' }}>
+              {openTickets}
+            </p>
           </CardContent>
         </Card>
 
-        <Card className="border-2">
+        <Card className="border-2 border-border">
           <CardContent className="p-6">
             <div className="flex items-center gap-3 mb-2">
-              <div className="p-3 bg-blue-100 dark:bg-blue-950/30 rounded-xl">
-                <Clock className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+              <div className="p-3 rounded-xl" style={{ backgroundColor: 'hsl(221 83% 53% / 0.1)' }}>
+                <Clock className="h-6 w-6" style={{ color: 'hsl(221 83% 53%)' }} />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">In Progress</p>
@@ -122,27 +156,29 @@ export default function TicketsPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-2">
+        <Card className="border-2 border-border">
           <CardContent className="p-6">
             <div className="flex items-center gap-3 mb-2">
-              <div className="p-3 bg-green-100 dark:bg-green-950/30 rounded-xl">
-                <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
+              <div className="p-3 rounded-xl" style={{ backgroundColor: 'hsl(160 60% 45% / 0.1)' }}>
+                <CheckCircle className="h-6 w-6" style={{ color: 'hsl(160 60% 45%)' }} />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Resolved</p>
               </div>
             </div>
-            <p className="text-3xl font-bold text-green-600 dark:text-green-400">{resolvedTickets}</p>
+            <p className="text-3xl font-bold" style={{ color: 'hsl(160 60% 45%)' }}>
+              {resolvedTickets}
+            </p>
           </CardContent>
         </Card>
       </div>
 
       {/* Tickets List */}
-      <Card className="border-2">
+      <Card className="border-2 border-border">
         <CardHeader>
           <div className="flex items-center gap-2">
-            <div className="p-2 bg-primary/10 rounded-lg">
-              <Ticket className="h-5 w-5 text-primary" />
+            <div className="p-2 rounded-lg" style={{ backgroundColor: 'hsl(var(--primary) / 0.1)' }}>
+              <Ticket className="h-5 w-5" style={{ color: 'hsl(var(--primary))' }} />
             </div>
             <CardTitle>All Tickets</CardTitle>
           </div>
@@ -186,53 +222,83 @@ export default function TicketsPage() {
           </div>
 
           {/* Tickets Grid */}
-          <div className="space-y-3">
-            {filteredTickets.map((ticket) => (
-              <Card key={ticket.id} className="border-2 hover:shadow-lg transition-all">
-                <CardContent className="p-5">
-                  <div className="flex items-center justify-between gap-4">
-                    {/* Left Section */}
-                    <div className="flex items-center gap-4 flex-1">
-                      <div className="p-3 bg-primary/10 rounded-xl">
-                        <Ticket className="h-6 w-6 text-primary" />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <Badge variant="outline" className="font-mono">{ticket.id}</Badge>
-                          <Badge className={getPriorityColor(ticket.priority)}>
-                            {ticket.priority}
-                          </Badge>
-                          <Badge className={getStatusColor(ticket.status)}>
-                            {ticket.status}
-                          </Badge>
+          {filteredTickets.length === 0 ? (
+            <div className="text-center py-12 bg-muted/30 rounded-xl border-2 border-dashed border-border">
+              <Ticket className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-foreground mb-2">No tickets found</h3>
+              <p className="text-muted-foreground">Try adjusting your filters</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {filteredTickets.map((ticket) => {
+                const priorityStyle = getPriorityStyle(ticket.priority);
+                const statusStyle = getStatusStyle(ticket.status);
+                
+                return (
+                  <Card key={ticket.id} className="border-2 border-border hover:shadow-lg transition-all">
+                    <CardContent className="p-5">
+                      <div className="flex items-center justify-between gap-4 flex-wrap">
+                        {/* Left Section */}
+                        <div className="flex items-center gap-4 flex-1 min-w-0">
+                          <div 
+                            className="p-3 rounded-xl flex-shrink-0"
+                            style={{ backgroundColor: 'hsl(var(--primary) / 0.1)' }}
+                          >
+                            <Ticket className="h-6 w-6" style={{ color: 'hsl(var(--primary))' }} />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2 mb-1 flex-wrap">
+                              <Badge variant="outline" className="font-mono">{ticket.id}</Badge>
+                              <Badge 
+                                variant="outline"
+                                style={{
+                                  backgroundColor: priorityStyle.backgroundColor,
+                                  color: priorityStyle.color,
+                                  borderColor: priorityStyle.borderColor
+                                }}
+                              >
+                                {ticket.priority}
+                              </Badge>
+                              <Badge 
+                                variant="outline"
+                                style={{
+                                  backgroundColor: statusStyle.backgroundColor,
+                                  color: statusStyle.color,
+                                  borderColor: statusStyle.borderColor
+                                }}
+                              >
+                                {ticket.status}
+                              </Badge>
+                            </div>
+                            <p className="font-semibold text-foreground truncate">{ticket.subject}</p>
+                            <p className="text-sm text-muted-foreground truncate">
+                              {ticket.customer} • {ticket.email}
+                            </p>
+                          </div>
                         </div>
-                        <p className="font-semibold text-foreground">{ticket.subject}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {ticket.customer} • {ticket.email}
-                        </p>
-                      </div>
-                    </div>
 
-                    {/* Right Section */}
-                    <div className="flex items-center gap-4">
-                      <div className="text-right hidden md:block">
-                        <p className="text-xs text-muted-foreground">Created</p>
-                        <p className="font-semibold text-foreground">{ticket.date}</p>
+                        {/* Right Section */}
+                        <div className="flex items-center gap-4">
+                          <div className="text-right hidden md:block">
+                            <p className="text-xs text-muted-foreground">Created</p>
+                            <p className="font-semibold text-foreground">{ticket.date}</p>
+                          </div>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => router.push(`/admin/tickets/${ticket.id}`)}
+                          >
+                            <Eye className="mr-2 h-4 w-4" />
+                            View
+                          </Button>
+                        </div>
                       </div>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => router.push(`/admin/tickets/${ticket.id}`)}
-                      >
-                        <Eye className="mr-2 h-4 w-4" />
-                        View
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
