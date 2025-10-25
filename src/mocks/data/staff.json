@@ -1,0 +1,24 @@
+[
+  {
+    "id": "staff_001",
+    "name": "Rahul Kumar",
+    "phone": "9876543210",
+    "email": "rahul@carwash.com",
+    "role": "Senior Detailer",
+    "area": "Bandra, Khar",
+    "active": true,
+    "completedJobs": 156,
+    "rating": 4.8
+  },
+  {
+    "id": "staff_002",
+    "name": "Amit Sharma",
+    "phone": "9876543211",
+    "email": "amit@carwash.com",
+    "role": "Detailer",
+    "area": "Andheri, Vile Parle",
+    "active": true,
+    "completedJobs": 89,
+    "rating": 4.6
+  }
+]

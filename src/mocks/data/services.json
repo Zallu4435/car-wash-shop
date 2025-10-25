@@ -1,0 +1,48 @@
+[
+  {
+    "id": "svc_001",
+    "name": "Premium Wash",
+    "categoryId": "cat_ext",
+    "category": {
+      "id": "cat_ext",
+      "name": "Exterior Wash",
+      "description": "Exterior cleaning services",
+      "icon": "car",
+      "active": true,
+      "order": 1
+    },
+    "description": "Complete exterior wash with foam, high-pressure rinse, and tire cleaning",
+    "price": 499,
+    "duration": 30,
+    "inclusions": ["Foam wash", "High-pressure rinse", "Tire cleaning", "Wax coating"],
+    "addOns": [],
+    "imageUrl": "/images/services/premium-wash.jpg",
+    "rating": 4.5,
+    "reviewCount": 128,
+    "active": true,
+    "createdAt": "2025-10-01T00:00:00Z"
+  },
+  {
+    "id": "svc_002",
+    "name": "Interior Detailing",
+    "categoryId": "cat_int",
+    "category": {
+      "id": "cat_int",
+      "name": "Interior Cleaning",
+      "description": "Interior detailing services",
+      "icon": "spray",
+      "active": true,
+      "order": 2
+    },
+    "description": "Deep cleaning of car interior including vacuuming and dashboard polish",
+    "price": 699,
+    "duration": 45,
+    "inclusions": ["Vacuuming", "Dashboard polish", "Seat cleaning", "Carpet shampooing"],
+    "addOns": [],
+    "imageUrl": "/images/services/interior-detailing.jpg",
+    "rating": 4.7,
+    "reviewCount": 94,
+    "active": true,
+    "createdAt": "2025-10-01T00:00:00Z"
+  }
+]

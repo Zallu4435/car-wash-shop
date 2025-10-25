@@ -1,0 +1,24 @@
+{
+  "payment": {
+    "enableCOD": true,
+    "enableAdvancePayment": true,
+    "advancePaymentPercentage": 30,
+    "codDeliveryFee": 40,
+    "freeDeliveryMinimum": 500
+  },
+  "booking": {
+    "daysAhead": 7,
+    "minHoursAhead": 2,
+    "timeSlots": [
+      "09:00 AM", "10:00 AM", "11:00 AM", "12:00 PM",
+      "01:00 PM", "02:00 PM", "03:00 PM", "04:00 PM",
+      "05:00 PM", "06:00 PM"
+    ]
+  },
+  "business": {
+    "name": "Car Wash Services",
+    "email": "support@carwash.com",
+    "phone": "+91 88489 19507",
+    "address": "Mumbai, Maharashtra, India"
+  }
+}

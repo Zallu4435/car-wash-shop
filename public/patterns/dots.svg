@@ -1,0 +1,6 @@
+<svg width="20" height="20" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="2" cy="2" r="1" fill="currentColor" opacity="0.2"/>
+  <circle cx="12" cy="2" r="1" fill="currentColor" opacity="0.2"/>
+  <circle cx="2" cy="12" r="1" fill="currentColor" opacity="0.2"/>
+  <circle cx="12" cy="12" r="1" fill="currentColor" opacity="0.2"/>
+</svg>

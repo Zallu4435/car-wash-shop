@@ -1,0 +1,38 @@
+[
+  {
+    "id": "PAY001",
+    "orderId": "ORD001",
+    "bookingId": null,
+    "customerId": "user_001",
+    "amount": 697,
+    "paymentMethod": "online",
+    "paymentType": "full",
+    "status": "success",
+    "transactionId": "TXN1234567890",
+    "timestamp": "2025-10-20T10:05:00Z"
+  },
+  {
+    "id": "PAY002",
+    "orderId": null,
+    "bookingId": "BK001",
+    "customerId": "user_001",
+    "amount": 195,
+    "paymentMethod": "online",
+    "paymentType": "advance",
+    "status": "success",
+    "transactionId": "TXN1234567891",
+    "timestamp": "2025-10-24T10:32:00Z"
+  },
+  {
+    "id": "PAY003",
+    "orderId": "ORD002",
+    "bookingId": null,
+    "customerId": "user_002",
+    "amount": 539,
+    "paymentMethod": "cod",
+    "paymentType": "full",
+    "status": "pending",
+    "transactionId": null,
+    "timestamp": null
+  }
+]

@@ -1,0 +1,73 @@
+[
+  {
+    "id": "ORD001",
+    "customerId": "user_001",
+    "customer": {
+      "name": "John Doe",
+      "phone": "+91 98765 43210",
+      "email": "john@example.com"
+    },
+    "items": [
+      {
+        "id": "prod_001",
+        "name": "Premium Car Shampoo",
+        "quantity": 2,
+        "price": 299,
+        "total": 598
+      },
+      {
+        "id": "prod_002",
+        "name": "Microfiber Cloth Set",
+        "quantity": 1,
+        "price": 199,
+        "total": 199
+      }
+    ],
+    "orderDate": "2025-10-20",
+    "subtotal": 797,
+    "discount": 100,
+    "deliveryFee": 0,
+    "total": 697,
+    "paymentMethod": "online",
+    "paymentStatus": "paid",
+    "address": "123, MG Road, Bandra West, Mumbai - 400050",
+    "status": "delivered",
+    "statusHistory": [
+      { "status": "processing", "timestamp": "2025-10-20T10:00:00Z" },
+      { "status": "confirmed", "timestamp": "2025-10-20T10:15:00Z" },
+      { "status": "shipped", "timestamp": "2025-10-20T14:30:00Z" },
+      { "status": "out-for-delivery", "timestamp": "2025-10-21T09:00:00Z" },
+      { "status": "delivered", "timestamp": "2025-10-21T15:30:00Z" }
+    ]
+  },
+  {
+    "id": "ORD002",
+    "customerId": "user_002",
+    "customer": {
+      "name": "Priya Sharma",
+      "phone": "+91 98765 43211",
+      "email": "priya@example.com"
+    },
+    "items": [
+      {
+        "id": "prod_003",
+        "name": "Car Wax",
+        "quantity": 1,
+        "price": 499,
+        "total": 499
+      }
+    ],
+    "orderDate": "2025-10-24",
+    "subtotal": 499,
+    "discount": 0,
+    "deliveryFee": 40,
+    "total": 539,
+    "paymentMethod": "cod",
+    "paymentStatus": "pending",
+    "address": "456, Linking Road, Khar, Mumbai - 400052",
+    "status": "processing",
+    "statusHistory": [
+      { "status": "processing", "timestamp": "2025-10-24T11:00:00Z" }
+    ]
+  }
+]

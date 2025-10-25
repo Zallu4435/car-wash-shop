@@ -1,0 +1,17 @@
+[
+  {
+    "id": "brand_001",
+    "name": "Toyota",
+    "models": ["Camry", "Fortuner", "Innova", "Corolla"]
+  },
+  {
+    "id": "brand_002",
+    "name": "Honda",
+    "models": ["City", "Civic", "CR-V", "Amaze"]
+  },
+  {
+    "id": "brand_003",
+    "name": "Maruti Suzuki",
+    "models": ["Swift", "Baleno", "Dzire", "Vitara Brezza"]
+  }
+]

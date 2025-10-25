@@ -1,0 +1,22 @@
+[
+  {
+    "id": "poster_001",
+    "title": "Summer Special Offer",
+    "description": "Get 25% off on all services",
+    "imageUrl": "/images/posters/summer-special.jpg",
+    "location": "Home Page",
+    "startDate": "2025-10-20",
+    "endDate": "2025-11-30",
+    "active": true
+  },
+  {
+    "id": "poster_002",
+    "title": "Premium Products Launch",
+    "description": "Check out our new premium car care range",
+    "imageUrl": "/images/posters/new-products.jpg",
+    "location": "Products Page",
+    "startDate": "2025-10-24",
+    "endDate": "2025-12-31",
+    "active": true
+  }
+]

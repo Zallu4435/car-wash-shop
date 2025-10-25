@@ -1,0 +1,18 @@
+[
+  {
+    "id": "user_001",
+    "name": "John Doe",
+    "email": "john@example.com",
+    "phone": "9876543210",
+    "role": "customer",
+    "active": true
+  },
+  {
+    "id": "user_002",
+    "name": "Admin User",
+    "email": "admin@carwash.com",
+    "phone": "9876543211",
+    "role": "admin",
+    "active": true
+  }
+]
