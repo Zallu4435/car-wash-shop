@@ -66,132 +66,128 @@ export default function CouponsPage() {
   const totalUsage = coupons.reduce((sum, c) => sum + c.usedCount, 0);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl md:text-4xl font-bold text-foreground">Coupons</h1>
-          <p className="text-muted-foreground mt-1">Manage discount coupons and promotions</p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground truncate">
+            Coupons
+          </h1>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1 truncate">
+            Manage discount coupons and promotions
+          </p>
         </div>
-        <Button onClick={() => router.push('/admin/coupons/new')}>
-          <Plus className="mr-2 h-4 w-4" />
+        <Button onClick={() => router.push('/admin/coupons/new')} className="w-full md:w-auto h-9 sm:h-10 text-xs sm:text-sm">
+          <Plus className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Create Coupon
         </Button>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="border-2">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-3 bg-purple-100 dark:bg-purple-950/30 rounded-xl">
-                <Tag className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
+        {[
+          { icon: Tag, color: 'purple', label: 'Total Coupons', value: coupons.length },
+          { icon: Tag, color: 'green', label: 'Active Coupons', value: activeCoupons },
+          { icon: TrendingUp, color: 'blue', label: 'Total Uses', value: totalUsage },
+        ].map((stat, index) => (
+          <Card key={index} className={`border-2 ${index === 2 ? 'sm:col-span-2 md:col-span-1' : ''}`}>
+            <CardContent className="p-4 sm:p-5 md:p-6">
+              <div className="flex items-center gap-2 sm:gap-3 mb-1.5 sm:mb-2">
+                <div className={`p-2 sm:p-3 bg-${stat.color}-100 dark:bg-${stat.color}-950/30 rounded-lg sm:rounded-xl flex-shrink-0`}>
+                  <stat.icon className={`h-5 w-5 sm:h-6 sm:w-6 text-${stat.color}-600 dark:text-${stat.color}-400`} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm text-muted-foreground truncate">{stat.label}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Total Coupons</p>
-              </div>
-            </div>
-            <p className="text-3xl font-bold text-foreground">{coupons.length}</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-2">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-3 bg-green-100 dark:bg-green-950/30 rounded-xl">
-                <Tag className="h-6 w-6 text-green-600 dark:text-green-400" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Active Coupons</p>
-              </div>
-            </div>
-            <p className="text-3xl font-bold text-foreground">{activeCoupons}</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-2">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-3 bg-blue-100 dark:bg-blue-950/30 rounded-xl">
-                <TrendingUp className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Total Uses</p>
-              </div>
-            </div>
-            <p className="text-3xl font-bold text-foreground">{totalUsage}</p>
-          </CardContent>
-        </Card>
+              <p className="text-2xl sm:text-3xl font-bold text-foreground">{stat.value}</p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       {/* Coupon List */}
       <Card className="border-2">
-        <CardHeader>
+        <CardHeader className="pb-3 sm:pb-4">
           <div className="flex items-center gap-2">
-            <div className="p-2 bg-primary/10 rounded-lg">
-              <Tag className="h-5 w-5 text-primary" />
+            <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
+              <Tag className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
             </div>
-            <CardTitle>All Coupons</CardTitle>
+            <CardTitle className="text-base sm:text-lg">All Coupons</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
           {/* Search Bar */}
-          <div className="relative mb-6">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <div className="relative mb-4 sm:mb-6">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
             <Input
               placeholder="Search coupon codes..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              className="pl-9 sm:pl-10 h-10 sm:h-11 text-xs sm:text-sm"
             />
           </div>
 
           {/* Coupon Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
             {filteredCoupons.map((coupon) => (
               <Card key={coupon.id} className="border-2 hover:shadow-lg transition-all">
-                <CardContent className="p-5">
-                  <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className="p-2 bg-primary/10 rounded-lg">
+                <CardContent className="p-4 sm:p-5">
+                  <div className="flex items-start justify-between gap-2 mb-3 sm:mb-4">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 mb-1.5 sm:mb-2">
+                        <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg flex-shrink-0">
                           {coupon.type === 'percentage' ? (
-                            <Percent className="h-5 w-5 text-primary" />
+                            <Percent className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                           ) : (
-                            <IndianRupee className="h-5 w-5 text-primary" />
+                            <IndianRupee className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                           )}
                         </div>
-                        <h3 className="font-mono font-bold text-xl text-foreground">{coupon.code}</h3>
+                        <h3 className="font-mono font-bold text-lg sm:text-xl text-foreground truncate">
+                          {coupon.code}
+                        </h3>
                       </div>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-xs sm:text-sm text-muted-foreground">
                         {coupon.type === 'percentage' ? `${coupon.value}% Off` : `₹${coupon.value} Off`}
                       </p>
                     </div>
-                    <Badge variant={coupon.active ? 'default' : 'secondary'}>
+                    <Badge variant={coupon.active ? 'default' : 'secondary'} className="text-xs flex-shrink-0">
                       {coupon.active ? 'Active' : 'Expired'}
                     </Badge>
                   </div>
 
-                  <div className="space-y-3 mb-4">
-                    <div className="p-3 bg-muted rounded-lg">
-                      <p className="text-xs text-muted-foreground mb-1">Min Order Value</p>
-                      <p className="font-semibold text-foreground">₹{coupon.minOrderValue}</p>
+                  <div className="space-y-2.5 sm:space-y-3 mb-3 sm:mb-4">
+                    <div className="p-2.5 sm:p-3 bg-muted rounded-lg">
+                      <p className="text-[10px] sm:text-xs text-muted-foreground mb-0.5 sm:mb-1">
+                        Min Order Value
+                      </p>
+                      <p className="font-semibold text-sm sm:text-base text-foreground">
+                        ₹{coupon.minOrderValue}
+                      </p>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="p-3 bg-muted rounded-lg">
-                        <p className="text-xs text-muted-foreground mb-1">Used</p>
-                        <p className="font-semibold text-foreground">{coupon.usedCount}</p>
+                    <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                      <div className="p-2.5 sm:p-3 bg-muted rounded-lg">
+                        <p className="text-[10px] sm:text-xs text-muted-foreground mb-0.5 sm:mb-1">Used</p>
+                        <p className="font-semibold text-sm sm:text-base text-foreground">
+                          {coupon.usedCount}
+                        </p>
                       </div>
-                      <div className="p-3 bg-muted rounded-lg">
-                        <p className="text-xs text-muted-foreground mb-1">Limit</p>
-                        <p className="font-semibold text-foreground">{coupon.usageLimit}</p>
+                      <div className="p-2.5 sm:p-3 bg-muted rounded-lg">
+                        <p className="text-[10px] sm:text-xs text-muted-foreground mb-0.5 sm:mb-1">Limit</p>
+                        <p className="font-semibold text-sm sm:text-base text-foreground">
+                          {coupon.usageLimit}
+                        </p>
                       </div>
                     </div>
 
-                    <div className="p-3 bg-muted rounded-lg">
-                      <p className="text-xs text-muted-foreground mb-1">Valid Until</p>
-                      <p className="font-semibold text-foreground">{coupon.validUntil}</p>
+                    <div className="p-2.5 sm:p-3 bg-muted rounded-lg">
+                      <p className="text-[10px] sm:text-xs text-muted-foreground mb-0.5 sm:mb-1">
+                        Valid Until
+                      </p>
+                      <p className="font-semibold text-sm sm:text-base text-foreground">
+                        {coupon.validUntil}
+                      </p>
                     </div>
                   </div>
 
@@ -199,27 +195,27 @@ export default function CouponsPage() {
                     <Button 
                       variant="outline" 
                       size="sm" 
-                      className="flex-1"
+                      className="flex-1 h-9 text-xs sm:text-sm"
                       onClick={() => router.push(`/admin/coupons/${coupon.id}`)}
                     >
-                      <Eye className="mr-2 h-4 w-4" />
-                      View
+                      <Eye className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                      <span className="hidden xs:inline">View</span>
                     </Button>
                     <Button 
                       variant="outline" 
                       size="sm" 
-                      className="flex-1"
+                      className="flex-1 h-9 text-xs sm:text-sm"
                       onClick={() => router.push(`/admin/coupons/${coupon.id}/edit`)}
                     >
-                      <Edit className="mr-2 h-4 w-4" />
-                      Edit
+                      <Edit className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                      <span className="hidden xs:inline">Edit</span>
                     </Button>
                     <Button 
                       variant="outline" 
                       size="sm"
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20"
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20 h-9 px-3"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                     </Button>
                   </div>
                 </CardContent>

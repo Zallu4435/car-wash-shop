@@ -46,82 +46,86 @@ export default function PaymentReportsPage() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl md:text-4xl font-bold text-foreground">Payment Reports</h1>
-          <p className="text-muted-foreground mt-1">Financial analytics and payment methods</p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground truncate">
+            Payment Reports
+          </h1>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1 truncate">
+            Financial analytics and payment methods
+          </p>
         </div>
-        <Button>
-          <Download className="mr-2 h-4 w-4" />
+        <Button className="w-full md:w-auto h-9 sm:h-10 text-xs sm:text-sm">
+          <Download className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Export Report
         </Button>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
         <Card className="border-2 border-border">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-3 mb-3">
+          <CardContent className="p-4 sm:p-5 md:p-6">
+            <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
               <div 
-                className="p-3 rounded-xl"
+                className="p-2 sm:p-3 rounded-lg sm:rounded-xl flex-shrink-0"
                 style={{ backgroundColor: 'hsl(160 60% 45% / 0.1)' }}
               >
-                <IndianRupee className="h-6 w-6" style={{ color: 'hsl(160 60% 45%)' }} />
+                <IndianRupee className="h-5 w-5 sm:h-6 sm:w-6" style={{ color: 'hsl(160 60% 45%)' }} />
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Total Revenue</p>
-                <p className="text-xs text-muted-foreground">This Month</p>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm text-muted-foreground truncate">Total Revenue</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">This Month</p>
               </div>
             </div>
-            <p className="text-3xl font-bold" style={{ color: 'hsl(var(--primary))' }}>
+            <p className="text-2xl sm:text-3xl font-bold" style={{ color: 'hsl(var(--primary))' }}>
               ₹1,81,770
             </p>
-            <p className="text-sm mt-2 flex items-center gap-1" style={{ color: 'hsl(160 60% 45%)' }}>
-              <TrendingUp className="h-3 w-3" />
+            <p className="text-xs sm:text-sm mt-1.5 sm:mt-2 flex items-center gap-1" style={{ color: 'hsl(160 60% 45%)' }}>
+              <TrendingUp className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
               +12.5% from last month
             </p>
           </CardContent>
         </Card>
 
         <Card className="border-2 border-border">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-3 mb-3">
+          <CardContent className="p-4 sm:p-5 md:p-6">
+            <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
               <div 
-                className="p-3 rounded-xl"
+                className="p-2 sm:p-3 rounded-lg sm:rounded-xl flex-shrink-0"
                 style={{ backgroundColor: 'hsl(221 83% 53% / 0.1)' }}
               >
-                <CreditCard className="h-6 w-6" style={{ color: 'hsl(221 83% 53%)' }} />
+                <CreditCard className="h-5 w-5 sm:h-6 sm:w-6" style={{ color: 'hsl(221 83% 53%)' }} />
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Online Payments</p>
-                <p className="text-xs text-muted-foreground">This Month</p>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm text-muted-foreground truncate">Online Payments</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">This Month</p>
               </div>
             </div>
-            <p className="text-3xl font-bold text-foreground">₹1,35,540</p>
-            <p className="text-sm text-muted-foreground mt-2">
+            <p className="text-2xl sm:text-3xl font-bold text-foreground">₹1,35,540</p>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1.5 sm:mt-2">
               74.6% of total revenue
             </p>
           </CardContent>
         </Card>
 
-        <Card className="border-2 border-border">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-3 mb-3">
+        <Card className="border-2 border-border sm:col-span-2 md:col-span-1">
+          <CardContent className="p-4 sm:p-5 md:p-6">
+            <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
               <div 
-                className="p-3 rounded-xl"
+                className="p-2 sm:p-3 rounded-lg sm:rounded-xl flex-shrink-0"
                 style={{ backgroundColor: 'hsl(30 80% 55% / 0.1)' }}
               >
-                <Wallet className="h-6 w-6" style={{ color: 'hsl(30 80% 55%)' }} />
+                <Wallet className="h-5 w-5 sm:h-6 sm:w-6" style={{ color: 'hsl(30 80% 55%)' }} />
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">COD Payments</p>
-                <p className="text-xs text-muted-foreground">This Month</p>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm text-muted-foreground truncate">COD Payments</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">This Month</p>
               </div>
             </div>
-            <p className="text-3xl font-bold text-foreground">₹46,230</p>
-            <p className="text-sm text-muted-foreground mt-2">
+            <p className="text-2xl sm:text-3xl font-bold text-foreground">₹46,230</p>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1.5 sm:mt-2">
               25.4% of total revenue
             </p>
           </CardContent>
@@ -130,39 +134,39 @@ export default function PaymentReportsPage() {
 
       {/* Payment Methods Breakdown */}
       <Card className="border-2 border-border">
-        <CardHeader>
+        <CardHeader className="pb-3 sm:pb-4">
           <div className="flex items-center gap-2">
             <div 
-              className="p-2 rounded-lg"
+              className="p-1.5 sm:p-2 rounded-lg"
               style={{ backgroundColor: 'hsl(var(--primary) / 0.1)' }}
             >
-              <PieChart className="h-5 w-5" style={{ color: 'hsl(var(--primary))' }} />
+              <PieChart className="h-4 w-4 sm:h-5 sm:w-5" style={{ color: 'hsl(var(--primary))' }} />
             </div>
-            <CardTitle>Payment Methods Distribution</CardTitle>
+            <CardTitle className="text-base sm:text-lg">Payment Methods Distribution</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {paymentMethods.map((payment) => {
               const Icon = payment.icon;
               return (
-                <div key={payment.method} className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-3">
+                <div key={payment.method} className="space-y-1.5 sm:space-y-2">
+                  <div className="flex items-center justify-between text-xs sm:text-sm">
+                    <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
                       <div 
-                        className="p-2 rounded-lg"
+                        className="p-1.5 sm:p-2 rounded-lg flex-shrink-0"
                         style={{ backgroundColor: `${payment.color} / 0.1` }}
                       >
-                        <Icon className="h-4 w-4" style={{ color: payment.color }} />
+                        <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" style={{ color: payment.color }} />
                       </div>
-                      <span className="font-medium text-foreground">{payment.method}</span>
+                      <span className="font-medium text-foreground truncate">{payment.method}</span>
                     </div>
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
                       <span className="text-muted-foreground">₹{payment.amount.toLocaleString()}</span>
-                      <span className="font-bold text-foreground w-12 text-right">{payment.percentage}%</span>
+                      <span className="font-bold text-foreground w-10 sm:w-12 text-right">{payment.percentage}%</span>
                     </div>
                   </div>
-                  <div className="h-3 bg-muted rounded-full overflow-hidden">
+                  <div className="h-2 sm:h-3 bg-muted rounded-full overflow-hidden">
                     <div 
                       className="h-full rounded-full transition-all duration-1000 ease-out"
                       style={{ 
@@ -180,19 +184,19 @@ export default function PaymentReportsPage() {
 
       {/* Recent Transactions */}
       <Card className="border-2 border-border">
-        <CardHeader>
+        <CardHeader className="pb-3 sm:pb-4">
           <div className="flex items-center gap-2">
             <div 
-              className="p-2 rounded-lg"
+              className="p-1.5 sm:p-2 rounded-lg"
               style={{ backgroundColor: 'hsl(var(--primary) / 0.1)' }}
             >
-              <IndianRupee className="h-5 w-5" style={{ color: 'hsl(var(--primary))' }} />
+              <IndianRupee className="h-4 w-4 sm:h-5 sm:w-5" style={{ color: 'hsl(var(--primary))' }} />
             </div>
-            <CardTitle>Recent High-Value Transactions</CardTitle>
+            <CardTitle className="text-base sm:text-lg truncate">Recent High-Value Transactions</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
+          <div className="space-y-2.5 sm:space-y-3">
             {recentTransactions.map((txn) => {
               const statusStyle = txn.status === 'Success' 
                 ? {
@@ -207,19 +211,20 @@ export default function PaymentReportsPage() {
                   };
 
               return (
-                <div key={txn.id} className="flex items-center justify-between p-5 bg-muted rounded-xl border border-border">
-                  <div className="flex items-center gap-4">
+                <div key={txn.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 p-3 sm:p-4 md:p-5 bg-muted rounded-lg sm:rounded-xl border border-border">
+                  <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
                     <div 
-                      className="p-3 rounded-lg"
+                      className="p-2 sm:p-3 rounded-lg flex-shrink-0"
                       style={{ backgroundColor: 'hsl(var(--primary) / 0.1)' }}
                     >
-                      <IndianRupee className="h-5 w-5" style={{ color: 'hsl(var(--primary))' }} />
+                      <IndianRupee className="h-4 w-4 sm:h-5 sm:w-5" style={{ color: 'hsl(var(--primary))' }} />
                     </div>
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <Badge variant="outline" className="font-mono">{txn.id}</Badge>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-0.5 sm:mb-1">
+                        <Badge variant="outline" className="font-mono text-xs">{txn.id}</Badge>
                         <Badge 
                           variant="outline"
+                          className="text-xs"
                           style={{
                             backgroundColor: statusStyle.backgroundColor,
                             color: statusStyle.color,
@@ -229,12 +234,12 @@ export default function PaymentReportsPage() {
                           {txn.status}
                         </Badge>
                       </div>
-                      <p className="font-semibold text-foreground">{txn.type}</p>
-                      <p className="text-sm text-muted-foreground">{txn.method} • {txn.date}</p>
+                      <p className="font-semibold text-sm sm:text-base text-foreground">{txn.type}</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground">{txn.method} • {txn.date}</p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-2xl font-bold" style={{ color: 'hsl(var(--primary))' }}>
+                  <div className="text-left sm:text-right flex-shrink-0">
+                    <p className="text-xl sm:text-2xl font-bold" style={{ color: 'hsl(var(--primary))' }}>
                       ₹{txn.amount.toLocaleString()}
                     </p>
                   </div>

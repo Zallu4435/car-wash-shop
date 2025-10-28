@@ -56,9 +56,9 @@ const navigationGroups = [
   {
     title: 'Marketing',
     items: [
-      { name: 'Banners', href: '/admin/marketing/banners', icon: Megaphone },
-      { name: 'Campaigns', href: '/admin/marketing/campaigns', icon: Megaphone },
-      { name: 'Posters', href: '/admin/marketing/posters', icon: Megaphone },
+      { name: 'Banners', href: '/admin/banners', icon: Megaphone },
+      { name: 'Campaigns', href: '/admin/campaigns', icon: Megaphone },
+      { name: 'Posters', href: '/admin/posters', icon: Megaphone },
       { name: 'Coupons', href: '/admin/coupons', icon: Tag },
     ]
   },
@@ -111,37 +111,46 @@ export function AdminSidebar({ sidebarOpen, setSidebarOpen }: AdminSidebarProps)
 
       {/* Mobile sidebar */}
       <div className={cn(
-        'fixed inset-y-0 left-0 z-50 w-80 bg-card border-r border-border transform transition-transform duration-300 ease-in-out lg:hidden',
+        'fixed inset-y-0 left-0 z-50 w-[280px] sm:w-80 bg-card border-r border-border transform transition-transform duration-300 ease-in-out lg:hidden',
         sidebarOpen ? 'translate-x-0' : '-translate-x-full'
       )}>
         <div className="flex flex-col h-full">
           {/* Mobile Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <div className="absolute inset-0 bg-primary rounded-xl blur-md opacity-40"></div>
-                <div className="relative p-2.5 bg-gradient-to-br from-primary to-primary/80 rounded-xl shadow-lg">
-                  <Shield className="h-6 w-6 text-primary-foreground" />
+          <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-border">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+              <div className="relative flex-shrink-0">
+                <div className="absolute inset-0 bg-primary rounded-lg sm:rounded-xl blur-md opacity-40"></div>
+                <div className="relative p-2 sm:p-2.5 bg-gradient-to-br from-primary to-primary/80 rounded-lg sm:rounded-xl shadow-lg">
+                  <Shield className="h-5 w-5 sm:h-6 sm:w-6 text-primary-foreground" />
                 </div>
               </div>
-              <div>
-                <span className="text-lg font-bold text-foreground">Admin Panel</span>
-                <p className="text-xs text-muted-foreground">CarWash Management</p>
+              <div className="min-w-0 flex-1">
+                <span className="text-base sm:text-lg font-bold text-foreground block truncate">
+                  Admin Panel
+                </span>
+                <p className="text-[10px] sm:text-xs text-muted-foreground truncate">
+                  CarWash Management
+                </p>
               </div>
             </div>
-            <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(false)}>
-              <X className="h-5 w-5" />
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => setSidebarOpen(false)}
+              className="flex-shrink-0 h-8 w-8 sm:h-9 sm:w-9"
+            >
+              <X className="h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
           </div>
 
           {/* Mobile Navigation with Custom Scrollbar */}
-          <nav className="flex-1 px-4 py-4 overflow-y-auto space-y-6 scrollbar-thin">
+          <nav className="flex-1 px-3 sm:px-4 py-3 sm:py-4 overflow-y-auto space-y-4 sm:space-y-6 scrollbar-thin">
             {navigationGroups.map((group) => (
               <div key={group.title}>
-                <p className="px-3 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                <p className="px-2 sm:px-3 mb-1.5 sm:mb-2 text-[10px] sm:text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   {group.title}
                 </p>
-                <div className="space-y-1">
+                <div className="space-y-0.5 sm:space-y-1">
                   {group.items.map((item) => {
                     const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
                     return (
@@ -149,18 +158,18 @@ export function AdminSidebar({ sidebarOpen, setSidebarOpen }: AdminSidebarProps)
                         key={item.name}
                         href={item.href}
                         className={cn(
-                          'flex items-center justify-between gap-3 px-3 py-2.5 text-sm font-medium rounded-xl transition-all group',
+                          'flex items-center justify-between gap-2 sm:gap-3 px-2 sm:px-3 py-2 sm:py-2.5 text-xs sm:text-sm font-medium rounded-lg sm:rounded-xl transition-all group',
                           isActive
                             ? 'bg-primary text-primary-foreground shadow-md'
                             : 'text-foreground hover:bg-muted'
                         )}
                         onClick={() => setSidebarOpen(false)}
                       >
-                        <div className="flex items-center gap-3">
-                          <item.icon className="h-5 w-5" />
-                          {item.name}
+                        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                          <item.icon className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+                          <span className="truncate">{item.name}</span>
                         </div>
-                        {isActive && <ChevronRight className="h-4 w-4" />}
+                        {isActive && <ChevronRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />}
                       </Link>
                     );
                   })}
@@ -170,13 +179,13 @@ export function AdminSidebar({ sidebarOpen, setSidebarOpen }: AdminSidebarProps)
           </nav>
 
           {/* Mobile Logout */}
-          <div className="p-4 border-t border-border">
+          <div className="p-3 sm:p-4 border-t border-border">
             <Button 
               variant="ghost" 
-              className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10"
+              className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10 h-9 sm:h-10 text-xs sm:text-sm"
               onClick={handleLogout}
             >
-              <LogOut className="mr-3 h-5 w-5" />
+              <LogOut className="mr-2 sm:mr-3 h-4 w-4 sm:h-5 sm:w-5" />
               Logout
             </Button>
           </div>

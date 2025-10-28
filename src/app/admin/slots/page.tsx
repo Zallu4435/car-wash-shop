@@ -18,7 +18,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Clock, Ban, CheckCircle, AlertTriangle, Plus, Edit, Trash2, Users, Calendar as CalendarIcon } from 'lucide-react';
+import { Clock, Ban, CheckCircle, AlertTriangle, Plus, Users, Calendar as CalendarIcon } from 'lucide-react';
 
 const timeSlots = [
   '09:00 AM', '10:00 AM', '11:00 AM', '12:00 PM',
@@ -82,99 +82,70 @@ export default function SlotManagementPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl md:text-4xl font-bold text-foreground">Slot Management</h1>
-          <p className="text-muted-foreground mt-1">Manage time slots and staff availability</p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground truncate">
+            Slot Management
+          </h1>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1 truncate">
+            Manage time slots and staff availability
+          </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={blockFullDay}>
-            <Ban className="mr-2 h-4 w-4" />
-            Block Full Day
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" onClick={blockFullDay} className="h-9 sm:h-10 text-xs sm:text-sm flex-1 sm:flex-initial">
+            <Ban className="mr-0 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <span className="hidden xs:inline">Block Full Day</span>
+            <span className="xs:hidden">Block All</span>
           </Button>
-          <Button variant="outline" onClick={unblockFullDay}>
-            <CheckCircle className="mr-2 h-4 w-4" />
-            Enable All
+          <Button variant="outline" onClick={unblockFullDay} className="h-9 sm:h-10 text-xs sm:text-sm flex-1 sm:flex-initial">
+            <CheckCircle className="mr-0 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <span className="hidden xs:inline">Enable All</span>
+            <span className="xs:hidden">Enable</span>
           </Button>
-          <Button onClick={() => setShowCreateDialog(true)}>
-            <Plus className="mr-2 h-4 w-4" />
+          <Button onClick={() => setShowCreateDialog(true)} className="h-9 sm:h-10 text-xs sm:text-sm w-full sm:w-auto">
+            <Plus className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
             Create Slot
           </Button>
         </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="border-2 border-border">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-3 bg-primary/10 rounded-xl">
-                <Clock className="h-6 w-6 text-primary" />
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        {[
+          { icon: Clock, label: 'Total Slots', value: timeSlots.length, color: 'primary' },
+          { icon: CheckCircle, label: 'Available', value: timeSlots.length - blockedSlots.length, color: 'primary' },
+          { icon: Ban, label: 'Blocked', value: blockedSlots.length, color: 'destructive' },
+          { icon: AlertTriangle, label: 'Staff on Leave', value: staffLeaves.length, color: 'primary' },
+        ].map((stat, index) => (
+          <Card key={index} className={`border-2 border-border ${index === 3 ? 'col-span-2 lg:col-span-1' : ''}`}>
+            <CardContent className="p-4 sm:p-5 md:p-6">
+              <div className="flex items-center gap-2 sm:gap-3 mb-1.5 sm:mb-2">
+                <div className={`p-2 sm:p-3 ${stat.color === 'destructive' ? 'bg-destructive/10' : 'bg-primary/10'} rounded-lg sm:rounded-xl flex-shrink-0`}>
+                  <stat.icon className={`h-5 w-5 sm:h-6 sm:w-6 ${stat.color === 'destructive' ? 'text-destructive' : 'text-primary'}`} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm text-muted-foreground truncate">{stat.label}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Total Slots</p>
-              </div>
-            </div>
-            <p className="text-3xl font-bold text-foreground">{timeSlots.length}</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-2 border-border">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-3 bg-primary/10 rounded-xl">
-                <CheckCircle className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Available</p>
-              </div>
-            </div>
-            <p className="text-3xl font-bold text-primary">
-              {timeSlots.length - blockedSlots.length}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-2 border-border">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-3 bg-destructive/10 rounded-xl">
-                <Ban className="h-6 w-6 text-destructive" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Blocked</p>
-              </div>
-            </div>
-            <p className="text-3xl font-bold text-destructive">{blockedSlots.length}</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-2 border-border">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-3 bg-primary/10 rounded-xl">
-                <AlertTriangle className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Staff on Leave</p>
-              </div>
-            </div>
-            <p className="text-3xl font-bold text-primary">{staffLeaves.length}</p>
-          </CardContent>
-        </Card>
+              <p className={`text-2xl sm:text-3xl font-bold ${stat.color === 'destructive' ? 'text-destructive' : stat.label === 'Available' || stat.label === 'Staff on Leave' ? 'text-primary' : 'text-foreground'}`}>
+                {stat.value}
+              </p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Calendar */}
         <Card className="border-2 border-border">
-          <CardHeader>
+          <CardHeader className="pb-3 sm:pb-4">
             <div className="flex items-center gap-2">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <CalendarIcon className="h-5 w-5 text-primary" />
+              <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
+                <CalendarIcon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               </div>
-              <CardTitle>Select Date</CardTitle>
+              <CardTitle className="text-base sm:text-lg">Select Date</CardTitle>
             </div>
           </CardHeader>
           <CardContent>
@@ -182,11 +153,11 @@ export default function SlotManagementPage() {
               mode="single"
               selected={selectedDate}
               onSelect={setSelectedDate}
-              className="rounded-md"
+              className="rounded-md mx-auto"
             />
             {selectedDate && (
-              <div className="mt-4 p-4 bg-primary/10 rounded-xl border-2 border-primary/20">
-                <p className="text-sm font-semibold text-foreground">
+              <div className="mt-3 sm:mt-4 p-3 sm:p-4 bg-primary/10 rounded-lg sm:rounded-xl border-2 border-primary/20">
+                <p className="text-xs sm:text-sm font-semibold text-foreground">
                   {selectedDate.toLocaleDateString('en-IN', { 
                     weekday: 'long', 
                     year: 'numeric', 
@@ -201,51 +172,52 @@ export default function SlotManagementPage() {
 
         {/* Time Slots */}
         <Card className="lg:col-span-2 border-2 border-border">
-          <CardHeader>
-            <div className="flex items-center justify-between">
+          <CardHeader className="pb-3 sm:pb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
               <div className="flex items-center gap-2">
-                <div className="p-2 bg-primary/10 rounded-lg">
-                  <Clock className="h-5 w-5 text-primary" />
+                <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
+                  <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                 </div>
-                <CardTitle>Time Slots</CardTitle>
+                <CardTitle className="text-base sm:text-lg">Time Slots</CardTitle>
               </div>
               <div className="flex items-center gap-2">
-                <Badge variant="outline" className="bg-primary/10">
-                  <CheckCircle className="h-3 w-3 mr-1" />
+                <Badge variant="outline" className="bg-primary/10 text-xs">
+                  <CheckCircle className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-1" />
                   Available
                 </Badge>
-                <Badge variant="outline" className="bg-destructive/10">
-                  <Ban className="h-3 w-3 mr-1" />
+                <Badge variant="outline" className="bg-destructive/10 text-xs">
+                  <Ban className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-1" />
                   Blocked
                 </Badge>
               </div>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
               {timeSlots.map((slot) => {
                 const isBlocked = blockedSlots.includes(slot);
                 return (
                   <button
                     key={slot}
                     onClick={() => toggleSlot(slot)}
-                    className={`p-4 rounded-xl border-2 transition-all hover:shadow-md ${
+                    className={`p-3 sm:p-4 rounded-lg sm:rounded-xl border-2 transition-all hover:shadow-md ${
                       isBlocked
                         ? 'border-destructive/20 bg-destructive/5'
                         : 'border-primary/20 bg-primary/5 hover:border-primary/40'
                     }`}
                   >
-                    <div className="flex items-center justify-between mb-2">
-                      <Clock className={`h-4 w-4 ${isBlocked ? 'text-destructive' : 'text-primary'}`} />
+                    <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+                      <Clock className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${isBlocked ? 'text-destructive' : 'text-primary'}`} />
                       {isBlocked ? (
-                        <Ban className="h-4 w-4 text-destructive" />
+                        <Ban className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-destructive" />
                       ) : (
-                        <CheckCircle className="h-4 w-4 text-primary" />
+                        <CheckCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
                       )}
                     </div>
-                    <p className="font-bold text-foreground mb-2">{slot}</p>
+                    <p className="font-bold text-sm sm:text-base text-foreground mb-1.5 sm:mb-2">{slot}</p>
                     <Badge 
                       variant={isBlocked ? 'destructive' : 'default'}
+                      className="text-xs"
                     >
                       {isBlocked ? 'Blocked' : 'Available'}
                     </Badge>
@@ -259,46 +231,46 @@ export default function SlotManagementPage() {
 
       {/* Staff Management */}
       <Card className="border-2 border-border">
-        <CardHeader>
+        <CardHeader className="pb-3 sm:pb-4">
           <div className="flex items-center gap-2">
-            <div className="p-2 bg-primary/10 rounded-lg">
-              <Users className="h-5 w-5 text-primary" />
+            <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
+              <Users className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
             </div>
-            <CardTitle>Staff Availability</CardTitle>
+            <CardTitle className="text-base sm:text-lg">Staff Availability</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
+          <div className="space-y-2.5 sm:space-y-3">
             {staff.map((member) => {
               const isOnLeave = staffLeaves.includes(member.id);
               return (
                 <div
                   key={member.id}
-                  className={`flex items-center justify-between p-4 rounded-xl border-2 transition-all ${
+                  className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 p-3 sm:p-4 rounded-lg sm:rounded-xl border-2 transition-all ${
                     isOnLeave 
                       ? 'bg-destructive/5 border-destructive/20' 
                       : 'bg-muted border-border'
                   }`}
                 >
-                  <div className="flex items-center gap-4">
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg ${
+                  <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
+                    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center font-bold text-base sm:text-lg flex-shrink-0 ${
                       isOnLeave 
                         ? 'bg-destructive/10 text-destructive' 
                         : 'bg-primary/10 text-primary'
                     }`}>
                       {member.name.charAt(0)}
                     </div>
-                    <div>
-                      <p className="font-semibold text-foreground">{member.name}</p>
-                      <p className="text-sm text-muted-foreground">{member.role}</p>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-semibold text-sm sm:text-base text-foreground truncate">{member.name}</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground truncate">{member.role}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <Badge variant={isOnLeave ? 'destructive' : 'default'}>
+                  <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
+                    <Badge variant={isOnLeave ? 'destructive' : 'default'} className="text-xs">
                       {isOnLeave ? 'On Leave' : 'Available'}
                     </Badge>
                     <div className="flex items-center gap-2">
-                      <Label htmlFor={`staff-${member.id}`} className="text-sm text-foreground cursor-pointer">
+                      <Label htmlFor={`staff-${member.id}`} className="text-xs sm:text-sm text-foreground cursor-pointer">
                         {isOnLeave ? 'Mark Available' : 'Mark on Leave'}
                       </Label>
                       <Switch
@@ -317,28 +289,29 @@ export default function SlotManagementPage() {
 
       {/* Create Slot Dialog */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Create New Time Slot</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-lg sm:text-xl">Create New Time Slot</DialogTitle>
+            <DialogDescription className="text-xs sm:text-sm">
               Add a new time slot for service bookings
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="slot-time">Time Slot</Label>
+          <div className="space-y-3 sm:space-y-4 py-3 sm:py-4">
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label htmlFor="slot-time" className="text-xs sm:text-sm">Time Slot</Label>
               <Input
                 id="slot-time"
                 type="time"
                 value={newSlotTime}
                 onChange={(e) => setNewSlotTime(e.target.value)}
                 placeholder="Select time"
+                className="h-10 sm:h-11 text-xs sm:text-sm"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="slot-capacity">Capacity</Label>
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label htmlFor="slot-capacity" className="text-xs sm:text-sm">Capacity</Label>
               <Select value={newSlotCapacity} onValueChange={setNewSlotCapacity}>
-                <SelectTrigger id="slot-capacity">
+                <SelectTrigger id="slot-capacity" className="h-10 sm:h-11 text-xs sm:text-sm">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -350,12 +323,12 @@ export default function SlotManagementPage() {
               </Select>
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setShowCreateDialog(false)} className="h-9 sm:h-10 text-xs sm:text-sm">
               Cancel
             </Button>
-            <Button onClick={handleCreateSlot}>
-              <Plus className="mr-2 h-4 w-4" />
+            <Button onClick={handleCreateSlot} className="h-9 sm:h-10 text-xs sm:text-sm">
+              <Plus className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
               Create Slot
             </Button>
           </DialogFooter>

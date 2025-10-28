@@ -30,79 +30,87 @@ export default function CategoriesPage() {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl md:text-4xl font-bold text-foreground">Categories</h1>
-          <p className="text-muted-foreground mt-1">Organize services and products</p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground truncate">
+            Categories
+          </h1>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1 truncate">
+            Organize services and products
+          </p>
         </div>
-        <Button onClick={() => router.push('/admin/categories/new')}>
-          <Plus className="mr-2 h-4 w-4" />
+        <Button onClick={() => router.push('/admin/categories/new')} className="w-full md:w-auto h-9 sm:h-10 text-xs sm:text-sm">
+          <Plus className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Add Category
         </Button>
       </div>
 
       {/* Categories List */}
       <Card className="border-2">
-        <CardHeader>
+        <CardHeader className="pb-3 sm:pb-4">
           <div className="flex items-center gap-2">
-            <div className="p-2 bg-primary/10 rounded-lg">
-              <Folder className="h-5 w-5 text-primary" />
+            <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
+              <Folder className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
             </div>
-            <CardTitle>All Categories</CardTitle>
+            <CardTitle className="text-base sm:text-lg">All Categories</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
           {/* Search Bar */}
-          <div className="relative mb-6">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <div className="relative mb-4 sm:mb-6">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
             <Input
               placeholder="Search categories..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              className="pl-9 sm:pl-10 h-10 sm:h-11 text-xs sm:text-sm"
             />
           </div>
 
           {/* Categories Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             {filteredCategories.map((category) => (
               <Card key={category.id} className="border-2 hover:shadow-lg transition-all">
-                <CardContent className="p-5">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="p-3 bg-primary/10 rounded-xl">
-                        <Folder className="h-6 w-6 text-primary" />
+                <CardContent className="p-4 sm:p-5">
+                  <div className="flex items-start justify-between mb-3 sm:mb-4">
+                    <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                      <div className="p-2 sm:p-3 bg-primary/10 rounded-lg sm:rounded-xl flex-shrink-0">
+                        <Folder className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                       </div>
-                      <div>
-                        <h3 className="font-bold text-foreground">{category.name}</h3>
-                        <Badge variant="outline" className="text-xs mt-1 capitalize">{category.type}</Badge>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-bold text-sm sm:text-base text-foreground truncate">
+                          {category.name}
+                        </h3>
+                        <Badge variant="outline" className="text-xs mt-0.5 sm:mt-1 capitalize">
+                          {category.type}
+                        </Badge>
                       </div>
                     </div>
                   </div>
 
-                  <div className="p-3 bg-muted rounded-lg mb-4">
-                    <p className="text-xs text-muted-foreground mb-1">Items</p>
-                    <p className="text-2xl font-bold text-foreground">{category.count}</p>
+                  <div className="p-2.5 sm:p-3 bg-muted rounded-lg mb-3 sm:mb-4">
+                    <p className="text-[10px] sm:text-xs text-muted-foreground mb-0.5 sm:mb-1">Items</p>
+                    <p className="text-xl sm:text-2xl font-bold text-foreground">{category.count}</p>
                   </div>
 
                   <div className="flex gap-2">
                     <Button 
                       variant="outline" 
                       size="sm" 
-                      className="flex-1"
+                      className="flex-1 h-9 text-xs sm:text-sm"
                       onClick={() => router.push(`/admin/categories/${category.id}/edit`)}
                     >
-                      <Edit className="mr-2 h-4 w-4" />
-                      Edit
+                      <Edit className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                      <span className="hidden xs:inline">Edit</span>
                     </Button>
                     <Button 
                       variant="outline" 
                       size="sm"
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20"
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20 h-9 px-3"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                     </Button>
                   </div>
                 </CardContent>

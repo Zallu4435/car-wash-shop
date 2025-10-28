@@ -90,36 +90,36 @@ export function AdminHeader({ setSidebarOpen }: AdminHeaderProps) {
   ];
 
   return (
-    <header className="sticky top-0 z-30 h-16 bg-card border-b border-border backdrop-blur-xl bg-card/95 shadow-sm">
-      <div className="flex items-center justify-between h-full px-4 lg:px-6">
+    <header className="sticky top-0 z-30 h-14 sm:h-16 bg-card border-b border-border backdrop-blur-xl bg-card/95 shadow-sm">
+      <div className="flex items-center justify-between h-full px-3 sm:px-4 lg:px-6">
         {/* Left Section - Mobile Menu & Search */}
-        <div className="flex items-center gap-4 flex-1">
+        <div className="flex items-center gap-2 sm:gap-3 md:gap-4 flex-1 min-w-0">
           <Button
             variant="ghost"
             size="icon"
-            className="lg:hidden"
+            className="lg:hidden h-8 w-8 sm:h-9 sm:w-9"
             onClick={() => setSidebarOpen(true)}
           >
-            <Menu className="h-5 w-5" />
+            <Menu className="h-4 w-4 sm:h-5 sm:w-5" />
           </Button>
 
           {/* Search Bar */}
           <div className="hidden md:flex items-center flex-1 max-w-md">
             <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
               <Input
                 placeholder="Search..."
-                className="pl-10 bg-muted border-0"
+                className="pl-9 sm:pl-10 h-9 sm:h-10 text-xs sm:text-sm bg-muted border-0"
               />
             </div>
           </div>
         </div>
 
         {/* Right Section - Actions */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2">
           {/* Search Icon (Mobile) */}
-          <Button variant="ghost" size="icon" className="md:hidden">
-            <Search className="h-5 w-5" />
+          <Button variant="ghost" size="icon" className="md:hidden h-8 w-8 sm:h-9 sm:w-9">
+            <Search className="h-4 w-4 sm:h-5 sm:w-5" />
           </Button>
 
           {/* Theme Toggle */}
@@ -128,11 +128,12 @@ export function AdminHeader({ setSidebarOpen }: AdminHeaderProps) {
               variant="ghost"
               size="icon"
               onClick={() => setShowThemeMenu(!showThemeMenu)}
+              className="h-8 w-8 sm:h-9 sm:w-9"
             >
               {theme === 'dark' ? (
-                <Moon className="h-5 w-5" />
+                <Moon className="h-4 w-4 sm:h-5 sm:w-5" />
               ) : (
-                <Sun className="h-5 w-5" />
+                <Sun className="h-4 w-4 sm:h-5 sm:w-5" />
               )}
             </Button>
 
@@ -142,8 +143,8 @@ export function AdminHeader({ setSidebarOpen }: AdminHeaderProps) {
                   className="fixed inset-0 z-40" 
                   onClick={() => setShowThemeMenu(false)}
                 />
-                <Card className="absolute right-0 mt-2 w-48 bg-card rounded-xl shadow-xl border-2 border-border z-50">
-                  <CardContent className="p-2">
+                <Card className="absolute right-0 mt-2 w-40 sm:w-48 bg-card rounded-lg sm:rounded-xl shadow-xl border-2 border-border z-50">
+                  <CardContent className="p-1.5 sm:p-2">
                     {themeOptions.map((option) => {
                       const Icon = option.icon;
                       const isActive = theme === option.value;
@@ -154,16 +155,16 @@ export function AdminHeader({ setSidebarOpen }: AdminHeaderProps) {
                             setTheme(option.value);
                             setShowThemeMenu(false);
                           }}
-                          className={`w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors ${
+                          className={`w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm rounded-lg transition-colors ${
                             isActive
                               ? 'bg-primary text-primary-foreground'
                               : 'text-foreground hover:bg-muted'
                           }`}
                         >
-                          <Icon className="h-4 w-4" />
+                          <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
                           <span className="flex-1 text-left">{option.label}</span>
                           {isActive && (
-                            <div className="h-2 w-2 rounded-full bg-primary-foreground" />
+                            <div className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-primary-foreground flex-shrink-0" />
                           )}
                         </button>
                       );
@@ -180,11 +181,11 @@ export function AdminHeader({ setSidebarOpen }: AdminHeaderProps) {
               variant="ghost"
               size="icon"
               onClick={() => setShowNotifications(!showNotifications)}
-              className="relative"
+              className="relative h-8 w-8 sm:h-9 sm:w-9"
             >
-              <Bell className="h-5 w-5" />
+              <Bell className="h-4 w-4 sm:h-5 sm:w-5" />
               {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
+                <span className="absolute -top-0.5 sm:-top-1 -right-0.5 sm:-right-1 bg-destructive text-destructive-foreground text-[10px] sm:text-xs font-bold rounded-full h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center animate-pulse">
                   {unreadCount}
                 </span>
               )}
@@ -196,25 +197,29 @@ export function AdminHeader({ setSidebarOpen }: AdminHeaderProps) {
                   className="fixed inset-0 z-40" 
                   onClick={() => setShowNotifications(false)}
                 />
-                <Card className="absolute right-0 mt-2 w-96 max-w-[calc(100vw-2rem)] bg-card rounded-xl shadow-2xl border-2 border-border z-50 max-h-[600px] overflow-hidden flex flex-col">
+                <Card className="absolute right-0 mt-2 w-[90vw] sm:w-96 bg-card rounded-lg sm:rounded-xl shadow-2xl border-2 border-border z-50 max-h-[70vh] sm:max-h-[600px] overflow-hidden flex flex-col">
                   {/* Notification Header */}
-                  <div className="p-4 border-b border-border">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <Bell className="h-5 w-5 text-primary" />
-                        <h3 className="font-semibold text-foreground">Notifications</h3>
+                  <div className="p-3 sm:p-4 border-b border-border">
+                    <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+                      <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1">
+                        <Bell className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+                        <h3 className="font-semibold text-sm sm:text-base text-foreground truncate">
+                          Notifications
+                        </h3>
                         {unreadCount > 0 && (
-                          <Badge variant="default">{unreadCount}</Badge>
+                          <Badge variant="default" className="text-xs flex-shrink-0">
+                            {unreadCount}
+                          </Badge>
                         )}
                       </div>
                       <button
                         onClick={() => setShowNotifications(false)}
-                        className="p-1 hover:bg-muted rounded-lg transition-colors"
+                        className="p-1 hover:bg-muted rounded-lg transition-colors flex-shrink-0"
                       >
-                        <X className="h-4 w-4 text-muted-foreground" />
+                        <X className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
                       </button>
                     </div>
-                    <Button variant="outline" size="sm" className="w-full text-xs">
+                    <Button variant="outline" size="sm" className="w-full text-[10px] sm:text-xs h-7 sm:h-8">
                       Mark all as read
                     </Button>
                   </div>
@@ -227,29 +232,29 @@ export function AdminHeader({ setSidebarOpen }: AdminHeaderProps) {
                         <div key={notification.id}>
                           <button
                             onClick={() => setShowNotifications(false)}
-                            className={`w-full p-4 hover:bg-muted transition-colors text-left ${
+                            className={`w-full p-3 sm:p-4 hover:bg-muted transition-colors text-left ${
                               !notification.read ? 'bg-primary/5' : ''
                             }`}
                           >
-                            <div className="flex items-start gap-3">
-                              <div className="p-2 bg-primary/10 rounded-xl flex-shrink-0">
-                                <Icon className="h-5 w-5 text-primary" />
+                            <div className="flex items-start gap-2 sm:gap-3">
+                              <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg sm:rounded-xl flex-shrink-0">
+                                <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                               </div>
                               <div className="flex-1 min-w-0">
-                                <div className="flex items-start justify-between gap-2 mb-1">
-                                  <h4 className={`font-semibold text-sm ${
+                                <div className="flex items-start justify-between gap-1.5 sm:gap-2 mb-0.5 sm:mb-1">
+                                  <h4 className={`font-semibold text-xs sm:text-sm truncate ${
                                     !notification.read ? 'text-foreground' : 'text-muted-foreground'
                                   }`}>
                                     {notification.title}
                                   </h4>
                                   {!notification.read && (
-                                    <div className="h-2 w-2 rounded-full bg-primary flex-shrink-0 mt-1 animate-pulse" />
+                                    <div className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-primary flex-shrink-0 mt-0.5 sm:mt-1 animate-pulse" />
                                   )}
                                 </div>
-                                <p className="text-sm text-muted-foreground line-clamp-2 mb-1">
+                                <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 mb-0.5 sm:mb-1">
                                   {notification.message}
                                 </p>
-                                <p className="text-xs text-muted-foreground">
+                                <p className="text-[10px] sm:text-xs text-muted-foreground">
                                   {notification.time}
                                 </p>
                               </div>
@@ -262,11 +267,11 @@ export function AdminHeader({ setSidebarOpen }: AdminHeaderProps) {
                   </div>
 
                   {/* Footer */}
-                  <div className="p-3 border-t border-border">
+                  <div className="p-2 sm:p-3 border-t border-border">
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="w-full text-xs"
+                      className="w-full text-[10px] sm:text-xs h-7 sm:h-8"
                       onClick={() => {
                         router.push('/admin/notifications');
                         setShowNotifications(false);
@@ -286,10 +291,10 @@ export function AdminHeader({ setSidebarOpen }: AdminHeaderProps) {
               variant="ghost"
               size="icon"
               onClick={() => setShowUserMenu(!showUserMenu)}
-              className="rounded-full"
+              className="rounded-full h-8 w-8 sm:h-9 sm:w-9 p-0"
             >
-              <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
-                <User className="h-5 w-5 text-primary" />
+              <div className="w-7 h-7 sm:w-8 sm:h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                <User className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               </div>
             </Button>
 
@@ -299,42 +304,46 @@ export function AdminHeader({ setSidebarOpen }: AdminHeaderProps) {
                   className="fixed inset-0 z-40" 
                   onClick={() => setShowUserMenu(false)}
                 />
-                <Card className="absolute right-0 mt-2 w-56 bg-card rounded-xl shadow-xl border-2 border-border z-50">
-                  <CardContent className="p-3">
+                <Card className="absolute right-0 mt-2 w-48 sm:w-56 bg-card rounded-lg sm:rounded-xl shadow-xl border-2 border-border z-50">
+                  <CardContent className="p-2 sm:p-3">
                     {/* User Info */}
-                    <div className="px-3 py-2 mb-2">
-                      <p className="font-semibold text-foreground">Admin User</p>
-                      <p className="text-xs text-muted-foreground">admin@carwash.com</p>
+                    <div className="px-2 sm:px-3 py-1.5 sm:py-2 mb-1.5 sm:mb-2">
+                      <p className="font-semibold text-xs sm:text-sm text-foreground truncate">
+                        Admin User
+                      </p>
+                      <p className="text-[10px] sm:text-xs text-muted-foreground truncate">
+                        admin@carwash.com
+                      </p>
                     </div>
-                    <Separator className="my-2" />
+                    <Separator className="my-1.5 sm:my-2" />
                     {/* Menu Items */}
                     <button
                       onClick={() => {
                         router.push('/admin/profile');
                         setShowUserMenu(false);
                       }}
-                      className="w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg hover:bg-muted transition-colors text-foreground"
+                      className="w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm rounded-lg hover:bg-muted transition-colors text-foreground"
                     >
-                      <User className="h-4 w-4" />
-                      Profile
+                      <User className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                      <span>Profile</span>
                     </button>
                     <button
                       onClick={() => {
                         router.push('/admin/settings');
                         setShowUserMenu(false);
                       }}
-                      className="w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg hover:bg-muted transition-colors text-foreground"
+                      className="w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm rounded-lg hover:bg-muted transition-colors text-foreground"
                     >
-                      <Settings className="h-4 w-4" />
-                      Settings
+                      <Settings className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                      <span>Settings</span>
                     </button>
-                    <Separator className="my-2" />
+                    <Separator className="my-1.5 sm:my-2" />
                     <button
                       onClick={handleLogout}
-                      className="w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg hover:bg-destructive/10 transition-colors text-destructive"
+                      className="w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm rounded-lg hover:bg-destructive/10 transition-colors text-destructive"
                     >
-                      <LogOut className="h-4 w-4" />
-                      Logout
+                      <LogOut className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                      <span>Logout</span>
                     </button>
                   </CardContent>
                 </Card>
