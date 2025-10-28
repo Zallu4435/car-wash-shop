@@ -8,15 +8,17 @@ import { Sparkles, ArrowRight, Play } from 'lucide-react';
 const banners = [
   {
     id: 1,
-    title: 'Premium Wash - 20% Off',
-    subtitle: 'Limited time offer on all premium services',
+    title: 'Premium Wash',
+    subtitle: '20% Off',
+    description: 'Limited time offer on all premium services',
     image: '/images/banners/banner1.jpg',
     cta: { text: 'Book Now', link: '/services' },
   },
   {
     id: 2,
-    title: 'Interior Detailing Special',
-    subtitle: 'Deep clean your car interior with expert care',
+    title: 'Interior Detailing',
+    subtitle: 'Special',
+    description: 'Deep clean your car interior with expert care',
     image: '/images/banners/banner2.jpg',
     cta: { text: 'Explore Services', link: '/services' },
   },
@@ -37,65 +39,72 @@ export function HeroBanner() {
         <CarouselContent>
           {banners.map((banner) => (
             <CarouselItem key={banner.id}>
-              <div className="relative h-[600px] md:h-[700px] lg:h-[800px] bg-primary overflow-hidden">
+              <div className="relative h-[500px] sm:h-[600px] md:h-[650px] lg:h-[700px] bg-primary overflow-hidden">
                 {/* Animated Background Pattern */}
                 <div className="absolute inset-0 opacity-10">
                   <div className="absolute inset-0 bg-[url('/patterns/dots.svg')] bg-repeat animate-pulse" />
                 </div>
 
-                {/* Decorative Circles */}
-                <div className="absolute top-20 right-20 w-96 h-96 bg-primary-foreground/10 rounded-full blur-3xl animate-pulse"></div>
-                <div className="absolute bottom-20 left-20 w-[600px] h-[600px] bg-primary-foreground/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+                {/* Decorative Circles - Adjusted for mobile */}
+                <div className="absolute top-10 right-5 sm:top-20 sm:right-20 w-48 h-48 sm:w-96 sm:h-96 bg-white/10 rounded-full blur-3xl animate-pulse"></div>
+                <div className="absolute bottom-10 left-5 sm:bottom-20 sm:left-20 w-64 h-64 sm:w-[600px] sm:h-[600px] bg-white/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
 
                 {/* Content */}
                 <div className="container-custom h-full flex items-center relative z-10">
-                  <div className="max-w-4xl">
+                  <div className="w-full max-w-4xl py-8 sm:py-12">
                     {/* Badge */}
-                    <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary-foreground/10 backdrop-blur-md border border-primary-foreground/20 rounded-full text-primary-foreground text-sm font-semibold mb-8 hover:bg-primary-foreground/15 transition-colors animate-fade-in">
-                      <Sparkles className="h-4 w-4" />
-                      Special Offer
+                    <div className="inline-flex items-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-primary-foreground text-xs sm:text-sm font-semibold mb-4 sm:mb-6 md:mb-8 hover:bg-white/15 transition-colors animate-fade-in">
+                      <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                      <span>Special Offer</span>
                     </div>
 
-                    {/* Title */}
-                    <h1 className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold mb-6 text-primary-foreground leading-[1.1] tracking-tight">
+                    {/* Title - Responsive sizing */}
+                    <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-3 sm:mb-4 md:mb-6 text-primary-foreground leading-[1.1] tracking-tight">
                       {banner.title}
                     </h1>
 
-                    {/* Subtitle */}
-                    <p className="text-xl md:text-2xl lg:text-3xl mb-12 text-primary-foreground/90 max-w-3xl leading-relaxed font-light">
+                    {/* Subtitle - Better mobile sizing */}
+                    <div className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6 md:mb-8 text-accent bg-accent/10 inline-block px-4 sm:px-6 py-2 sm:py-3 rounded-lg backdrop-blur-sm border border-accent/20">
                       {banner.subtitle}
+                    </div>
+
+                    {/* Description */}
+                    <p className="text-base sm:text-lg md:text-xl lg:text-2xl mb-6 sm:mb-8 md:mb-12 text-primary-foreground/90 max-w-2xl leading-relaxed font-light">
+                      {banner.description}
                     </p>
 
-                    {/* CTA Buttons */}
-                    <div className="flex flex-col sm:flex-row gap-4">
+                    {/* CTA Buttons - Better mobile layout */}
+                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                       <Button
                         size="lg"
-                        className="bg-primary-foreground text-primary hover:bg-primary-foreground/90 shadow-2xl text-lg px-10 py-7 h-auto group font-semibold rounded-xl transition-all"
+                        className="bg-primary-foreground text-primary hover:bg-primary-foreground/90 shadow-2xl text-base sm:text-lg px-6 sm:px-10 py-5 sm:py-7 h-auto group font-semibold rounded-xl transition-all w-full sm:w-auto"
                       >
-                        {banner.cta.text}
-                        <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                        <span>{banner.cta.text}</span>
+                        <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5 group-hover:translate-x-1 transition-transform" />
                       </Button>
 
                       <Button
                         size="lg"
                         variant="outline"
-                        className="border-2 border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 hover:border-primary-foreground/50 text-lg px-10 py-7 h-auto backdrop-blur-md rounded-xl font-semibold"
+                        className="border-2 border-white/30 text-primary-foreground hover:bg-white/10 hover:border-white/50 text-base sm:text-lg px-6 sm:px-10 py-5 sm:py-7 h-auto backdrop-blur-md rounded-xl font-semibold w-full sm:w-auto"
                       >
-                        <Play className="mr-2 h-5 w-5" />
-                        Watch Demo
+                        <Play className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+                        <span>Watch Demo</span>
                       </Button>
                     </div>
                   </div>
                 </div>
 
                 {/* Bottom Gradient Overlay */}
-                <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-black/20 to-transparent"></div>
+                <div className="absolute bottom-0 left-0 right-0 h-32 sm:h-40 bg-gradient-to-t from-black/20 to-transparent"></div>
               </div>
             </CarouselItem>
           ))}
         </CarouselContent>
-        <CarouselPrevious className="left-4 lg:left-8 bg-primary-foreground/10 backdrop-blur-md border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/20 hover:text-primary-foreground h-12 w-12" />
-        <CarouselNext className="right-4 lg:right-8 bg-primary-foreground/10 backdrop-blur-md border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/20 hover:text-primary-foreground h-12 w-12" />
+        
+        {/* Navigation Arrows - Hidden on very small screens */}
+        <CarouselPrevious className="left-2 sm:left-4 lg:left-8 bg-white/10 backdrop-blur-md border-white/20 text-primary-foreground hover:bg-white/20 hover:text-primary-foreground h-10 w-10 sm:h-12 sm:w-12 hidden xs:flex" />
+        <CarouselNext className="right-2 sm:right-4 lg:right-8 bg-white/10 backdrop-blur-md border-white/20 text-primary-foreground hover:bg-white/20 hover:text-primary-foreground h-10 w-10 sm:h-12 sm:w-12 hidden xs:flex" />
       </Carousel>
     </div>
   );

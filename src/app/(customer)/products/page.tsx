@@ -9,7 +9,7 @@ import { Search, SlidersHorizontal, X, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
-const ITEMS_PER_PAGE = 8; // Show 8 products per page
+const ITEMS_PER_PAGE = 8;
 
 export default function ProductsPage() {
   const products = getMockData.products();
@@ -23,7 +23,6 @@ export default function ProductsPage() {
     { id: 'cat_accessories', name: 'Accessories', count: 1 },
   ];
 
-  // Prevent body scroll when modal is open
   useEffect(() => {
     if (showFilters) {
       document.body.style.overflow = 'hidden';
@@ -35,7 +34,6 @@ export default function ProductsPage() {
     };
   }, [showFilters]);
 
-  // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [selectedCategories]);
@@ -52,31 +50,30 @@ export default function ProductsPage() {
     ? products.filter(p => selectedCategories.includes(p.categoryId))
     : products;
 
-  // Pagination calculations
   const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
   const paginatedProducts = filteredProducts.slice(startIndex, endIndex);
 
   return (
-    <div className="min-h-screen bg-background pb-24 lg:pb-0">
-      {/* Compact Hero Section */}
+    <div className="min-h-screen bg-background pb-32 lg:pb-8">
+      {/* Hero Section */}
       <section className="bg-gradient-to-br from-primary/5 to-background border-b border-border">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
-          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
+        <div className="container-custom py-6 sm:py-8 lg:py-12">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2">
             Shop Products
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-sm sm:text-base text-muted-foreground">
             Premium car care products for professional results
           </p>
         </div>
       </section>
 
       {/* Main Content */}
-      <section className="py-8 lg:py-12">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6 lg:gap-8">
-            {/* Desktop Sidebar with filters */}
+      <section className="py-6 sm:py-8 lg:py-12">
+        <div className="container-custom">
+          <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6 lg:gap-8">
+            {/* Desktop Sidebar */}
             <aside className="hidden lg:block">
               <div className="sticky top-24">
                 <CategoryFilter
@@ -92,15 +89,15 @@ export default function ProductsPage() {
             <div className="flex-1 min-w-0">
               {/* Active Filters Pills */}
               {selectedCategories.length > 0 && (
-                <div className="flex flex-wrap items-center gap-2 mb-6 p-4 bg-muted rounded-lg">
-                  <span className="text-xs font-medium text-muted-foreground">Active filters:</span>
+                <div className="flex flex-wrap items-center gap-2 mb-4 sm:mb-6 p-3 sm:p-4 bg-muted rounded-lg">
+                  <span className="text-xs font-medium text-muted-foreground">Filters:</span>
                   {selectedCategories.map((categoryId) => {
                     const category = categories.find(c => c.id === categoryId);
                     return (
                       <Badge
                         key={categoryId}
                         variant="default"
-                        className="cursor-pointer hover:opacity-80 transition-opacity"
+                        className="cursor-pointer hover:opacity-80 transition-opacity text-xs"
                         onClick={() => toggleCategory(categoryId)}
                       >
                         {category?.name}
@@ -121,17 +118,17 @@ export default function ProductsPage() {
 
               {/* Results Count */}
               <div className="mb-4">
-                <p className="text-sm text-muted-foreground">
-                  Showing <span className="font-semibold text-foreground">{startIndex + 1}</span> to{' '}
+                <p className="text-xs sm:text-sm text-muted-foreground">
+                  Showing <span className="font-semibold text-foreground">{startIndex + 1}</span>-
                   <span className="font-semibold text-foreground">{Math.min(endIndex, filteredProducts.length)}</span> of{' '}
-                  <span className="font-semibold text-foreground">{filteredProducts.length}</span> product{filteredProducts.length !== 1 ? 's' : ''}
+                  <span className="font-semibold text-foreground">{filteredProducts.length}</span> results
                 </p>
               </div>
 
               {/* Products Grid */}
               {paginatedProducts.length > 0 ? (
                 <>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6 mb-8">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
                     {paginatedProducts.map((product) => (
                       <ProductCard key={product.id} product={product} />
                     ))}
@@ -139,7 +136,7 @@ export default function ProductsPage() {
 
                   {/* Pagination */}
                   {totalPages > 1 && (
-                    <div className="mt-8">
+                    <div className="mt-6 sm:mt-8">
                       <Pagination
                         currentPage={currentPage}
                         totalPages={totalPages}
@@ -151,18 +148,18 @@ export default function ProductsPage() {
                   )}
                 </>
               ) : (
-                <div className="text-center py-16">
-                  <div className="inline-flex items-center justify-center w-16 h-16 bg-muted rounded-full mb-4">
-                    <Search className="h-7 w-7 text-muted-foreground" />
+                <div className="text-center py-12 sm:py-16">
+                  <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 bg-muted rounded-full mb-4">
+                    <Search className="h-6 w-6 sm:h-7 sm:w-7 text-muted-foreground" />
                   </div>
-                  <h3 className="text-lg font-semibold text-foreground mb-2">
+                  <h3 className="text-base sm:text-lg font-semibold text-foreground mb-2">
                     No products found
                   </h3>
-                  <p className="text-sm text-muted-foreground mb-6">
-                    Try adjusting your filters to see more results
+                  <p className="text-xs sm:text-sm text-muted-foreground mb-4 sm:mb-6">
+                    Try adjusting your filters
                   </p>
-                  <Button onClick={() => setSelectedCategories([])}>
-                    Clear All Filters
+                  <Button onClick={() => setSelectedCategories([])} size="sm">
+                    Clear Filters
                   </Button>
                 </div>
               )}
@@ -171,21 +168,21 @@ export default function ProductsPage() {
         </div>
       </section>
 
-      {/* Enhanced Sticky Bottom Filter Button (Mobile Only) */}
+      {/* Sticky Bottom Filter Button - Header Style */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40">
-        <div className="bg-gradient-to-t from-background via-background to-transparent pb-4 pt-8 px-4">
+        <div className="bg-background/95 backdrop-blur-xl border-t border-border shadow-lg px-4 py-3">
           <Button
             variant="default"
             size="lg"
-            className="w-full shadow-2xl h-14 text-base font-semibold"
+            className="w-full shadow-md h-12 text-sm sm:text-base font-semibold"
             onClick={() => setShowFilters(true)}
           >
-            <SlidersHorizontal className="h-5 w-5 mr-2" />
-            Filters
+            <SlidersHorizontal className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+            <span>Filters</span>
             {selectedCategories.length > 0 && (
               <Badge
                 variant="secondary"
-                className="ml-2 bg-primary-foreground text-primary font-bold"
+                className="ml-2 bg-accent text-accent-foreground font-bold text-xs"
               >
                 {selectedCategories.length}
               </Badge>
@@ -197,24 +194,22 @@ export default function ProductsPage() {
       {/* Mobile Filter Modal */}
       {showFilters && (
         <>
-          {/* Backdrop Overlay */}
           <div 
-            className="lg:hidden fixed inset-0 z-50 bg-black/70"
+            className="lg:hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
             onClick={() => setShowFilters(false)}
           />
           
-          {/* Modal Content */}
-          <div className="lg:hidden fixed inset-x-0 bottom-0 z-50 bg-card rounded-t-3xl shadow-2xl border-t-2 border-border max-h-[85vh] flex flex-col">
-            {/* Modal Header - Fixed */}
-            <div className="flex items-center justify-between px-6 py-5 border-b border-border flex-shrink-0">
+          <div className="lg:hidden fixed inset-x-0 bottom-0 z-50 bg-card rounded-t-2xl shadow-2xl border-t-2 border-border max-h-[88vh] flex flex-col">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-border flex-shrink-0">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-primary/10 rounded-lg">
                   <ShoppingBag className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-foreground">Filters</h2>
+                  <h2 className="text-base sm:text-lg font-bold text-foreground">Filters</h2>
                   <p className="text-xs text-muted-foreground">
-                    {filteredProducts.length} product{filteredProducts.length !== 1 ? 's' : ''} found
+                    {filteredProducts.length} result{filteredProducts.length !== 1 ? 's' : ''}
                   </p>
                 </div>
               </div>
@@ -222,14 +217,14 @@ export default function ProductsPage() {
                 variant="ghost"
                 size="icon"
                 onClick={() => setShowFilters(false)}
-                className="rounded-full hover:bg-muted h-10 w-10"
+                className="rounded-full h-9 w-9"
               >
                 <X className="h-5 w-5" />
               </Button>
             </div>
 
-            {/* Modal Content - Scrollable */}
-            <div className="overflow-y-auto flex-1 px-6 py-6">
+            {/* Modal Content */}
+            <div className="overflow-y-auto flex-1 px-5 py-5">
               <CategoryFilter
                 categories={categories}
                 selectedCategories={selectedCategories}
@@ -238,21 +233,21 @@ export default function ProductsPage() {
               />
             </div>
 
-            {/* Modal Footer - Fixed */}
-            <div className="px-6 py-5 border-t-2 border-border bg-muted/20 flex-shrink-0">
+            {/* Modal Footer */}
+            <div className="px-5 py-4 border-t border-border bg-muted/30 flex-shrink-0">
               <div className="flex gap-3">
                 <Button
                   variant="outline"
-                  className="flex-1 h-12 font-semibold"
+                  className="flex-1 h-11 font-semibold text-sm"
                   onClick={() => setSelectedCategories([])}
                 >
-                  Clear All
+                  Clear
                 </Button>
                 <Button
-                  className="flex-1 h-12 font-semibold shadow-lg"
+                  className="flex-1 h-11 font-semibold text-sm shadow-md"
                   onClick={() => setShowFilters(false)}
                 >
-                  Show {filteredProducts.length} Result{filteredProducts.length !== 1 ? 's' : ''}
+                  Show {filteredProducts.length}
                 </Button>
               </div>
             </div>

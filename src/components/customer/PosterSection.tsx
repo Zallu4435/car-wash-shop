@@ -27,19 +27,20 @@ export function PosterSection({ posters, layout = 'grid' }: PosterSectionProps) 
     <div
       className={
         layout === 'grid'
-          ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8'
-          : 'flex gap-8 overflow-x-auto pb-4 scrollbar-hide'
+          ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8'
+          : 'flex gap-4 sm:gap-6 md:gap-8 overflow-x-auto pb-4 scrollbar-thin'
       }
     >
       {posters.map((poster) => (
         <Card
           key={poster.id}
-          className={`group hover:shadow-2xl transition-all duration-300 overflow-hidden border-border ${
-            layout === 'row' ? 'flex-shrink-0 w-80' : ''
+          className={`group hover:shadow-lg transition-all duration-300 overflow-hidden border border-border hover:border-primary bg-card ${
+            layout === 'row' ? 'flex-shrink-0 w-[280px] sm:w-[300px] md:w-80' : ''
           }`}
         >
           <CardContent className="p-0">
-            <div className="relative h-56 bg-gradient-to-br from-muted to-muted/50 overflow-hidden">
+            {/* Image Container */}
+            <div className="relative h-40 sm:h-48 md:h-52 bg-muted overflow-hidden">
               {poster.imageUrl ? (
                 <Image
                   src={poster.imageUrl}
@@ -48,26 +49,33 @@ export function PosterSection({ posters, layout = 'grid' }: PosterSectionProps) 
                   className="object-cover group-hover:scale-105 transition-transform duration-300"
                 />
               ) : (
-                <div className="flex items-center justify-center h-full">
-                  <span className="text-6xl group-hover:scale-110 transition-transform duration-300">🎉</span>
+                <div className="flex items-center justify-center h-full bg-gradient-to-br from-primary/10 to-accent/10">
+                  <span className="text-4xl sm:text-5xl group-hover:scale-110 transition-transform duration-300">
+                    🎉
+                  </span>
                 </div>
               )}
-              {/* Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </div>
             
-            <div className="p-6">
-              <h3 className="font-bold text-xl mb-3 text-foreground group-hover:text-primary transition-colors">
+            {/* Content */}
+            <div className="p-4 sm:p-5">
+              <h3 className="font-semibold text-sm sm:text-base md:text-lg mb-1.5 sm:mb-2 text-foreground line-clamp-2 leading-tight">
                 {poster.title}
               </h3>
-              <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
+              <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4 leading-relaxed line-clamp-2">
                 {poster.description}
               </p>
+              
               {poster.link && poster.ctaText && (
-                <Button asChild className="w-full group/btn shadow-md">
-                  <Link href={poster.link} className="flex items-center justify-center gap-2">
-                    {poster.ctaText}
-                    <ArrowRight className="h-4 w-4 group-hover/btn:translate-x-1 transition-transform" />
+                <Button 
+                  asChild 
+                  variant="outline"
+                  size="sm"
+                  className="w-full group/btn h-8 sm:h-9"
+                >
+                  <Link href={poster.link} className="flex items-center justify-center gap-1.5 sm:gap-2">
+                    <span className="text-xs sm:text-sm">{poster.ctaText}</span>
+                    <ArrowRight className="h-3 w-3 sm:h-3.5 sm:w-3.5 group-hover/btn:translate-x-1 transition-transform" />
                   </Link>
                 </Button>
               )}

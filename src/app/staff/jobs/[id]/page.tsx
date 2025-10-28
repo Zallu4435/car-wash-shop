@@ -17,11 +17,16 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
   if (!booking) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="max-w-md w-full border-2">
-          <CardContent className="pt-12 pb-8 text-center">
-            <p className="text-xl font-semibold text-foreground mb-4">Job not found</p>
-            <Button onClick={() => router.push('/staff/jobs')}>
+          <CardContent className="pt-10 sm:pt-12 pb-6 sm:pb-8 text-center px-4 sm:px-6">
+            <p className="text-lg sm:text-xl font-semibold text-foreground mb-3 sm:mb-4">
+              Job not found
+            </p>
+            <Button 
+              onClick={() => router.push('/staff/jobs')}
+              className="h-10 sm:h-11 text-sm sm:text-base"
+            >
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Jobs
             </Button>
@@ -32,115 +37,149 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <Button variant="ghost" onClick={() => router.push('/staff/jobs')}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+        <Button 
+          variant="ghost" 
+          onClick={() => router.push('/staff/jobs')}
+          className="w-full sm:w-auto h-9 sm:h-10 text-xs sm:text-sm"
+        >
+          <ArrowLeft className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Back to Jobs
         </Button>
-        <Badge variant="default" className="text-sm">
+        <Badge variant="default" className="text-xs sm:text-sm w-fit capitalize">
           {booking.status}
         </Badge>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Left Column - Details */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-4 sm:space-y-6">
           {/* Job Details */}
           <Card className="border-2">
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <div className="p-2 bg-primary/10 rounded-lg">
-                  <User className="h-5 w-5 text-primary" />
+            <CardHeader className="pb-3 sm:pb-4">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
+                  <User className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                 </div>
-                <CardTitle>Job Details</CardTitle>
+                <CardTitle className="text-base sm:text-lg">Job Details</CardTitle>
               </div>
-              <Badge variant="outline" className="font-mono w-fit">
+              <Badge variant="outline" className="font-mono text-xs w-fit">
                 {id}
               </Badge>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-3 sm:space-y-4">
               {/* Customer */}
-              <div className="p-4 bg-muted rounded-xl">
-                <div className="flex items-center gap-2 mb-2">
-                  <User className="h-4 w-4 text-muted-foreground" />
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide">Customer</p>
+              <div className="p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl">
+                <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
+                  <User className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
+                  <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">
+                    Customer
+                  </p>
                 </div>
-                <p className="font-bold text-lg text-foreground">{booking.customer.name}</p>
+                <p className="font-bold text-base sm:text-lg text-foreground truncate">
+                  {booking.customer.name}
+                </p>
                 <a 
                   href={`tel:${booking.customer.phone}`}
-                  className="flex items-center gap-2 text-sm text-primary hover:underline mt-1"
+                  className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-primary hover:underline mt-1"
                 >
-                  <Phone className="h-3 w-3" />
-                  {booking.customer.phone}
+                  <Phone className="h-3 w-3 flex-shrink-0" />
+                  <span>{booking.customer.phone}</span>
                 </a>
               </div>
 
               {/* Service */}
-              <div className="p-4 bg-muted rounded-xl">
-                <div className="flex items-center gap-2 mb-2">
-                  <CheckCircle className="h-4 w-4 text-muted-foreground" />
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide">Service</p>
+              <div className="p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl">
+                <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
+                  <CheckCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
+                  <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">
+                    Service
+                  </p>
                 </div>
-                <p className="font-semibold text-foreground">{booking.service}</p>
+                <p className="font-semibold text-sm sm:text-base text-foreground">
+                  {booking.service}
+                </p>
               </div>
 
               {/* Schedule */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="p-4 bg-muted rounded-xl">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <p className="text-xs text-muted-foreground uppercase tracking-wide">Date</p>
+              <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                <div className="p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl">
+                  <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
+                    <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
+                    <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">
+                      Date
+                    </p>
                   </div>
-                  <p className="font-semibold text-foreground">{booking.date}</p>
+                  <p className="font-semibold text-xs sm:text-sm md:text-base text-foreground">
+                    {booking.date}
+                  </p>
                 </div>
-                <div className="p-4 bg-muted rounded-xl">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Clock className="h-4 w-4 text-muted-foreground" />
-                    <p className="text-xs text-muted-foreground uppercase tracking-wide">Time</p>
+                <div className="p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl">
+                  <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
+                    <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
+                    <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">
+                      Time
+                    </p>
                   </div>
-                  <p className="font-semibold text-foreground">{booking.time}</p>
+                  <p className="font-semibold text-xs sm:text-sm md:text-base text-foreground">
+                    {booking.time}
+                  </p>
                 </div>
               </div>
 
               {/* Vehicle */}
-              <div className="p-4 bg-muted rounded-xl">
-                <div className="flex items-center gap-2 mb-2">
-                  <Car className="h-4 w-4 text-muted-foreground" />
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide">Vehicle</p>
+              <div className="p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl">
+                <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
+                  <Car className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
+                  <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">
+                    Vehicle
+                  </p>
                 </div>
-                <p className="font-semibold text-foreground">
+                <p className="font-semibold text-sm sm:text-base text-foreground truncate">
                   {booking.vehicle.brand} {booking.vehicle.model}
                 </p>
-                <p className="text-sm text-muted-foreground font-mono">{booking.vehicle.plateNumber}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground font-mono truncate">
+                  {booking.vehicle.plateNumber}
+                </p>
               </div>
             </CardContent>
           </Card>
 
           {/* Payment */}
           <Card className="border-2">
-            <CardHeader>
+            <CardHeader className="pb-3 sm:pb-4">
               <div className="flex items-center gap-2">
-                <div className="p-2 bg-purple-100 dark:bg-purple-950/30 rounded-lg">
-                  <DollarSign className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                <div className="p-1.5 sm:p-2 bg-purple-100 dark:bg-purple-950/30 rounded-lg">
+                  <DollarSign className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600 dark:text-purple-400" />
                 </div>
-                <CardTitle>Payment Details</CardTitle>
+                <CardTitle className="text-base sm:text-lg">Payment Details</CardTitle>
               </div>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
-                <span className="text-muted-foreground">Total Amount</span>
-                <span className="font-bold text-lg text-foreground">₹{booking.amount}</span>
+            <CardContent className="space-y-2.5 sm:space-y-3">
+              <div className="flex justify-between items-center p-2.5 sm:p-3 bg-muted rounded-lg">
+                <span className="text-xs sm:text-sm text-muted-foreground">Total Amount</span>
+                <span className="font-bold text-base sm:text-lg text-foreground">
+                  ₹{booking.amount}
+                </span>
               </div>
-              <div className="flex justify-between items-center p-3 bg-green-50 dark:bg-green-950/20 rounded-lg">
-                <span className="text-green-700 dark:text-green-400">Advance Paid</span>
-                <span className="font-bold text-lg text-green-600 dark:text-green-400">₹{booking.advancePaid}</span>
+              <div className="flex justify-between items-center p-2.5 sm:p-3 bg-green-50 dark:bg-green-950/20 rounded-lg">
+                <span className="text-xs sm:text-sm text-green-700 dark:text-green-400">
+                  Advance Paid
+                </span>
+                <span className="font-bold text-base sm:text-lg text-green-600 dark:text-green-400">
+                  ₹{booking.advancePaid}
+                </span>
               </div>
               <Separator />
-              <div className="flex justify-between items-center p-3 bg-primary/10 rounded-lg">
-                <span className="font-semibold text-foreground">Balance to Collect</span>
-                <span className="font-bold text-2xl text-primary">₹{booking.balanceAmount}</span>
+              <div className="flex justify-between items-center p-2.5 sm:p-3 bg-primary/10 rounded-lg">
+                <span className="font-semibold text-xs sm:text-sm text-foreground">
+                  Balance to Collect
+                </span>
+                <span className="font-bold text-xl sm:text-2xl text-primary">
+                  ₹{booking.balanceAmount}
+                </span>
               </div>
             </CardContent>
           </Card>
@@ -148,11 +187,11 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
           {/* Complete Button */}
           <Button 
             asChild 
-            className="w-full shadow-lg" 
+            className="w-full shadow-lg h-11 sm:h-12 text-sm sm:text-base" 
             size="lg"
           >
             <a href={`/staff/jobs/${id}/complete`}>
-              <CheckCircle className="mr-2 h-5 w-5" />
+              <CheckCircle className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
               Mark as Completed
             </a>
           </Button>

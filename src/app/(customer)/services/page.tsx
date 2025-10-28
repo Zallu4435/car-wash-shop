@@ -17,8 +17,9 @@ const allServices = [
     name: 'Premium Car Wash',
     description: 'Complete exterior wash with premium products',
     price: 499,
-    duration: '45 mins',
+    duration: 45,
     rating: 4.8,
+    reviewCount: 120,
     categoryId: 'cat_ext',
     vehicleTypeId: 'car',
     image: '/images/services/car-wash.jpg',
@@ -28,8 +29,9 @@ const allServices = [
     name: 'Interior Deep Clean',
     description: 'Professional interior detailing and sanitization',
     price: 799,
-    duration: '1.5 hours',
+    duration: 90,
     rating: 4.9,
+    reviewCount: 95,
     categoryId: 'cat_int',
     vehicleTypeId: 'car',
     image: '/images/services/interior-clean.jpg',
@@ -39,8 +41,9 @@ const allServices = [
     name: 'Full Car Detailing',
     description: 'Complete interior and exterior detailing package',
     price: 1499,
-    duration: '3 hours',
+    duration: 180,
     rating: 5.0,
+    reviewCount: 78,
     categoryId: 'cat_full',
     vehicleTypeId: 'car',
     image: '/images/services/full-detailing.jpg',
@@ -52,8 +55,9 @@ const allServices = [
     name: 'Bike Express Wash',
     description: 'Quick and efficient bike washing',
     price: 199,
-    duration: '20 mins',
+    duration: 20,
     rating: 4.7,
+    reviewCount: 156,
     categoryId: 'cat_bike_wash',
     vehicleTypeId: 'bike',
     image: '/images/services/bike-wash.jpg',
@@ -63,8 +67,9 @@ const allServices = [
     name: 'Bike Premium Wash',
     description: 'Complete bike wash with wax polish',
     price: 299,
-    duration: '30 mins',
+    duration: 30,
     rating: 4.8,
+    reviewCount: 89,
     categoryId: 'cat_bike_wash',
     vehicleTypeId: 'bike',
     image: '/images/services/bike-premium.jpg',
@@ -74,8 +79,9 @@ const allServices = [
     name: 'Basic Bike Service',
     description: 'Oil change and basic maintenance',
     price: 599,
-    duration: '45 mins',
+    duration: 45,
     rating: 4.6,
+    reviewCount: 67,
     categoryId: 'cat_bike_service',
     vehicleTypeId: 'bike',
     image: '/images/services/bike-service.jpg',
@@ -87,8 +93,9 @@ const allServices = [
     name: 'Deep House Cleaning',
     description: 'Complete deep cleaning of entire house',
     price: 1999,
-    duration: '4 hours',
+    duration: 240,
     rating: 4.9,
+    reviewCount: 102,
     categoryId: 'cat_home_deep',
     vehicleTypeId: 'home',
     image: '/images/services/deep-clean.jpg',
@@ -98,8 +105,9 @@ const allServices = [
     name: 'Regular House Cleaning',
     description: 'Daily cleaning and maintenance',
     price: 899,
-    duration: '2 hours',
+    duration: 120,
     rating: 4.7,
+    reviewCount: 134,
     categoryId: 'cat_home_regular',
     vehicleTypeId: 'home',
     image: '/images/services/regular-clean.jpg',
@@ -109,15 +117,16 @@ const allServices = [
     name: 'Kitchen Deep Clean',
     description: 'Specialized kitchen cleaning service',
     price: 699,
-    duration: '1.5 hours',
+    duration: 90,
     rating: 4.8,
+    reviewCount: 87,
     categoryId: 'cat_home_deep',
     vehicleTypeId: 'home',
     image: '/images/services/kitchen-clean.jpg',
   },
 ];
 
-const ITEMS_PER_PAGE = 6; // Show 6 services per page
+const ITEMS_PER_PAGE = 6;
 
 export default function ServicesPage() {
   const [selectedVehicleTypes, setSelectedVehicleTypes] = useState<string[]>([]);
@@ -143,7 +152,6 @@ export default function ServicesPage() {
     { id: 'cat_home_regular', name: 'Regular Cleaning', vehicleTypeId: 'home', count: 1 },
   ];
 
-  // Filter categories based on selected vehicle types
   const getFilteredCategories = () => {
     if (selectedVehicleTypes.length === 0) {
       return allCategories;
@@ -153,7 +161,6 @@ export default function ServicesPage() {
 
   const categories = getFilteredCategories();
 
-  // Prevent body scroll when modal is open
   useEffect(() => {
     if (showFilters) {
       document.body.style.overflow = 'hidden';
@@ -165,7 +172,6 @@ export default function ServicesPage() {
     };
   }, [showFilters]);
 
-  // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [selectedVehicleTypes, selectedCategories]);
@@ -176,7 +182,6 @@ export default function ServicesPage() {
         ? prev.filter(id => id !== typeId)
         : [...prev, typeId];
       
-      // Clear category selections when vehicle type changes
       if (!prev.includes(typeId)) {
         setSelectedCategories([]);
       }
@@ -192,7 +197,6 @@ export default function ServicesPage() {
     );
   };
 
-  // Filter services by both vehicle type and category
   const filteredServices = allServices.filter(service => {
     const matchesVehicleType = selectedVehicleTypes.length === 0 || 
       selectedVehicleTypes.includes(service.vehicleTypeId);
@@ -203,7 +207,6 @@ export default function ServicesPage() {
     return matchesVehicleType && matchesCategory;
   });
 
-  // Pagination calculations
   const totalPages = Math.ceil(filteredServices.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
@@ -217,27 +220,26 @@ export default function ServicesPage() {
   const totalActiveFilters = selectedVehicleTypes.length + selectedCategories.length;
 
   return (
-    <div className="min-h-screen bg-background pb-24 lg:pb-0">
+    <div className="min-h-screen bg-background pb-32 lg:pb-8">
       {/* Compact Hero Section */}
       <section className="bg-gradient-to-br from-primary/5 to-background border-b border-border">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
-          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
+        <div className="container-custom py-6 sm:py-8 lg:py-12">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2">
             Our Services
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-sm sm:text-base text-muted-foreground">
             Professional car, bike, and home cleaning services
           </p>
         </div>
       </section>
 
       {/* Main Content */}
-      <section className="py-8 lg:py-12">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6 lg:gap-8">
-            {/* Desktop Sidebar with filters */}
+      <section className="py-6 sm:py-8 lg:py-12">
+        <div className="container-custom">
+          <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6 lg:gap-8">
+            {/* Desktop Sidebar */}
             <aside className="hidden lg:block">
               <div className="sticky top-24 space-y-4">
-                {/* Vehicle Type Filter */}
                 <VehicleTypeFilter
                   vehicleTypes={vehicleTypes}
                   selectedTypes={selectedVehicleTypes}
@@ -248,7 +250,6 @@ export default function ServicesPage() {
                   }}
                 />
 
-                {/* Category Filter */}
                 {categories.length > 0 && (
                   <CategoryFilter
                     categories={categories}
@@ -264,17 +265,16 @@ export default function ServicesPage() {
             <div className="flex-1 min-w-0">
               {/* Active Filters Pills */}
               {totalActiveFilters > 0 && (
-                <div className="flex flex-wrap items-center gap-2 mb-6 p-4 bg-muted rounded-lg">
-                  <span className="text-xs font-medium text-muted-foreground">Active filters:</span>
+                <div className="flex flex-wrap items-center gap-2 mb-4 sm:mb-6 p-3 sm:p-4 bg-muted rounded-lg">
+                  <span className="text-xs font-medium text-muted-foreground">Filters:</span>
                   
-                  {/* Vehicle Type Pills */}
                   {selectedVehicleTypes.map((typeId) => {
                     const type = vehicleTypes.find(t => t.id === typeId);
                     return (
                       <Badge
                         key={typeId}
                         variant="default"
-                        className="cursor-pointer hover:opacity-80 transition-opacity"
+                        className="cursor-pointer hover:opacity-80 transition-opacity text-xs"
                         onClick={() => toggleVehicleType(typeId)}
                       >
                         {type?.name}
@@ -283,14 +283,13 @@ export default function ServicesPage() {
                     );
                   })}
 
-                  {/* Category Pills */}
                   {selectedCategories.map((categoryId) => {
                     const category = categories.find(c => c.id === categoryId);
                     return (
                       <Badge
                         key={categoryId}
                         variant="secondary"
-                        className="cursor-pointer hover:opacity-80 transition-opacity"
+                        className="cursor-pointer hover:opacity-80 transition-opacity text-xs"
                         onClick={() => toggleCategory(categoryId)}
                       >
                         {category?.name}
@@ -312,17 +311,17 @@ export default function ServicesPage() {
 
               {/* Results Count */}
               <div className="mb-4">
-                <p className="text-sm text-muted-foreground">
-                  Showing <span className="font-semibold text-foreground">{startIndex + 1}</span> to{' '}
+                <p className="text-xs sm:text-sm text-muted-foreground">
+                  Showing <span className="font-semibold text-foreground">{startIndex + 1}</span>-
                   <span className="font-semibold text-foreground">{Math.min(endIndex, filteredServices.length)}</span> of{' '}
-                  <span className="font-semibold text-foreground">{filteredServices.length}</span> service{filteredServices.length !== 1 ? 's' : ''}
+                  <span className="font-semibold text-foreground">{filteredServices.length}</span> results
                 </p>
               </div>
 
               {/* Services Grid */}
               {paginatedServices.length > 0 ? (
                 <>
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
                     {paginatedServices.map((service) => (
                       <ServiceCard key={service.id} service={service} />
                     ))}
@@ -330,7 +329,7 @@ export default function ServicesPage() {
 
                   {/* Pagination */}
                   {totalPages > 1 && (
-                    <div className="mt-8">
+                    <div className="mt-6 sm:mt-8">
                       <Pagination
                         currentPage={currentPage}
                         totalPages={totalPages}
@@ -342,18 +341,18 @@ export default function ServicesPage() {
                   )}
                 </>
               ) : (
-                <div className="text-center py-16">
-                  <div className="inline-flex items-center justify-center w-16 h-16 bg-muted rounded-full mb-4">
-                    <Search className="h-7 w-7 text-muted-foreground" />
+                <div className="text-center py-12 sm:py-16">
+                  <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 bg-muted rounded-full mb-4">
+                    <Search className="h-6 w-6 sm:h-7 sm:w-7 text-muted-foreground" />
                   </div>
-                  <h3 className="text-lg font-semibold text-foreground mb-2">
+                  <h3 className="text-base sm:text-lg font-semibold text-foreground mb-2">
                     No services found
                   </h3>
-                  <p className="text-sm text-muted-foreground mb-6">
-                    Try adjusting your filters to see more results
+                  <p className="text-xs sm:text-sm text-muted-foreground mb-4 sm:mb-6">
+                    Try adjusting your filters
                   </p>
-                  <Button onClick={clearAllFilters}>
-                    Clear All Filters
+                  <Button onClick={clearAllFilters} size="sm">
+                    Clear Filters
                   </Button>
                 </div>
               )}
@@ -362,21 +361,21 @@ export default function ServicesPage() {
         </div>
       </section>
 
-      {/* Enhanced Sticky Bottom Filter Button (Mobile Only) */}
+      {/* Sticky Bottom Filter Button - Header Style */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40">
-        <div className="bg-gradient-to-t from-background via-background to-transparent pb-4 pt-8 px-4">
+        <div className="bg-background/95 backdrop-blur-xl border-t border-border shadow-lg px-4 py-3">
           <Button
             variant="default"
             size="lg"
-            className="w-full shadow-2xl h-14 text-base font-semibold"
+            className="w-full shadow-md h-12 text-sm sm:text-base font-semibold"
             onClick={() => setShowFilters(true)}
           >
-            <SlidersHorizontal className="h-5 w-5 mr-2" />
-            Filters
+            <SlidersHorizontal className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+            <span>Filters</span>
             {totalActiveFilters > 0 && (
               <Badge
                 variant="secondary"
-                className="ml-2 bg-primary-foreground text-primary font-bold"
+                className="ml-2 bg-accent text-accent-foreground font-bold text-xs"
               >
                 {totalActiveFilters}
               </Badge>
@@ -388,24 +387,22 @@ export default function ServicesPage() {
       {/* Mobile Filter Modal */}
       {showFilters && (
         <>
-          {/* Backdrop Overlay */}
           <div 
-            className="lg:hidden fixed inset-0 z-50 bg-black/70"
+            className="lg:hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
             onClick={() => setShowFilters(false)}
           />
           
-          {/* Modal Content */}
-          <div className="lg:hidden fixed inset-x-0 bottom-0 z-50 bg-card rounded-t-3xl shadow-2xl border-t-2 border-border max-h-[85vh] flex flex-col">
-            {/* Modal Header - Fixed */}
-            <div className="flex items-center justify-between px-6 py-5 border-b border-border flex-shrink-0">
+          <div className="lg:hidden fixed inset-x-0 bottom-0 z-50 bg-card rounded-t-2xl shadow-2xl border-t-2 border-border max-h-[88vh] flex flex-col">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-border flex-shrink-0">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-primary/10 rounded-lg">
                   <SlidersHorizontal className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-foreground">Filters</h2>
+                  <h2 className="text-base sm:text-lg font-bold text-foreground">Filters</h2>
                   <p className="text-xs text-muted-foreground">
-                    {filteredServices.length} service{filteredServices.length !== 1 ? 's' : ''} found
+                    {filteredServices.length} result{filteredServices.length !== 1 ? 's' : ''}
                   </p>
                 </div>
               </div>
@@ -413,15 +410,14 @@ export default function ServicesPage() {
                 variant="ghost"
                 size="icon"
                 onClick={() => setShowFilters(false)}
-                className="rounded-full hover:bg-muted h-10 w-10"
+                className="rounded-full h-9 w-9"
               >
                 <X className="h-5 w-5" />
               </Button>
             </div>
 
-            {/* Modal Content - Scrollable */}
-            <div className="overflow-y-auto flex-1 px-6 py-6 space-y-6">
-              {/* Vehicle Type Filter */}
+            {/* Modal Content */}
+            <div className="overflow-y-auto flex-1 px-5 py-5 space-y-5">
               <VehicleTypeFilter
                 vehicleTypes={vehicleTypes}
                 selectedTypes={selectedVehicleTypes}
@@ -432,7 +428,6 @@ export default function ServicesPage() {
                 }}
               />
 
-              {/* Category Filter */}
               {categories.length > 0 && (
                 <CategoryFilter
                   categories={categories}
@@ -443,21 +438,21 @@ export default function ServicesPage() {
               )}
             </div>
 
-            {/* Modal Footer - Fixed */}
-            <div className="px-6 py-5 border-t-2 border-border bg-muted/20 flex-shrink-0">
+            {/* Modal Footer */}
+            <div className="px-5 py-4 border-t border-border bg-muted/30 flex-shrink-0">
               <div className="flex gap-3">
                 <Button
                   variant="outline"
-                  className="flex-1 h-12 font-semibold"
+                  className="flex-1 h-11 font-semibold text-sm"
                   onClick={clearAllFilters}
                 >
-                  Clear All
+                  Clear
                 </Button>
                 <Button
-                  className="flex-1 h-12 font-semibold shadow-lg"
+                  className="flex-1 h-11 font-semibold text-sm shadow-md"
                   onClick={() => setShowFilters(false)}
                 >
-                  Show {filteredServices.length} Result{filteredServices.length !== 1 ? 's' : ''}
+                  Show {filteredServices.length}
                 </Button>
               </div>
             </div>

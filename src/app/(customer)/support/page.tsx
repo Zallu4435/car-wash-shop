@@ -8,14 +8,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 export default function SupportPage() {
   return (
     <div className="min-h-screen bg-background">
-      {/* Hero Section */}
+      {/* Hero Section - Responsive */}
       <section className="bg-gradient-to-br from-primary/5 to-background border-b border-border">
-        <div className="container-custom py-12 lg:py-16">
+        <div className="container-custom py-8 sm:py-10 lg:py-16">
           <div className="max-w-3xl mx-auto text-center">
-            <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-3 sm:mb-4">
               Support Center
             </h1>
-            <p className="text-lg text-muted-foreground">
+            <p className="text-sm sm:text-base lg:text-lg text-muted-foreground">
               How can we help you today?
             </p>
           </div>
@@ -23,43 +23,43 @@ export default function SupportPage() {
       </section>
 
       {/* Main Content */}
-      <section className="py-12">
+      <section className="py-8 sm:py-10 lg:py-12">
         <div className="container-custom">
           <div className="max-w-5xl mx-auto">
             {/* Quick Actions */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-8 sm:mb-10 lg:mb-12">
               {/* Submit Complaint */}
-              <Card className="hover:shadow-xl hover:scale-[1.02] transition-all duration-300 border-2">
+              <Card className="hover:shadow-lg transition-all duration-300 border-2">
                 <CardHeader>
-                  <div className="p-3 bg-red-50 dark:bg-red-950/30 rounded-xl w-fit mb-4">
-                    <AlertCircle className="h-8 w-8 text-red-600 dark:text-red-400" />
+                  <div className="p-2.5 sm:p-3 bg-red-50 dark:bg-red-950/30 rounded-lg sm:rounded-xl w-fit mb-3 sm:mb-4">
+                    <AlertCircle className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-red-600 dark:text-red-400" />
                   </div>
-                  <CardTitle className="text-xl">Submit a Complaint</CardTitle>
+                  <CardTitle className="text-base sm:text-lg md:text-xl">Submit a Complaint</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground mb-6 leading-relaxed">
+                  <p className="text-xs sm:text-sm text-muted-foreground mb-4 sm:mb-6 leading-relaxed">
                     Had an issue with your service or order? Let us know and we'll resolve it quickly.
                   </p>
-                  <Button asChild className="w-full shadow-md">
-                    <Link href="/support/complaints">Submit Complaint</Link>
+                  <Button asChild className="w-full shadow-md h-9 sm:h-10">
+                    <Link href="/support/complaints" className="text-xs sm:text-sm">Submit Complaint</Link>
                   </Button>
                 </CardContent>
               </Card>
 
               {/* FAQs */}
-              <Card className="hover:shadow-xl hover:scale-[1.02] transition-all duration-300 border-2">
+              <Card className="hover:shadow-lg transition-all duration-300 border-2">
                 <CardHeader>
-                  <div className="p-3 bg-primary/10 rounded-xl w-fit mb-4">
-                    <FileQuestion className="h-8 w-8 text-primary" />
+                  <div className="p-2.5 sm:p-3 bg-primary/10 rounded-lg sm:rounded-xl w-fit mb-3 sm:mb-4">
+                    <FileQuestion className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary" />
                   </div>
-                  <CardTitle className="text-xl">Frequently Asked Questions</CardTitle>
+                  <CardTitle className="text-base sm:text-lg md:text-xl">Frequently Asked Questions</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground mb-6 leading-relaxed">
+                  <p className="text-xs sm:text-sm text-muted-foreground mb-4 sm:mb-6 leading-relaxed">
                     Find quick answers to commonly asked questions about our services.
                   </p>
-                  <Button asChild variant="outline" className="w-full">
-                    <Link href="/support/faq">View FAQs</Link>
+                  <Button asChild variant="outline" className="w-full h-9 sm:h-10">
+                    <Link href="/support/faq" className="text-xs sm:text-sm">View FAQs</Link>
                   </Button>
                 </CardContent>
               </Card>
@@ -68,59 +68,59 @@ export default function SupportPage() {
             {/* Contact Info */}
             <Card className="border-2">
               <CardHeader>
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="p-2 bg-primary/10 rounded-lg">
-                    <MessageSquare className="h-6 w-6 text-primary" />
+                <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                  <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
+                    <MessageSquare className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                   </div>
-                  <CardTitle className="text-2xl">Get in Touch</CardTitle>
+                  <CardTitle className="text-lg sm:text-xl md:text-2xl">Get in Touch</CardTitle>
                 </div>
-                <p className="text-muted-foreground">
+                <p className="text-xs sm:text-sm text-muted-foreground">
                   Our support team is here to help you
                 </p>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                   {/* Phone */}
-                  <div className="flex flex-col gap-3 p-5 bg-muted rounded-xl hover:bg-accent transition-colors">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2.5 bg-background rounded-lg">
-                        <Phone className="h-5 w-5 text-primary" />
+                  <div className="flex flex-col gap-2 sm:gap-3 p-4 sm:p-5 bg-muted rounded-lg sm:rounded-xl hover:bg-accent transition-colors">
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      <div className="p-2 sm:p-2.5 bg-background rounded-lg">
+                        <Phone className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                       </div>
-                      <p className="font-semibold text-foreground">Phone</p>
+                      <p className="font-semibold text-sm sm:text-base text-foreground">Phone</p>
                     </div>
                     <a 
                       href="tel:+918848919507" 
-                      className="text-muted-foreground hover:text-primary transition-colors font-medium"
+                      className="text-xs sm:text-sm text-muted-foreground hover:text-primary transition-colors font-medium break-all"
                     >
                       +91 88489 19507
                     </a>
                   </div>
 
                   {/* Email */}
-                  <div className="flex flex-col gap-3 p-5 bg-muted rounded-xl hover:bg-accent transition-colors">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2.5 bg-background rounded-lg">
-                        <Mail className="h-5 w-5 text-primary" />
+                  <div className="flex flex-col gap-2 sm:gap-3 p-4 sm:p-5 bg-muted rounded-lg sm:rounded-xl hover:bg-accent transition-colors">
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      <div className="p-2 sm:p-2.5 bg-background rounded-lg">
+                        <Mail className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                       </div>
-                      <p className="font-semibold text-foreground">Email</p>
+                      <p className="font-semibold text-sm sm:text-base text-foreground">Email</p>
                     </div>
                     <a 
                       href="mailto:support@carwash.com" 
-                      className="text-muted-foreground hover:text-primary transition-colors font-medium"
+                      className="text-xs sm:text-sm text-muted-foreground hover:text-primary transition-colors font-medium break-all"
                     >
                       support@carwash.com
                     </a>
                   </div>
 
                   {/* Live Chat */}
-                  <div className="flex flex-col gap-3 p-5 bg-muted rounded-xl hover:bg-accent transition-colors">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2.5 bg-background rounded-lg">
-                        <Clock className="h-5 w-5 text-primary" />
+                  <div className="flex flex-col gap-2 sm:gap-3 p-4 sm:p-5 bg-muted rounded-lg sm:rounded-xl hover:bg-accent transition-colors sm:col-span-2 lg:col-span-1">
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      <div className="p-2 sm:p-2.5 bg-background rounded-lg">
+                        <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                       </div>
-                      <p className="font-semibold text-foreground">Live Chat</p>
+                      <p className="font-semibold text-sm sm:text-base text-foreground">Live Chat</p>
                     </div>
-                    <p className="text-muted-foreground text-sm font-medium">
+                    <p className="text-xs sm:text-sm text-muted-foreground font-medium">
                       Mon-Sat, 9 AM - 6 PM
                     </p>
                   </div>

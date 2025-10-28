@@ -36,52 +36,58 @@ export default function FeedbackPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
+      {/* Header - Responsive */}
       <section className="bg-gradient-to-br from-primary/5 to-background border-b border-border">
-        <div className="container-custom py-8 lg:py-12">
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-primary/10 rounded-xl">
-              <MessageSquare className="h-8 w-8 text-primary" />
+        <div className="container-custom py-6 sm:py-8 lg:py-12">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="p-2 sm:p-3 bg-primary/10 rounded-lg sm:rounded-xl flex-shrink-0">
+              <MessageSquare className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary" />
             </div>
-            <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-foreground">Send Feedback</h1>
-              <p className="text-muted-foreground mt-1">We'd love to hear from you</p>
+            <div className="min-w-0 flex-1">
+              <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-foreground truncate">
+                Send Feedback
+              </h1>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1 truncate">
+                We'd love to hear from you
+              </p>
             </div>
           </div>
         </div>
       </section>
 
       {/* Main Content */}
-      <section className="py-8 lg:py-12">
+      <section className="py-6 sm:py-8 lg:py-12">
         <div className="container-custom">
           <div className="max-w-2xl mx-auto">
             <Card className="border-2">
-              <CardHeader>
+              <CardHeader className="pb-4 sm:pb-6">
                 <div className="flex items-center gap-2">
-                  <div className="p-2 bg-primary/10 rounded-lg">
-                    <MessageSquare className="h-5 w-5 text-primary" />
+                  <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
+                    <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                   </div>
-                  <CardTitle>Share Your Thoughts</CardTitle>
+                  <CardTitle className="text-base sm:text-lg">Share Your Thoughts</CardTitle>
                 </div>
-                <p className="text-sm text-muted-foreground mt-2">
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1.5 sm:mt-2">
                   Your feedback helps us improve our service
                 </p>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
                   {/* Feedback Type */}
-                  <div className="space-y-2">
-                    <Label htmlFor="type">Feedback Type</Label>
+                  <div className="space-y-1.5 sm:space-y-2">
+                    <Label htmlFor="type" className="text-xs sm:text-sm">
+                      Feedback Type <span className="text-red-500">*</span>
+                    </Label>
                     <Select required value={selectedType} onValueChange={setSelectedType}>
-                      <SelectTrigger id="type">
+                      <SelectTrigger id="type" className="h-10 sm:h-11">
                         <SelectValue placeholder="Select feedback type" />
                       </SelectTrigger>
                       <SelectContent>
                         {feedbackTypes.map((type) => (
                           <SelectItem key={type.value} value={type.value}>
                             <div className="flex items-center gap-2">
-                              <span>{type.icon}</span>
-                              <span>{type.label}</span>
+                              <span className="text-base">{type.icon}</span>
+                              <span className="text-sm">{type.label}</span>
                             </div>
                           </SelectItem>
                         ))}
@@ -90,25 +96,31 @@ export default function FeedbackPage() {
                   </div>
 
                   {/* Subject */}
-                  <div className="space-y-2">
-                    <Label htmlFor="subject">Subject</Label>
+                  <div className="space-y-1.5 sm:space-y-2">
+                    <Label htmlFor="subject" className="text-xs sm:text-sm">
+                      Subject <span className="text-red-500">*</span>
+                    </Label>
                     <Input 
                       id="subject"
                       placeholder="Brief description of your feedback" 
-                      required 
+                      required
+                      className="h-10 sm:h-11 text-xs sm:text-sm"
                     />
                   </div>
 
                   {/* Feedback */}
-                  <div className="space-y-2">
-                    <Label htmlFor="feedback">Your Feedback</Label>
+                  <div className="space-y-1.5 sm:space-y-2">
+                    <Label htmlFor="feedback" className="text-xs sm:text-sm">
+                      Your Feedback <span className="text-red-500">*</span>
+                    </Label>
                     <Textarea 
                       id="feedback"
                       placeholder="Tell us more about your experience..." 
                       rows={6} 
-                      required 
+                      required
+                      className="text-xs sm:text-sm resize-none"
                     />
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-[10px] sm:text-xs text-muted-foreground">
                       Please be as detailed as possible
                     </p>
                   </div>
@@ -116,7 +128,7 @@ export default function FeedbackPage() {
                   {/* Submit Button */}
                   <Button 
                     type="submit" 
-                    className="w-full shadow-lg" 
+                    className="w-full shadow-lg h-11 sm:h-12 text-sm sm:text-base" 
                     size="lg"
                     disabled={isLoading}
                   >
@@ -134,15 +146,17 @@ export default function FeedbackPage() {
             </Card>
 
             {/* Info Card */}
-            <Card className="mt-6 border-2 bg-primary/5">
-              <CardContent className="p-6">
-                <div className="flex items-start gap-4">
-                  <div className="p-2 bg-primary/10 rounded-lg">
-                    <CheckCircle2 className="h-5 w-5 text-primary" />
+            <Card className="mt-4 sm:mt-6 border-2 bg-primary/5">
+              <CardContent className="p-4 sm:p-5 md:p-6">
+                <div className="flex items-start gap-3 sm:gap-4">
+                  <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg flex-shrink-0">
+                    <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-foreground mb-2">What happens next?</h3>
-                    <ul className="text-sm text-muted-foreground space-y-1">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-semibold text-foreground text-sm sm:text-base mb-1.5 sm:mb-2">
+                      What happens next?
+                    </h3>
+                    <ul className="text-xs sm:text-sm text-muted-foreground space-y-0.5 sm:space-y-1 leading-relaxed">
                       <li>• Our team reviews all feedback within 24-48 hours</li>
                       <li>• For bug reports, we'll investigate and update you</li>
                       <li>• Suggestions help shape our future features</li>

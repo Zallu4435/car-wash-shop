@@ -29,11 +29,13 @@ export function DateTimePicker({ selectedDate, selectedTime, onDateSelect, onTim
   const days = getNext7Days();
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       {/* Date Selection */}
       <div>
-        <Label className="text-lg font-semibold mb-4 block text-foreground">Select Date</Label>
-        <div className="grid grid-cols-3 sm:grid-cols-7 gap-3">
+        <Label className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 block text-foreground">
+          Select Date
+        </Label>
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-7 gap-2 sm:gap-3">
           {days.map((day) => {
             const isSelected = selectedDate && format(day, 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd');
             const isToday = format(day, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
@@ -41,15 +43,21 @@ export function DateTimePicker({ selectedDate, selectedTime, onDateSelect, onTim
               <Button
                 key={day.toISOString()}
                 variant={isSelected ? 'default' : 'outline'}
-                className="flex flex-col h-auto py-4 relative"
+                className="flex flex-col h-auto py-3 sm:py-4 relative border-2 hover:shadow-md transition-all"
                 onClick={() => onDateSelect(day)}
               >
                 {isToday && (
-                  <span className="absolute top-1 right-1 w-2 h-2 bg-green-600 rounded-full"></span>
+                  <span className="absolute top-1 right-1 w-1.5 h-1.5 sm:w-2 sm:h-2 bg-green-600 rounded-full"></span>
                 )}
-                <span className="text-xs font-medium">{format(day, 'EEE')}</span>
-                <span className="text-2xl font-bold my-1">{format(day, 'd')}</span>
-                <span className="text-xs">{format(day, 'MMM')}</span>
+                <span className="text-[10px] sm:text-xs font-medium uppercase">
+                  {format(day, 'EEE')}
+                </span>
+                <span className="text-xl sm:text-2xl font-bold my-0.5 sm:my-1">
+                  {format(day, 'd')}
+                </span>
+                <span className="text-[10px] sm:text-xs text-muted-foreground">
+                  {format(day, 'MMM')}
+                </span>
               </Button>
             );
           })}
@@ -59,13 +67,15 @@ export function DateTimePicker({ selectedDate, selectedTime, onDateSelect, onTim
       {/* Time Selection */}
       {selectedDate && (
         <div>
-          <Label className="text-lg font-semibold mb-4 block text-foreground">Select Time</Label>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+          <Label className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 block text-foreground">
+            Select Time
+          </Label>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-3">
             {timeSlots.map((slot) => (
               <Button
                 key={slot}
                 variant={selectedTime === slot ? 'default' : 'outline'}
-                className="h-12 font-semibold"
+                className="h-10 sm:h-12 font-semibold text-xs sm:text-sm border-2 hover:shadow-md transition-all"
                 onClick={() => onTimeSelect(slot)}
               >
                 {slot}

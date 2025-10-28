@@ -4,48 +4,47 @@
    shadcn/ui + Custom Design System
    ============================================ */
 
-@layer base {
-  :root {
-    /* Light mode - Clean white and blue */
-    --background: 0 0% 100%;
-    --foreground: 220 13% 13%;
-    
-    --card: 0 0% 100%;
-    --card-foreground: 220 13% 13%;
-    
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 13% 13%;
-    
-    --primary: 221 83% 53%;
-    --primary-foreground: 0 0% 100%;
-    
-    --secondary: 220 13% 95%;
-    --secondary-foreground: 220 13% 13%;
-    
-    --muted: 220 13% 95%;
-    --muted-foreground: 220 9% 46%;
-    
-    --accent: 220 13% 95%;
-    --accent-foreground: 220 13% 13%;
-    
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-    
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 221 83% 53%;
-    
-    --radius: 0.5rem;
-    
-    --chart-1: 221 83% 53%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-
-    --foreground: 220 13% 13%; /* Should be dark for light mode */
-    --muted-foreground: 220 9% 46%; /* Should be medium gray */
-  }
+   @layer base {
+    :root {
+      /* Light mode - Eazy Wash inspired clean blue theme */
+      --background: 200 28% 97%; /* Off-white with blue tint */
+      --foreground: 214 66% 20%; /* Deep blue-gray for text */
+      
+      --card: 0 0% 100%; /* Pure white cards */
+      --card-foreground: 214 66% 20%;
+      
+      --popover: 0 0% 100%;
+      --popover-foreground: 214 66% 20%;
+      
+      --primary: 214 66% 32%; /* Deep brand blue */
+      --primary-foreground: 0 0% 100%; /* White text on primary */
+      
+      --secondary: 200 38% 93%; /* Light blue-gray */
+      --secondary-foreground: 214 66% 25%;
+      
+      --muted: 200 38% 93%; /* Light blue-gray backgrounds */
+      --muted-foreground: 214 30% 46%; /* Medium blue-gray text */
+      
+      --accent: 196 100% 43%; /* Cyan/Light blue accent */
+      --accent-foreground: 0 0% 100%;
+      
+      --destructive: 0 84% 60%;
+      --destructive-foreground: 0 0% 100%;
+      
+      --border: 200 30% 88%; /* Soft blue-gray borders */
+      --input: 200 30% 88%;
+      --ring: 196 100% 43%; /* Cyan focus ring */
+      
+      --radius: 0.5rem;
+      
+      /* Chart colors matching the theme */
+      --chart-1: 214 66% 32%; /* Deep blue */
+      --chart-2: 196 100% 43%; /* Cyan */
+      --chart-3: 198 72% 65%; /* Sky blue */
+      --chart-4: 200 85% 85%; /* Light bubble blue */
+      --chart-5: 190 70% 50%; /* Teal accent */
+    }
+  }  
   
   .dark {
     /* Dark mode - Softer grays, not pure black */
@@ -83,7 +82,7 @@
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
   }
-}
+
 
 @layer base {
   * {

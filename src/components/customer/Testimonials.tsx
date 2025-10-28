@@ -33,8 +33,8 @@ export function Testimonials({ testimonials }: TestimonialsProps) {
 
   return (
     <div className="relative">
-      {/* Main Testimonial Card */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      {/* Main Testimonial Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
         {testimonials.slice(currentIndex, currentIndex + 3).map((testimonial, idx) => {
           const actualIndex = (currentIndex + idx) % testimonials.length;
           const actualTestimonial = testimonials[actualIndex];
@@ -42,26 +42,26 @@ export function Testimonials({ testimonials }: TestimonialsProps) {
           return (
             <Card 
               key={actualTestimonial.id}
-              className="border-2 hover:shadow-xl transition-all duration-300 group bg-card"
+              className="border-2 hover:shadow-lg transition-all duration-300 group bg-card"
               onMouseEnter={() => setIsAutoPlaying(false)}
               onMouseLeave={() => setIsAutoPlaying(true)}
             >
-              <CardContent className="p-8">
+              <CardContent className="p-5 sm:p-6 md:p-8">
                 {/* Quote Icon */}
-                <div className="mb-6">
-                  <div className="inline-flex items-center justify-center w-12 h-12 bg-primary/10 rounded-xl group-hover:scale-110 transition-transform">
-                    <Quote className="h-6 w-6 text-primary" />
+                <div className="mb-4 sm:mb-5 md:mb-6">
+                  <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-primary/10 rounded-xl group-hover:scale-110 transition-transform">
+                    <Quote className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                   </div>
                 </div>
 
                 {/* Rating */}
-                <div className="flex gap-1 mb-4">
+                <div className="flex gap-0.5 sm:gap-1 mb-3 sm:mb-4">
                   {Array.from({ length: 5 }).map((_, i) => (
                     <Star
                       key={i}
-                      className={`h-5 w-5 ${
+                      className={`h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5 ${
                         i < actualTestimonial.rating
-                          ? 'fill-yellow-400 text-yellow-400'
+                          ? 'fill-amber-400 text-amber-400'
                           : 'text-gray-300 dark:text-gray-600'
                       }`}
                     />
@@ -69,20 +69,24 @@ export function Testimonials({ testimonials }: TestimonialsProps) {
                 </div>
 
                 {/* Content */}
-                <p className="text-foreground text-lg leading-relaxed mb-6">
+                <p className="text-foreground text-xs sm:text-sm md:text-base lg:text-lg leading-relaxed mb-4 sm:mb-5 md:mb-6 line-clamp-4">
                   "{actualTestimonial.content}"
                 </p>
 
                 {/* Author */}
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                    <span className="text-primary font-bold text-lg">
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span className="text-primary font-bold text-base sm:text-lg">
                       {actualTestimonial.name.charAt(0)}
                     </span>
                   </div>
-                  <div>
-                    <p className="font-semibold text-foreground">{actualTestimonial.name}</p>
-                    <p className="text-sm text-muted-foreground">{actualTestimonial.role}</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold text-sm sm:text-base text-foreground truncate">
+                      {actualTestimonial.name}
+                    </p>
+                    <p className="text-xs sm:text-sm text-muted-foreground truncate">
+                      {actualTestimonial.role}
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -92,7 +96,7 @@ export function Testimonials({ testimonials }: TestimonialsProps) {
       </div>
 
       {/* Navigation Dots */}
-      <div className="flex justify-center gap-2 mt-8">
+      <div className="flex justify-center gap-1.5 sm:gap-2 mt-6 sm:mt-8">
         {testimonials.map((_, index) => (
           <button
             key={index}
@@ -100,10 +104,10 @@ export function Testimonials({ testimonials }: TestimonialsProps) {
               setCurrentIndex(index);
               setIsAutoPlaying(false);
             }}
-            className={`h-2 rounded-full transition-all ${
+            className={`h-1.5 sm:h-2 rounded-full transition-all ${
               index === currentIndex
-                ? 'w-8 bg-primary'
-                : 'w-2 bg-muted-foreground/30 hover:bg-muted-foreground/50'
+                ? 'w-6 sm:w-8 bg-primary'
+                : 'w-1.5 sm:w-2 bg-muted-foreground/30 hover:bg-muted-foreground/50'
             }`}
             aria-label={`Go to testimonial ${index + 1}`}
           />

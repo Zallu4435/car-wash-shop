@@ -1,3 +1,4 @@
+// app/profile/addresses/page.tsx
 'use client';
 
 import { useState } from 'react';
@@ -6,10 +7,7 @@ import { ArrowLeft, Plus, MapPin, Trash2, Edit, Home, Building2 } from 'lucide-r
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { AddAddressDialog } from '@/components/shared/dialogs/AddAddressDialog';
 import { toast } from 'sonner';
 
 const mockAddresses = [
@@ -27,85 +25,97 @@ export default function AddressesPage() {
     toast.success('Address deleted successfully');
   };
 
-  const handleAddAddress = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleAddressAdded = () => {
+    // Reload addresses from API
+    // For now with mock data, just close dialog
     toast.success('Address added successfully');
-    setIsAddDialogOpen(false);
   };
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
+      {/* Header - Responsive */}
       <section className="bg-gradient-to-br from-primary/5 to-background border-b border-border">
-        <div className="container-custom py-8 lg:py-12">
+        <div className="container-custom py-6 sm:py-8 lg:py-12">
           <Button
             variant="ghost"
             onClick={() => router.push('/profile')}
-            className="mb-4 hover:bg-muted"
+            className="mb-3 sm:mb-4 hover:bg-muted h-9 sm:h-10"
           >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Profile
+            <ArrowLeft className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <span className="text-xs sm:text-sm">Back to Profile</span>
           </Button>
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="p-3 bg-primary/10 rounded-xl">
-                <MapPin className="h-8 w-8 text-primary" />
+          <div className="flex items-start sm:items-center justify-between gap-3 sm:gap-4">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+              <div className="p-2 sm:p-3 bg-primary/10 rounded-lg sm:rounded-xl flex-shrink-0">
+                <MapPin className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary" />
               </div>
-              <div>
-                <h1 className="text-3xl md:text-4xl font-bold text-foreground">Saved Addresses</h1>
-                <p className="text-muted-foreground mt-1">{addresses.length} address{addresses.length !== 1 ? 'es' : ''} saved</p>
+              <div className="min-w-0 flex-1">
+                <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-foreground truncate">
+                  Saved Addresses
+                </h1>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1 truncate">
+                  {addresses.length} address{addresses.length !== 1 ? 'es' : ''} saved
+                </p>
               </div>
             </div>
-            <Button onClick={() => setIsAddDialogOpen(true)} className="shadow-lg">
-              <Plus className="mr-2 h-4 w-4" />
-              <span className="hidden sm:inline">Add Address</span>
+            <Button 
+              onClick={() => setIsAddDialogOpen(true)} 
+              className="shadow-lg h-9 sm:h-10 flex-shrink-0"
+              size="sm"
+            >
+              <Plus className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline text-xs sm:text-sm">Add Address</span>
             </Button>
           </div>
         </div>
       </section>
 
       {/* Main Content */}
-      <section className="py-8 lg:py-12">
+      <section className="py-6 sm:py-8 lg:py-12">
         <div className="container-custom">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 max-w-5xl mx-auto">
             {addresses.map((addr) => (
               <Card key={addr.id} className="border-2 hover:shadow-lg transition-shadow">
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className={`p-2 rounded-xl ${
+                <CardContent className="p-4 sm:p-5 md:p-6">
+                  <div className="flex items-start justify-between mb-3 sm:mb-4">
+                    <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                      <div className={`p-1.5 sm:p-2 rounded-lg sm:rounded-xl flex-shrink-0 ${
                         addr.label === 'Home' 
                           ? 'bg-blue-100 dark:bg-blue-950/30' 
                           : 'bg-purple-100 dark:bg-purple-950/30'
                       }`}>
                         {addr.label === 'Home' ? (
-                          <Home className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                          <Home className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 dark:text-blue-400" />
                         ) : (
-                          <Building2 className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                          <Building2 className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600 dark:text-purple-400" />
                         )}
                       </div>
-                      <span className="font-semibold text-foreground text-lg">{addr.label}</span>
+                      <span className="font-semibold text-foreground text-base sm:text-lg truncate capitalize">
+                        {addr.label}
+                      </span>
                     </div>
                     {addr.isDefault && (
-                      <Badge variant="default" className="shadow-sm">Default</Badge>
+                      <Badge variant="default" className="shadow-sm text-xs flex-shrink-0">
+                        Default
+                      </Badge>
                     )}
                   </div>
-                  <p className="text-muted-foreground mb-6 leading-relaxed">
+                  <p className="text-xs sm:text-sm text-muted-foreground mb-4 sm:mb-6 leading-relaxed">
                     {addr.address}
                   </p>
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm" className="flex-1">
-                      <Edit className="mr-2 h-4 w-4" />
+                    <Button variant="outline" size="sm" className="flex-1 h-9 sm:h-10 text-xs sm:text-sm">
+                      <Edit className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                       Edit
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20"
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20 h-9 sm:h-10 px-3"
                       onClick={() => handleDelete(addr.id)}
                       disabled={addr.isDefault}
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                     </Button>
                   </div>
                 </CardContent>
@@ -115,36 +125,11 @@ export default function AddressesPage() {
         </div>
       </section>
 
-      {/* Add Address Dialog */}
-      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add New Address</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleAddAddress} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="label">Label</Label>
-              <Input id="label" placeholder="e.g., Home, Office" required />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="address">Complete Address</Label>
-              <Textarea
-                id="address"
-                placeholder="Street, Area, City, State, Pincode"
-                rows={4}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="landmark">Landmark (Optional)</Label>
-              <Input id="landmark" placeholder="e.g., Near Metro Station" />
-            </div>
-            <Button type="submit" className="w-full" size="lg">
-              Add Address
-            </Button>
-          </form>
-        </DialogContent>
-      </Dialog>
+      <AddAddressDialog
+        open={isAddDialogOpen}
+        onOpenChange={setIsAddDialogOpen}
+        onAddressAdded={handleAddressAdded}
+      />
     </div>
   );
 }

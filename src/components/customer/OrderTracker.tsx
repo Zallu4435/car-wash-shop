@@ -33,17 +33,17 @@ export function OrderTracker({ currentStatus, statusHistory }: OrderTrackerProps
   };
 
   return (
-    <Card className="sticky top-24 border-2">
-      <CardHeader>
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-primary/10 rounded-lg">
-            <Clock className="h-5 w-5 text-primary" />
+    <Card className="lg:sticky lg:top-24 border-2">
+      <CardHeader className="pb-3 sm:pb-4">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
+            <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
           </div>
-          <CardTitle>Order Status</CardTitle>
+          <CardTitle className="text-base sm:text-lg">Order Status</CardTitle>
         </div>
       </CardHeader>
       <CardContent>
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           {statuses.map((status, index) => {
             const StatusIcon = status.icon;
             const state = getStatusState(index);
@@ -54,7 +54,7 @@ export function OrderTracker({ currentStatus, statusHistory }: OrderTrackerProps
                 {/* Connector Line */}
                 {index < statuses.length - 1 && (
                   <div
-                    className={`absolute left-5 top-11 w-0.5 h-12 ${
+                    className={`absolute left-4 sm:left-5 top-9 sm:top-11 w-0.5 h-10 sm:h-12 ${
                       state === 'completed' 
                         ? 'bg-primary' 
                         : 'bg-border'
@@ -63,10 +63,10 @@ export function OrderTracker({ currentStatus, statusHistory }: OrderTrackerProps
                 )}
 
                 {/* Status Item */}
-                <div className="flex items-start gap-4">
+                <div className="flex items-start gap-3 sm:gap-4">
                   {/* Icon */}
                   <div
-                    className={`relative z-10 flex items-center justify-center w-11 h-11 rounded-full border-2 flex-shrink-0 transition-all ${
+                    className={`relative z-10 flex items-center justify-center w-9 h-9 sm:w-11 sm:h-11 rounded-full border-2 flex-shrink-0 transition-all ${
                       state === 'completed'
                         ? 'bg-primary border-primary'
                         : state === 'active'
@@ -75,7 +75,7 @@ export function OrderTracker({ currentStatus, statusHistory }: OrderTrackerProps
                     }`}
                   >
                     <StatusIcon
-                      className={`h-5 w-5 ${
+                      className={`h-4 w-4 sm:h-5 sm:w-5 ${
                         state === 'completed'
                           ? 'text-primary-foreground'
                           : state === 'active'
@@ -86,9 +86,9 @@ export function OrderTracker({ currentStatus, statusHistory }: OrderTrackerProps
                   </div>
 
                   {/* Content */}
-                  <div className="flex-1 pt-1">
+                  <div className="flex-1 pt-0.5 sm:pt-1 min-w-0">
                     <p
-                      className={`font-semibold ${
+                      className={`font-semibold text-sm sm:text-base ${
                         state === 'completed' || state === 'active'
                           ? 'text-foreground'
                           : 'text-muted-foreground'
@@ -97,12 +97,12 @@ export function OrderTracker({ currentStatus, statusHistory }: OrderTrackerProps
                       {status.label}
                     </p>
                     {historyItem && (
-                      <p className="text-sm text-muted-foreground mt-1">
+                      <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1 break-all">
                         {historyItem.timestamp}
                       </p>
                     )}
                     {state === 'active' && (
-                      <div className="mt-2 inline-flex items-center gap-1.5 px-2 py-1 bg-primary/10 rounded-full">
+                      <div className="mt-1.5 sm:mt-2 inline-flex items-center gap-1.5 px-2 py-1 bg-primary/10 rounded-full">
                         <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
                         <span className="text-xs font-medium text-primary">In Progress</span>
                       </div>
@@ -116,12 +116,12 @@ export function OrderTracker({ currentStatus, statusHistory }: OrderTrackerProps
 
         {/* Estimated Delivery */}
         {currentStatus !== 'delivered' && (
-          <div className="mt-6 pt-6 border-t border-border">
-            <div className="p-4 bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl border border-primary/20">
-              <p className="text-sm font-medium text-muted-foreground mb-1">
+          <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-border">
+            <div className="p-3 sm:p-4 bg-gradient-to-br from-primary/5 to-primary/10 rounded-lg sm:rounded-xl border border-primary/20">
+              <p className="text-xs sm:text-sm font-medium text-muted-foreground mb-0.5 sm:mb-1">
                 Estimated Delivery
               </p>
-              <p className="text-lg font-bold text-primary">
+              <p className="text-base sm:text-lg font-bold text-primary">
                 Oct 26, 2025
               </p>
             </div>

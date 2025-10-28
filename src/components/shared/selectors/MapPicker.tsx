@@ -49,24 +49,28 @@ export function MapPicker({ onLocationSelect, initialAddress = '' }: MapPickerPr
 
   return (
     <Card className="border-2">
-      <CardContent className="p-6 space-y-4">
+      <CardContent className="p-4 sm:p-5 md:p-6 space-y-3 sm:space-y-4">
         <div>
-          <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
-            <MapPin className="h-5 w-5 text-primary" />
-            Select Location
+          <h3 className="font-semibold text-foreground text-sm sm:text-base mb-2 sm:mb-3 flex items-center gap-1.5 sm:gap-2">
+            <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+            <span>Select Location</span>
           </h3>
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
               <Input
                 placeholder="Search address..."
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                className="pl-10"
+                className="pl-9 sm:pl-10 h-10 sm:h-11 text-xs sm:text-sm"
               />
             </div>
-            <Button onClick={handleSearch} disabled={!address || searching}>
+            <Button 
+              onClick={handleSearch} 
+              disabled={!address || searching}
+              className="h-10 sm:h-11 text-xs sm:text-sm w-full sm:w-auto px-4 sm:px-6"
+            >
               {searching ? 'Searching...' : 'Search'}
             </Button>
           </div>
@@ -74,23 +78,23 @@ export function MapPicker({ onLocationSelect, initialAddress = '' }: MapPickerPr
 
         <Button
           variant="outline"
-          className="w-full"
+          className="w-full h-10 sm:h-11 text-xs sm:text-sm"
           onClick={getCurrentLocation}
         >
-          <Navigation className="mr-2 h-4 w-4" />
+          <Navigation className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Use Current Location
         </Button>
 
         {/* Map placeholder */}
-        <div className="h-64 bg-gradient-to-br from-muted to-muted/50 rounded-xl border-2 border-border flex items-center justify-center">
-          <div className="text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-background rounded-full mb-3">
-              <MapPin className="h-8 w-8 text-primary" />
+        <div className="h-48 sm:h-56 md:h-64 bg-gradient-to-br from-muted to-muted/50 rounded-lg sm:rounded-xl border-2 border-border flex items-center justify-center">
+          <div className="text-center px-4">
+            <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-background rounded-full mb-2 sm:mb-3">
+              <MapPin className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary" />
             </div>
-            <p className="text-sm text-muted-foreground font-medium">
+            <p className="text-xs sm:text-sm text-muted-foreground font-medium mb-0.5 sm:mb-1">
               Map will display selected location
             </p>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-[10px] sm:text-xs text-muted-foreground">
               Interactive map integration coming soon
             </p>
           </div>

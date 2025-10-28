@@ -121,12 +121,21 @@ const CarouselPrevious = React.forwardRef<HTMLButtonElement, React.ComponentProp
         ref={ref}
         variant={variant}
         size={size}
-        className={cn('absolute left-4 top-1/2 -translate-y-1/2', className)}
+        className={cn(
+          'absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-10',
+          'h-9 w-9 sm:h-10 sm:w-10 rounded-full',
+          'bg-background/80 backdrop-blur-sm border border-border',
+          'hover:bg-background hover:border-primary hover:text-primary',
+          'shadow-md hover:shadow-lg',
+          'disabled:opacity-50 disabled:cursor-not-allowed',
+          'transition-all duration-300',
+          className
+        )}
         disabled={!canScrollPrev}
         onClick={scrollPrev}
         {...props}
       >
-        <ChevronLeft className="h-4 w-4" />
+        <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
         <span className="sr-only">Previous slide</span>
       </Button>
     );
@@ -143,12 +152,21 @@ const CarouselNext = React.forwardRef<HTMLButtonElement, React.ComponentProps<ty
         ref={ref}
         variant={variant}
         size={size}
-        className={cn('absolute right-4 top-1/2 -translate-y-1/2', className)}
+        className={cn(
+          'absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-10',
+          'h-9 w-9 sm:h-10 sm:w-10 rounded-full',
+          'bg-background/80 backdrop-blur-sm border border-border',
+          'hover:bg-background hover:border-primary hover:text-primary',
+          'shadow-md hover:shadow-lg',
+          'disabled:opacity-50 disabled:cursor-not-allowed',
+          'transition-all duration-300',
+          className
+        )}
         disabled={!canScrollNext}
         onClick={scrollNext}
         {...props}
       >
-        <ChevronRight className="h-4 w-4" />
+        <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
         <span className="sr-only">Next slide</span>
       </Button>
     );

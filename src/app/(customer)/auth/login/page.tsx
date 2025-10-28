@@ -50,82 +50,93 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-background py-8 sm:py-12 px-4">
       <div className="w-full max-w-md">
         {/* Logo/Brand */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary rounded-2xl mb-4">
-            <Droplet className="h-8 w-8 text-primary-foreground" />
+        <div className="text-center mb-6 sm:mb-8">
+          <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 bg-primary rounded-xl sm:rounded-2xl mb-3 sm:mb-4">
+            <Droplet className="h-7 w-7 sm:h-8 sm:w-8 text-primary-foreground" />
           </div>
-          <h1 className="text-3xl font-bold text-foreground">CarWash App</h1>
-          <p className="text-muted-foreground mt-2">Your trusted car care partner</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">CarWash App</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1 sm:mt-2">
+            Your trusted car care partner
+          </p>
         </div>
 
         <Card className="border-2">
-          <CardHeader className="text-center space-y-2">
+          <CardHeader className="text-center space-y-1.5 sm:space-y-2 pb-4 sm:pb-6">
             <div className="flex items-center justify-center gap-2">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <LogIn className="h-5 w-5 text-primary" />
+              <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
+                <LogIn className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               </div>
-              <CardTitle className="text-2xl">Welcome Back</CardTitle>
+              <CardTitle className="text-xl sm:text-2xl">Welcome Back</CardTitle>
             </div>
-            <CardDescription>
+            <CardDescription className="text-xs sm:text-sm px-2">
               {step === 'phone' 
                 ? 'Enter your phone number to continue' 
                 : `Enter OTP sent to +91 ${phone}`}
             </CardDescription>
           </CardHeader>
 
-          <CardContent>
+          <CardContent className="px-4 sm:px-6">
             {step === 'phone' ? (
-              <form onSubmit={handleSendOTP} className="space-y-5">
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Phone Number</Label>
+              <form onSubmit={handleSendOTP} className="space-y-4 sm:space-y-5">
+                <div className="space-y-1.5 sm:space-y-2">
+                  <Label htmlFor="phone" className="text-xs sm:text-sm">Phone Number</Label>
                   <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                    <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
                     <Input
                       id="phone"
                       type="tel"
                       placeholder="9876543210"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                      className="pl-10"
+                      className="pl-10 h-11 sm:h-12 text-sm sm:text-base"
                       autoFocus
                       required
                     />
                   </div>
-                  <p className="text-xs text-muted-foreground">We'll send you a 6-digit OTP</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground">
+                    We'll send you a 6-digit OTP
+                  </p>
                 </div>
 
-                <Button type="submit" className="w-full shadow-lg" size="lg" disabled={isLoading}>
+                <Button 
+                  type="submit" 
+                  className="w-full shadow-lg h-11 sm:h-12 text-sm sm:text-base" 
+                  size="lg" 
+                  disabled={isLoading}
+                >
                   {isLoading ? 'Sending OTP...' : 'Send OTP'}
                 </Button>
               </form>
             ) : (
-              <form onSubmit={handleVerifyOTP} className="space-y-5">
-                <div className="space-y-2">
-                  <Label htmlFor="otp">Enter OTP</Label>
+              <form onSubmit={handleVerifyOTP} className="space-y-4 sm:space-y-5">
+                <div className="space-y-1.5 sm:space-y-2">
+                  <Label htmlFor="otp" className="text-xs sm:text-sm">Enter OTP</Label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
                     <Input
                       id="otp"
                       type="text"
                       placeholder="••••••"
                       value={otp}
                       onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                      className="pl-10 text-center text-xl tracking-widest font-semibold"
+                      className="pl-10 h-11 sm:h-12 text-center text-lg sm:text-xl tracking-widest font-semibold"
                       autoFocus
                       required
                       maxLength={6}
                     />
                   </div>
                   <div className="flex justify-between items-center">
-                    <p className="text-xs text-muted-foreground">Didn't receive OTP?</p>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground">
+                      Didn't receive OTP?
+                    </p>
                     <Button
                       type="button"
                       variant="link"
                       size="sm"
-                      className="text-xs h-auto p-0"
+                      className="text-[10px] sm:text-xs h-auto p-0"
                       onClick={() => toast.success('OTP resent!')}
                     >
                       Resend OTP
@@ -133,15 +144,20 @@ export default function LoginPage() {
                   </div>
                 </div>
 
-                <div className="space-y-3">
-                  <Button type="submit" className="w-full shadow-lg" size="lg" disabled={isLoading}>
+                <div className="space-y-2 sm:space-y-3">
+                  <Button 
+                    type="submit" 
+                    className="w-full shadow-lg h-11 sm:h-12 text-sm sm:text-base" 
+                    size="lg" 
+                    disabled={isLoading}
+                  >
                     {isLoading ? 'Verifying...' : 'Verify & Login'}
                   </Button>
 
                   <Button
                     type="button"
                     variant="outline"
-                    className="w-full"
+                    className="w-full h-10 sm:h-11 text-xs sm:text-sm"
                     onClick={() => {
                       setStep('phone');
                       setOtp('');
@@ -154,23 +170,43 @@ export default function LoginPage() {
             )}
           </CardContent>
 
-          <CardFooter className="flex flex-col space-y-4">
+          <CardFooter className="flex flex-col space-y-3 sm:space-y-4 px-4 sm:px-6">
             <Separator />
-            <div className="text-center text-sm space-y-2">
+            <div className="text-center text-xs sm:text-sm space-y-2">
               <div>
                 <span className="text-muted-foreground">Don't have an account? </span>
-                <Link href="/auth/register" className="text-primary hover:underline font-semibold">
+                <Link 
+                  href="/auth/register" 
+                  className="text-primary hover:underline font-semibold"
+                >
                   Register Now
                 </Link>
               </div>
               <div>
-                <Link href="/auth/forgot-password" className="text-muted-foreground hover:text-foreground underline text-xs">
+                <Link 
+                  href="/auth/forgot-password" 
+                  className="text-muted-foreground hover:text-foreground underline text-[10px] sm:text-xs"
+                >
                   Forgot Password?
                 </Link>
               </div>
             </div>
           </CardFooter>
         </Card>
+
+        {/* Additional Info */}
+        <div className="mt-4 sm:mt-6 text-center">
+          <p className="text-[10px] sm:text-xs text-muted-foreground px-4">
+            By continuing, you agree to our{' '}
+            <Link href="/terms" className="text-primary hover:underline">
+              Terms of Service
+            </Link>{' '}
+            and{' '}
+            <Link href="/privacy" className="text-primary hover:underline">
+              Privacy Policy
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );
