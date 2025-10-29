@@ -1,21 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
-import { Check, ChevronRight, ArrowLeft } from 'lucide-react';
-
-interface Vehicle {
-  id: string;
-  type: 'car' | 'bike';
-  category: string;
-  brand: string;
-  model: string;
-  year: string;
-  plateNumber?: string;
-}
+import { X, Car as CarIcon, Bike, Check, Plus } from 'lucide-react';
+import { useVehicleContext } from '@/context/VehicleContext';
+import { useRouter } from 'next/navigation';
+import type { Vehicle } from '@/types/vehicle';
 
 interface VehicleSelectionModalProps {
   isOpen: boolean;
@@ -24,292 +12,148 @@ interface VehicleSelectionModalProps {
   selectedVehicleId?: string;
 }
 
-const CAR_CATEGORIES = [
-  { id: 'hatchback', name: 'Hatchback', icon: '🚗' }, // Automobile emoji
-  { id: 'sedan', name: 'Sedan', icon: '🚙' }, // SUV emoji for sedan
-  { id: 'suv', name: 'SUV', icon: '🚐' }, // Minibus emoji for SUV
-];
-
-const BIKE_CATEGORIES = [
-  { id: 'scooter', name: 'Scooter', icon: '🛵' }, // Motor scooter emoji
-  { id: 'motorcycle', name: 'Motorcycle', icon: '🏍️' }, // Motorcycle emoji
-];
-
-type ViewStep = 'type' | 'category' | 'vehicle';
-
 export function VehicleSelectionModal({ 
   isOpen, 
   onClose, 
   onSelect,
   selectedVehicleId 
 }: VehicleSelectionModalProps) {
-  const [currentStep, setCurrentStep] = useState<ViewStep>('type');
-  const [selectedType, setSelectedType] = useState<'car' | 'bike' | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-
-  const mockVehicles: Vehicle[] = [
-    { id: 'v1', type: 'car', category: 'hatchback', brand: 'Maruti', model: 'Swift', year: '2023', plateNumber: 'MH12AB1234' },
-    { id: 'v2', type: 'car', category: 'hatchback', brand: 'Maruti', model: 'Baleno', year: '2022', plateNumber: 'MH14CD5678' },
-    { id: 'v3', type: 'car', category: 'hatchback', brand: 'Hyundai', model: 'i20', year: '2023', plateNumber: 'MH12EF9012' },
-    { id: 'v4', type: 'car', category: 'hatchback', brand: 'Tata', model: 'Tiago', year: '2021', plateNumber: 'MH14GH3456' },
-    { id: 'v5', type: 'car', category: 'sedan', brand: 'Maruti', model: 'Dzire', year: '2023', plateNumber: 'MH12IJ7890' },
-    { id: 'v6', type: 'car', category: 'sedan', brand: 'Honda', model: 'City', year: '2022', plateNumber: 'MH14KL1234' },
-    { id: 'v7', type: 'car', category: 'sedan', brand: 'Hyundai', model: 'Verna', year: '2023', plateNumber: 'MH12MN5678' },
-    { id: 'v8', type: 'car', category: 'sedan', brand: 'Maruti', model: 'Ciaz', year: '2021', plateNumber: 'MH14OP9012' },
-    { id: 'v9', type: 'car', category: 'suv', brand: 'Tata', model: 'Nexon', year: '2023', plateNumber: 'MH12QR3456' },
-    { id: 'v10', type: 'car', category: 'suv', brand: 'Hyundai', model: 'Creta', year: '2022', plateNumber: 'MH14ST7890' },
-    { id: 'v11', type: 'car', category: 'suv', brand: 'Mahindra', model: 'XUV500', year: '2023', plateNumber: 'MH12UV1234' },
-    { id: 'v12', type: 'car', category: 'suv', brand: 'Toyota', model: 'Fortuner', year: '2021', plateNumber: 'MH14WX5678' },
-    { id: 'v13', type: 'bike', category: 'scooter', brand: 'Honda', model: 'Activa', year: '2023', plateNumber: 'MH12YZ9012' },
-    { id: 'v14', type: 'bike', category: 'scooter', brand: 'TVS', model: 'Jupiter', year: '2022', plateNumber: 'MH14AB3456' },
-    { id: 'v15', type: 'bike', category: 'scooter', brand: 'Suzuki', model: 'Access 125', year: '2023', plateNumber: 'MH12CD7890' },
-    { id: 'v16', type: 'bike', category: 'scooter', brand: 'Yamaha', model: 'Fascino', year: '2021', plateNumber: 'MH14EF1234' },
-    { id: 'v17', type: 'bike', category: 'motorcycle', brand: 'Hero', model: 'Splendor', year: '2023', plateNumber: 'MH12GH5678' },
-    { id: 'v18', type: 'bike', category: 'motorcycle', brand: 'Bajaj', model: 'Pulsar 150', year: '2022', plateNumber: 'MH14IJ9012' },
-    { id: 'v19', type: 'bike', category: 'motorcycle', brand: 'Royal Enfield', model: 'Classic 350', year: '2023', plateNumber: 'MH12KL3456' },
-    { id: 'v20', type: 'bike', category: 'motorcycle', brand: 'KTM', model: 'Duke 200', year: '2021', plateNumber: 'MH14MN7890' },
-  ];
-
-  const handleReset = () => {
-    setCurrentStep('type');
-    setSelectedType(null);
-    setSelectedCategory(null);
-  };
-
-  const handleBack = () => {
-    if (currentStep === 'vehicle') {
-      setCurrentStep('category');
-      setSelectedCategory(null);
-    } else if (currentStep === 'category') {
-      setCurrentStep('type');
-      setSelectedType(null);
-    }
-  };
-
-  const handleTypeSelect = (type: 'car' | 'bike') => {
-    setSelectedType(type);
-    setCurrentStep('category');
-  };
-
-  const handleCategorySelect = (categoryId: string) => {
-    setSelectedCategory(categoryId);
-    setCurrentStep('vehicle');
-  };
+  const { vehicles } = useVehicleContext();
+  const router = useRouter();
 
   const handleVehicleSelect = (vehicle: Vehicle) => {
     onSelect(vehicle);
-    handleReset();
     onClose();
   };
 
-  const filteredVehicles = mockVehicles.filter(
-    v => v.type === selectedType && v.category === selectedCategory
-  );
-
-  const categories = selectedType === 'car' ? CAR_CATEGORIES : BIKE_CATEGORIES;
-
-  const getStepTitle = () => {
-    if (currentStep === 'type') return 'Select Vehicle Type';
-    if (currentStep === 'category') return `${selectedType === 'car' ? 'Car' : 'Bike'} Category`;
-    return `Select ${selectedCategory}`;
-  };
-
-  // Get category icon for vehicle list
-  const getCategoryIcon = (type: string, category: string) => {
-    if (type === 'car') {
-      const carCategory = CAR_CATEGORIES.find(c => c.id === category);
-      return carCategory?.icon || '🚗';
-    } else {
-      const bikeCategory = BIKE_CATEGORIES.find(c => c.id === category);
-      return bikeCategory?.icon || '🛵';
-    }
+  const handleAddVehicle = () => {
+    onClose();
+    router.push('/profile/vehicles');
   };
 
   if (!isOpen) return null;
 
   return (
     <>
-      {/* Custom Backdrop with Blur */}
+      {/* Backdrop with Blur */}
       <div 
         className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md dark:bg-black/70"
-        onClick={() => { handleReset(); onClose(); }}
+        onClick={onClose}
       />
 
-      {/* Modal Dialog */}
+      {/* Modal */}
       <div className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-full max-w-md">
-        <div className="border-2 border-border rounded-lg shadow-2xl max-h-[90vh] overflow-hidden flex flex-col mx-4 vehicle-modal-bg">
+        <div className="bg-white dark:bg-card border-2 border-border rounded-2xl shadow-2xl max-h-[85vh] overflow-hidden flex flex-col mx-4">
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-border flex-shrink-0 vehicle-modal-bg">
-            <div className="flex items-center gap-2 flex-1 min-w-0">
-              {currentStep !== 'type' && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 flex-shrink-0 -ml-2"
-                  onClick={handleBack}
-                >
-                  <ArrowLeft className="h-4 w-4 text-gray-700 dark:text-foreground" />
-                </Button>
-              )}
-              <div className="flex-1 min-w-0">
-                <h2 className="text-base font-semibold text-foreground truncate">
-                  {getStepTitle()}
-                </h2>
-                <div className="flex items-center gap-1 text-[10px] text-muted-foreground mt-0.5">
-                  <span className={currentStep === 'type' ? 'text-primary font-medium' : ''}>Type</span>
-                  {currentStep !== 'type' && (
-                    <>
-                      <ChevronRight className="h-3 w-3" />
-                      <span className={currentStep === 'category' ? 'text-primary font-medium' : ''}>Category</span>
-                    </>
-                  )}
-                  {currentStep === 'vehicle' && (
-                    <>
-                      <ChevronRight className="h-3 w-3" />
-                      <span className="text-primary font-medium capitalize truncate">{selectedCategory}</span>
-                    </>
-                  )}
-                </div>
-              </div>
+          <div className="flex items-center justify-between px-5 py-4 border-b border-border bg-gray-50 dark:bg-muted/10">
+            <div>
+              <h2 className="text-lg font-bold text-foreground">My Vehicles</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">Select or add a vehicle</p>
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 flex-shrink-0"
-              onClick={() => { handleReset(); onClose(); }}
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-muted rounded-xl transition-colors"
             >
-              <span className="sr-only">Close</span>
-              <svg className="h-4 w-4 text-gray-700 dark:text-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </Button>
+              <X className="h-5 w-5 text-muted-foreground" />
+            </button>
           </div>
 
           {/* Content */}
-          <div className="flex-1 overflow-y-auto p-4 vehicle-modal-bg">
-            {/* Step 1: Vehicle Type */}
-            {currentStep === 'type' && (
-              <div className="grid grid-cols-2 gap-3">
-                <Card
-                  className="cursor-pointer transition-all hover:shadow-md hover:border-primary border-2 vehicle-card"
-                  onClick={() => handleTypeSelect('car')}
+          <div className="flex-1 overflow-y-auto p-4 bg-gray-50 dark:bg-muted/5">
+            {vehicles.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                  <CarIcon className="h-10 w-10 text-primary" />
+                </div>
+                <p className="text-base font-semibold text-foreground mb-1">No Vehicles Added</p>
+                <p className="text-sm text-muted-foreground mb-6">Add your first vehicle to get started</p>
+                <button
+                  onClick={handleAddVehicle}
+                  className="px-6 py-2.5 bg-primary text-primary-foreground rounded-xl font-medium hover:opacity-90 transition-opacity flex items-center gap-2"
                 >
-                  <CardContent className="p-6 text-center flex flex-col items-center">
-                    <div className="text-5xl mb-3">🚗</div>
-                    <h3 className="font-semibold text-sm mb-1.5 text-foreground">Cars</h3>
-                    <p className="text-[11px] text-muted-foreground mb-2.5 leading-tight">
-                      Hatchback, Sedan, SUV
-                    </p>
-                    <Badge variant="secondary" className="text-xs font-medium">
-                      {mockVehicles.filter(v => v.type === 'car').length}
-                    </Badge>
-                  </CardContent>
-                </Card>
-
-                <Card
-                  className="cursor-pointer transition-all hover:shadow-md hover:border-primary border-2 vehicle-card"
-                  onClick={() => handleTypeSelect('bike')}
-                >
-                  <CardContent className="p-6 text-center flex flex-col items-center">
-                    <div className="text-5xl mb-3">🏍️</div>
-                    <h3 className="font-semibold text-sm mb-1.5 text-foreground">Bikes</h3>
-                    <p className="text-[11px] text-muted-foreground mb-2.5 leading-tight">
-                      Scooter, Motorcycle
-                    </p>
-                    <Badge variant="secondary" className="text-xs font-medium">
-                      {mockVehicles.filter(v => v.type === 'bike').length}
-                    </Badge>
-                  </CardContent>
-                </Card>
+                  <Plus className="h-4 w-4" />
+                  Add Vehicle
+                </button>
               </div>
-            )}
-
-            {/* Step 2: Category */}
-            {currentStep === 'category' && (
-              <div className="space-y-2.5">
-                {categories.map((category) => {
-                  const vehicleCount = mockVehicles.filter(
-                    v => v.type === selectedType && v.category === category.id
-                  ).length;
+            ) : (
+              <div className="space-y-2">
+                {vehicles.map((vehicle) => {
+                  const isSelected = vehicle.id === selectedVehicleId;
+                  const VehicleIcon = vehicle.type === 'car' ? CarIcon : Bike;
+                  const vehicleImage = vehicle.type === 'car' 
+                    ? '/images/vehicles/car-placeholder.svg' 
+                    : '/images/vehicles/bike-placeholder.svg';
 
                   return (
-                    <Card
-                      key={category.id}
-                      className="cursor-pointer transition-all hover:shadow-sm hover:border-primary border-2 vehicle-card"
-                      onClick={() => handleCategorySelect(category.id)}
+                    <button
+                      key={vehicle.id}
+                      onClick={() => handleVehicleSelect(vehicle)}
+                      className={`w-full p-4 rounded-xl border-2 transition-all text-left group ${
+                        isSelected
+                          ? 'border-primary bg-primary/10 shadow-sm'
+                          : 'border-border hover:border-primary/50 hover:bg-white dark:hover:bg-card hover:shadow-sm'
+                      }`}
                     >
-                      <CardContent className="p-3.5">
-                        <div className="flex items-center gap-3">
-                          <div className="text-3xl flex-shrink-0">{category.icon}</div>
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-medium text-sm truncate text-foreground">
-                              {category.name}
-                            </h3>
-                            <p className="text-[11px] text-muted-foreground">
-                              {vehicleCount} available
-                            </p>
-                          </div>
-                          <ChevronRight className="h-5 w-5 text-gray-500 dark:text-muted-foreground flex-shrink-0" />
+                      <div className="flex items-center gap-3">
+                        <div className={`p-2 rounded-lg ${isSelected ? 'bg-primary/20' : 'bg-muted group-hover:bg-muted/80'}`}>
+                          <img 
+                            src={vehicleImage} 
+                            alt={vehicle.type}
+                            className="h-12 w-12 object-contain"
+                          />
                         </div>
-                      </CardContent>
-                    </Card>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-sm text-foreground truncate">
+                            {vehicle.make} {vehicle.model}
+                          </p>
+                          <p className="text-xs text-muted-foreground truncate mt-0.5">
+                            {vehicle.registrationNumber} • {vehicle.year}
+                          </p>
+                        </div>
+                        {isSelected && (
+                          <div className="flex-shrink-0">
+                            <div className="h-7 w-7 rounded-full bg-primary flex items-center justify-center">
+                              <Check className="h-4 w-4 text-white" strokeWidth={3} />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      {vehicle.isPrimary && (
+                        <div className="mt-2.5 pt-2.5 border-t border-border/50">
+                          <span className="text-xs font-semibold text-primary">⭐ Primary Vehicle</span>
+                        </div>
+                      )}
+                    </button>
                   );
                 })}
-              </div>
-            )}
-
-            {/* Step 3: Vehicle List */}
-            {currentStep === 'vehicle' && (
-              <div className="space-y-2.5">
-                {filteredVehicles.length === 0 ? (
-                  <div className="text-center py-12 bg-white dark:bg-muted/20 rounded-lg border-2 border-dashed border-border">
-                    <div className="text-5xl mb-3">
-                      {getCategoryIcon(selectedType || 'car', selectedCategory || '')}
+                
+                {/* Add Vehicle Button */}
+                <button
+                  onClick={handleAddVehicle}
+                  className="w-full p-4 rounded-xl border-2 border-dashed border-border hover:border-primary hover:bg-primary/5 transition-all text-left group mt-2"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 rounded-lg bg-muted group-hover:bg-primary/10">
+                      <Plus className="h-5 w-5 text-muted-foreground group-hover:text-primary" />
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                      No {selectedCategory}s available
-                    </p>
+                    <div className="flex-1">
+                      <p className="font-semibold text-sm text-foreground">Add New Vehicle</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">Register another vehicle</p>
+                    </div>
                   </div>
-                ) : (
-                  filteredVehicles.map((vehicle) => {
-                    const isSelected = vehicle.id === selectedVehicleId;
-                    const vehicleIcon = getCategoryIcon(vehicle.type, vehicle.category);
-                    
-                    return (
-                      <Card
-                        key={vehicle.id}
-                        className={`cursor-pointer transition-all border-2 vehicle-card ${
-                          isSelected 
-                            ? 'border-primary bg-primary/5 shadow-md' 
-                            : 'border-border hover:border-primary hover:shadow-sm'
-                        }`}
-                        onClick={() => handleVehicleSelect(vehicle)}
-                      >
-                        <CardContent className="p-3.5">
-                          <div className="flex items-center gap-3">
-                            <div className="text-2xl flex-shrink-0">{vehicleIcon}</div>
-                            <div className="flex-1 min-w-0">
-                              <p className="font-medium text-sm text-foreground truncate">
-                                {vehicle.brand} {vehicle.model}
-                              </p>
-                              <p className="text-[11px] text-muted-foreground truncate">
-                                {vehicle.plateNumber} • {vehicle.year}
-                              </p>
-                            </div>
-                            {isSelected && (
-                              <div className="h-7 w-7 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
-                                <Check className="h-4 w-4 text-white" strokeWidth={3} />
-                              </div>
-                            )}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })
-                )}
+                </button>
               </div>
             )}
           </div>
+
+          {/* Footer */}
+          {vehicles.length > 0 && (
+            <div className="px-5 py-3 border-t border-border bg-gray-50 dark:bg-muted/10">
+              <p className="text-xs text-muted-foreground text-center">
+                {selectedVehicleId ? 'Tap a vehicle to switch' : 'Select a vehicle to continue'}
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </>

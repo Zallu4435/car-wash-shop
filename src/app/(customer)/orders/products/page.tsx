@@ -6,13 +6,14 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { getMockData } from '@/lib/api/mockData';
+import { useOrders } from '@/api/domains/orders/queries';
 import { Package, Calendar, ChevronRight, Car, ArrowLeft, Search, Filter, ShoppingBag, SlidersHorizontal, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { EmptyState } from '@/components/shared/display/EmptyState';
 
 export default function ProductOrdersPage() {
-  const orders = getMockData.orders();
+  const { data: ordersResponse } = useOrders({ type: 'product' });
+  const orders = ordersResponse?.data || [];
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [showFilters, setShowFilters] = useState(false);

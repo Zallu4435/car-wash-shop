@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { AddAddressDialog } from '@/components/shared/dialogs/AddAddressDialog';
-import { Address } from '@/lib/api/bookingApi';
+import type { Address } from '@/types/address';
 
 interface AddressSelectorProps {
   addresses: Address[];
@@ -91,7 +91,7 @@ export function AddressSelector({
                             {address.label}
                           </p>
                           <p className="text-[10px] sm:text-xs md:text-sm text-muted-foreground break-words leading-relaxed">
-                            {address.address}
+                            {address.line1}{address.line2 ? ', ' + address.line2 : ''}, {address.city}, {address.state} - {address.pincode}
                           </p>
                         </div>
                       </div>

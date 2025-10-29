@@ -5,7 +5,13 @@ import { Car, Bike, Home } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { ServiceType } from '@/lib/api/bookingApi';
+
+interface ServiceType {
+  id: string;
+  name: string;
+  icon: string;
+  description: string;
+}
 
 const iconMap = {
   Car,

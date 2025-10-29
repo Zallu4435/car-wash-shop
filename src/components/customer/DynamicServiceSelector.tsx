@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Sparkles, Droplet, Star, CheckCircle, Home as HomeIcon, Loader2 } from 'lucide-react';
-import { Service } from '@/lib/api/bookingApi';
+import type { Service } from '@/types/service';
 
 const iconMap = {
   Sparkles,

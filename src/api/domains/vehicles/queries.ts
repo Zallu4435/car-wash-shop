@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { vehicleFetchers } from './fetchers';
-import type { VehicleInput } from '@/types/vehicle';
+import type { Vehicle, VehicleInput } from '@/types/vehicle';
 import { toast } from 'sonner';
 
 export const vehicleKeys = {
@@ -34,7 +34,7 @@ export const useUpdateVehicle = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, input }: { id: string; input: Partial<VehicleInput> }) =>
+    mutationFn: ({ id, input }: { id: string; input: Partial<Omit<Vehicle, 'id' | 'userId' | 'createdAt' | 'updatedAt'>> }) =>
       vehicleFetchers.updateVehicle(id, input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: vehicleKeys.all });

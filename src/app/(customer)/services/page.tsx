@@ -12,6 +12,8 @@ import { VehicleSelectionModal } from '@/components/shared/selectors/VehicleSele
 import { useServices, useServiceCategories } from '@/api/domains/services/queries';
 import type { ServiceFilters } from '@/types/service';
 import Loading from '@/components/shared/display/Loading';
+import { useVehicleContext } from '@/context/VehicleContext';
+import { mockServiceTypes } from '@/mocks/data/customer-mock-data';
 
 const ITEMS_PER_PAGE = 6;
 
@@ -21,6 +23,9 @@ export default function ServicesPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [showVehicleModal, setShowVehicleModal] = useState(false);
+
+  // Get selected vehicle from context
+  const { selectedVehicle, vehicles, selectVehicle } = useVehicleContext();
 
   // API filters
   const filters: ServiceFilters = {
@@ -34,32 +39,13 @@ export default function ServicesPage() {
 
   const allServices = servicesResponse?.data || [];
 
-  // Dummy user's vehicles (no API/localStorage) - first becomes default
-  type SelectedVehicle = {
-    id: string;
-    type: 'car' | 'bike';
-    brand: string;
-    model: string;
-    category: string; // hatchback | sedan | suv | luxury | scooter | motorcycle
-  } | null;
-
-  const [selectedVehicle, setSelectedVehicle] = useState<SelectedVehicle>(null);
-
-  useEffect(() => {
-    const dummyVehicles: SelectedVehicle[] = [
-      { id: 'u1', type: 'car', brand: 'Maruti', model: 'Swift', category: 'hatchback' },
-      { id: 'u2', type: 'bike', brand: 'Honda', model: 'Activa', category: 'scooter' },
-    ];
-    if (dummyVehicles.length > 0) {
-      setSelectedVehicle(dummyVehicles[0]);
-    }
-  }, []);
-
-  // Vehicle types with actual counts
-  const vehicleTypes = [
-    { id: 'car', name: 'Car Services', icon: 'Car', count: allServices.filter((s: any) => s.vehicleType === 'car').length },
-    { id: 'bike', name: 'Bike Services', icon: 'Bike', count: allServices.filter((s: any) => s.vehicleType === 'bike').length },
-  ];
+  // Vehicle types with actual counts from mock data
+  const vehicleTypes = mockServiceTypes.map(type => ({
+    id: type.id,
+    name: type.name,
+    icon: type.icon,
+    count: allServices.filter((s: any) => s.vehicleType === type.id).length,
+  }));
 
   // All categories from API
   const allCategories = categories.map(cat => ({
@@ -154,19 +140,27 @@ export default function ServicesPage() {
   };
 
   const computeDynamicPrice = (basePrice: number, serviceVehicleType: string) => {
-    if (!selectedVehicle) return null;
-    // Only apply when service type matches selected vehicle domain
+    if (!selectedVehicle) {
+      return null;
+    }
+    
+    // Only apply when service type matches selected vehicle type
     const isCarService = serviceVehicleType === 'car';
     const isBikeService = serviceVehicleType === 'bike';
+    
     if ((selectedVehicle.type === 'car' && !isCarService) || (selectedVehicle.type === 'bike' && !isBikeService)) {
       return null;
     }
 
-    const key = selectedVehicle.category.toLowerCase();
-    const delta = vehiclePriceDelta[key] ?? 0;
+    // For vehicles from context, we don't have category, so use a default pricing
+    // You can enhance this by adding vehicle category to the Vehicle type
+    const vehicleType = selectedVehicle.type;
+    const delta = vehicleType === 'bike' ? -150 : 0; // Default: bikes get discount, cars use base price
+    
     const price = Math.max(0, basePrice + delta);
-    const badgeLabel = `${selectedVehicle.type === 'car' ? key.toUpperCase() : (key === 'motorcycle' ? 'BIKE' : key.toUpperCase())} pricing`;
-    const bodyTypeBadge = selectedVehicle.type === 'car' ? key.toUpperCase() : (key === 'motorcycle' ? 'BIKE' : key.toUpperCase());
+    const badgeLabel = `${selectedVehicle.make} ${selectedVehicle.model}`;
+    const bodyTypeBadge = vehicleType.toUpperCase();
+    
     return { price, badgeLabel, bodyTypeBadge };
   };
 
@@ -192,10 +186,10 @@ export default function ServicesPage() {
                 {selectedVehicle ? (
                   <>
                     <p className="text-sm font-semibold text-foreground truncate">
-                      Showing prices for: {selectedVehicle.brand} {selectedVehicle.model}
+                      Showing prices for: {selectedVehicle.make} {selectedVehicle.model}
                     </p>
                     <p className="text-xs text-muted-foreground capitalize truncate">
-                      Body type: {selectedVehicle.category}
+                      {selectedVehicle.type === 'car' ? 'Car' : 'Bike'} • {selectedVehicle.year}
                     </p>
                   </>
                 ) : (
@@ -457,17 +451,9 @@ export default function ServicesPage() {
       <VehicleSelectionModal
         isOpen={showVehicleModal}
         onClose={() => setShowVehicleModal(false)}
-        onSelect={(vehicle: any) => {
-          // Map selector vehicle to our local SelectedVehicle shape
-          const bodyType = (vehicle.category || '').toLowerCase();
-          const mapped: any = {
-            id: vehicle.id,
-            type: vehicle.type,
-            brand: vehicle.brand,
-            model: vehicle.model,
-            category: bodyType,
-          };
-          setSelectedVehicle(mapped);
+        onSelect={(vehicle) => {
+          // Select vehicle using context - this will trigger re-render with new prices
+          selectVehicle(vehicle.id);
         }}
         selectedVehicleId={selectedVehicle?.id}
       />

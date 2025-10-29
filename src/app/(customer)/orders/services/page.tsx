@@ -7,13 +7,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { getMockData } from '@/lib/api/mockData';
+import { useOrders } from '@/api/domains/orders/queries';
 import { Package, Calendar, ChevronRight, ShoppingBag, Car, Bike, Home, ArrowLeft, Search, Filter, SlidersHorizontal, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { EmptyState } from '@/components/shared/display/EmptyState';
+import { mockServiceTypes } from '@/mocks/data/customer-mock-data';
 
 export default function ServiceOrdersPage() {
-  const orders = getMockData.orders();
+  const { data: ordersResponse } = useOrders({ type: 'service' });
+  const orders = ordersResponse?.data || [];
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [serviceTypeFilter, setServiceTypeFilter] = useState('all');
@@ -21,9 +23,11 @@ export default function ServiceOrdersPage() {
 
   const serviceTypes = [
     { id: 'all', name: 'All Services', icon: Package },
-    { id: 'car', name: 'Car Services', icon: Car },
-    { id: 'bike', name: 'Bike Services', icon: Bike },
-    { id: 'home', name: 'Home Cleaning', icon: Home },
+    ...mockServiceTypes.map(type => ({
+      id: type.id,
+      name: type.name,
+      icon: type.icon === 'Car' ? Car : Bike,
+    })),
   ];
 
   // Prevent body scroll when filter modal is open

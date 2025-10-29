@@ -14,6 +14,7 @@ import { useService } from '@/api/domains/services/queries';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
 import { useRouter } from 'next/navigation';
+import { mockAddOns } from '@/mocks/data/customer-mock-data';
 
 export default function ServiceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -38,12 +39,6 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
   }
 
   const calculateTotal = () => {
-    // For now, we'll use a mock addOns structure since the API Service type doesn't include addOns
-    const mockAddOns = [
-      { id: 'addon_wax', name: 'Wax Coating', price: 150, duration: 15 },
-      { id: 'addon_polish', name: 'Polish', price: 200, duration: 20 },
-      { id: 'addon_engine', name: 'Engine Bay Cleaning', price: 250, duration: 20 },
-    ];
     
     const addOnsTotal = selectedAddOns.reduce((sum, addonId) => {
       const addon = mockAddOns.find((a) => a.id === addonId);
@@ -53,11 +48,6 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
   };
 
   const calculateDuration = () => {
-    const mockAddOns = [
-      { id: 'addon_wax', name: 'Wax Coating', price: 150, duration: 15 },
-      { id: 'addon_polish', name: 'Polish', price: 200, duration: 20 },
-      { id: 'addon_engine', name: 'Engine Bay Cleaning', price: 250, duration: 20 },
-    ];
     
     const addOnsDuration = selectedAddOns.reduce((sum, addonId) => {
       const addon = mockAddOns.find((a) => a.id === addonId);
@@ -251,11 +241,6 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
                     <>
                       <Separator />
                       {selectedAddOns.map((addonId) => {
-                        const mockAddOns = [
-                          { id: 'addon_wax', name: 'Wax Coating', price: 150 },
-                          { id: 'addon_polish', name: 'Polish', price: 200 },
-                          { id: 'addon_engine', name: 'Engine Bay Cleaning', price: 250 },
-                        ];
                         const addon = mockAddOns.find((a) => a.id === addonId);
                         return (
                           <div key={addonId} className="flex justify-between text-xs sm:text-sm">

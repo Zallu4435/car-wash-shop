@@ -11,7 +11,6 @@ import { Separator } from '@/components/ui/separator';
 import { Phone, Lock, LogIn, Droplet } from 'lucide-react';
 import { toast } from 'sonner';
 import { VehicleSelectionModal } from '@/components/shared/selectors/VehicleSelectionModal';
-import { bookingApi } from '@/lib/api/bookingApi';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema } from '@/schemas/auth';

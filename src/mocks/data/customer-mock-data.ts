@@ -410,40 +410,49 @@ export const mockOrders: Order[] = [
   },
 ];
 
-// Mock Addresses
-export const mockAddresses: DeliveryAddress[] = [
+// Mock Addresses (matching Address type from address.ts)
+export const mockAddresses = [
   {
     id: 'addr_001',
+    userId: 'user_001',
     label: 'Home',
-    addressLine1: '123 MG Road',
-    addressLine2: 'Near City Center',
+    line1: '123 MG Road',
+    line2: 'Near City Center',
     city: 'Bangalore',
     state: 'Karnataka',
     pincode: '560001',
-    phone: '+91 9876543210',
-    isDefault: true,
+    landmark: 'Near Metro Station',
+    isPrimary: true,
+    createdAt: '2024-01-15T10:00:00Z',
+    updatedAt: '2024-01-15T10:00:00Z',
   },
   {
     id: 'addr_002',
+    userId: 'user_001',
     label: 'Office',
-    addressLine1: '456 Brigade Road',
-    addressLine2: 'Tech Park, 5th Floor',
+    line1: '456 Brigade Road',
+    line2: 'Tech Park, 5th Floor',
     city: 'Bangalore',
     state: 'Karnataka',
     pincode: '560025',
-    phone: '+91 9876543211',
-    isDefault: false,
+    landmark: 'Opposite Mall',
+    isPrimary: false,
+    createdAt: '2024-02-10T14:30:00Z',
+    updatedAt: '2024-02-10T14:30:00Z',
   },
   {
     id: 'addr_003',
+    userId: 'user_001',
     label: 'Parents House',
-    addressLine1: '789 Indiranagar',
-    addressLine2: 'Sector 12',
+    line1: '789 Indiranagar',
+    line2: 'Sector 12',
     city: 'Bangalore',
     state: 'Karnataka',
     pincode: '560038',
-    phone: '+91 9876543212',
-    isDefault: false,
+    landmark: 'Near Park',
+    isPrimary: false,
+    createdAt: '2024-03-05T09:15:00Z',
+    updatedAt: '2024-03-05T09:15:00Z',
   },
 ];
 
@@ -791,5 +800,53 @@ export const mockTestimonials: Testimonial[] = [
     serviceName: 'Full Detailing',
     createdAt: '2025-10-26T13:00:00Z',
     featured: true,
+  },
+];
+
+// Mock Service Types
+export const mockServiceTypes = [
+  { 
+    id: 'car', 
+    name: 'Car Services', 
+    icon: 'Car', 
+    description: 'Professional car wash and detailing' 
+  },
+  { 
+    id: 'bike', 
+    name: 'Bike Services', 
+    icon: 'Bike', 
+    description: 'Quick bike wash and maintenance' 
+  },
+];
+
+// Mock Add-ons
+export const mockAddOns = [
+  {
+    id: 'addon_001',
+    name: 'Wax Polish',
+    description: 'Premium wax coating for extra shine',
+    price: 299,
+    duration: 20,
+  },
+  {
+    id: 'addon_002',
+    name: 'Interior Vacuum',
+    description: 'Deep vacuum cleaning of car interior',
+    price: 199,
+    duration: 15,
+  },
+  {
+    id: 'addon_003',
+    name: 'Engine Wash',
+    description: 'Professional engine bay cleaning',
+    price: 399,
+    duration: 25,
+  },
+  {
+    id: 'addon_004',
+    name: 'Tire Shine',
+    description: 'Long-lasting tire shine treatment',
+    price: 149,
+    duration: 10,
   },
 ];

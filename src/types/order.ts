@@ -36,6 +36,7 @@ export interface Order {
   
   export interface OrderFilters {
     status?: string;
+    type?: 'service' | 'product';
     fromDate?: string;
     toDate?: string;
     page?: number;

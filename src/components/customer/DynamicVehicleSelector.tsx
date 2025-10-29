@@ -10,7 +10,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { bookingApi, Vehicle, Address } from '@/lib/api/bookingApi';
+import type { Vehicle } from '@/types/vehicle';
+import type { Address } from '@/types/address';
 import { VehicleSelectionModal } from '@/components/shared/selectors/VehicleSelectionModal';
 
 interface DynamicVehicleSelectorProps {
@@ -39,52 +40,15 @@ export function DynamicVehicleSelector({
   const Icon = serviceType === 'car' ? Car : serviceType === 'bike' ? Bike : MapPin;
   const isHomeService = serviceType === 'home';
 
-  const handleAddressSubmit = async (e: React.FormEvent) => {
+  const handleAddAddress = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-
-    try {
-      if (!addressLabel || !addressText) {
-        toast.error('Please fill all fields');
-        return;
-      }
-      await bookingApi.addAddress({
-        label: addressLabel,
-        address: addressText,
-      });
-      toast.success('Address added successfully');
-
-      setAddressLabel('');
-      setAddressText('');
-      setIsAddressDialogOpen(false);
-      
-      onVehicleAdded();
-    } catch (error) {
-      toast.error('Failed to add address');
-    } finally {
-      setLoading(false);
-    }
+    toast.info('Please use the Add Address button in the address selection');
+    setIsAddressDialogOpen(false);
   };
 
   const handleVehicleSelect = async (vehicle: any) => {
-    try {
-      // Add the vehicle via API
-      await bookingApi.addVehicle({
-        brandId: vehicle.brand,
-        modelId: vehicle.model,
-        year: parseInt(vehicle.year),
-        plateNumber: vehicle.plateNumber || undefined,
-        vehicleTypeId: serviceType,
-      });
-      
-      toast.success(`${serviceType === 'car' ? 'Vehicle' : 'Bike'} added successfully`);
-      setIsVehicleModalOpen(false);
-      
-      // Refresh the list
-      onVehicleAdded();
-    } catch (error) {
-      toast.error('Failed to add vehicle');
-    }
+    toast.info('Please use the vehicle management page to add vehicles');
+    setIsVehicleModalOpen(false);
   };
 
   const items = isHomeService ? addresses : vehicles;
@@ -111,7 +75,7 @@ export function DynamicVehicleSelector({
               <DialogHeader>
                 <DialogTitle className="text-base sm:text-lg">Add New Address</DialogTitle>
               </DialogHeader>
-              <form onSubmit={handleAddressSubmit} className="space-y-4">
+              <form onSubmit={handleAddAddress} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="label" className="text-xs sm:text-sm">Label *</Label>
                   <Select value={addressLabel} onValueChange={setAddressLabel}>
@@ -214,7 +178,7 @@ export function DynamicVehicleSelector({
                                 {address.label}
                               </p>
                               <p className="text-[10px] sm:text-xs md:text-sm text-muted-foreground break-words leading-relaxed">
-                                {address.address}
+                                {address.line1}{address.line2 ? ', ' + address.line2 : ''}, {address.city}, {address.state} - {address.pincode}
                               </p>
                             </div>
                           </div>
@@ -251,10 +215,10 @@ export function DynamicVehicleSelector({
                             </div>
                             <div className="min-w-0 flex-1">
                               <p className="font-semibold text-foreground text-xs sm:text-sm md:text-base truncate">
-                                {vehicle.brandName} {vehicle.modelName}
+                                {vehicle.make} {vehicle.model}
                               </p>
                               <p className="text-[10px] sm:text-xs md:text-sm text-muted-foreground truncate">
-                                {vehicle.plateNumber ? `${vehicle.plateNumber} • ` : ''}{vehicle.year}
+                                {vehicle.registrationNumber}
                               </p>
                             </div>
                           </div>

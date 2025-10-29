@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Pagination } from '@/components/shared/crud/Pagination';
-import { getMockData } from '@/lib/api/mockData';
+import { useOrders } from '@/api/domains/orders/queries';
 import { Package, Calendar, ChevronRight, ShoppingBag, ArrowLeft, Search, Filter, X, Car, SlidersHorizontal } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import Loading from '@/components/shared/display/Loading';
@@ -19,10 +19,10 @@ const ITEMS_PER_PAGE = 6;
 export default function AllOrdersPage() {
   // If data became async: add loading state
   // For now, as a placeholder (in real usage, tie to isLoading from API)
-  // const { data: orders, isLoading } = useOrders();
-  // if (isLoading) { return <Loading text="Loading orders..." /> }
+  const { data: ordersResponse, isLoading } = useOrders();
+  if (isLoading) { return <Loading text="Loading orders..." /> }
 
-  const orders = getMockData.orders();
+  const orders = ordersResponse?.data || [];
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');

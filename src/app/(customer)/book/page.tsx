@@ -20,6 +20,7 @@ import type { Service, ServiceCategory } from '@/types/service';
 import type { Vehicle } from '@/types/vehicle';
 import type { Address } from '@/types/address';
 import Loading from '@/components/shared/display/Loading';
+import { mockServiceTypes, mockAddOns } from '@/mocks/data/customer-mock-data';
 
 export default function BookingPage() {
   const router = useRouter();
@@ -29,7 +30,7 @@ export default function BookingPage() {
   const [services, setServices] = useState<Service[]>([]);
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [addresses, setAddresses] = useState<Address[]>([]);
-  const [addOns, setAddOns] = useState<any[]>([]);
+  const addOns = mockAddOns; // Use mock add-ons
   
   // Selections
   const [serviceType, setServiceType] = useState<string>('');
@@ -50,11 +51,8 @@ export default function BookingPage() {
   const { data: addressesData = [], isLoading: addressesLoading } = useAddresses();
   const createBookingMutation = useCreateBooking();
 
-  // Service types - hardcoded for now since categories don't have vehicleTypeId
-  const serviceTypes = [
-    { id: 'car', name: 'Car Services', icon: 'Car', description: 'Professional car wash and detailing' },
-    { id: 'bike', name: 'Bike Services', icon: 'Bike', description: 'Quick bike wash and maintenance' },
-  ];
+  // Service types from mock data
+  const serviceTypes = mockServiceTypes;
 
   // Load data when service type changes
   useEffect(() => {

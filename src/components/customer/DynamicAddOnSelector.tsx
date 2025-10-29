@@ -5,7 +5,13 @@ import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Plus } from 'lucide-react';
-import { AddOn } from '@/lib/api/bookingApi';
+
+interface AddOn {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+}
 
 interface DynamicAddOnSelectorProps {
   addOns: AddOn[];

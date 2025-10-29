@@ -4,9 +4,14 @@ import { ShoppingCart, User, Menu, X, Droplet, Sun, Moon, Monitor, Bell, LogOut,
 import { useState, useEffect } from 'react';
 import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
+import { useVehicleContext } from '@/context/VehicleContext';
 import { useRouter, usePathname } from 'next/navigation';
 import { NotificationPanel } from '@/components/shared/notification/NotificationPanel';
 import { VehicleSelectionModal } from '@/components/shared/selectors/VehicleSelectionModal';
+import { useCart } from '@/api/domains/cart/queries';
+import { useUpdateVehicle } from '@/api/domains/vehicles/queries';
+import type { Vehicle } from '@/types/vehicle';
+import { toast } from 'sonner';
 
 const navigation = [
   { name: 'Home', href: '/' },
@@ -17,16 +22,6 @@ const navigation = [
 
 // Default avatar for users without profile picture
 const DEFAULT_AVATAR = '/images/avatars/default-avatar.svg';
-
-interface Vehicle {
-  id: string;
-  type: 'car' | 'bike';
-  category: string;
-  brand: string;
-  model: string;
-  year: string;
-  plateNumber?: string;
-}
 
 export default function EnhancedHeader() {
   const router = useRouter();
@@ -41,8 +36,14 @@ export default function EnhancedHeader() {
   
   const { theme, resolvedTheme, setTheme } = useTheme();
   const { user, isAuthenticated, logout, isLoading } = useAuth();
-
-  const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
+  const { selectedVehicle, selectVehicle, clearVehicle, hasVehicles } = useVehicleContext();
+  const updateVehicleMutation = useUpdateVehicle();
+  
+  // Fetch cart data
+  const { data: cartData } = useCart();
+  
+  // Calculate cart count
+  const cartCount = cartData?.items?.length || 0;
 
   // Reset avatar error when user changes
   useEffect(() => {
@@ -77,20 +78,30 @@ export default function EnhancedHeader() {
   const handleLogout = () => {
     logout();
     setShowUserMenu(false);
-    setSelectedVehicle(null);
+    clearVehicle();
   };
 
   const handleVehicleClick = () => {
-    if (selectedVehicle) {
-      router.push('/settings/vehicles');
-    } else {
-      setShowVehicleModal(true);
-    }
+    // Always show modal to allow vehicle switching
+    setShowVehicleModal(true);
   };
 
   const handleVehicleSelect = (vehicle: Vehicle) => {
-    setSelectedVehicle(vehicle);
-    localStorage.setItem('selectedVehicle', JSON.stringify(vehicle));
+    // Update context immediately for instant UI feedback
+    selectVehicle(vehicle.id);
+    
+    // Set as primary vehicle in the background
+    updateVehicleMutation.mutate({
+      id: vehicle.id,
+      input: { isPrimary: true }
+    }, {
+      onSuccess: () => {
+        toast.success(`${vehicle.make} ${vehicle.model} is now your primary vehicle`);
+      },
+      onError: () => {
+        toast.error('Failed to set as primary vehicle');
+      }
+    });
   };
 
   const themeOptions = [
@@ -179,16 +190,31 @@ export default function EnhancedHeader() {
             <div className="flex items-center gap-1 sm:gap-2">
               {/* Vehicle Selector */}
               {isAuthenticated && (
-                <button
-                  onClick={handleVehicleClick}
-                  className="relative p-2 sm:p-2.5 rounded-lg sm:rounded-xl hover:bg-muted transition-colors group hidden sm:block"
-                  title={selectedVehicle ? `${selectedVehicle.brand} ${selectedVehicle.model}` : 'Select vehicle'}
-                >
-                  <Car className="h-4 w-4 sm:h-5 sm:w-5 text-foreground group-hover:text-primary" />
+                <div className="relative hidden sm:block group/vehicle">
+                  <button
+                    onClick={handleVehicleClick}
+                    className="relative p-2 sm:p-2.5 rounded-lg sm:rounded-xl hover:bg-muted transition-colors group"
+                  >
+                    <Car className="h-4 w-4 sm:h-5 sm:w-5 text-foreground group-hover:text-primary" />
+                    {selectedVehicle && (
+                      <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 sm:h-3 sm:w-3 rounded-full border-2 border-background bg-primary" />
+                    )}
+                  </button>
+                  
+                  {/* Vehicle Tooltip */}
                   {selectedVehicle && (
-                    <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 sm:h-3 sm:w-3 rounded-full border-2 border-background bg-primary" />
+                    <div className="absolute top-full right-0 mt-2 px-3 py-2 bg-card border border-border rounded-lg shadow-lg opacity-0 invisible group-hover/vehicle:opacity-100 group-hover/vehicle:visible transition-all duration-200 whitespace-nowrap z-50">
+                      <p className="text-xs font-medium text-foreground">{selectedVehicle.make} {selectedVehicle.model}</p>
+                      <p className="text-[10px] text-muted-foreground">{selectedVehicle.registrationNumber}</p>
+                    </div>
                   )}
-                </button>
+                  
+                  {!selectedVehicle && (
+                    <div className="absolute top-full right-0 mt-2 px-3 py-2 bg-card border border-border rounded-lg shadow-lg opacity-0 invisible group-hover/vehicle:opacity-100 group-hover/vehicle:visible transition-all duration-200 whitespace-nowrap z-50">
+                      <p className="text-xs text-muted-foreground">Select your vehicle</p>
+                    </div>
+                  )}
+                </div>
               )}
 
               {/* Theme Toggle */}
@@ -259,9 +285,11 @@ export default function EnhancedHeader() {
                 className="relative p-2 sm:p-2.5 rounded-lg sm:rounded-xl hover:bg-muted transition-colors group"
               >
                 <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5 text-foreground group-hover:text-primary" />
-                <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-[10px] sm:text-xs font-bold rounded-full h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center">
-                  0
-                </span>
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-[10px] sm:text-xs font-bold rounded-full min-w-[16px] h-4 sm:min-w-[20px] sm:h-5 px-1 flex items-center justify-center">
+                    {cartCount > 99 ? '99+' : cartCount}
+                  </span>
+                )}
               </button>
               
               {/* User Menu */}
@@ -396,8 +424,9 @@ export default function EnhancedHeader() {
                     <div className="mt-2 pt-2 border-t border-border">
                       <p className="text-[10px] sm:text-xs text-muted-foreground">Selected Vehicle</p>
                       <p className="text-xs sm:text-sm font-medium text-foreground truncate">
-                        {selectedVehicle.brand} {selectedVehicle.model}
+                        {selectedVehicle.make} {selectedVehicle.model}
                       </p>
+                      <p className="text-[10px] text-muted-foreground">{selectedVehicle.registrationNumber}</p>
                     </div>
                   )}
                 </div>

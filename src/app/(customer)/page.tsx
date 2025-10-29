@@ -12,8 +12,7 @@ import { useServices } from '@/api/domains/services/queries';
 import { useProducts } from '@/api/domains/products/queries';
 import { ArrowRight, Sparkles, Users, Award, TrendingUp, MessageSquare } from 'lucide-react';
 import Loading from '@/components/shared/display/Loading';
-import { getMockData } from '@/lib/api/mockData';
-import { useMemo } from 'react';
+import { mockTestimonials, mockTrustStats, mockBanners, mockPosters } from '@/mocks/data/customer-mock-data';
 
 export default function HomePage() {
   // API calls
@@ -23,24 +22,20 @@ export default function HomePage() {
   const services = servicesResponse?.data || [];
   const products = productsResponse?.data || [];
   
-  // Get dynamic data from mock data
-  const posters = useMemo(() => getMockData.posters().slice(0, 2), []);
-  const banners = useMemo(() => getMockData.banners(), []);
-  const testimonials = useMemo(() => getMockData.testimonials(), []);
-  const trustStats = useMemo(() => getMockData.trustStats(), []);
+  // Mock data from centralized file
+  const posters = mockPosters.slice(0, 2);
+  const testimonials = mockTestimonials;
+  const trustStats = mockTrustStats;
   
   // Convert banners to promos format
-  const promos = useMemo(() => 
-    banners.slice(0, 2).map(banner => ({
-      id: banner.id,
-      title: banner.title,
-      description: banner.subtitle || 'Limited time offer',
-      image: banner.imageUrl || '',
-      link: banner.ctaLink || '/services',
-      ctaText: banner.ctaText || 'Learn More',
-    })),
-    [banners]
-  );
+  const promos = mockBanners.slice(0, 2).map(banner => ({
+    id: banner.id,
+    title: banner.title,
+    description: banner.subtitle || 'Limited time offer',
+    image: banner.imageUrl || '',
+    link: banner.ctaLink || '/services',
+    ctaText: banner.ctaText || 'Learn More',
+  }));
 
   // Loading state
   if (servicesLoading || productsLoading) {

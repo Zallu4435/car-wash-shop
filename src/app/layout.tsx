@@ -4,6 +4,8 @@ import './globals.css';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { QueryProvider } from '@/providers/providers';
 import { AuthProvider } from '@/context/AuthContext';
+import { VehicleProvider } from '@/context/VehicleContext';
+import { Toaster } from 'sonner';
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -62,9 +64,18 @@ export default function RootLayout({
       >
         <QueryProvider>
           <AuthProvider>
-            <ThemeProvider>
-              {children}
-            </ThemeProvider>
+            <VehicleProvider>
+              <ThemeProvider>
+                {children}
+                <Toaster 
+                  position="top-right"
+                  expand={false}
+                  richColors
+                  closeButton
+                  duration={3000}
+                />
+              </ThemeProvider>
+            </VehicleProvider>
           </AuthProvider>
         </QueryProvider>
       </body>
