@@ -2,9 +2,17 @@ import { apiClient } from '@/api/client';
 import type { ApiResponse } from '@/types/api';
 import type { Address, AddressInput } from '@/types/address';
 import { CustomerRoutes } from '@/lib/constants/routes';
+import { mockAddresses } from '@/mocks/data/customer-mock-data';
+
+const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true';
 
 export const addressFetchers = {
   async getAddresses(): Promise<Address[]> {
+    if (USE_MOCK_DATA) {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      return mockAddresses as any;
+    }
+    
     const { data } = await apiClient.get<ApiResponse<Address[]>>(CustomerRoutes.ADDRESSES);
     return data.data!;
   },

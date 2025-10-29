@@ -7,25 +7,29 @@ import { Button } from '@/components/ui/button';
 import { useOrders } from '@/api/domains/orders/queries';
 import { Package, Calendar, ChevronRight, ShoppingBag, Car, Clock, ArrowRight } from 'lucide-react';
 import { EmptyState } from '@/components/shared/display/EmptyState';
+import Loading from '@/components/shared/display/Loading';
+import Error from '@/components/shared/display/Error';
 
 export default function OrdersLandingPage() {
   // API calls
-  const { data: ordersResponse, isLoading: ordersLoading } = useOrders({ limit: 10 });
+  const { data: ordersResponse, isLoading: ordersLoading, error, refetch } = useOrders({ limit: 10 });
   const orders = ordersResponse?.data || [];
 
   const recentOrders = orders.slice(0, 3);
 
-  const allServiceOrders = orders.filter(order => 
-    order.serviceName.toLowerCase().includes('wash') || 
-    order.serviceName.toLowerCase().includes('service') ||
-    order.serviceName.toLowerCase().includes('cleaning')
-  );
+  const allServiceOrders = orders.filter(order => {
+    const serviceName = order.serviceName?.toLowerCase() || '';
+    return serviceName.includes('wash') || 
+      serviceName.includes('service') ||
+      serviceName.includes('cleaning');
+  });
   
-  const productOrders = orders.filter(order => 
-    !order.serviceName.toLowerCase().includes('wash') && 
-    !order.serviceName.toLowerCase().includes('service') &&
-    !order.serviceName.toLowerCase().includes('cleaning')
-  );
+  const productOrders = orders.filter(order => {
+    const serviceName = order.serviceName?.toLowerCase() || '';
+    return !serviceName.includes('wash') && 
+      !serviceName.includes('service') &&
+      !serviceName.includes('cleaning');
+  });
 
   const getStatusVariant = (status: string) => {
     switch (status.toLowerCase()) {
@@ -67,13 +71,17 @@ export default function OrdersLandingPage() {
 
   // Loading state
   if (ordersLoading) {
+    return <Loading text="Loading orders..." />;
+  }
+
+  // Error state
+  if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground text-sm sm:text-base">Loading orders...</p>
-        </div>
-      </div>
+      <Error 
+        message="Failed to load orders" 
+        details={(error as any)?.message}
+        onRetry={() => refetch()}
+      />
     );
   }
 

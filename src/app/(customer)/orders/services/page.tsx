@@ -10,6 +10,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getMockData } from '@/lib/api/mockData';
 import { Package, Calendar, ChevronRight, ShoppingBag, Car, Bike, Home, ArrowLeft, Search, Filter, SlidersHorizontal, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { EmptyState } from '@/components/shared/display/EmptyState';
 
 export default function ServiceOrdersPage() {
   const orders = getMockData.orders();
@@ -37,33 +38,31 @@ export default function ServiceOrdersPage() {
     };
   }, [showFilters]);
 
-  const allServiceOrders = orders.filter(order =>
-    order.items.some(item =>
-      item.name.toLowerCase().includes('wash') ||
-      item.name.toLowerCase().includes('service') ||
-      item.name.toLowerCase().includes('cleaning')
-    )
-  );
+  const allServiceOrders = orders.filter(order => {
+    const serviceName = order.serviceName?.toLowerCase() || '';
+    return serviceName.includes('wash') ||
+      serviceName.includes('service') ||
+      serviceName.includes('cleaning') ||
+      serviceName.includes('bike') ||
+      serviceName.includes('car');
+  });
 
   const filteredOrders = allServiceOrders.filter(order => {
+    const serviceName = order.serviceName?.toLowerCase() || '';
     const matchesSearch = order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.items.some(item => item.name.toLowerCase().includes(searchQuery.toLowerCase()));
+      serviceName.includes(searchQuery.toLowerCase());
 
     const matchesStatus = statusFilter === 'all' || order.status.toLowerCase() === statusFilter;
 
     let matchesServiceType = true;
     if (serviceTypeFilter !== 'all') {
-      matchesServiceType = order.items.some(item => {
-        const itemName = item.name.toLowerCase();
-        if (serviceTypeFilter === 'car') {
-          return itemName.includes('car');
-        } else if (serviceTypeFilter === 'bike') {
-          return itemName.includes('bike') || itemName.includes('two wheeler');
-        } else if (serviceTypeFilter === 'home') {
-          return itemName.includes('home') || itemName.includes('house') || itemName.includes('cleaning');
-        }
-        return false;
-      });
+      if (serviceTypeFilter === 'car') {
+        matchesServiceType = serviceName.includes('car');
+      } else if (serviceTypeFilter === 'bike') {
+        matchesServiceType = serviceName.includes('bike') || serviceName.includes('two wheeler');
+      } else if (serviceTypeFilter === 'home') {
+        matchesServiceType = serviceName.includes('home') || serviceName.includes('house') || serviceName.includes('cleaning');
+      }
     }
 
     return matchesSearch && matchesStatus && matchesServiceType;
@@ -84,19 +83,19 @@ export default function ServiceOrdersPage() {
     }
   };
 
-  const getServiceIcon = (orderItems: any[]) => {
-    const itemName = orderItems[0]?.name.toLowerCase() || '';
-    if (itemName.includes('car')) return Car;
-    if (itemName.includes('bike') || itemName.includes('two wheeler')) return Bike;
-    if (itemName.includes('home') || itemName.includes('house') || itemName.includes('cleaning')) return Home;
+  const getServiceIcon = (serviceName: string) => {
+    const name = serviceName.toLowerCase();
+    if (name.includes('car')) return Car;
+    if (name.includes('bike') || name.includes('two wheeler')) return Bike;
+    if (name.includes('home') || name.includes('house') || name.includes('cleaning')) return Home;
     return Package;
   };
 
-  const getServiceColor = (orderItems: any[]) => {
-    const itemName = orderItems[0]?.name.toLowerCase() || '';
-    if (itemName.includes('car')) return { bg: 'bg-blue-50 dark:bg-blue-950/20', text: 'text-blue-600 dark:text-blue-400' };
-    if (itemName.includes('bike')) return { bg: 'bg-green-50 dark:bg-green-950/20', text: 'text-green-600 dark:text-green-400' };
-    if (itemName.includes('home') || itemName.includes('cleaning')) return { bg: 'bg-orange-50 dark:bg-orange-950/20', text: 'text-orange-600 dark:text-orange-400' };
+  const getServiceColor = (serviceName: string) => {
+    const name = serviceName.toLowerCase();
+    if (name.includes('car')) return { bg: 'bg-blue-50 dark:bg-blue-950/20', text: 'text-blue-600 dark:text-blue-400' };
+    if (name.includes('bike')) return { bg: 'bg-green-50 dark:bg-green-950/20', text: 'text-green-600 dark:text-green-400' };
+    if (name.includes('home') || name.includes('cleaning')) return { bg: 'bg-orange-50 dark:bg-orange-950/20', text: 'text-orange-600 dark:text-orange-400' };
     return { bg: 'bg-primary/10', text: 'text-primary' };
   };
 
@@ -206,8 +205,8 @@ export default function ServiceOrdersPage() {
           {filteredOrders.length > 0 ? (
             <div className="space-y-3 sm:space-y-4">
               {filteredOrders.map((order) => {
-                const ServiceIcon = getServiceIcon(order.items);
-                const colors = getServiceColor(order.items);
+                const ServiceIcon = getServiceIcon(order.serviceName);
+                const colors = getServiceColor(order.serviceName);
 
                 return (
                   <Card key={order.id} className="hover:shadow-lg transition-shadow border-2 border-border">
@@ -223,7 +222,7 @@ export default function ServiceOrdersPage() {
                             </p>
                             <div className="flex items-center gap-1.5 sm:gap-2 mt-0.5 sm:mt-1 text-xs sm:text-sm text-muted-foreground">
                               <Calendar className="h-3 w-3 sm:h-3.5 sm:w-3.5 flex-shrink-0" />
-                              <span className="truncate">{order.orderDate}</span>
+                              <span className="truncate">{new Date(order.createdAt).toLocaleDateString()}</span>
                             </div>
                           </div>
                         </div>
@@ -233,18 +232,21 @@ export default function ServiceOrdersPage() {
                       </div>
 
                       <div className="space-y-1.5 sm:space-y-2 mb-3 sm:mb-4 p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl">
-                        {order.items.map((item) => (
-                          <div key={item.id} className="flex justify-between text-xs sm:text-sm gap-2">
-                            <span className="text-foreground truncate flex-1">{item.name}</span>
-                            <span className="text-muted-foreground flex-shrink-0">× {item.quantity}</span>
+                        <div className="flex justify-between text-xs sm:text-sm gap-2">
+                          <span className="text-foreground truncate flex-1">{order.serviceName}</span>
+                          <span className="text-muted-foreground flex-shrink-0">× 1</span>
+                        </div>
+                        {order.vehicleDetails && (
+                          <div className="text-xs text-muted-foreground">
+                            {order.vehicleDetails.model} • {order.vehicleDetails.number}
                           </div>
-                        ))}
+                        )}
                       </div>
 
                       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 pt-3 sm:pt-4 border-t border-border">
                         <div>
                           <p className="text-xs sm:text-sm text-muted-foreground mb-0.5 sm:mb-1">Total Amount</p>
-                          <p className="text-xl sm:text-2xl font-bold text-primary">₹{order.total}</p>
+                          <p className="text-xl sm:text-2xl font-bold text-primary">₹{order.totalAmount}</p>
                         </div>
                         <Button asChild variant="outline" className="group w-full sm:w-auto h-9 sm:h-10" size="sm">
                           <Link href={`/orders/${order.id}`} className="text-xs sm:text-sm">
@@ -259,22 +261,18 @@ export default function ServiceOrdersPage() {
               })}
             </div>
           ) : (
-            <div className="text-center py-12 sm:py-16 bg-muted/30 rounded-xl border-2 border-dashed border-border">
-              <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-background rounded-full mb-4 sm:mb-6 shadow-sm">
-                <Package className="h-8 w-8 sm:h-10 sm:w-10 text-muted-foreground" />
-              </div>
-              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground mb-2">
-                No service bookings found
-              </h2>
-              <p className="text-sm sm:text-base text-muted-foreground mb-6 sm:mb-8 px-4">
-                {searchQuery || statusFilter !== 'all' || serviceTypeFilter !== 'all'
-                  ? 'Try adjusting your filters'
-                  : 'Book a service to see your orders here'}
-              </p>
-              <Button asChild size="lg" className="h-10 sm:h-11">
-                <Link href="/services" className="text-sm sm:text-base">Browse Services</Link>
-              </Button>
-            </div>
+            <EmptyState
+              icon={Package}
+              title="No service bookings found"
+              description={searchQuery || statusFilter !== 'all' || serviceTypeFilter !== 'all'
+                ? 'Try adjusting your filters'
+                : 'Book a service to see your orders here'}
+              action={
+                <Button asChild size="lg" className="h-10 sm:h-11">
+                  <Link href="/services" className="text-sm sm:text-base">Browse Services</Link>
+                </Button>
+              }
+            />
           )}
         </div>
       </section>

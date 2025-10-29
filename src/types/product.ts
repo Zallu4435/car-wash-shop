@@ -8,6 +8,9 @@ export interface Product {
   category: string;
   isAvailable: boolean;
   rating?: number;
+  stock?: number;
+  reviewCount?: number;
+  specifications?: Record<string, string>;
   createdAt?: string;
   updatedAt?: string;
 }

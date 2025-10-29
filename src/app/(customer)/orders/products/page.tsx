@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { getMockData } from '@/lib/api/mockData';
 import { Package, Calendar, ChevronRight, Car, ArrowLeft, Search, Filter, ShoppingBag, SlidersHorizontal, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { EmptyState } from '@/components/shared/display/EmptyState';
 
 export default function ProductOrdersPage() {
   const orders = getMockData.orders();
@@ -28,17 +29,19 @@ export default function ProductOrdersPage() {
     };
   }, [showFilters]);
 
-  const productOrders = orders.filter(order => 
-    order.items.some(item => 
-      !item.name.toLowerCase().includes('wash') && 
-      !item.name.toLowerCase().includes('service') &&
-      !item.name.toLowerCase().includes('cleaning')
-    )
-  );
+  const productOrders = orders.filter(order => {
+    const serviceName = order.serviceName?.toLowerCase() || '';
+    return !serviceName.includes('wash') && 
+      !serviceName.includes('service') &&
+      !serviceName.includes('cleaning') &&
+      !serviceName.includes('bike') &&
+      !serviceName.includes('car');
+  });
 
   const filteredOrders = productOrders.filter(order => {
+    const serviceName = order.serviceName?.toLowerCase() || '';
     const matchesSearch = order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.items.some(item => item.name.toLowerCase().includes(searchQuery.toLowerCase()));
+      serviceName.includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === 'all' || order.status.toLowerCase() === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -150,7 +153,7 @@ export default function ProductOrdersPage() {
                           </p>
                           <div className="flex items-center gap-1.5 sm:gap-2 mt-0.5 sm:mt-1 text-xs sm:text-sm text-muted-foreground">
                             <Calendar className="h-3 w-3 sm:h-3.5 sm:w-3.5 flex-shrink-0" />
-                            <span className="truncate">{order.orderDate}</span>
+                            <span className="truncate">{new Date(order.createdAt).toLocaleDateString()}</span>
                           </div>
                         </div>
                       </div>
@@ -160,18 +163,16 @@ export default function ProductOrdersPage() {
                     </div>
                     
                     <div className="space-y-1.5 sm:space-y-2 mb-3 sm:mb-4 p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl">
-                      {order.items.map((item) => (
-                        <div key={item.id} className="flex justify-between text-xs sm:text-sm gap-2">
-                          <span className="text-foreground truncate flex-1">{item.name}</span>
-                          <span className="text-muted-foreground flex-shrink-0">× {item.quantity}</span>
-                        </div>
-                      ))}
+                      <div className="flex justify-between text-xs sm:text-sm gap-2">
+                        <span className="text-foreground truncate flex-1">{order.serviceName}</span>
+                        <span className="text-muted-foreground flex-shrink-0">× 1</span>
+                      </div>
                     </div>
 
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 pt-3 sm:pt-4 border-t border-border">
                       <div>
                         <p className="text-xs sm:text-sm text-muted-foreground mb-0.5 sm:mb-1">Total Amount</p>
-                        <p className="text-xl sm:text-2xl font-bold text-primary">₹{order.total}</p>
+                        <p className="text-xl sm:text-2xl font-bold text-primary">₹{order.totalAmount}</p>
                       </div>
                       <Button asChild variant="outline" className="group w-full sm:w-auto h-9 sm:h-10" size="sm">
                         <Link href={`/orders/${order.id}`} className="text-xs sm:text-sm">
@@ -185,22 +186,18 @@ export default function ProductOrdersPage() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-12 sm:py-16 bg-muted/30 rounded-xl border-2 border-dashed border-border">
-              <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-background rounded-full mb-4 sm:mb-6 shadow-sm">
-                <Package className="h-8 w-8 sm:h-10 sm:w-10 text-muted-foreground" />
-              </div>
-              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground mb-2">
-                No product orders found
-              </h2>
-              <p className="text-sm sm:text-base text-muted-foreground mb-6 sm:mb-8 px-4">
-                {searchQuery || statusFilter !== 'all'
-                  ? 'Try adjusting your filters'
-                  : 'Shop products to see your orders here'}
-              </p>
-              <Button asChild size="lg" className="h-10 sm:h-11">
-                <Link href="/products" className="text-sm sm:text-base">Browse Products</Link>
-              </Button>
-            </div>
+            <EmptyState
+              icon={Package}
+              title="No product orders found"
+              description={searchQuery || statusFilter !== 'all'
+                ? 'Try adjusting your filters'
+                : 'Shop products to see your orders here'}
+              action={
+                <Button asChild size="lg" className="h-10 sm:h-11">
+                  <Link href="/products" className="text-sm sm:text-base">Browse Products</Link>
+                </Button>
+              }
+            />
           )}
         </div>
       </section>

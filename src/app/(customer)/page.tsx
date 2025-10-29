@@ -8,10 +8,12 @@ import { PosterSection } from '@/components/customer/PosterSection';
 import { Testimonials } from '@/components/customer/Testimonials';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { useServices, useServiceCategories } from '@/api/domains/services/queries';
+import { useServices } from '@/api/domains/services/queries';
 import { useProducts } from '@/api/domains/products/queries';
 import { ArrowRight, Sparkles, Users, Award, TrendingUp, MessageSquare } from 'lucide-react';
 import Loading from '@/components/shared/display/Loading';
+import { getMockData } from '@/lib/api/mockData';
+import { useMemo } from 'react';
 
 export default function HomePage() {
   // API calls
@@ -21,85 +23,24 @@ export default function HomePage() {
   const services = servicesResponse?.data || [];
   const products = productsResponse?.data || [];
   
-  // Mock posters for now (no API available yet)
-  const posters = [
-    {
-      id: '1',
-      title: 'Premium Car Wash',
-      description: 'Get 20% off on all premium car wash services',
-      imageUrl: '/images/posters/car-wash-offer.jpg',
-    },
-    {
-      id: '2', 
-      title: 'New Products',
-      description: 'Check out our latest car care products',
-      imageUrl: '/images/posters/new-products.jpg',
-    },
-  ];
-
-  const promos = [
-    {
-      id: '1',
-      title: 'Premium Wash - 20% Off',
-      description: 'Limited time offer on all premium car wash services',
-      image: '',
-      link: '/services',
-      ctaText: 'Book Now',
-    },
-    {
-      id: '2',
-      title: 'New Products Available',
-      description: 'Check out our latest car care products',
-      image: '',
-      link: '/products',
-      ctaText: 'Shop Now',
-    },
-  ];
-
-  const testimonials = [
-    {
-      id: '1',
-      name: 'Rajesh Kumar',
-      role: 'Business Owner',
-      content: 'Absolutely exceptional service! My car looks brand new after their premium wash. The attention to detail and professionalism is unmatched.',
-      rating: 5,
-    },
-    {
-      id: '2',
-      name: 'Priya Sharma',
-      role: 'Marketing Executive',
-      content: 'I have been a regular customer for over a year now. The quality of service is consistently excellent, and the staff is always friendly and helpful.',
-      rating: 5,
-    },
-    {
-      id: '3',
-      name: 'Amit Patel',
-      role: 'Software Engineer',
-      content: 'Great experience every time! The online booking system is super convenient, and they always deliver on time. Highly recommended!',
-      rating: 5,
-    },
-    {
-      id: '4',
-      name: 'Sneha Reddy',
-      role: 'Doctor',
-      content: 'The products they use are top-notch, and my car always smells amazing after their service. Worth every penny!',
-      rating: 5,
-    },
-    {
-      id: '5',
-      name: 'Vikram Singh',
-      role: 'Entrepreneur',
-      content: 'Professional, efficient, and affordable. These guys know what they are doing. My go-to place for all car care needs.',
-      rating: 5,
-    },
-    {
-      id: '6',
-      name: 'Neha Gupta',
-      role: 'Teacher',
-      content: 'The interior detailing service exceeded my expectations. They removed stains I thought were permanent. Amazing work!',
-      rating: 5,
-    },
-  ];
+  // Get dynamic data from mock data
+  const posters = useMemo(() => getMockData.posters().slice(0, 2), []);
+  const banners = useMemo(() => getMockData.banners(), []);
+  const testimonials = useMemo(() => getMockData.testimonials(), []);
+  const trustStats = useMemo(() => getMockData.trustStats(), []);
+  
+  // Convert banners to promos format
+  const promos = useMemo(() => 
+    banners.slice(0, 2).map(banner => ({
+      id: banner.id,
+      title: banner.title,
+      description: banner.subtitle || 'Limited time offer',
+      image: banner.imageUrl || '',
+      link: banner.ctaLink || '/services',
+      ctaText: banner.ctaText || 'Learn More',
+    })),
+    [banners]
+  );
 
   // Loading state
   if (servicesLoading || productsLoading) {
@@ -211,8 +152,8 @@ export default function HomePage() {
                 title: p.title,
                 description: p.description,
                 imageUrl: p.imageUrl,
-                link: '/services',
-                ctaText: 'Learn More'
+                link: p.link || '/services',
+                ctaText: p.ctaText || 'Learn More'
               }))}
               layout="grid"
             />
@@ -313,32 +254,20 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 lg:gap-12">
-            {/* Card 1 */}
-            <div className="bg-primary-foreground/15 backdrop-blur-sm border-2 border-primary-foreground/30 rounded-2xl p-6 sm:p-8 text-center hover:bg-primary-foreground/20 hover:border-primary-foreground/40 hover:scale-105 transition-all duration-300 group shadow-lg">
-              <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-primary-foreground/25 rounded-xl mb-3 sm:mb-4 group-hover:scale-110 transition-transform shadow-md">
-                <Users className="h-6 w-6 sm:h-8 sm:w-8 text-primary-foreground" />
-              </div>
-              <div className="text-3xl sm:text-4xl md:text-5xl font-bold mb-1 sm:mb-2 text-primary-foreground">500+</div>
-              <div className="text-sm sm:text-base text-primary-foreground/90 font-medium">Happy Customers</div>
-            </div>
-
-            {/* Card 2 */}
-            <div className="bg-primary-foreground/15 backdrop-blur-sm border-2 border-primary-foreground/30 rounded-2xl p-6 sm:p-8 text-center hover:bg-primary-foreground/20 hover:border-primary-foreground/40 hover:scale-105 transition-all duration-300 group shadow-lg">
-              <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-primary-foreground/25 rounded-xl mb-3 sm:mb-4 group-hover:scale-110 transition-transform shadow-md">
-                <Award className="h-6 w-6 sm:h-8 sm:w-8 text-primary-foreground" />
-              </div>
-              <div className="text-3xl sm:text-4xl md:text-5xl font-bold mb-1 sm:mb-2 text-primary-foreground">50+</div>
-              <div className="text-sm sm:text-base text-primary-foreground/90 font-medium">Expert Staff</div>
-            </div>
-
-            {/* Card 3 */}
-            <div className="bg-primary-foreground/15 backdrop-blur-sm border-2 border-primary-foreground/30 rounded-2xl p-6 sm:p-8 text-center hover:bg-primary-foreground/20 hover:border-primary-foreground/40 hover:scale-105 transition-all duration-300 group shadow-lg">
-              <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-primary-foreground/25 rounded-xl mb-3 sm:mb-4 group-hover:scale-110 transition-transform shadow-md">
-                <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 text-primary-foreground" />
-              </div>
-              <div className="text-3xl sm:text-4xl md:text-5xl font-bold mb-1 sm:mb-2 text-primary-foreground">4.9</div>
-              <div className="text-sm sm:text-base text-primary-foreground/90 font-medium">Average Rating</div>
-            </div>
+            {trustStats.map((stat) => {
+              // Map icon names to components
+              const IconComponent = stat.icon === 'users' ? Users : stat.icon === 'award' ? Award : TrendingUp;
+              
+              return (
+                <div key={stat.id} className="bg-primary-foreground/15 backdrop-blur-sm border-2 border-primary-foreground/30 rounded-2xl p-6 sm:p-8 text-center hover:bg-primary-foreground/20 hover:border-primary-foreground/40 hover:scale-105 transition-all duration-300 group shadow-lg">
+                  <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-primary-foreground/25 rounded-xl mb-3 sm:mb-4 group-hover:scale-110 transition-transform shadow-md">
+                    <IconComponent className="h-6 w-6 sm:h-8 sm:w-8 text-primary-foreground" />
+                  </div>
+                  <div className="text-3xl sm:text-4xl md:text-5xl font-bold mb-1 sm:mb-2 text-primary-foreground">{stat.value}</div>
+                  <div className="text-sm sm:text-base text-primary-foreground/90 font-medium">{stat.label}</div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>

@@ -44,6 +44,7 @@ export interface ServiceType {
     id: string;
     label: string;
     address: string;
+    landmark?: string;
     isPrimary?: boolean;
   }
   

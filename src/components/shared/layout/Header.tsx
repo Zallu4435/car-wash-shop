@@ -3,6 +3,7 @@
 import { ShoppingCart, User, Menu, X, Droplet, Sun, Moon, Monitor, Bell, LogOut, Package, UserCircle, ChevronDown, Car } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useTheme } from '@/context/ThemeContext';
+import { useAuth } from '@/context/AuthContext';
 import { useRouter, usePathname } from 'next/navigation';
 import { NotificationPanel } from '@/components/shared/notification/NotificationPanel';
 import { VehicleSelectionModal } from '@/components/shared/selectors/VehicleSelectionModal';
@@ -13,6 +14,9 @@ const navigation = [
   { name: 'Products', href: '/products' },
   { name: 'Support', href: '/support' },
 ];
+
+// Default avatar for users without profile picture
+const DEFAULT_AVATAR = '/images/avatars/default-avatar.svg';
 
 interface Vehicle {
   id: string;
@@ -33,17 +37,17 @@ export default function EnhancedHeader() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showVehicleModal, setShowVehicleModal] = useState(false);
+  const [avatarError, setAvatarError] = useState(false);
   
   const { theme, resolvedTheme, setTheme } = useTheme();
-
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
-  const [user, setUser] = useState({
-    name: 'John Doe',
-    email: 'john.doe@example.com',
-    avatar: '',
-  });
+  const { user, isAuthenticated, logout, isLoading } = useAuth();
 
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
+
+  // Reset avatar error when user changes
+  useEffect(() => {
+    setAvatarError(false);
+  }, [user?.avatar]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -71,10 +75,9 @@ export default function EnhancedHeader() {
   };
 
   const handleLogout = () => {
-    setIsLoggedIn(false);
+    logout();
     setShowUserMenu(false);
     setSelectedVehicle(null);
-    router.push('/');
   };
 
   const handleVehicleClick = () => {
@@ -105,6 +108,19 @@ export default function EnhancedHeader() {
       .join('')
       .toUpperCase()
       .slice(0, 2);
+  };
+
+  // Get avatar source with fallback
+  const getAvatarSrc = () => {
+    if (avatarError || !user?.avatar) {
+      return DEFAULT_AVATAR;
+    }
+    return user.avatar;
+  };
+
+  // Handle avatar load error
+  const handleAvatarError = () => {
+    setAvatarError(true);
   };
 
   return (
@@ -162,7 +178,7 @@ export default function EnhancedHeader() {
             {/* Right Actions - Responsive */}
             <div className="flex items-center gap-1 sm:gap-2">
               {/* Vehicle Selector */}
-              {isLoggedIn && (
+              {isAuthenticated && (
                 <button
                   onClick={handleVehicleClick}
                   className="relative p-2 sm:p-2.5 rounded-lg sm:rounded-xl hover:bg-muted transition-colors group hidden sm:block"
@@ -249,23 +265,18 @@ export default function EnhancedHeader() {
               </button>
               
               {/* User Menu */}
-              {isLoggedIn ? (
+              {isAuthenticated && user ? (
                 <div className="relative hidden md:block">
                   <button
                     onClick={() => setShowUserMenu(!showUserMenu)}
                     className="flex items-center gap-2 px-2 lg:px-3 py-2 rounded-lg lg:rounded-xl hover:bg-muted transition-colors group"
                   >
-                    {user.avatar ? (
-                      <img 
-                        src={user.avatar} 
-                        alt={user.name}
-                        className="h-7 w-7 sm:h-8 sm:w-8 rounded-full object-cover ring-2 ring-primary/20"
-                      />
-                    ) : (
-                      <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-xs sm:text-sm ring-2 ring-primary/20">
-                        {getInitials(user.name)}
-                      </div>
-                    )}
+                    <img 
+                      src={getAvatarSrc()} 
+                      alt={user.name}
+                      onError={handleAvatarError}
+                      className="h-7 w-7 sm:h-8 sm:w-8 rounded-full object-cover ring-2 ring-primary/20"
+                    />
                     <ChevronDown className={`h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground transition-transform ${showUserMenu ? 'rotate-180' : ''}`} />
                   </button>
 
@@ -274,8 +285,8 @@ export default function EnhancedHeader() {
                       <div className="fixed inset-0 z-40" onClick={() => setShowUserMenu(false)} />
                       <div className="absolute right-0 mt-2 w-64 bg-card rounded-lg sm:rounded-xl shadow-lg border border-border overflow-hidden z-50">
                         <div className="px-4 py-3 bg-muted/50 border-b border-border">
-                          <p className="text-sm font-semibold text-foreground truncate">{user.name}</p>
-                          <p className="text-xs text-muted-foreground mt-0.5 truncate">{user.email}</p>
+                          <p className="text-sm font-semibold text-foreground truncate">{user?.name}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5 truncate">{user?.email || user?.phone}</p>
                         </div>
 
                         <div className="py-2">
@@ -356,24 +367,19 @@ export default function EnhancedHeader() {
           >
             <div className="py-3 sm:py-4 space-y-2">
               {/* User Info */}
-              {isLoggedIn && (
+              {isAuthenticated && user && (
                 <div className="px-3 sm:px-4 py-2.5 sm:py-3 mb-3 sm:mb-4 bg-muted/50 rounded-lg sm:rounded-xl border border-border">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-                      {user.avatar ? (
-                        <img 
-                          src={user.avatar} 
-                          alt={user.name}
-                          className="h-9 w-9 sm:h-10 sm:w-10 rounded-full ring-2 ring-primary/20 flex-shrink-0"
-                        />
-                      ) : (
-                        <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm ring-2 ring-primary/20 flex-shrink-0">
-                          {getInitials(user.name)}
-                        </div>
-                      )}
+                      <img 
+                        src={getAvatarSrc()} 
+                        alt={user.name}
+                        onError={handleAvatarError}
+                        className="h-9 w-9 sm:h-10 sm:w-10 rounded-full object-cover ring-2 ring-primary/20 flex-shrink-0"
+                      />
                       <div className="min-w-0 flex-1">
-                        <p className="text-xs sm:text-sm font-semibold text-foreground truncate">{user.name}</p>
-                        <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{user.email}</p>
+                        <p className="text-xs sm:text-sm font-semibold text-foreground truncate">{user?.name}</p>
+                        <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{user?.email || user?.phone}</p>
                       </div>
                     </div>
                     <button
@@ -419,7 +425,7 @@ export default function EnhancedHeader() {
               })}
 
               {/* Account Section */}
-              {isLoggedIn && (
+              {isAuthenticated && (
                 <div className="pt-2 border-t border-border mt-2">
                   <p className="px-3 sm:px-4 py-2 text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Account
@@ -501,7 +507,7 @@ export default function EnhancedHeader() {
               </div>
 
               {/* Login Button */}
-              {!isLoggedIn && (
+              {!isAuthenticated && (
                 <button
                   onClick={() => handleNavigation('/auth/login')}
                   className="flex items-center justify-center gap-2 w-full mt-3 sm:mt-4 px-4 sm:px-5 py-3 sm:py-3.5 rounded-lg sm:rounded-xl bg-primary text-primary-foreground text-xs sm:text-sm font-semibold hover:opacity-90 transition-all shadow-md"

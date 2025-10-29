@@ -6,6 +6,11 @@ export interface UserProfile {
     avatar?: string;
     dateOfBirth?: string;
     gender?: 'male' | 'female' | 'other';
+    joinedDate?: string;
+    totalBookings?: number;
+    totalOrders?: number;
+    loyaltyPoints?: number;
+    membershipTier?: string;
     preferences?: {
       notifications: {
         email: boolean;
@@ -17,6 +22,9 @@ export interface UserProfile {
     createdAt: string;
     updatedAt: string;
   }
+
+  // Alias for backward compatibility
+  export type CustomerProfile = UserProfile;
   
   export interface UpdateProfileInput {
     name?: string;

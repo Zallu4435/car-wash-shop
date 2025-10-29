@@ -31,17 +31,26 @@ export function Testimonials({ testimonials }: TestimonialsProps) {
     return () => clearInterval(interval);
   }, [isAutoPlaying, testimonials.length]);
 
+  // Get 3 testimonials with proper wrapping
+  const getVisibleTestimonials = () => {
+    const visible = [];
+    for (let i = 0; i < 3; i++) {
+      const index = (currentIndex + i) % testimonials.length;
+      visible.push(testimonials[index]);
+    }
+    return visible;
+  };
+
+  const visibleTestimonials = getVisibleTestimonials();
+
   return (
     <div className="relative">
       {/* Main Testimonial Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
-        {testimonials.slice(currentIndex, currentIndex + 3).map((testimonial, idx) => {
-          const actualIndex = (currentIndex + idx) % testimonials.length;
-          const actualTestimonial = testimonials[actualIndex];
-          
+        {visibleTestimonials.map((testimonial) => {
           return (
             <Card 
-              key={actualTestimonial.id}
+              key={testimonial.id}
               className="border-2 hover:shadow-lg transition-all duration-300 group bg-card"
               onMouseEnter={() => setIsAutoPlaying(false)}
               onMouseLeave={() => setIsAutoPlaying(true)}
@@ -60,7 +69,7 @@ export function Testimonials({ testimonials }: TestimonialsProps) {
                     <Star
                       key={i}
                       className={`h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5 ${
-                        i < actualTestimonial.rating
+                        i < testimonial.rating
                           ? 'fill-amber-400 text-amber-400'
                           : 'text-gray-300 dark:text-gray-600'
                       }`}
@@ -70,22 +79,22 @@ export function Testimonials({ testimonials }: TestimonialsProps) {
 
                 {/* Content */}
                 <p className="text-foreground text-xs sm:text-sm md:text-base lg:text-lg leading-relaxed mb-4 sm:mb-5 md:mb-6 line-clamp-4">
-                  "{actualTestimonial.content}"
+                  "{testimonial.content}"
                 </p>
 
                 {/* Author */}
                 <div className="flex items-center gap-3 sm:gap-4">
                   <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
                     <span className="text-primary font-bold text-base sm:text-lg">
-                      {actualTestimonial.name.charAt(0)}
+                      {testimonial.name.charAt(0)}
                     </span>
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="font-semibold text-sm sm:text-base text-foreground truncate">
-                      {actualTestimonial.name}
+                      {testimonial.name}
                     </p>
                     <p className="text-xs sm:text-sm text-muted-foreground truncate">
-                      {actualTestimonial.role}
+                      {testimonial.role}
                     </p>
                   </div>
                 </div>

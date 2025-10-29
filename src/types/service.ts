@@ -9,6 +9,9 @@ export interface Service {
   features: string[];
   isAvailable: boolean;
   image?: string;
+  rating?: number;
+  reviewCount?: number;
+  popular?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }

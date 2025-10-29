@@ -22,3 +22,16 @@ export interface VehicleInput {
   color?: string;
   fuelType?: 'petrol' | 'diesel' | 'electric' | 'hybrid';
 }
+
+export interface VehicleBrand {
+  id: string;
+  name: string;
+  logo: string;
+}
+
+export interface VehicleModel {
+  id: string;
+  name: string;
+  brandId: string;
+  type: 'sedan' | 'suv' | 'hatchback' | 'luxury' | 'bike';
+}

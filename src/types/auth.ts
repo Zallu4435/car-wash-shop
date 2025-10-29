@@ -4,8 +4,10 @@ export interface AuthUser {
     name: string;
     email?: string;
     role: 'customer' | 'staff' | 'admin';
-    createdAt: string;
-    updatedAt: string;
+    avatar?: string;
+    isVerified?: boolean;
+    createdAt?: string;
+    updatedAt?: string;
   }
   
   export interface RegisterInput {

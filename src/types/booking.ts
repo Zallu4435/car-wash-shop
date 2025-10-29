@@ -11,36 +11,34 @@ export interface BookingInput {
 
 export interface Booking {
   id: string;
-  userId: string;
+  bookingNumber: string;
+  userId?: string;
   serviceId: string;
-  vehicleId: string;
-  scheduledAt: string;
-  addressId: string;
+  serviceName: string;
+  vehicleId?: string;
+  scheduledAt?: string;
+  scheduledDate: string;
+  scheduledTime: string;
+  addressId?: string;
+  address: string;
   status: 'pending' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled';
-  totalAmount: number;
+  totalAmount?: number;
+  amount: number;
   advanceAmount?: number;
-  paymentStatus: 'paid' | 'pending' | 'refunded';
+  paymentStatus: 'paid' | 'pending' | 'refunded' | 'failed';
   addOns?: AddOn[];
-  service?: {
-    id: string;
-    name: string;
-    duration: string;
-  };
-  vehicle?: {
-    id: string;
-    type: string;
+  vehicleDetails: {
+    brand: string;
     model: string;
     number: string;
+    type: string;
   };
-  address?: {
-    id: string;
-    line1: string;
-    line2?: string;
-    city: string;
-    pincode: string;
-  };
+  assignedStaff?: string;
+  completedAt?: string;
+  rating?: number;
+  review?: string;
   createdAt: string;
-  updatedAt: string;
+  updatedAt?: string;
 }
 
 export interface AddOn {
