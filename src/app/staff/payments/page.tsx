@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { IndianRupee, Calendar, Briefcase, TrendingUp, Clock } from 'lucide-react';
-import { useStaffPayments } from '@/api/domains/staff/queries';
+import { useStaffPaymentSummary } from '@/api/domains/staff/staff-index';
 
 const statusConfig = {
   paid: {
@@ -18,7 +18,7 @@ const statusConfig = {
 };
 
 export default function StaffPaymentsPage() {
-  const { data } = useStaffPayments();
+  const { data } = useStaffPaymentSummary();
   const totalEarnings = data?.totalEarnings ?? 0;
   const pendingAmount = data?.pendingPayments ?? 0;
   const totalJobs = data?.history?.length ?? 0;

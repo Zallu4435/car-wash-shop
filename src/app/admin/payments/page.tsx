@@ -4,8 +4,30 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Download, IndianRupee, CreditCard, Wallet, TrendingUp, PieChart, Smartphone, Building2 } from 'lucide-react';
+import { useCODTransactions, useCODReport } from '@/api/domains/admin-cod/queries';
+import Loading from '@/components/shared/display/Loading';
+import Error from '@/components/shared/display/Error';
 
 export default function PaymentReportsPage() {
+  const { data: codTransactions, isLoading: transactionsLoading, error: transactionsError, refetch: refetchTransactions } = useCODTransactions();
+  const { data: codReport, isLoading: reportLoading, error: reportError, refetch: refetchReport } = useCODReport();
+
+  if (transactionsLoading || reportLoading) {
+    return <Loading text="Loading payment data..." />;
+  }
+
+  if (transactionsError || reportError) {
+    return (
+      <Error 
+        message="Failed to load payment data" 
+        details={(transactionsError || reportError)?.message}
+        onRetry={() => {
+          refetchTransactions();
+          refetchReport();
+        }}
+      />
+    );
+  }
   const paymentMethods = [
     { 
       method: 'UPI / PhonePe / Google Pay', 

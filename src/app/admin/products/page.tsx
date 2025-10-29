@@ -17,50 +17,43 @@ import {
   TrendingUp,
   AlertTriangle,
 } from 'lucide-react';
-import { useState } from 'react';
-
-const products = [
-  {
-    id: 'prod_001',
-    name: 'Premium Car Shampoo',
-    category: 'Cleaning Products',
-    price: 299,
-    stock: 50,
-    active: true,
-  },
-  {
-    id: 'prod_002',
-    name: 'Microfiber Cloth Set',
-    category: 'Cleaning Products',
-    price: 199,
-    stock: 100,
-    active: true,
-  },
-  {
-    id: 'prod_003',
-    name: 'Car Wax Polish',
-    category: 'Car Care',
-    price: 549,
-    stock: 30,
-    active: true,
-  },
-  {
-    id: 'prod_004',
-    name: 'Tire Shine Spray',
-    category: 'Car Care',
-    price: 249,
-    stock: 3,
-    active: true,
-  },
-];
+import { useState, useMemo } from 'react';
+import { useAdminProductList, useDeleteProduct } from '@/api/domains/admin-catalog/queries';
+import Loading from '@/components/shared/display/Loading';
+import Error from '@/components/shared/display/Error';
+import { EmptyState } from '@/components/shared/display/EmptyState';
 
 export default function ProductsPage() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [stockFilter, setStockFilter] = useState('all');
+  const { data: productsData, isLoading, error, refetch } = useAdminProductList();
+  const deleteProductMutation = useDeleteProduct();
 
-  const filteredProducts = products.filter(p => {
+  const products = productsData || [];
+
+  const handleDelete = async (productId: string) => {
+    if (confirm('Are you sure you want to delete this product?')) {
+      await deleteProductMutation.mutateAsync(productId);
+    }
+  };
+
+  if (isLoading) {
+    return <Loading text="Loading products..." />;
+  }
+
+  if (error) {
+    return (
+      <Error 
+        message="Failed to load products" 
+        details={(error as any)?.message}
+        onRetry={() => refetch()}
+      />
+    );
+  }
+
+  const filteredProducts = useMemo(() => products.filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.category.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = categoryFilter === 'all' || p.category === categoryFilter;
@@ -69,7 +62,7 @@ export default function ProductsPage() {
       (stockFilter === 'low' && p.stock <= 10) ||
       (stockFilter === 'good' && p.stock > 10);
     return matchesSearch && matchesCategory && matchesStock;
-  });
+  }), [products, searchQuery, categoryFilter, stockFilter]);
 
   const lowStockItems = products.filter(p => p.stock <= 10).length;
   const totalValue = products.reduce((sum, p) => sum + (p.price * p.stock), 0);

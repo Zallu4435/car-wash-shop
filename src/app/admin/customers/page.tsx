@@ -13,47 +13,41 @@ import {
   IndianRupee,
   ShoppingBag,
 } from 'lucide-react';
-import { useState } from 'react';
-
-const customers = [
-  {
-    id: 'cust_001',
-    name: 'John Doe',
-    email: 'john@example.com',
-    phone: '+91 98765 43210',
-    totalOrders: 12,
-    totalSpent: 8430,
-    joinedDate: '2025-01-15',
-  },
-  {
-    id: 'cust_002',
-    name: 'Priya Sharma',
-    email: 'priya@example.com',
-    phone: '+91 98765 43211',
-    totalOrders: 8,
-    totalSpent: 5240,
-    joinedDate: '2025-02-20',
-  },
-  {
-    id: 'cust_003',
-    name: 'Amit Patel',
-    email: 'amit@example.com',
-    phone: '+91 98765 43212',
-    totalOrders: 15,
-    totalSpent: 12350,
-    joinedDate: '2024-12-10',
-  },
-];
+import { useState, useMemo } from 'react';
+import { useAdminCustomerList } from '@/api/domains/admin-customers/queries';
+import Loading from '@/components/shared/display/Loading';
+import Error from '@/components/shared/display/Error';
+import { EmptyState } from '@/components/shared/display/EmptyState';
 
 export default function CustomersPage() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
+  const { data: customerData, isLoading, error, refetch } = useAdminCustomerList();
 
-  const filteredCustomers = customers.filter(c => 
-    c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    c.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    c.phone.includes(searchQuery)
+  const customers = customerData?.data || [];
+
+  const filteredCustomers = useMemo(() => 
+    customers.filter(c => 
+      c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.phone.includes(searchQuery)
+    ),
+    [customers, searchQuery]
   );
+
+  if (isLoading) {
+    return <Loading text="Loading customers..." />;
+  }
+
+  if (error) {
+    return (
+      <Error 
+        message="Failed to load customers" 
+        details={(error as any)?.message}
+        onRetry={() => refetch()}
+      />
+    );
+  }
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -171,19 +165,13 @@ export default function CustomersPage() {
             ))}
           </div>
 
-          {/* No Results */}
+          {/* Empty State */}
           {filteredCustomers.length === 0 && (
-            <div className="text-center py-10 sm:py-12">
-              <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 bg-muted rounded-full mb-3 sm:mb-4">
-                <Users className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground" />
-              </div>
-              <p className="text-base sm:text-lg font-semibold text-foreground mb-0.5 sm:mb-1">
-                No customers found
-              </p>
-              <p className="text-xs sm:text-sm text-muted-foreground">
-                Try adjusting your search
-              </p>
-            </div>
+            <EmptyState
+              icon={Users}
+              title="No customers found"
+              description={searchQuery ? "Try adjusting your search" : "No customers registered yet"}
+            />
           )}
         </CardContent>
       </Card>

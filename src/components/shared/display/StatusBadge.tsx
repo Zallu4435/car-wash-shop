@@ -4,15 +4,15 @@ interface StatusBadgeProps {
   status: string;
 }
 
-const statusVariants: Record<string, 'default' | 'success' | 'destructive' | 'outline'> = {
+const statusVariants: Record<string, 'default' | 'success' | 'error' | 'outline' | 'secondary' | 'warning' | 'info'> = {
   pending: 'outline',
   confirmed: 'default',
   processing: 'default',
   'in-progress': 'default',
   completed: 'success',
   delivered: 'success',
-  cancelled: 'destructive',
-  failed: 'destructive',
+  cancelled: 'error',
+  failed: 'error',
   active: 'success',
   inactive: 'outline',
 };

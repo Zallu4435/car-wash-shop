@@ -7,47 +7,39 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Megaphone, Plus, Search, Edit, Trash2, Calendar, TrendingUp } from 'lucide-react';
-import { useState } from 'react';
-
-const campaigns = [
-  { 
-    id: 'camp_001', 
-    name: 'Diwali Sale 2025', 
-    type: 'Discount', 
-    startDate: '2025-10-20', 
-    endDate: '2025-11-05', 
-    status: 'active',
-    budget: 50000,
-    reach: 15000,
-    conversions: 245
-  },
-  { 
-    id: 'camp_002', 
-    name: 'New Year Special', 
-    type: 'Promotion', 
-    startDate: '2025-12-25', 
-    endDate: '2026-01-07', 
-    status: 'scheduled',
-    budget: 75000,
-    reach: 0,
-    conversions: 0
-  },
-  { 
-    id: 'camp_003', 
-    name: 'Summer Sale 2025', 
-    type: 'Discount', 
-    startDate: '2025-08-01', 
-    endDate: '2025-08-31', 
-    status: 'completed',
-    budget: 60000,
-    reach: 25000,
-    conversions: 890
-  },
-];
+import { useState, useMemo } from 'react';
+import { useAdminCampaignList, useDeleteCampaign } from '@/api/domains/admin-marketing/queries';
+import Loading from '@/components/shared/display/Loading';
+import Error from '@/components/shared/display/Error';
+import { EmptyState } from '@/components/shared/display/EmptyState';
 
 export default function CampaignsPage() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
+  const { data: campaignsData, isLoading, error, refetch } = useAdminCampaignList();
+  const deleteCampaignMutation = useDeleteCampaign();
+
+  const campaigns = campaignsData || [];
+
+  const handleDelete = async (campaignId: string) => {
+    if (confirm('Are you sure you want to delete this campaign?')) {
+      await deleteCampaignMutation.mutateAsync(campaignId);
+    }
+  };
+
+  if (isLoading) {
+    return <Loading text="Loading campaigns..." />;
+  }
+
+  if (error) {
+    return (
+      <Error 
+        message="Failed to load campaigns" 
+        details={(error as any)?.message}
+        onRetry={() => refetch()}
+      />
+    );
+  }
   const [statusFilter, setStatusFilter] = useState('all');
 
   const filteredCampaigns = campaigns.filter(campaign => {

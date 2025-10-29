@@ -14,33 +14,47 @@ import {
   Clock,
   CheckCircle,
 } from 'lucide-react';
-import { useState } from 'react';
-
-const tickets = [
-  { id: 'TKT001', customer: 'John Doe', email: 'john@example.com', subject: 'Payment Issue', priority: 'high', status: 'open', date: '2025-10-24' },
-  { id: 'TKT002', customer: 'Priya Sharma', email: 'priya@example.com', subject: 'Service Query', priority: 'medium', status: 'in-progress', date: '2025-10-23' },
-  { id: 'TKT003', customer: 'Amit Patel', email: 'amit@example.com', subject: 'Refund Request', priority: 'high', status: 'resolved', date: '2025-10-22' },
-  { id: 'TKT004', customer: 'Rahul Kumar', email: 'rahul@example.com', subject: 'Booking Problem', priority: 'low', status: 'open', date: '2025-10-21' },
-];
+import { useState, useMemo } from 'react';
+import { useAdminTicketList } from '@/api/domains/admin-support/queries';
+import Loading from '@/components/shared/display/Loading';
+import Error from '@/components/shared/display/Error';
+import { EmptyState } from '@/components/shared/display/EmptyState';
 
 export default function TicketsPage() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [priorityFilter, setPriorityFilter] = useState('all');
+  const { data: ticketsData, isLoading, error, refetch } = useAdminTicketList();
 
-  const filteredTickets = tickets.filter(ticket => {
+  const tickets = ticketsData || [];
+
+  if (isLoading) {
+    return <Loading text="Loading tickets..." />;
+  }
+
+  if (error) {
+    return (
+      <Error 
+        message="Failed to load tickets" 
+        details={(error as any)?.message}
+        onRetry={() => refetch()}
+      />
+    );
+  }
+
+  const filteredTickets = useMemo(() => tickets.filter(ticket => {
     const matchesSearch = 
-      ticket.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      ticket.customer.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      ticket.ticketNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      ticket.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       ticket.subject.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === 'all' || ticket.status === statusFilter;
     const matchesPriority = priorityFilter === 'all' || ticket.priority === priorityFilter;
     return matchesSearch && matchesStatus && matchesPriority;
-  });
+  }), [tickets, searchQuery, statusFilter, priorityFilter]);
 
   const openTickets = tickets.filter(t => t.status === 'open').length;
-  const inProgressTickets = tickets.filter(t => t.status === 'in-progress').length;
+  const inProgressTickets = tickets.filter(t => t.status === 'in_progress').length;
   const resolvedTickets = tickets.filter(t => t.status === 'resolved').length;
 
   const getPriorityStyle = (priority: string) => {

@@ -7,41 +7,39 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { FileImage, Plus, Search, Edit, Trash2, Eye } from 'lucide-react';
-import { useState } from 'react';
-
-const posters = [
-  { 
-    id: 'poster_001', 
-    title: 'Summer Special', 
-    location: 'Home Page', 
-    startDate: '2025-10-20', 
-    endDate: '2025-11-30', 
-    active: true,
-    views: 5678
-  },
-  { 
-    id: 'poster_002', 
-    title: 'New Products', 
-    location: 'Products Page', 
-    startDate: '2025-10-24', 
-    endDate: '2025-12-31', 
-    active: true,
-    views: 3456
-  },
-  { 
-    id: 'poster_003', 
-    title: 'Winter Sale', 
-    location: 'Home Page', 
-    startDate: '2025-12-01', 
-    endDate: '2026-01-31', 
-    active: false,
-    views: 0
-  },
-];
+import { useState, useMemo } from 'react';
+import { useAdminPosterList, useDeletePoster } from '@/api/domains/admin-marketing/queries';
+import Loading from '@/components/shared/display/Loading';
+import Error from '@/components/shared/display/Error';
+import { EmptyState } from '@/components/shared/display/EmptyState';
 
 export default function PostersPage() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
+  const { data: postersData, isLoading, error, refetch } = useAdminPosterList();
+  const deletePosterMutation = useDeletePoster();
+
+  const posters = postersData || [];
+
+  const handleDelete = async (posterId: string) => {
+    if (confirm('Are you sure you want to delete this poster?')) {
+      await deletePosterMutation.mutateAsync(posterId);
+    }
+  };
+
+  if (isLoading) {
+    return <Loading text="Loading posters..." />;
+  }
+
+  if (error) {
+    return (
+      <Error 
+        message="Failed to load posters" 
+        details={(error as any)?.message}
+        onRetry={() => refetch()}
+      />
+    );
+  }
   const [statusFilter, setStatusFilter] = useState('all');
 
   const filteredPosters = posters.filter(poster => {

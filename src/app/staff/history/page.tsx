@@ -12,7 +12,7 @@ import {
   XCircle,
   FileText,
 } from 'lucide-react';
-import { useStaffHistory } from '@/api/domains/staff/queries';
+import { useStaffWorkHistory } from '@/api/domains/staff/staff-index';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Pagination } from '@/components/shared/crud/Pagination';
@@ -26,7 +26,7 @@ export default function StaffHistoryPage() {
   const [page, setPage] = React.useState(1);
   const [limit, setLimit] = React.useState(10);
 
-  const { data } = useStaffHistory({
+  const { data } = useStaffWorkHistory({
     status: status === 'all' ? undefined : (status as any),
     search: search || undefined,
     fromDate: fromDate || undefined,

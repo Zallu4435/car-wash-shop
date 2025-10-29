@@ -18,6 +18,9 @@ import {
   ShoppingBag,
   Star
 } from 'lucide-react';
+import { useRevenueReport, useStaffPerformanceReport, useServiceReport } from '@/api/domains/admin-reports/queries';
+import Loading from '@/components/shared/display/Loading';
+import Error from '@/components/shared/display/Error';
 
 // Mock data (keeping the same)
 const revenueData = [
@@ -59,6 +62,17 @@ const customerMetrics = [
 export default function ReportsPage() {
   const [timeRange, setTimeRange] = useState('last-12-months');
   const [selectedTab, setSelectedTab] = useState('overview');
+  const { data: revenueReport, isLoading: revenueLoading, error: revenueError } = useRevenueReport();
+  const { data: staffReport, isLoading: staffLoading, error: staffError } = useStaffPerformanceReport();
+  const { data: serviceReport, isLoading: serviceLoading, error: serviceError } = useServiceReport();
+
+  if (revenueLoading || staffLoading || serviceLoading) {
+    return <Loading text="Loading reports..." />;
+  }
+
+  if (revenueError || staffError || serviceError) {
+    return <Error message="Failed to load reports" details={(revenueError || staffError || serviceError)?.message} />;
+  }
 
   const maxRevenue = Math.max(...revenueData.map(d => d.revenue));
 

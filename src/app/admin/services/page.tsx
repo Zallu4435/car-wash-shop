@@ -16,58 +16,50 @@ import {
   IndianRupee,
   TrendingUp
 } from 'lucide-react';
-import { useState } from 'react';
-
-const services = [
-  {
-    id: 'svc_001',
-    name: 'Premium Wash',
-    category: 'Exterior Wash',
-    price: 499,
-    duration: 30,
-    active: true,
-    description: 'Complete exterior wash with premium products',
-  },
-  {
-    id: 'svc_002',
-    name: 'Interior Detailing',
-    category: 'Interior Detailing',
-    price: 699,
-    duration: 45,
-    active: true,
-    description: 'Deep cleaning of interior surfaces',
-  },
-  {
-    id: 'svc_003',
-    name: 'Full Detailing',
-    category: 'Complete Detailing',
-    price: 1299,
-    duration: 90,
-    active: true,
-    description: 'Complete interior and exterior detailing',
-  },
-  {
-    id: 'svc_004',
-    name: 'Express Wash',
-    category: 'Exterior Wash',
-    price: 299,
-    duration: 15,
-    active: false,
-    description: 'Quick exterior wash',
-  },
-];
+import { useState, useMemo } from 'react';
+import { useAdminServiceList, useDeleteService } from '@/api/domains/admin-catalog/queries';
+import Loading from '@/components/shared/display/Loading';
+import Error from '@/components/shared/display/Error';
+import { EmptyState } from '@/components/shared/display/EmptyState';
 
 export default function ServicesPage() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
+  const { data: servicesData, isLoading, error, refetch } = useAdminServiceList();
+  const deleteServiceMutation = useDeleteService();
 
-  const filteredServices = services.filter(s => 
-    s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    s.category.toLowerCase().includes(searchQuery.toLowerCase())
+  const services = servicesData || [];
+
+  const filteredServices = useMemo(() => 
+    services.filter(s => 
+      s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      s.category.toLowerCase().includes(searchQuery.toLowerCase())
+    ),
+    [services, searchQuery]
   );
 
-  const activeServices = services.filter(s => s.active).length;
+  const activeServices = services.filter(s => s.status === 'active').length;
   const totalRevenue = services.reduce((sum, s) => sum + s.price, 0);
+
+  const handleDelete = async (serviceId: string) => {
+    if (confirm('Are you sure you want to delete this service?')) {
+      await deleteServiceMutation.mutateAsync(serviceId);
+    }
+  };
+
+  if (isLoading) {
+    return <Loading text="Loading services..." />;
+  }
+
+  if (error) {
+    return (
+      <Error 
+        message="Failed to load services" 
+        details={(error as any)?.message}
+        onRetry={() => refetch()}
+      />
+    );
+  }
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -155,8 +147,23 @@ export default function ServicesPage() {
           </div>
 
           {/* Services Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
-            {filteredServices.map((service) => (
+          {filteredServices.length === 0 ? (
+            <EmptyState
+              icon={Car}
+              title="No services found"
+              description={searchQuery ? "Try adjusting your search" : "Add your first service to get started"}
+              action={
+                !searchQuery && (
+                  <Button onClick={() => router.push('/admin/services/new')}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add Service
+                  </Button>
+                )
+              }
+            />
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
+              {filteredServices.map((service) => (
               <Card key={service.id} className="border-2 hover:shadow-lg transition-all">
                 <CardContent className="p-4 sm:p-5">
                   <div className="flex items-start justify-between mb-3 sm:mb-4 gap-2">
@@ -173,13 +180,13 @@ export default function ServicesPage() {
                         </Badge>
                       </div>
                     </div>
-                    <Badge variant={service.active ? 'default' : 'secondary'} className="text-xs flex-shrink-0">
-                      {service.active ? 'Active' : 'Inactive'}
+                    <Badge variant={service.status === 'active' ? 'default' : 'secondary'} className="text-xs flex-shrink-0">
+                      {service.status === 'active' ? 'Active' : 'Inactive'}
                     </Badge>
                   </div>
 
                   <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4 line-clamp-2">
-                    {service.description}
+                    {service.description || 'No description available'}
                   </p>
 
                   <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-3 sm:mb-4">
@@ -222,6 +229,8 @@ export default function ServicesPage() {
                       variant="outline" 
                       size="sm"
                       className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20 h-9 px-3"
+                      onClick={() => handleDelete(service.id)}
+                      disabled={deleteServiceMutation.isPending}
                     >
                       <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                     </Button>
@@ -229,7 +238,8 @@ export default function ServicesPage() {
                 </CardContent>
               </Card>
             ))}
-          </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

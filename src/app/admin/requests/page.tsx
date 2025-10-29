@@ -13,23 +13,45 @@ import {
   TrendingUp,
   CheckCircle,
 } from 'lucide-react';
-import { useState } from 'react';
-import { getMockData } from '@/lib/api/mockData';
+import { useState, useMemo } from 'react';
+import { useAdminBookingList } from '@/api/domains/admin-requests/queries';
+import Loading from '@/components/shared/display/Loading';
+import Error from '@/components/shared/display/Error';
+import { EmptyState } from '@/components/shared/display/EmptyState';
 
 export default function RequestsPage() {
   const router = useRouter();
-  const bookings = getMockData.bookings();
   const [searchQuery, setSearchQuery] = useState('');
+  const { data: bookingData, isLoading, error, refetch } = useAdminBookingList();
 
-  const filteredBookings = bookings.filter(b => 
-    b.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    b.customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    b.service.toLowerCase().includes(searchQuery.toLowerCase())
+  const bookings = bookingData?.data || [];
+
+  const filteredBookings = useMemo(() => 
+    bookings.filter(b => 
+      b.bookingNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      b.customer.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      b.service.toLowerCase().includes(searchQuery.toLowerCase())
+    ),
+    [bookings, searchQuery]
   );
 
   const pendingCount = bookings.filter(b => b.status === 'pending').length;
-  const inProgressCount = bookings.filter(b => b.status === 'in-progress').length;
+  const inProgressCount = bookings.filter(b => b.status === 'in_progress').length;
   const completedToday = bookings.filter(b => b.status === 'completed').length;
+
+  if (isLoading) {
+    return <Loading text="Loading bookings..." />;
+  }
+
+  if (error) {
+    return (
+      <Error 
+        message="Failed to load bookings" 
+        details={(error as any)?.message}
+        onRetry={() => refetch()}
+      />
+    );
+  }
 
   const statusVariants = {
     pending: 'secondary' as const,
@@ -137,8 +159,15 @@ export default function RequestsPage() {
           </div>
 
           {/* Bookings Grid */}
-          <div className="space-y-2.5 sm:space-y-3">
-            {filteredBookings.map((booking) => {
+          {filteredBookings.length === 0 ? (
+            <EmptyState
+              icon={Calendar}
+              title="No bookings found"
+              description={searchQuery ? "Try adjusting your search" : "No service bookings yet"}
+            />
+          ) : (
+            <div className="space-y-2.5 sm:space-y-3">
+              {filteredBookings.map((booking) => {
               const statusVariant = statusVariants[booking.status as keyof typeof statusVariants] || 'secondary';
               return (
                 <Card key={booking.id} className="border-2 border-border hover:shadow-lg transition-all">
@@ -160,7 +189,7 @@ export default function RequestsPage() {
                             </Badge>
                           </div>
                           <p className="font-semibold text-foreground truncate">
-                            {booking.customer.name}
+                            {booking.customer}
                           </p>
                           <p className="text-sm text-muted-foreground truncate">
                             {booking.service}
@@ -207,7 +236,7 @@ export default function RequestsPage() {
                             </Badge>
                           </div>
                           <p className="font-semibold text-sm sm:text-base text-foreground truncate">
-                            {booking.customer.name}
+                            {booking.customer}
                           </p>
                           <p className="text-xs sm:text-sm text-muted-foreground truncate">
                             {booking.service}
@@ -233,7 +262,8 @@ export default function RequestsPage() {
                 </Card>
               );
             })}
-          </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

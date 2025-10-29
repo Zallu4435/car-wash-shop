@@ -5,7 +5,7 @@ import { JobCard } from '@/components/staff/JobCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { Briefcase, Calendar, CheckCircle, Clock } from 'lucide-react';
-import { useStaffJobs } from '@/api/domains/staff/queries';
+import { useStaffJobs } from '@/api/domains/staff/staff-index';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Pagination } from '@/components/shared/crud/Pagination';

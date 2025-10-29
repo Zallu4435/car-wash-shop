@@ -15,11 +15,11 @@ import {
   ArrowRight
 } from 'lucide-react';
 
-import { useStaffDashboard, useUpcomingJobs } from '@/api/domains/staff/queries';
+import { useStaffDashboardSummary, useStaffUpcomingJobs } from '@/api/domains/staff/staff-index';
 
 export default function StaffDashboardPage() {
-  const { data: summary } = useStaffDashboard();
-  const { data: upcomingJobs } = useUpcomingJobs();
+  const { data: summary } = useStaffDashboardSummary();
+  const { data: upcomingJobs } = useStaffUpcomingJobs();
   const stats = [
     { 
       name: "Today's Jobs", 

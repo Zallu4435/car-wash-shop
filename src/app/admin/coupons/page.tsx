@@ -16,53 +16,45 @@ import {
   IndianRupee,
   TrendingUp
 } from 'lucide-react';
-import { useState } from 'react';
-
-const coupons = [
-  {
-    id: 'coupon_001',
-    code: 'FIRST20',
-    type: 'percentage',
-    value: 20,
-    minOrderValue: 500,
-    validUntil: '2025-12-31',
-    usedCount: 234,
-    usageLimit: 1000,
-    active: true,
-  },
-  {
-    id: 'coupon_002',
-    code: 'WASH50',
-    type: 'flat',
-    value: 50,
-    minOrderValue: 300,
-    validUntil: '2025-11-30',
-    usedCount: 89,
-    usageLimit: 500,
-    active: true,
-  },
-  {
-    id: 'coupon_003',
-    code: 'SAVE100',
-    type: 'flat',
-    value: 100,
-    minOrderValue: 1000,
-    validUntil: '2025-10-31',
-    usedCount: 456,
-    usageLimit: 500,
-    active: false,
-  },
-];
+import { useState, useMemo } from 'react';
+import { useAdminCouponList, useDeleteCoupon } from '@/api/domains/admin-coupons/queries';
+import Loading from '@/components/shared/display/Loading';
+import Error from '@/components/shared/display/Error';
+import { EmptyState } from '@/components/shared/display/EmptyState';
 
 export default function CouponsPage() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
+  const { data: couponsData, isLoading, error, refetch } = useAdminCouponList();
+  const deleteCouponMutation = useDeleteCoupon();
+
+  const coupons = couponsData || [];
+
+  const handleDelete = async (couponId: string) => {
+    if (confirm('Are you sure you want to delete this coupon?')) {
+      await deleteCouponMutation.mutateAsync(couponId);
+    }
+  };
+
+  if (isLoading) {
+    return <Loading text="Loading coupons..." />;
+  }
+
+  if (error) {
+    return (
+      <Error 
+        message="Failed to load coupons" 
+        details={(error as any)?.message}
+        onRetry={() => refetch()}
+      />
+    );
+  }
 
   const filteredCoupons = coupons.filter(c => 
     c.code.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const activeCoupons = coupons.filter(c => c.active).length;
+  const activeCoupons = coupons.filter(c => c.status === 'active').length;
   const totalUsage = coupons.reduce((sum, c) => sum + c.usedCount, 0);
 
   return (

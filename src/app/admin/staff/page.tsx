@@ -16,49 +16,47 @@ import {
   MapPin,
   Briefcase
 } from 'lucide-react';
-import { useState } from 'react';
-
-const staff = [
-  {
-    id: 'staff_001',
-    name: 'Rahul Kumar',
-    phone: '+91 98765 43210',
-    role: 'Senior Detailer',
-    area: 'Bandra, Khar',
-    active: true,
-    completedJobs: 156,
-    rating: 4.8,
-  },
-  {
-    id: 'staff_002',
-    name: 'Amit Sharma',
-    phone: '+91 98765 43211',
-    role: 'Detailer',
-    area: 'Andheri, Vile Parle',
-    active: true,
-    completedJobs: 89,
-    rating: 4.6,
-  },
-  {
-    id: 'staff_003',
-    name: 'Vijay Patel',
-    phone: '+91 98765 43212',
-    role: 'Delivery Staff',
-    area: 'Borivali, Kandivali',
-    active: true,
-    completedJobs: 203,
-    rating: 4.7,
-  },
-];
+import { useState, useMemo } from 'react';
+import { useAdminStaffList, useDeleteStaff } from '@/api/domains/admin-staff/queries';
+import Loading from '@/components/shared/display/Loading';
+import Error from '@/components/shared/display/Error';
+import { EmptyState } from '@/components/shared/display/EmptyState';
 
 export default function StaffPage() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
+  const { data: staffData, isLoading, error, refetch } = useAdminStaffList();
+  const deleteStaffMutation = useDeleteStaff();
 
-  const filteredStaff = staff.filter(s => 
-    s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    s.phone.includes(searchQuery)
+  const staff = staffData?.data || [];
+
+  const filteredStaff = useMemo(() => 
+    staff.filter(s => 
+      s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      s.phone.includes(searchQuery)
+    ),
+    [staff, searchQuery]
   );
+
+  const handleDelete = async (staffId: string) => {
+    if (confirm('Are you sure you want to delete this staff member?')) {
+      await deleteStaffMutation.mutateAsync(staffId);
+    }
+  };
+
+  if (isLoading) {
+    return <Loading text="Loading staff members..." />;
+  }
+
+  if (error) {
+    return (
+      <Error 
+        message="Failed to load staff members" 
+        details={(error as any)?.message}
+        onRetry={() => refetch()}
+      />
+    );
+  }
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -82,8 +80,8 @@ export default function StaffPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
         {[
           { icon: UserCog, label: 'Total Staff', value: staff.length },
-          { icon: Briefcase, label: 'Active Members', value: staff.filter(s => s.active).length },
-          { icon: Briefcase, label: 'Total Jobs', value: staff.reduce((sum, s) => sum + s.completedJobs, 0) },
+          { icon: Briefcase, label: 'Active Members', value: staff.filter(s => s.status === 'active').length },
+          { icon: Briefcase, label: 'Total Jobs', value: staff.reduce((sum, s) => sum + s.totalJobs, 0) },
         ].map((stat, index) => (
           <Card key={index} className={`border-2 border-border ${index === 2 ? 'sm:col-span-2 md:col-span-1' : ''}`}>
             <CardContent className="p-4 sm:p-5 md:p-6">
@@ -123,8 +121,23 @@ export default function StaffPage() {
           </div>
 
           {/* Staff Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
-            {filteredStaff.map((member) => (
+          {filteredStaff.length === 0 ? (
+            <EmptyState
+              icon={UserCog}
+              title="No staff members found"
+              description={searchQuery ? "Try adjusting your search" : "Add your first staff member to get started"}
+              action={
+                !searchQuery && (
+                  <Button onClick={() => router.push('/admin/staff/new')}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add Staff Member
+                  </Button>
+                )
+              }
+            />
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
+              {filteredStaff.map((member) => (
               <Card key={member.id} className="border-2 border-border hover:shadow-lg transition-all">
                 <CardContent className="p-4 sm:p-5">
                   <div className="flex items-start justify-between gap-2 mb-3 sm:mb-4">
@@ -141,8 +154,8 @@ export default function StaffPage() {
                         </p>
                       </div>
                     </div>
-                    <Badge variant={member.active ? 'default' : 'secondary'} className="text-xs flex-shrink-0">
-                      {member.active ? 'Active' : 'Inactive'}
+                    <Badge variant={member.status === 'active' ? 'default' : 'secondary'} className="text-xs flex-shrink-0">
+                      {member.status === 'active' ? 'Active' : 'Inactive'}
                     </Badge>
                   </div>
 
@@ -160,11 +173,11 @@ export default function StaffPage() {
                   <div className="flex items-center justify-between p-2.5 sm:p-3 bg-muted rounded-lg mb-3 sm:mb-4">
                     <div>
                       <p className="text-[10px] sm:text-xs text-muted-foreground">Completed Jobs</p>
-                      <p className="text-base sm:text-lg font-bold text-foreground">{member.completedJobs}</p>
+                      <p className="text-base sm:text-lg font-bold text-foreground">{member.totalJobs}</p>
                     </div>
                     <div>
                       <p className="text-[10px] sm:text-xs text-muted-foreground">Rating</p>
-                      <p className="text-base sm:text-lg font-bold text-foreground">⭐ {member.rating}</p>
+                      <p className="text-base sm:text-lg font-bold text-foreground">⭐ {member.avgRating}</p>
                     </div>
                   </div>
 
@@ -191,6 +204,8 @@ export default function StaffPage() {
                       variant="outline" 
                       size="sm"
                       className="text-destructive hover:text-destructive hover:bg-destructive/10 h-9 px-3"
+                      onClick={() => handleDelete(member.id)}
+                      disabled={deleteStaffMutation.isPending}
                     >
                       <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                     </Button>
@@ -198,7 +213,8 @@ export default function StaffPage() {
                 </CardContent>
               </Card>
             ))}
-          </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

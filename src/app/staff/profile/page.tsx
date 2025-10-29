@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { useStaffProfile, useStaffLogout } from '@/api/domains/staff/queries';
+import { useStaffProfile, useStaffLogout } from '@/api/domains/staff/staff-index';
 import { StaffRoutes } from '@/lib/constants/routes';
 
 export default function StaffProfilePage() {

@@ -9,13 +9,39 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Settings, Truck, CreditCard, IndianRupee, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { useAdminSettings, useUpdateSettings } from '@/api/domains/admin-settings/queries';
+import Loading from '@/components/shared/display/Loading';
+import Error from '@/components/shared/display/Error';
 
 export default function SettingsPage() {
-  const [codEnabled, setCodEnabled] = useState(true);
-  const [advancePaymentsEnabled, setAdvancePaymentsEnabled] = useState(true);
+  const { data: settings, isLoading, error, refetch } = useAdminSettings();
+  const updateSettingsMutation = useUpdateSettings();
+  const [codEnabled, setCodEnabled] = useState(settings?.codEnabled ?? true);
+  const [advancePaymentsEnabled, setAdvancePaymentsEnabled] = useState(settings?.advancePaymentsEnabled ?? true);
 
-  const handleSave = () => {
-    toast.success('Settings saved successfully!');
+  if (isLoading) {
+    return <Loading text="Loading settings..." />;
+  }
+
+  if (error) {
+    return <Error message="Failed to load settings" details={(error as any)?.message} onRetry={() => refetch()} />;
+  }
+
+  const handleSave = async () => {
+    try {
+      await updateSettingsMutation.mutateAsync({ 
+        enableCOD: codEnabled,
+        enableOnline: advancePaymentsEnabled,
+        enableWallet: true,
+        codCharges: 0,
+        paymentGateway: 'razorpay',
+        codEnabled,
+        advancePaymentsEnabled
+      });
+      toast.success('Settings saved successfully!');
+    } catch (err) {
+      toast.error('Failed to save settings');
+    }
   };
 
   return (

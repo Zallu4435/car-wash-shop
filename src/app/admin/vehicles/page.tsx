@@ -11,9 +11,22 @@ import {
   Layers,
   Bike
 } from 'lucide-react';
+import { useVehicleBrands, useVehicleModels } from '@/api/domains/admin-vehicles/queries';
+import Loading from '@/components/shared/display/Loading';
+import Error from '@/components/shared/display/Error';
 
 export default function VehiclesHomePage() {
   const router = useRouter();
+  const { data: brands, isLoading: brandsLoading, error: brandsError } = useVehicleBrands();
+  const { data: models, isLoading: modelsLoading, error: modelsError } = useVehicleModels();
+
+  if (brandsLoading || modelsLoading) {
+    return <Loading text="Loading vehicle data..." />;
+  }
+
+  if (brandsError || modelsError) {
+    return <Error message="Failed to load vehicle data" />;
+  }
 
   const vehicleSections = [
     {

@@ -13,21 +13,43 @@ import {
   Package,
   CheckCircle
 } from 'lucide-react';
-import { useState } from 'react';
-import { getMockData } from '@/lib/api/mockData';
+import { useState, useMemo } from 'react';
+import { useAdminOrderList } from '@/api/domains/admin-orders/queries';
+import Loading from '@/components/shared/display/Loading';
+import Error from '@/components/shared/display/Error';
+import { EmptyState } from '@/components/shared/display/EmptyState';
 
 export default function OrdersPage() {
   const router = useRouter();
-  const orders = getMockData.orders();
   const [searchQuery, setSearchQuery] = useState('');
+  const { data: orderData, isLoading, error, refetch } = useAdminOrderList();
 
-  const filteredOrders = orders.filter(o => 
-    o.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    o.customer.name.toLowerCase().includes(searchQuery.toLowerCase())
+  const orders = orderData?.data || [];
+
+  const filteredOrders = useMemo(() => 
+    orders.filter(o => 
+      o.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      o.customer.toLowerCase().includes(searchQuery.toLowerCase())
+    ),
+    [orders, searchQuery]
   );
 
   const totalRevenue = orders.reduce((sum, o) => sum + o.total, 0);
   const deliveredOrders = orders.filter(o => o.status === 'delivered').length;
+
+  if (isLoading) {
+    return <Loading text="Loading orders..." />;
+  }
+
+  if (error) {
+    return (
+      <Error 
+        message="Failed to load orders" 
+        details={(error as any)?.message}
+        onRetry={() => refetch()}
+      />
+    );
+  }
 
   const statusColors = {
     processing: { variant: 'secondary' as const, color: 'text-blue-600 dark:text-blue-400', bgColor: 'bg-blue-100 dark:bg-blue-950/30' },
@@ -117,8 +139,15 @@ export default function OrdersPage() {
           </div>
 
           {/* Orders Grid */}
-          <div className="space-y-2.5 sm:space-y-3">
-            {filteredOrders.map((order) => {
+          {filteredOrders.length === 0 ? (
+            <EmptyState
+              icon={ShoppingBag}
+              title="No orders found"
+              description={searchQuery ? "Try adjusting your search" : "No orders placed yet"}
+            />
+          ) : (
+            <div className="space-y-2.5 sm:space-y-3">
+              {filteredOrders.map((order) => {
               const statusStyle = statusColors[order.status as keyof typeof statusColors] || statusColors.processing;
               return (
                 <Card key={order.id} className="border-2 hover:shadow-lg transition-all">
@@ -133,17 +162,17 @@ export default function OrdersPage() {
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2 mb-1">
                             <Badge variant="outline" className="font-mono text-xs">
-                              {order.id}
+                              {order.orderNumber}
                             </Badge>
                             <Badge className={`${statusStyle.bgColor} text-xs capitalize`}>
                               <span className={statusStyle.color}>{order.status}</span>
                             </Badge>
                           </div>
                           <p className="font-semibold text-foreground truncate">
-                            {order.customer.name}
+                            {order.customer}
                           </p>
                           <p className="text-sm text-muted-foreground truncate">
-                            {order.orderDate}
+                            {order.createdAt}
                           </p>
                         </div>
                       </div>
@@ -175,17 +204,17 @@ export default function OrdersPage() {
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-1">
                             <Badge variant="outline" className="font-mono text-xs">
-                              {order.id}
+                              {order.orderNumber}
                             </Badge>
                             <Badge className={`${statusStyle.bgColor} text-xs capitalize`}>
                               <span className={statusStyle.color}>{order.status}</span>
                             </Badge>
                           </div>
                           <p className="font-semibold text-sm sm:text-base text-foreground truncate">
-                            {order.customer.name}
+                            {order.customer}
                           </p>
                           <p className="text-xs sm:text-sm text-muted-foreground truncate">
-                            {order.orderDate}
+                            {order.createdAt}
                           </p>
                           <div className="mt-2 pt-2 border-t border-border flex items-center justify-between">
                             <div>
@@ -209,7 +238,8 @@ export default function OrdersPage() {
                 </Card>
               );
             })}
-          </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

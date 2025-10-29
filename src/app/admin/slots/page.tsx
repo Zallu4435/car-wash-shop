@@ -19,6 +19,9 @@ import {
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { Clock, Ban, CheckCircle, AlertTriangle, Plus, Users, Calendar as CalendarIcon } from 'lucide-react';
+import { useAdminSlots, useBlockSlot, useUnblockSlot } from '@/api/domains/admin-requests/queries';
+import Loading from '@/components/shared/display/Loading';
+import Error from '@/components/shared/display/Error';
 
 const timeSlots = [
   '09:00 AM', '10:00 AM', '11:00 AM', '12:00 PM',
@@ -34,11 +37,22 @@ const staff = [
 
 export default function SlotManagementPage() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const [blockedSlots, setBlockedSlots] = useState<string[]>(['02:00 PM', '03:00 PM']);
+  const { data: slotsData, isLoading, error, refetch } = useAdminSlots();
+  const blockSlotMutation = useBlockSlot();
+  const unblockSlotMutation = useUnblockSlot();
+  const [blockedSlots, setBlockedSlots] = useState<string[]>(slotsData?.blockedSlots || ['02:00 PM', '03:00 PM']);
   const [staffLeaves, setStaffLeaves] = useState<string[]>(['staff_002']);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [newSlotTime, setNewSlotTime] = useState('');
   const [newSlotCapacity, setNewSlotCapacity] = useState('5');
+
+  if (isLoading) {
+    return <Loading text="Loading slots..." />;
+  }
+
+  if (error) {
+    return <Error message="Failed to load slots" details={(error as any)?.message} onRetry={() => refetch()} />;
+  }
 
   const toggleSlot = (slot: string) => {
     if (blockedSlots.includes(slot)) {
@@ -216,7 +230,7 @@ export default function SlotManagementPage() {
                     </div>
                     <p className="font-bold text-sm sm:text-base text-foreground mb-1.5 sm:mb-2">{slot}</p>
                     <Badge 
-                      variant={isBlocked ? 'destructive' : 'default'}
+                      variant={isBlocked ? 'error' : 'default'}
                       className="text-xs"
                     >
                       {isBlocked ? 'Blocked' : 'Available'}
@@ -266,7 +280,7 @@ export default function SlotManagementPage() {
                     </div>
                   </div>
                   <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
-                    <Badge variant={isOnLeave ? 'destructive' : 'default'} className="text-xs">
+                    <Badge variant={isOnLeave ? 'error' : 'default'} className="text-xs">
                       {isOnLeave ? 'On Leave' : 'Available'}
                     </Badge>
                     <div className="flex items-center gap-2">

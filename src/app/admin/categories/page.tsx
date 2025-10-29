@@ -12,22 +12,43 @@ import {
   Edit,
   Trash2
 } from 'lucide-react';
-import { useState } from 'react';
-
-const categories = [
-  { id: 'cat_001', name: 'Exterior Wash', type: 'service', active: true, count: 5 },
-  { id: 'cat_002', name: 'Interior Detailing', type: 'service', active: true, count: 3 },
-  { id: 'cat_003', name: 'Cleaning Products', type: 'product', active: true, count: 12 },
-  { id: 'cat_004', name: 'Car Care', type: 'product', active: true, count: 8 },
-];
+import { useState, useMemo } from 'react';
+import { useAdminCategoryList, useDeleteCategory } from '@/api/domains/admin-catalog/queries';
+import Loading from '@/components/shared/display/Loading';
+import Error from '@/components/shared/display/Error';
+import { EmptyState } from '@/components/shared/display/EmptyState';
 
 export default function CategoriesPage() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
+  const { data: categoriesData, isLoading, error, refetch } = useAdminCategoryList();
+  const deleteCategoryMutation = useDeleteCategory();
 
-  const filteredCategories = categories.filter(c => 
+  const categories = categoriesData || [];
+
+  const handleDelete = async (categoryId: string) => {
+    if (confirm('Are you sure you want to delete this category?')) {
+      await deleteCategoryMutation.mutateAsync(categoryId);
+    }
+  };
+
+  if (isLoading) {
+    return <Loading text="Loading categories..." />;
+  }
+
+  if (error) {
+    return (
+      <Error 
+        message="Failed to load categories" 
+        details={(error as any)?.message}
+        onRetry={() => refetch()}
+      />
+    );
+  }
+
+  const filteredCategories = useMemo(() => categories.filter(c => 
     c.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  ), [categories, searchQuery]);
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -83,8 +104,8 @@ export default function CategoriesPage() {
                         <h3 className="font-bold text-sm sm:text-base text-foreground truncate">
                           {category.name}
                         </h3>
-                        <Badge variant="outline" className="text-xs mt-0.5 sm:mt-1 capitalize">
-                          {category.type}
+                        <Badge variant="outline" className="text-xs flex-shrink-0">
+                          {category.itemCount} items
                         </Badge>
                       </div>
                     </div>
@@ -92,7 +113,7 @@ export default function CategoriesPage() {
 
                   <div className="p-2.5 sm:p-3 bg-muted rounded-lg mb-3 sm:mb-4">
                     <p className="text-[10px] sm:text-xs text-muted-foreground mb-0.5 sm:mb-1">Items</p>
-                    <p className="text-xl sm:text-2xl font-bold text-foreground">{category.count}</p>
+                    <p className="text-xl sm:text-2xl font-bold text-foreground">{category.itemCount}</p>
                   </div>
 
                   <div className="flex gap-2">
