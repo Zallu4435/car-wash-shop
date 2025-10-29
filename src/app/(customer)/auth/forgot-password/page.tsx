@@ -9,67 +9,74 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Phone, Lock, ArrowLeft, KeyRound, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { loginSchema, registerSchema } from '@/schemas/auth';
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
   const [step, setStep] = useState<'phone' | 'otp' | 'reset'>('phone');
-  const [phone, setPhone] = useState('');
-  const [otp, setOtp] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSendOTP = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (phone.length !== 10 || !/^[6-9]\d{9}$/.test(phone)) {
-      toast.error('Please enter a valid 10-digit phone number');
-      return;
-    }
+  const {
+    register: phoneRegister,
+    handleSubmit: handlePhoneSubmit,
+    formState: { errors: phoneErrors },
+    getValues: getPhone,
+    reset: resetPhone,
+  } = useForm<{ phone: string }>({
+    resolver: zodResolver(loginSchema.pick({ phone: true })),
+    defaultValues: { phone: '' },
+  });
 
+  const {
+    register: otpRegister,
+    handleSubmit: handleOtpSubmit,
+    formState: { errors: otpErrors },
+    getValues: getOtp,
+    reset: resetOtp,
+  } = useForm<{ otp: string }>({
+    resolver: zodResolver(loginSchema.pick({ otp: true })),
+    defaultValues: { otp: '' },
+  });
+
+  const {
+    register: resetRegister,
+    handleSubmit: handleResetSubmit,
+    formState: { errors: resetErrors },
+  } = useForm<{ password: string; confirmPassword: string }>({
+    resolver: zodResolver(registerSchema.pick({ password: true, confirmPassword: true })),
+    defaultValues: { password: '', confirmPassword: '' },
+  });
+
+  const onSendOtp = ({ phone }: { phone: string }) => {
     setIsLoading(true);
     setTimeout(() => {
       setStep('otp');
-      toast.success('OTP sent to your phone');
       setIsLoading(false);
+      toast.success('OTP sent to your phone');
     }, 1000);
   };
-
-  const handleVerifyOTP = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (otp.length !== 6 || !/^\d{6}$/.test(otp)) {
-      toast.error('Please enter a valid 6-digit OTP');
-      return;
-    }
-
+  const onVerifyOtp = ({ otp }: { otp: string }) => {
     setIsLoading(true);
     setTimeout(() => {
       setStep('reset');
-      toast.success('OTP verified successfully');
       setIsLoading(false);
+      toast.success('OTP verified successfully');
     }, 1000);
   };
-
-  const handleResetPassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (newPassword.length < 8) {
-      toast.error('Password must be at least 8 characters');
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      toast.error('Passwords do not match');
-      return;
-    }
-
+  const onResetPassword = ({ password, confirmPassword }: { password: string; confirmPassword: string }) => {
     setIsLoading(true);
     setTimeout(() => {
       toast.success('Password reset successful! Please login.');
-      router.push('/auth/login');
+      setIsLoading(false);
+      setStep('phone');
+      resetPhone();
+      resetOtp();
+      handleResetSubmit(() => {});
+      // router.push('/auth/login');
     }, 1000);
   };
 
@@ -92,14 +99,14 @@ export default function ForgotPasswordPage() {
             </div>
             <CardDescription className="text-xs sm:text-sm px-2">
               {step === 'phone' && 'Enter your phone number to reset password'}
-              {step === 'otp' && `Enter OTP sent to +91 ${phone}`}
+              {step === 'otp' && `Enter OTP sent to +91 ${getPhone().phone}`}
               {step === 'reset' && 'Create a new password'}
             </CardDescription>
           </CardHeader>
 
           <CardContent className="px-4 sm:px-6">
             {step === 'phone' && (
-              <form onSubmit={handleSendOTP} className="space-y-4 sm:space-y-5">
+              <form onSubmit={handlePhoneSubmit(onSendOtp)} className="space-y-4 sm:space-y-5">
                 <div className="space-y-1.5 sm:space-y-2">
                   <Label htmlFor="phone" className="text-xs sm:text-sm">Phone Number</Label>
                   <div className="relative">
@@ -108,13 +115,12 @@ export default function ForgotPasswordPage() {
                       id="phone"
                       type="tel"
                       placeholder="Enter 10-digit phone number"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                      {...phoneRegister('phone')}
                       className="pl-10 h-11 sm:h-12 text-sm sm:text-base"
                       autoFocus
-                      required
                     />
                   </div>
+                  {phoneErrors.phone && <p className="text-xs text-red-500">{phoneErrors.phone.message}</p>}
                 </div>
 
                 <Button 
@@ -129,7 +135,7 @@ export default function ForgotPasswordPage() {
             )}
 
             {step === 'otp' && (
-              <form onSubmit={handleVerifyOTP} className="space-y-4 sm:space-y-5">
+              <form onSubmit={handleOtpSubmit(onVerifyOtp)} className="space-y-4 sm:space-y-5">
                 <div className="space-y-1.5 sm:space-y-2">
                   <Label htmlFor="otp" className="text-xs sm:text-sm">Enter OTP</Label>
                   <div className="relative">
@@ -138,14 +144,13 @@ export default function ForgotPasswordPage() {
                       id="otp"
                       type="text"
                       placeholder="Enter 6-digit OTP"
-                      value={otp}
-                      onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                      {...otpRegister('otp')}
                       className="pl-10 h-11 sm:h-12 text-center text-lg sm:text-2xl tracking-[0.3em] sm:tracking-[0.5em] font-bold"
                       autoFocus
-                      required
                       maxLength={6}
                     />
                   </div>
+                  {otpErrors.otp && <p className="text-xs text-red-500">{otpErrors.otp.message}</p>}
                   <div className="flex justify-between items-center">
                     <p className="text-[10px] sm:text-xs text-muted-foreground">
                       Didn't receive OTP?
@@ -185,7 +190,7 @@ export default function ForgotPasswordPage() {
             )}
 
             {step === 'reset' && (
-              <form onSubmit={handleResetPassword} className="space-y-3.5 sm:space-y-4">
+              <form onSubmit={handleResetSubmit(onResetPassword)} className="space-y-3.5 sm:space-y-4">
                 <div className="space-y-1.5 sm:space-y-2">
                   <Label htmlFor="newPassword" className="text-xs sm:text-sm">New Password</Label>
                   <div className="relative">
@@ -194,11 +199,9 @@ export default function ForgotPasswordPage() {
                       id="newPassword"
                       type={showPassword ? 'text' : 'password'}
                       placeholder="Create a strong password"
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
+                      {...resetRegister('password')}
                       className="pl-10 pr-10 h-11 sm:h-12 text-sm sm:text-base"
                       autoFocus
-                      required
                     />
                     <button
                       type="button"
@@ -208,9 +211,7 @@ export default function ForgotPasswordPage() {
                       {showPassword ? <EyeOff className="h-4 w-4 sm:h-5 sm:w-5" /> : <Eye className="h-4 w-4 sm:h-5 sm:w-5" />}
                     </button>
                   </div>
-                  <p className="text-[10px] sm:text-xs text-muted-foreground">
-                    Must be at least 8 characters
-                  </p>
+                  {resetErrors.password && <p className="text-xs text-red-500">{resetErrors.password.message}</p>}
                 </div>
 
                 <div className="space-y-1.5 sm:space-y-2">
@@ -221,10 +222,8 @@ export default function ForgotPasswordPage() {
                       id="confirmPassword"
                       type={showConfirmPassword ? 'text' : 'password'}
                       placeholder="Re-enter your password"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      {...resetRegister('confirmPassword')}
                       className="pl-10 pr-10 h-11 sm:h-12 text-sm sm:text-base"
-                      required
                     />
                     <button
                       type="button"
@@ -234,6 +233,7 @@ export default function ForgotPasswordPage() {
                       {showConfirmPassword ? <EyeOff className="h-4 w-4 sm:h-5 sm:w-5" /> : <Eye className="h-4 w-4 sm:h-5 sm:w-5" />}
                     </button>
                   </div>
+                  {resetErrors.confirmPassword && <p className="text-xs text-red-500">{resetErrors.confirmPassword.message}</p>}
                 </div>
 
                 <div className="pt-2 sm:pt-3">

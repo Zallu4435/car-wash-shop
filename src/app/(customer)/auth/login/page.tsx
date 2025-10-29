@@ -10,43 +10,79 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Separator } from '@/components/ui/separator';
 import { Phone, Lock, LogIn, Droplet } from 'lucide-react';
 import { toast } from 'sonner';
+import { VehicleSelectionModal } from '@/components/shared/selectors/VehicleSelectionModal';
+import { bookingApi } from '@/lib/api/bookingApi';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { loginSchema } from '@/schemas/auth';
 
 export default function LoginPage() {
   const router = useRouter();
   const [step, setStep] = useState<'phone' | 'otp'>('phone');
-  const [phone, setPhone] = useState('');
-  const [otp, setOtp] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showVehicleModal, setShowVehicleModal] = useState(false);
+  const [userVehicles, setUserVehicles] = useState<any[]>([]);
 
-  const handleSendOTP = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (phone.length !== 10 || !/^[6-9]\d{9}$/.test(phone)) {
-      toast.error('Please enter a valid 10-digit phone number');
-      return;
-    }
+  // Phone Form
+  const {
+    register: phoneRegister,
+    handleSubmit: handlePhoneSubmit,
+    formState: { errors: phoneErrors },
+    getValues: getPhoneValue,
+    reset: resetPhoneForm,
+  } = useForm<{ phone: string }>({
+    resolver: zodResolver(loginSchema.pick({ phone: true })),
+    defaultValues: { phone: '' },
+  });
+  // OTP Form
+  const {
+    register: otpRegister,
+    handleSubmit: handleOtpSubmit,
+    formState: { errors: otpErrors },
+    getValues: getOtpValue,
+    reset: resetOtpForm,
+  } = useForm<{ otp: string }>({
+    resolver: zodResolver(loginSchema.pick({ otp: true })),
+    defaultValues: { otp: '' },
+  });
 
+  const onSendOtp = ({ phone }: { phone: string }) => {
     setIsLoading(true);
     setTimeout(() => {
       setStep('otp');
+      setIsLoading(false);
       toast.success('OTP sent to your phone');
+    }, 1000);
+  };
+
+  const onVerifyOtp = async ({ otp }: { otp: string }) => {
+    setIsLoading(true);
+    setTimeout(async () => {
+      toast.success('Login successful!');
+      // Mock: After login, check vehicles for demo: Try both car and bike arrays
+      const carVehicles = await bookingApi.getUserVehicles('car');
+      const bikeVehicles = await bookingApi.getUserVehicles('bike');
+      const allVehicles = [...(carVehicles || []), ...(bikeVehicles || [])];
+      setUserVehicles(allVehicles);
+      if (allVehicles.length === 0) {
+        setShowVehicleModal(true);
+      } else {
+        router.push('/');
+      }
       setIsLoading(false);
     }, 1000);
   };
 
-  const handleVerifyOTP = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (otp.length !== 6 || !/^\d{6}$/.test(otp)) {
-      toast.error('Please enter a valid 6-digit OTP');
-      return;
-    }
+  const handleVehicleSelect = (_vehicle: any) => {
+    toast.success('Vehicle added successfully!');
+    setShowVehicleModal(false);
+    router.push('/');
+  };
 
-    setIsLoading(true);
-    setTimeout(() => {
-      toast.success('Login successful!');
-      router.push('/');
-    }, 1000);
+  const handleSkipVehicle = () => {
+    toast.info('You can add your vehicle later from your profile');
+    setShowVehicleModal(false);
+    router.push('/');
   };
 
   return (
@@ -74,13 +110,13 @@ export default function LoginPage() {
             <CardDescription className="text-xs sm:text-sm px-2">
               {step === 'phone' 
                 ? 'Enter your phone number to continue' 
-                : `Enter OTP sent to +91 ${phone}`}
+                : `Enter OTP sent to +91 ${getPhoneValue('phone')}`}
             </CardDescription>
           </CardHeader>
 
           <CardContent className="px-4 sm:px-6">
             {step === 'phone' ? (
-              <form onSubmit={handleSendOTP} className="space-y-4 sm:space-y-5">
+              <form onSubmit={handlePhoneSubmit(onSendOtp)} className="space-y-4 sm:space-y-5">
                 <div className="space-y-1.5 sm:space-y-2">
                   <Label htmlFor="phone" className="text-xs sm:text-sm">Phone Number</Label>
                   <div className="relative">
@@ -89,16 +125,15 @@ export default function LoginPage() {
                       id="phone"
                       type="tel"
                       placeholder="9876543210"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                      {...phoneRegister('phone')}
                       className="pl-10 h-11 sm:h-12 text-sm sm:text-base"
                       autoFocus
-                      required
                     />
                   </div>
                   <p className="text-[10px] sm:text-xs text-muted-foreground">
                     We'll send you a 6-digit OTP
                   </p>
+                  {phoneErrors.phone && <p className="text-xs text-red-500">{phoneErrors.phone.message}</p>}
                 </div>
 
                 <Button 
@@ -111,7 +146,7 @@ export default function LoginPage() {
                 </Button>
               </form>
             ) : (
-              <form onSubmit={handleVerifyOTP} className="space-y-4 sm:space-y-5">
+              <form onSubmit={handleOtpSubmit(onVerifyOtp)} className="space-y-4 sm:space-y-5">
                 <div className="space-y-1.5 sm:space-y-2">
                   <Label htmlFor="otp" className="text-xs sm:text-sm">Enter OTP</Label>
                   <div className="relative">
@@ -120,11 +155,9 @@ export default function LoginPage() {
                       id="otp"
                       type="text"
                       placeholder="••••••"
-                      value={otp}
-                      onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                      {...otpRegister('otp')}
                       className="pl-10 h-11 sm:h-12 text-center text-lg sm:text-xl tracking-widest font-semibold"
                       autoFocus
-                      required
                       maxLength={6}
                     />
                   </div>
@@ -142,6 +175,7 @@ export default function LoginPage() {
                       Resend OTP
                     </Button>
                   </div>
+                  {otpErrors.otp && <p className="text-xs text-red-500">{otpErrors.otp.message}</p>}
                 </div>
 
                 <div className="space-y-2 sm:space-y-3">
@@ -160,7 +194,7 @@ export default function LoginPage() {
                     className="w-full h-10 sm:h-11 text-xs sm:text-sm"
                     onClick={() => {
                       setStep('phone');
-                      setOtp('');
+                      resetOtpForm();
                     }}
                   >
                     Change Phone Number
@@ -208,6 +242,11 @@ export default function LoginPage() {
           </p>
         </div>
       </div>
+      <VehicleSelectionModal
+        isOpen={showVehicleModal}
+        onClose={handleSkipVehicle}
+        onSelect={handleVehicleSelect}
+      />
     </div>
   );
 }

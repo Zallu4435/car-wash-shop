@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import { registerSchema, RegisterInput } from '@/schemas/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,32 +13,6 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Separator } from '@/components/ui/separator';
 import { User, Phone, Mail, Lock, Eye, EyeOff, UserPlus, Droplet, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
-import { VehicleSelectionModal } from '@/components/shared/selectors/VehicleSelectionModal';
-
-const registerSchema = z
-  .object({
-    name: z
-      .string()
-      .min(2, 'Name must be at least 2 characters')
-      .max(50, 'Name is too long')
-      .regex(/^[a-zA-Z\s]+$/, 'Name can only contain letters'),
-    email: z.string().email('Invalid email address').optional().or(z.literal('')),
-    phone: z.string().regex(/^[6-9]\d{9}$/, 'Invalid phone number').length(10, 'Phone must be 10 digits'),
-    password: z
-      .string()
-      .min(8, 'Password must be at least 8 characters')
-      .regex(/[A-Z]/, 'Password must contain uppercase letter')
-      .regex(/[a-z]/, 'Password must contain lowercase letter')
-      .regex(/[0-9]/, 'Password must contain number')
-      .regex(/[@$!%*?&#]/, 'Password must contain special character'),
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match",
-    path: ['confirmPassword'],
-  });
-
-type RegisterForm = z.infer<typeof registerSchema>;
 
 interface Vehicle {
   id: string;
@@ -55,34 +29,22 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [showVehicleModal, setShowVehicleModal] = useState(false);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<RegisterForm>({
+  } = useForm<RegisterInput>({
     resolver: zodResolver(registerSchema),
   });
 
-  const onSubmit = async (data: RegisterForm) => {
+  const onSubmit = async (data: RegisterInput) => {
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
       toast.success('Registration successful!');
-      setShowVehicleModal(true);
+      router.push('/');
     }, 1500);
-  };
-
-  const handleVehicleSelect = (vehicle: Vehicle) => {
-    console.log('Selected vehicle:', vehicle);
-    toast.success('Vehicle added successfully!');
-    router.push('/');
-  };
-
-  const handleSkipVehicle = () => {
-    toast.info('You can add your vehicle later from your profile');
-    router.push('/');
   };
 
   return (
@@ -257,13 +219,6 @@ export default function RegisterPage() {
           </CardFooter>
         </Card>
       </div>
-
-      {/* Vehicle Selection Modal */}
-      <VehicleSelectionModal
-        isOpen={showVehicleModal}
-        onClose={handleSkipVehicle}
-        onSelect={handleVehicleSelect}
-      />
     </div>
   );
 }

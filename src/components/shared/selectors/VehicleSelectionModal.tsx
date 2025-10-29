@@ -5,7 +5,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Car, Bike, Check, ChevronRight, ArrowLeft } from 'lucide-react';
+import { Check, ChevronRight, ArrowLeft } from 'lucide-react';
 
 interface Vehicle {
   id: string;
@@ -25,14 +25,14 @@ interface VehicleSelectionModalProps {
 }
 
 const CAR_CATEGORIES = [
-  { id: 'hatchback', name: 'Hatchback', icon: '🚗' },
-  { id: 'sedan', name: 'Sedan', icon: '🚙' },
-  { id: 'suv', name: 'SUV', icon: '🚐' },
+  { id: 'hatchback', name: 'Hatchback', icon: '🚗' }, // Automobile emoji
+  { id: 'sedan', name: 'Sedan', icon: '🚙' }, // SUV emoji for sedan
+  { id: 'suv', name: 'SUV', icon: '🚐' }, // Minibus emoji for SUV
 ];
 
 const BIKE_CATEGORIES = [
-  { id: 'scooter', name: 'Scooter', icon: '🛵' },
-  { id: 'motorcycle', name: 'Motorcycle', icon: '🏍️' },
+  { id: 'scooter', name: 'Scooter', icon: '🛵' }, // Motor scooter emoji
+  { id: 'motorcycle', name: 'Motorcycle', icon: '🏍️' }, // Motorcycle emoji
 ];
 
 type ViewStep = 'type' | 'category' | 'vehicle';
@@ -114,6 +114,17 @@ export function VehicleSelectionModal({
     return `Select ${selectedCategory}`;
   };
 
+  // Get category icon for vehicle list
+  const getCategoryIcon = (type: string, category: string) => {
+    if (type === 'car') {
+      const carCategory = CAR_CATEGORIES.find(c => c.id === category);
+      return carCategory?.icon || '🚗';
+    } else {
+      const bikeCategory = BIKE_CATEGORIES.find(c => c.id === category);
+      return bikeCategory?.icon || '🛵';
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -126,9 +137,9 @@ export function VehicleSelectionModal({
 
       {/* Modal Dialog */}
       <div className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-full max-w-md">
-        <div className="bg-card border-2 border-border rounded-lg shadow-2xl max-h-[90vh] overflow-hidden flex flex-col mx-4">
+        <div className="border-2 border-border rounded-lg shadow-2xl max-h-[90vh] overflow-hidden flex flex-col mx-4 vehicle-modal-bg">
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-border flex-shrink-0 bg-card">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-border flex-shrink-0 vehicle-modal-bg">
             <div className="flex items-center gap-2 flex-1 min-w-0">
               {currentStep !== 'type' && (
                 <Button
@@ -137,7 +148,7 @@ export function VehicleSelectionModal({
                   className="h-8 w-8 flex-shrink-0 -ml-2"
                   onClick={handleBack}
                 >
-                  <ArrowLeft className="h-4 w-4" />
+                  <ArrowLeft className="h-4 w-4 text-gray-700 dark:text-foreground" />
                 </Button>
               )}
               <div className="flex-1 min-w-0">
@@ -168,26 +179,24 @@ export function VehicleSelectionModal({
               onClick={() => { handleReset(); onClose(); }}
             >
               <span className="sr-only">Close</span>
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="h-4 w-4 text-gray-700 dark:text-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </Button>
           </div>
 
           {/* Content */}
-          <div className="flex-1 overflow-y-auto p-4 bg-card">
+          <div className="flex-1 overflow-y-auto p-4 vehicle-modal-bg">
             {/* Step 1: Vehicle Type */}
             {currentStep === 'type' && (
               <div className="grid grid-cols-2 gap-3">
                 <Card
-                  className="cursor-pointer transition-all hover:shadow-md hover:border-primary border-2"
+                  className="cursor-pointer transition-all hover:shadow-md hover:border-primary border-2 vehicle-card"
                   onClick={() => handleTypeSelect('car')}
                 >
                   <CardContent className="p-6 text-center flex flex-col items-center">
-                    <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-3">
-                      <Car className="h-8 w-8 text-primary" />
-                    </div>
-                    <h3 className="font-semibold text-sm mb-1.5">Cars</h3>
+                    <div className="text-5xl mb-3">🚗</div>
+                    <h3 className="font-semibold text-sm mb-1.5 text-foreground">Cars</h3>
                     <p className="text-[11px] text-muted-foreground mb-2.5 leading-tight">
                       Hatchback, Sedan, SUV
                     </p>
@@ -198,14 +207,12 @@ export function VehicleSelectionModal({
                 </Card>
 
                 <Card
-                  className="cursor-pointer transition-all hover:shadow-md hover:border-primary border-2"
+                  className="cursor-pointer transition-all hover:shadow-md hover:border-primary border-2 vehicle-card"
                   onClick={() => handleTypeSelect('bike')}
                 >
                   <CardContent className="p-6 text-center flex flex-col items-center">
-                    <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-3">
-                      <Bike className="h-8 w-8 text-primary" />
-                    </div>
-                    <h3 className="font-semibold text-sm mb-1.5">Bikes</h3>
+                    <div className="text-5xl mb-3">🏍️</div>
+                    <h3 className="font-semibold text-sm mb-1.5 text-foreground">Bikes</h3>
                     <p className="text-[11px] text-muted-foreground mb-2.5 leading-tight">
                       Scooter, Motorcycle
                     </p>
@@ -228,17 +235,21 @@ export function VehicleSelectionModal({
                   return (
                     <Card
                       key={category.id}
-                      className="cursor-pointer transition-all hover:shadow-sm hover:border-primary border-2"
+                      className="cursor-pointer transition-all hover:shadow-sm hover:border-primary border-2 vehicle-card"
                       onClick={() => handleCategorySelect(category.id)}
                     >
                       <CardContent className="p-3.5">
                         <div className="flex items-center gap-3">
-                          <div className="text-2xl flex-shrink-0">{category.icon}</div>
+                          <div className="text-3xl flex-shrink-0">{category.icon}</div>
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-medium text-sm truncate">{category.name}</h3>
-                            <p className="text-[11px] text-muted-foreground">{vehicleCount} available</p>
+                            <h3 className="font-medium text-sm truncate text-foreground">
+                              {category.name}
+                            </h3>
+                            <p className="text-[11px] text-muted-foreground">
+                              {vehicleCount} available
+                            </p>
                           </div>
-                          <ChevronRight className="h-5 w-5 text-muted-foreground/60 flex-shrink-0" />
+                          <ChevronRight className="h-5 w-5 text-gray-500 dark:text-muted-foreground flex-shrink-0" />
                         </div>
                       </CardContent>
                     </Card>
@@ -251,9 +262,9 @@ export function VehicleSelectionModal({
             {currentStep === 'vehicle' && (
               <div className="space-y-2.5">
                 {filteredVehicles.length === 0 ? (
-                  <div className="text-center py-12 bg-muted/20 rounded-lg border-2 border-dashed border-border">
-                    <div className="inline-flex items-center justify-center w-12 h-12 bg-background rounded-full mb-3 border">
-                      {selectedType === 'car' ? <Car className="h-6 w-6 text-muted-foreground" /> : <Bike className="h-6 w-6 text-muted-foreground" />}
+                  <div className="text-center py-12 bg-white dark:bg-muted/20 rounded-lg border-2 border-dashed border-border">
+                    <div className="text-5xl mb-3">
+                      {getCategoryIcon(selectedType || 'car', selectedCategory || '')}
                     </div>
                     <p className="text-sm text-muted-foreground">
                       No {selectedCategory}s available
@@ -262,23 +273,21 @@ export function VehicleSelectionModal({
                 ) : (
                   filteredVehicles.map((vehicle) => {
                     const isSelected = vehicle.id === selectedVehicleId;
-                    const Icon = vehicle.type === 'car' ? Car : Bike;
+                    const vehicleIcon = getCategoryIcon(vehicle.type, vehicle.category);
                     
                     return (
                       <Card
                         key={vehicle.id}
-                        className={`cursor-pointer transition-all border-2 ${
+                        className={`cursor-pointer transition-all border-2 vehicle-card ${
                           isSelected 
-                            ? 'border-primary bg-primary/10 shadow-md' 
+                            ? 'border-primary bg-primary/5 shadow-md' 
                             : 'border-border hover:border-primary hover:shadow-sm'
                         }`}
                         onClick={() => handleVehicleSelect(vehicle)}
                       >
                         <CardContent className="p-3.5">
                           <div className="flex items-center gap-3">
-                            <div className="p-2 bg-primary/10 rounded-lg flex-shrink-0">
-                              <Icon className="h-5 w-5 text-primary" />
-                            </div>
+                            <div className="text-2xl flex-shrink-0">{vehicleIcon}</div>
                             <div className="flex-1 min-w-0">
                               <p className="font-medium text-sm text-foreground truncate">
                                 {vehicle.brand} {vehicle.model}
@@ -289,7 +298,7 @@ export function VehicleSelectionModal({
                             </div>
                             {isSelected && (
                               <div className="h-7 w-7 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
-                                <Check className="h-4 w-4 text-primary-foreground" />
+                                <Check className="h-4 w-4 text-white" strokeWidth={3} />
                               </div>
                             )}
                           </div>

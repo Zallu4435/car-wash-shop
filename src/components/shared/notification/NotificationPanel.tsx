@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 interface NotificationPanelProps {
   isOpen: boolean;
@@ -72,6 +73,7 @@ const mockNotifications = [
 export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'unread' | 'all'>('unread');
+  const [mounted, setMounted] = useState(false);
 
   // Prevent body scroll when panel is open on mobile
   useEffect(() => {
@@ -85,30 +87,36 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
     };
   }, [isOpen]);
 
-  if (!isOpen) return null;
+  // Ensure portal target exists
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
+
+  if (!isOpen || !mounted) return null;
 
   const unreadNotifications = mockNotifications.filter(n => !n.read);
   const displayNotifications = activeTab === 'unread' ? unreadNotifications : mockNotifications;
   const unreadCount = unreadNotifications.length;
 
-  return (
+  return createPortal(
     <>
       {/* Backdrop - Higher z-index */}
       <div 
-        className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm lg:hidden" 
+        className="fixed inset-0 z-[1000] bg-black/60 backdrop-blur-sm lg:hidden" 
         onClick={onClose}
       />
       
       {/* Desktop backdrop (subtle) */}
       <div 
-        className="hidden lg:block fixed inset-0 z-[100]" 
+        className="hidden lg:block fixed inset-0 z-[1000]" 
         onClick={onClose}
       />
 
       {/* Notification Panel */}
-      <Card className="fixed lg:absolute right-0 top-0 lg:top-auto lg:mt-2 w-full lg:w-96 h-full lg:h-auto lg:max-h-[85vh] bg-card rounded-none lg:rounded-lg shadow-2xl border-0 lg:border-2 lg:border-border z-[101] overflow-hidden flex flex-col">
+      <Card className="fixed lg:absolute right-0 top-0 lg:top-auto lg:mt-2 w-full lg:w-96 h-full lg:h-auto lg:max-h-[85vh] rounded-none lg:rounded-lg shadow-2xl border-0 lg:border-2 lg:border-border z-[1001] overflow-hidden flex flex-col vehicle-modal-bg">
         {/* Header */}
-        <div className="p-4 border-b border-border flex-shrink-0 bg-card">
+        <div className="p-4 border-b border-border flex-shrink-0 vehicle-modal-bg">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <div className="p-1.5 bg-primary/10 rounded-lg">
@@ -195,7 +203,7 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
         </div>
 
         {/* Notifications List */}
-        <div className="overflow-y-auto flex-1 scrollbar-thin">
+        <div className="overflow-y-auto flex-1 scrollbar-thin vehicle-modal-bg">
           {displayNotifications.length > 0 ? (
             <div>
               {displayNotifications.map((notification, index) => {
@@ -257,7 +265,7 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
         </div>
 
         {/* Footer */}
-        <div className="p-3 border-t border-border bg-muted/30 flex-shrink-0">
+        <div className="p-3 border-t border-border vehicle-modal-bg flex-shrink-0">
           <Button
             variant="ghost"
             size="sm"
@@ -271,6 +279,7 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
           </Button>
         </div>
       </Card>
-    </>
+    </>,
+    document.body
   );
 }

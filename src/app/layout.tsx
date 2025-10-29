@@ -49,6 +49,11 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning className="scroll-smooth bg-background">
       <head>
         <link rel="icon" href="/favicon.ico" sizes="any" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `!function(){try{var s=localStorage.getItem('carwash-theme')||'system';var r=s==='system'?(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):s;var e=document.documentElement;e.classList.remove('light','dark');e.classList.add(r);e.setAttribute('data-theme',r);}catch(e){}}();`,
+          }}
+        />
       </head>
       <body 
         className={`${inter.variable} font-sans antialiased text-foreground transition-colors duration-300`}

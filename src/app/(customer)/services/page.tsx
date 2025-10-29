@@ -5,9 +5,10 @@ import { ServiceCard } from '@/components/customer/ServiceCard';
 import { VehicleTypeFilter } from '@/components/shared/selectors/VehicleTypeFilter';
 import { CategoryFilter } from '@/components/shared/selectors/CategoryFilter';
 import { Pagination } from '@/components/shared/crud/Pagination';
-import { Search, SlidersHorizontal, X } from 'lucide-react';
+import { Search, SlidersHorizontal, X, Car, Bike } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { VehicleSelectionModal } from '@/components/shared/selectors/VehicleSelectionModal';
 
 // Mock services data
 const allServices = [
@@ -133,6 +134,28 @@ export default function ServicesPage() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [showVehicleModal, setShowVehicleModal] = useState(false);
+
+  // Dummy user's vehicles (no API/localStorage) - first becomes default
+  type SelectedVehicle = {
+    id: string;
+    type: 'car' | 'bike';
+    brand: string;
+    model: string;
+    category: string; // hatchback | sedan | suv | luxury | scooter | motorcycle
+  } | null;
+
+  const [selectedVehicle, setSelectedVehicle] = useState<SelectedVehicle>(null);
+
+  useEffect(() => {
+    const dummyVehicles: SelectedVehicle[] = [
+      { id: 'u1', type: 'car', brand: 'Maruti', model: 'Swift', category: 'hatchback' },
+      { id: 'u2', type: 'bike', brand: 'Honda', model: 'Activa', category: 'scooter' },
+    ];
+    if (dummyVehicles.length > 0) {
+      setSelectedVehicle(dummyVehicles[0]);
+    }
+  }, []);
 
   // Vehicle types with actual counts
   const vehicleTypes = [
@@ -219,17 +242,75 @@ export default function ServicesPage() {
 
   const totalActiveFilters = selectedVehicleTypes.length + selectedCategories.length;
 
+  // Pricing multipliers
+  const vehiclePriceDelta: Record<string, number> = {
+    suv: 200,
+    sedan: 100,
+    hatchback: 0,
+    luxury: 500,
+    bike: -150,
+    motorcycle: -150,
+    scooter: -200,
+    scooty: -200,
+  };
+
+  const computeDynamicPrice = (basePrice: number, serviceVehicleType: string) => {
+    if (!selectedVehicle) return null;
+    // Only apply when service type matches selected vehicle domain
+    const isCarService = serviceVehicleType === 'car';
+    const isBikeService = serviceVehicleType === 'bike';
+    if ((selectedVehicle.type === 'car' && !isCarService) || (selectedVehicle.type === 'bike' && !isBikeService)) {
+      return null;
+    }
+
+    const key = selectedVehicle.category.toLowerCase();
+    const delta = vehiclePriceDelta[key] ?? 0;
+    const price = Math.max(0, basePrice + delta);
+    const badgeLabel = `${selectedVehicle.type === 'car' ? key.toUpperCase() : (key === 'motorcycle' ? 'BIKE' : key.toUpperCase())} pricing`;
+    const bodyTypeBadge = selectedVehicle.type === 'car' ? key.toUpperCase() : (key === 'motorcycle' ? 'BIKE' : key.toUpperCase());
+    return { price, badgeLabel, bodyTypeBadge };
+  };
+
   return (
     <div className="min-h-screen bg-background pb-32 lg:pb-8">
       {/* Compact Hero Section */}
       <section className="bg-gradient-to-br from-primary/5 to-background border-b border-border">
         <div className="container-custom py-6 sm:py-8 lg:py-12">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2">
-            Our Services
-          </h1>
-          <p className="text-sm sm:text-base text-muted-foreground">
-            Professional car, bike, and home cleaning services
-          </p>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2">Our Services</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">Professional car, bike, and home cleaning services</p>
+
+          {/* Vehicle selection banner */}
+          <div className="mt-4 sm:mt-6 p-3 sm:p-4 rounded-xl border-2 border-border bg-card flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0 flex-1">
+              <div className="p-2 bg-primary/10 rounded-lg flex-shrink-0">
+                {selectedVehicle?.type === 'bike' ? (
+                  <Bike className="h-5 w-5 text-primary" />
+                ) : (
+                  <Car className="h-5 w-5 text-primary" />
+                )}
+              </div>
+              <div className="min-w-0">
+                {selectedVehicle ? (
+                  <>
+                    <p className="text-sm font-semibold text-foreground truncate">
+                      Showing prices for: {selectedVehicle.brand} {selectedVehicle.model}
+                    </p>
+                    <p className="text-xs text-muted-foreground capitalize truncate">
+                      Body type: {selectedVehicle.category}
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm font-semibold text-foreground">No vehicle selected</p>
+                    <p className="text-xs text-muted-foreground">Select your vehicle to see accurate pricing</p>
+                  </>
+                )}
+              </div>
+            </div>
+            <Button variant="outline" size="sm" onClick={() => setShowVehicleModal(true)} className="shrink-0">
+              Change Vehicle
+            </Button>
+          </div>
         </div>
       </section>
 
@@ -322,9 +403,22 @@ export default function ServicesPage() {
               {paginatedServices.length > 0 ? (
                 <>
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
-                    {paginatedServices.map((service) => (
-                      <ServiceCard key={service.id} service={service} />
-                    ))}
+                    {paginatedServices.map((service) => {
+                      const dynamic = computeDynamicPrice(service.price, service.vehicleTypeId);
+                      const priceDisplay = dynamic ? `₹${dynamic.price}` : undefined;
+                      const pricingBadge = dynamic ? `(${dynamic.badgeLabel})` : undefined;
+                      const bodyTypeBadge = dynamic ? dynamic.bodyTypeBadge : undefined;
+                      return (
+                        <ServiceCard
+                          key={service.id}
+                          service={service}
+                          priceDisplay={priceDisplay}
+                          pricingBadge={pricingBadge}
+                          bodyTypeBadge={bodyTypeBadge}
+                          showFromLabel={!dynamic}
+                        />
+                      );
+                    })}
                   </div>
 
                   {/* Pagination */}
@@ -392,7 +486,7 @@ export default function ServicesPage() {
             onClick={() => setShowFilters(false)}
           />
           
-          <div className="lg:hidden fixed inset-x-0 bottom-0 z-50 bg-card rounded-t-2xl shadow-2xl border-t-2 border-border max-h-[88vh] flex flex-col">
+          <div className="lg:hidden fixed inset-x-0 bottom-0 z-50 rounded-t-2xl shadow-2xl border-t-2 border-border max-h-[88vh] flex flex-col force-sheet-bg">
             {/* Modal Header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-border flex-shrink-0">
               <div className="flex items-center gap-3">
@@ -459,6 +553,25 @@ export default function ServicesPage() {
           </div>
         </>
       )}
+
+      {/* Vehicle Selection Modal */}
+      <VehicleSelectionModal
+        isOpen={showVehicleModal}
+        onClose={() => setShowVehicleModal(false)}
+        onSelect={(vehicle: any) => {
+          // Map selector vehicle to our local SelectedVehicle shape
+          const bodyType = (vehicle.category || '').toLowerCase();
+          const mapped: any = {
+            id: vehicle.id,
+            type: vehicle.type,
+            brand: vehicle.brand,
+            model: vehicle.model,
+            category: bodyType,
+          };
+          setSelectedVehicle(mapped);
+        }}
+        selectedVehicleId={selectedVehicle?.id}
+      />
     </div>
   );
 }

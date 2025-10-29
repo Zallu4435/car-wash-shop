@@ -143,7 +143,7 @@ export function AdminHeader({ setSidebarOpen }: AdminHeaderProps) {
                   className="fixed inset-0 z-40" 
                   onClick={() => setShowThemeMenu(false)}
                 />
-                <Card className="absolute right-0 mt-2 w-40 sm:w-48 bg-card rounded-lg sm:rounded-xl shadow-xl border-2 border-border z-50">
+                <Card className="absolute right-0 mt-2 w-40 sm:w-48 bg-white dark:bg-card rounded-lg sm:rounded-xl shadow-xl border-2 border-border z-50">
                   <CardContent className="p-1.5 sm:p-2">
                     {themeOptions.map((option) => {
                       const Icon = option.icon;
@@ -197,7 +197,7 @@ export function AdminHeader({ setSidebarOpen }: AdminHeaderProps) {
                   className="fixed inset-0 z-40" 
                   onClick={() => setShowNotifications(false)}
                 />
-                <Card className="absolute right-0 mt-2 w-[90vw] sm:w-96 bg-card rounded-lg sm:rounded-xl shadow-2xl border-2 border-border z-50 max-h-[70vh] sm:max-h-[600px] overflow-hidden flex flex-col">
+                <Card className="absolute right-0 mt-2 w-[90vw] sm:w-96 bg-white dark:bg-card rounded-lg sm:rounded-xl shadow-2xl border-2 border-border z-50 max-h-[70vh] sm:max-h-[600px] overflow-hidden flex flex-col">
                   {/* Notification Header */}
                   <div className="p-3 sm:p-4 border-b border-border">
                     <div className="flex items-center justify-between mb-1.5 sm:mb-2">
@@ -304,7 +304,7 @@ export function AdminHeader({ setSidebarOpen }: AdminHeaderProps) {
                   className="fixed inset-0 z-40" 
                   onClick={() => setShowUserMenu(false)}
                 />
-                <Card className="absolute right-0 mt-2 w-48 sm:w-56 bg-card rounded-lg sm:rounded-xl shadow-xl border-2 border-border z-50">
+                <Card className="absolute right-0 mt-2 w-48 sm:w-56 bg-white dark:bg-card rounded-lg sm:rounded-xl shadow-xl border-2 border-border z-50">
                   <CardContent className="p-2 sm:p-3">
                     {/* User Info */}
                     <div className="px-2 sm:px-3 py-1.5 sm:py-2 mb-1.5 sm:mb-2">

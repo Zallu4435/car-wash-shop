@@ -199,7 +199,7 @@ export default function ProductsPage() {
             onClick={() => setShowFilters(false)}
           />
           
-          <div className="lg:hidden fixed inset-x-0 bottom-0 z-50 bg-card rounded-t-2xl shadow-2xl border-t-2 border-border max-h-[88vh] flex flex-col">
+          <div className="lg:hidden fixed inset-x-0 bottom-0 z-50 rounded-t-2xl shadow-2xl border-t-2 border-border max-h-[88vh] flex flex-col force-sheet-bg">
             {/* Modal Header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-border flex-shrink-0">
               <div className="flex items-center gap-3">
