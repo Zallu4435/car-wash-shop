@@ -65,6 +65,11 @@ export const orderFetchers = {
   },
 
   async cancelOrder(orderId: string): Promise<{ message: string }> {
+    if (USE_MOCK_DATA) {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      return { message: 'Order cancelled successfully' };
+    }
+    
     const { data } = await apiClient.post<ApiResponse<{ message: string }>>(
       `${CustomerRoutes.ORDERS}/${orderId}/cancel`
     );

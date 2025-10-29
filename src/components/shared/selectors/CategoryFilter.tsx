@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Filter } from 'lucide-react';
+import { Filter, Search, X } from 'lucide-react';
 
 interface Category {
   id: string;
@@ -15,6 +15,9 @@ interface CategoryFilterProps {
   selectedCategories: string[];
   onToggle: (categoryId: string) => void;
   onClearAll: () => void;
+  searchValue?: string;
+  onSearchChange?: (value: string) => void;
+  showSearch?: boolean;
 }
 
 export function CategoryFilter({
@@ -22,9 +25,38 @@ export function CategoryFilter({
   selectedCategories,
   onToggle,
   onClearAll,
+  searchValue = '',
+  onSearchChange,
+  showSearch = false,
 }: CategoryFilterProps) {
   return (
     <div className="space-y-4">
+      {/* Search Bar */}
+      {showSearch && onSearchChange && (
+        <div className="space-y-2">
+          <label className="text-sm font-semibold text-foreground block">
+            Search Products
+          </label>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Search products..."
+              value={searchValue}
+              onChange={(e) => onSearchChange(e.target.value)}
+              className="w-full pl-10 pr-10 py-2.5 text-sm border-2 border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-background text-foreground placeholder:text-muted-foreground transition-all"
+            />
+            {searchValue && (
+              <button
+                onClick={() => onSearchChange('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+        </div>
+      )}
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -53,7 +85,7 @@ export function CategoryFilter({
             <button
               key={category.id}
               onClick={() => onToggle(category.id)}
-              className={`w-full flex items-center justify-between p-3.5 rounded-lg border-2 transition-all duration-200 ${
+              className={`w-full flex items-center justify-between p-3.5 rounded-lg border-2 transition-all duration-200 cursor-pointer ${
                 isSelected
                   ? 'border-primary bg-primary/10 shadow-sm'
                   : 'border-border bg-card hover:border-primary/50 hover:bg-accent'
@@ -116,7 +148,7 @@ export function CategoryFilter({
             </span>
             <button
               onClick={onClearAll}
-              className="text-primary hover:text-primary/80 font-semibold transition-colors text-sm"
+              className="text-primary hover:text-primary/80 font-semibold transition-colors text-sm cursor-pointer"
             >
               Reset
             </button>

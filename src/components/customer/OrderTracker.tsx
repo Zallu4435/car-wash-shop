@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle, Clock, Package, Truck, Home } from 'lucide-react';
+import { CheckCircle, Clock, Package, Truck, Home, Wrench, UserCheck, PlayCircle } from 'lucide-react';
 
 interface StatusItem {
   status: string;
@@ -10,10 +10,17 @@ interface StatusItem {
 interface OrderTrackerProps {
   currentStatus: string;
   statusHistory: StatusItem[];
+  isService?: boolean;
 }
 
-export function OrderTracker({ currentStatus, statusHistory }: OrderTrackerProps) {
-  const statuses = [
+export function OrderTracker({ currentStatus, statusHistory, isService = false }: OrderTrackerProps) {
+  // Different status flows for services vs orders
+  const statuses = isService ? [
+    { id: 'processing', label: 'Booking Placed', icon: Package },
+    { id: 'confirmed', label: 'Confirmed', icon: CheckCircle },
+    { id: 'shipped', label: 'In Progress', icon: PlayCircle },
+    { id: 'delivered', label: 'Completed', icon: UserCheck },
+  ] : [
     { id: 'processing', label: 'Order Placed', icon: Package },
     { id: 'confirmed', label: 'Confirmed', icon: CheckCircle },
     { id: 'shipped', label: 'Shipped', icon: Truck },
@@ -39,7 +46,9 @@ export function OrderTracker({ currentStatus, statusHistory }: OrderTrackerProps
           <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
             <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
           </div>
-          <CardTitle className="text-base sm:text-lg">Order Status</CardTitle>
+          <CardTitle className="text-base sm:text-lg">
+            {isService ? 'Booking Status' : 'Order Status'}
+          </CardTitle>
         </div>
       </CardHeader>
       <CardContent>
@@ -54,10 +63,10 @@ export function OrderTracker({ currentStatus, statusHistory }: OrderTrackerProps
                 {/* Connector Line */}
                 {index < statuses.length - 1 && (
                   <div
-                    className={`absolute left-4 sm:left-5 top-9 sm:top-11 w-0.5 h-10 sm:h-12 ${
-                      state === 'completed' 
-                        ? 'bg-primary' 
-                        : 'bg-border'
+                    className={`absolute left-[18px] sm:left-[22px] top-10 sm:top-12 w-[3px] h-8 sm:h-10 transition-all duration-300 rounded-full ${
+                      index < currentIndex
+                        ? 'bg-green-500 dark:bg-green-400 shadow-[0_0_8px_rgba(34,197,94,0.4)]' 
+                        : 'bg-gray-300 dark:bg-gray-600'
                     }`}
                   />
                 )}
@@ -68,19 +77,19 @@ export function OrderTracker({ currentStatus, statusHistory }: OrderTrackerProps
                   <div
                     className={`relative z-10 flex items-center justify-center w-9 h-9 sm:w-11 sm:h-11 rounded-full border-2 flex-shrink-0 transition-all ${
                       state === 'completed'
-                        ? 'bg-primary border-primary'
+                        ? 'bg-green-500 dark:bg-green-600 border-green-500 dark:border-green-600 shadow-lg shadow-green-500/30'
                         : state === 'active'
-                        ? 'bg-primary/10 border-primary'
-                        : 'bg-muted border-border'
+                        ? 'bg-blue-50 dark:bg-blue-950 border-blue-500 dark:border-blue-400 shadow-lg shadow-blue-500/20'
+                        : 'bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-600'
                     }`}
                   >
                     <StatusIcon
                       className={`h-4 w-4 sm:h-5 sm:w-5 ${
                         state === 'completed'
-                          ? 'text-primary-foreground'
+                          ? 'text-white'
                           : state === 'active'
-                          ? 'text-primary'
-                          : 'text-muted-foreground'
+                          ? 'text-blue-600 dark:text-blue-400'
+                          : 'text-gray-400 dark:text-gray-500'
                       }`}
                     />
                   </div>
@@ -102,9 +111,9 @@ export function OrderTracker({ currentStatus, statusHistory }: OrderTrackerProps
                       </p>
                     )}
                     {state === 'active' && (
-                      <div className="mt-1.5 sm:mt-2 inline-flex items-center gap-1.5 px-2 py-1 bg-primary/10 rounded-full">
-                        <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
-                        <span className="text-xs font-medium text-primary">In Progress</span>
+                      <div className="mt-1.5 sm:mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-100 dark:bg-blue-950 rounded-full border border-blue-200 dark:border-blue-800">
+                        <div className="w-1.5 h-1.5 bg-blue-500 dark:bg-blue-400 rounded-full animate-pulse" />
+                        <span className="text-xs font-medium text-blue-700 dark:text-blue-300">In Progress</span>
                       </div>
                     )}
                   </div>
@@ -114,15 +123,15 @@ export function OrderTracker({ currentStatus, statusHistory }: OrderTrackerProps
           })}
         </div>
 
-        {/* Estimated Delivery */}
+        {/* Estimated Delivery / Service Completion */}
         {currentStatus !== 'delivered' && (
           <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-border">
             <div className="p-3 sm:p-4 bg-gradient-to-br from-primary/5 to-primary/10 rounded-lg sm:rounded-xl border border-primary/20">
               <p className="text-xs sm:text-sm font-medium text-muted-foreground mb-0.5 sm:mb-1">
-                Estimated Delivery
+                {isService ? 'Scheduled For' : 'Estimated Delivery'}
               </p>
               <p className="text-base sm:text-lg font-bold text-primary">
-                Oct 26, 2025
+                {isService ? 'As per booking schedule' : 'Oct 26, 2025'}
               </p>
             </div>
           </div>

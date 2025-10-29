@@ -161,7 +161,7 @@ export function AdminHeader({ setSidebarOpen }: AdminHeaderProps) {
                             setTheme(option.value);
                             setShowThemeMenu(false);
                           }}
-                          className={`w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm rounded-lg transition-colors ${
+                          className={`w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm rounded-lg transition-colors cursor-pointer ${
                             isActive
                               ? 'bg-primary text-primary-foreground'
                               : 'text-foreground hover:bg-muted'
@@ -220,7 +220,7 @@ export function AdminHeader({ setSidebarOpen }: AdminHeaderProps) {
                       </div>
                       <button
                         onClick={() => setShowNotifications(false)}
-                        className="p-1 hover:bg-muted rounded-lg transition-colors flex-shrink-0"
+                        className="p-1 hover:bg-muted rounded-lg transition-colors flex-shrink-0 cursor-pointer"
                       >
                         <X className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
                       </button>
@@ -238,7 +238,7 @@ export function AdminHeader({ setSidebarOpen }: AdminHeaderProps) {
                         <div key={notification.id}>
                           <button
                             onClick={() => setShowNotifications(false)}
-                            className={`w-full p-3 sm:p-4 hover:bg-muted transition-colors text-left ${
+                            className={`w-full p-3 sm:p-4 hover:bg-muted transition-colors text-left cursor-pointer ${
                               !notification.read ? 'bg-primary/5' : ''
                             }`}
                           >
@@ -328,7 +328,7 @@ export function AdminHeader({ setSidebarOpen }: AdminHeaderProps) {
                         router.push(AdminRoutes.PROFILE);
                         setShowUserMenu(false);
                       }}
-                      className="w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm rounded-lg hover:bg-muted transition-colors text-foreground"
+                      className="w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm rounded-lg hover:bg-muted transition-colors text-foreground cursor-pointer"
                     >
                       <User className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
                       <span>Profile</span>
@@ -338,7 +338,7 @@ export function AdminHeader({ setSidebarOpen }: AdminHeaderProps) {
                         router.push(AdminRoutes.SETTINGS);
                         setShowUserMenu(false);
                       }}
-                      className="w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm rounded-lg hover:bg-muted transition-colors text-foreground"
+                      className="w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm rounded-lg hover:bg-muted transition-colors text-foreground cursor-pointer"
                     >
                       <Settings className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
                       <span>Settings</span>
@@ -346,7 +346,7 @@ export function AdminHeader({ setSidebarOpen }: AdminHeaderProps) {
                     <Separator className="my-1.5 sm:my-2" />
                     <button
                       onClick={handleLogout}
-                      className="w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm rounded-lg hover:bg-destructive/10 transition-colors text-destructive"
+                      className="w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm rounded-lg hover:bg-destructive/10 transition-colors text-destructive cursor-pointer"
                     >
                       <LogOut className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
                       <span>Logout</span>

@@ -55,7 +55,10 @@ export const ROUTES = {
     SUPPORT_TICKETS: '/support/tickets',
     SUPPORT_TOPICS: '/support/topics',
     
-    // Notifications
+    // Notifications (Page)
+    NOTIFICATIONS_PAGE: '/notifications',
+    
+    // API Routes
     NOTIFICATIONS: '/notifications',
     SEARCH: '/search',
     BOOKINGS: '/bookings',
@@ -76,8 +79,8 @@ export const ROUTES = {
     AUTH_ME: '/auth/me',
     AUTH_LOGOUT: '/auth/logout',
     AUTH_REFRESH: '/auth/refresh',
-    NOTIFICATIONS_READ:`/notifications/read`,
-    NOTIFICATIONS_READ_ALL: '/notifications/read-all',
+    NOTIFICATIONS_READ: 'read',
+    NOTIFICATIONS_READ_ALL: 'read-all',
   },
 
   // Staff Routes (with /staff prefix)

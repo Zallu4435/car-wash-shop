@@ -5,31 +5,38 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useOrders } from '@/api/domains/orders/queries';
-import { Package, Calendar, ChevronRight, ShoppingBag, Car, Clock, ArrowRight } from 'lucide-react';
+import { useBookings } from '@/api/domains/bookings/queries';
+import { Package, Calendar, ChevronRight, ShoppingBag, Car, Clock, ArrowRight, Wrench } from 'lucide-react';
 import { EmptyState } from '@/components/shared/display/EmptyState';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
+import { useMemo } from 'react';
 
 export default function OrdersLandingPage() {
-  // API calls
-  const { data: ordersResponse, isLoading: ordersLoading, error, refetch } = useOrders({ limit: 10 });
-  const orders = ordersResponse?.data || [];
-
-  const recentOrders = orders.slice(0, 3);
-
-  const allServiceOrders = orders.filter(order => {
-    const serviceName = order.serviceName?.toLowerCase() || '';
-    return serviceName.includes('wash') || 
-      serviceName.includes('service') ||
-      serviceName.includes('cleaning');
-  });
+  // API calls - fetch both orders and bookings
+  const { data: ordersResponse, isLoading: ordersLoading, error: ordersError, refetch: refetchOrders } = useOrders({ limit: 10 });
+  const { data: bookingsResponse, isLoading: bookingsLoading, error: bookingsError, refetch: refetchBookings } = useBookings();
   
-  const productOrders = orders.filter(order => {
-    const serviceName = order.serviceName?.toLowerCase() || '';
-    return !serviceName.includes('wash') && 
-      !serviceName.includes('service') &&
-      !serviceName.includes('cleaning');
-  });
+  const isLoading = ordersLoading || bookingsLoading;
+  const error = ordersError || bookingsError;
+  
+  const productOrders = ordersResponse?.data || [];
+  const serviceBookings = bookingsResponse?.data || [];
+  
+  // Combine all orders and bookings
+  const allOrders = useMemo(() => {
+    const combined = [
+      ...productOrders.map(order => ({ ...order, _type: 'order' as const })),
+      ...serviceBookings.map(booking => ({ ...booking, _type: 'booking' as const }))
+    ];
+    return combined.sort((a, b) => 
+      new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+    );
+  }, [productOrders, serviceBookings]);
+
+  const recentOrders = allOrders.slice(0, 3);
+  const allServiceOrders = serviceBookings;
+  const allProductOrders = productOrders;
 
   const getStatusVariant = (status: string) => {
     switch (status.toLowerCase()) {
@@ -62,7 +69,7 @@ export default function OrdersLandingPage() {
       title: 'Product Orders',
       description: 'Track your product purchases and deliveries',
       icon: ShoppingBag,
-      count: productOrders.length,
+      count: allProductOrders.length,
       color: 'bg-purple-50 dark:bg-purple-950/20',
       iconColor: 'text-purple-600 dark:text-purple-400',
       href: '/orders/products',
@@ -70,7 +77,7 @@ export default function OrdersLandingPage() {
   ];
 
   // Loading state
-  if (ordersLoading) {
+  if (isLoading) {
     return <Loading text="Loading orders..." />;
   }
 
@@ -80,7 +87,10 @@ export default function OrdersLandingPage() {
       <Error 
         message="Failed to load orders" 
         details={(error as any)?.message}
-        onRetry={() => refetch()}
+        onRetry={() => {
+          refetchOrders();
+          refetchBookings();
+        }}
       />
     );
   }
@@ -181,54 +191,67 @@ export default function OrdersLandingPage() {
 
             {recentOrders.length > 0 ? (
               <div className="space-y-3 sm:space-y-4">
-                {recentOrders.map((order) => (
-                  <Card key={order.id} className="hover:shadow-lg transition-shadow border-2 border-border">
-                    <CardContent className="p-4 sm:p-5 md:p-6">
-                      {/* Order Header */}
-                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-3 sm:mb-4 pb-3 sm:pb-4 border-b border-border">
-                        <div className="flex items-start gap-2 sm:gap-3 min-w-0 flex-1">
-                          <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg flex-shrink-0">
-                            <ShoppingBag className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <p className="font-mono font-bold text-sm sm:text-base text-foreground truncate">
-                              {order.id}
-                            </p>
-                            <div className="flex items-center gap-1.5 sm:gap-2 mt-0.5 sm:mt-1 text-xs sm:text-sm text-muted-foreground">
-                              <Calendar className="h-3 w-3 sm:h-3.5 sm:w-3.5 flex-shrink-0" />
-                              <span className="truncate">{new Date(order.createdAt).toLocaleDateString()}</span>
+                {recentOrders.map((order) => {
+                  const isBooking = (order as any)._type === 'booking';
+                  
+                  return (
+                    <Card key={order.id} className="hover:shadow-lg transition-shadow border-2 border-border">
+                      <CardContent className="p-4 sm:p-5 md:p-6">
+                        {/* Order Header */}
+                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-3 sm:mb-4 pb-3 sm:pb-4 border-b border-border">
+                          <div className="flex items-start gap-2 sm:gap-3 min-w-0 flex-1">
+                            <div className={`p-1.5 sm:p-2 rounded-lg flex-shrink-0 ${
+                              isBooking ? 'bg-blue-50 dark:bg-blue-950/20' : 'bg-purple-50 dark:bg-purple-950/20'
+                            }`}>
+                              {isBooking ? (
+                                <Wrench className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 dark:text-blue-400" />
+                              ) : (
+                                <ShoppingBag className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600 dark:text-purple-400" />
+                              )}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="font-mono font-bold text-sm sm:text-base text-foreground truncate">
+                                {order.id}
+                              </p>
+                              <div className="flex items-center gap-1.5 sm:gap-2 mt-0.5 sm:mt-1 text-xs sm:text-sm text-muted-foreground">
+                                <Calendar className="h-3 w-3 sm:h-3.5 sm:w-3.5 flex-shrink-0" />
+                                <span className="truncate">{new Date(order.createdAt || Date.now()).toLocaleDateString()}</span>
+                              </div>
+                              <Badge variant="outline" className="mt-1.5 sm:mt-2 text-xs">
+                                {isBooking ? 'Service' : 'Product'}
+                              </Badge>
                             </div>
                           </div>
+                          <Badge variant={getStatusVariant(order.status) as any} className="text-xs sm:text-sm w-fit">
+                            {order.status}
+                          </Badge>
                         </div>
-                        <Badge variant={getStatusVariant(order.status) as any} className="text-xs sm:text-sm w-fit">
-                          {order.status}
-                        </Badge>
-                      </div>
-                      
-                      {/* Order Items */}
-                      <div className="space-y-1.5 sm:space-y-2 mb-3 sm:mb-4 p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl">
-                        <div className="flex justify-between text-xs sm:text-sm gap-2">
-                          <span className="text-foreground truncate flex-1">{order.serviceName}</span>
-                          <span className="text-muted-foreground flex-shrink-0">× 1</span>
+                        
+                        {/* Order Items */}
+                        <div className="space-y-1.5 sm:space-y-2 mb-3 sm:mb-4 p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl">
+                          <div className="flex justify-between text-xs sm:text-sm gap-2">
+                            <span className="text-foreground truncate flex-1">{order.serviceName || 'Order'}</span>
+                            <span className="text-muted-foreground flex-shrink-0">× 1</span>
+                          </div>
                         </div>
-                      </div>
 
-                      {/* Order Footer */}
-                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 pt-3 sm:pt-4 border-t border-border">
-                        <div>
-                          <p className="text-xs sm:text-sm text-muted-foreground mb-0.5 sm:mb-1">Total Amount</p>
-                          <p className="text-xl sm:text-2xl font-bold text-primary">₹{order.totalAmount}</p>
+                        {/* Order Footer */}
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 pt-3 sm:pt-4 border-t border-border">
+                          <div>
+                            <p className="text-xs sm:text-sm text-muted-foreground mb-0.5 sm:mb-1">Total Amount</p>
+                            <p className="text-xl sm:text-2xl font-bold text-primary">₹{(order as any).amount || order.totalAmount || 0}</p>
+                          </div>
+                          <Button asChild variant="outline" className="group w-full sm:w-auto h-9 sm:h-10" size="sm">
+                            <Link href={`/orders/${order.id}`} className="text-xs sm:text-sm">
+                              View Details
+                              <ChevronRight className="ml-1 h-3.5 w-3.5 sm:h-4 sm:w-4 group-hover:translate-x-1 transition-transform" />
+                            </Link>
+                          </Button>
                         </div>
-                        <Button asChild variant="outline" className="group w-full sm:w-auto h-9 sm:h-10" size="sm">
-                          <Link href={`/orders/${order.id}`} className="text-xs sm:text-sm">
-                            View Details
-                            <ChevronRight className="ml-1 h-3.5 w-3.5 sm:h-4 sm:w-4 group-hover:translate-x-1 transition-transform" />
-                          </Link>
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
             ) : (
               <EmptyState

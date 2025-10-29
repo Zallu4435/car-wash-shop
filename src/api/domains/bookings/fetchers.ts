@@ -14,6 +14,41 @@ const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true';
 
 export const bookingFetchers = {
   async createBooking(input: BookingInput): Promise<Booking> {
+    if (USE_MOCK_DATA) {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Create mock booking
+      const scheduledDate = new Date(input.scheduledAt);
+      const newBooking: Booking = {
+        id: `booking_${Date.now()}`,
+        bookingNumber: `BK${Date.now()}`,
+        userId: 'user_001',
+        serviceId: input.serviceId,
+        serviceName: 'Car Wash Service',
+        vehicleId: input.vehicleId,
+        addressId: input.addressId,
+        address: 'Mock Address',
+        scheduledAt: input.scheduledAt,
+        scheduledDate: scheduledDate.toLocaleDateString(),
+        scheduledTime: scheduledDate.toLocaleTimeString(),
+        status: 'pending',
+        paymentStatus: 'pending',
+        amount: 500,
+        totalAmount: 500,
+        notes: input.notes,
+        vehicleDetails: {
+          make: 'Mock',
+          model: 'Vehicle',
+          year: 2024,
+          type: 'car'
+        },
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      } as any;
+      
+      return newBooking;
+    }
+    
     const { data } = await apiClient.post<ApiResponse<Booking>>(
       CustomerRoutes.BOOKINGS,
       input
@@ -33,6 +68,28 @@ export const bookingFetchers = {
     serviceId: string,
     date: string
   ): Promise<AvailableSlotsResponse> {
+    if (USE_MOCK_DATA) {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      // Return mock available slots
+      const allSlots = [
+        '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM',
+        '12:00 PM', '12:30 PM', '01:00 PM', '01:30 PM', '02:00 PM', '02:30 PM',
+        '03:00 PM', '03:30 PM', '04:00 PM', '04:30 PM', '05:00 PM', '05:30 PM',
+      ];
+      
+      const bookedSlots = ['10:00 AM', '02:00 PM'];
+      
+      return {
+        date,
+        slots: allSlots.map(time => ({
+          startTime: time,
+          endTime: time, // In real API, this would be different
+          isAvailable: !bookedSlots.includes(time),
+        })),
+      };
+    }
+    
     const { data } = await apiClient.get<ApiResponse<AvailableSlotsResponse>>(
       CustomerRoutes.BOOKINGS_SLOTS,
       { params: { serviceId, date } }
@@ -88,6 +145,11 @@ export const bookingFetchers = {
   },
 
   async cancelBooking(bookingId: string): Promise<{ message: string }> {
+    if (USE_MOCK_DATA) {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      return { message: 'Booking cancelled successfully' };
+    }
+    
     const { data } = await apiClient.post<ApiResponse<{ message: string }>>(
       `/bookings/${bookingId}/cancel`
     );

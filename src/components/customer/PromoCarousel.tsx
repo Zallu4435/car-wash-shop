@@ -107,7 +107,7 @@ export function PromoCarousel({ promos }: PromoCarouselProps) {
               <button
                 key={idx}
                 onClick={() => setCurrentIndex(idx)}
-                className={`h-2.5 rounded-full transition-all duration-300 ${
+                className={`h-2.5 rounded-full transition-all duration-300 cursor-pointer ${
                   idx === currentIndex
                     ? 'bg-primary w-10'
                     : 'bg-muted-foreground/30 hover:bg-muted-foreground/50 w-2.5'

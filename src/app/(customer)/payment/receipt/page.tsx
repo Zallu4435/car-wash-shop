@@ -6,9 +6,13 @@ import { useSearchParams } from 'next/navigation';
 
 export default function PaymentReceiptPage() {
   const searchParams = useSearchParams();
-  const orderId = searchParams?.get('orderId');
   const service = searchParams?.get('service'); // e.g., "true" if coming from a service booking
   const isService = service === 'true';
+  
+  // Get ID based on type - serviceId for bookings, orderId for orders
+  const serviceId = searchParams?.get('serviceId');
+  const orderId = searchParams?.get('orderId');
+  const displayId = isService ? serviceId : orderId;
 
   return (
     <Confirmation
@@ -17,10 +21,10 @@ export default function PaymentReceiptPage() {
       message={isService
         ? 'Your service has been successfully booked.'
         : 'Your order has been placed. You’ll receive updates soon.'}
-      details={orderId ? `Order/Booking ID: ${orderId}` : undefined}
+      details={displayId ? `${isService ? 'Booking' : 'Order'} ID: ${displayId}` : undefined}
       primaryAction={{
-        label: isService ? 'Go to My Bookings' : 'Track Order',
-        href: isService ? '/customer/bookings' : '/customer/orders',
+        label: isService ? 'View My Bookings' : 'Track Order',
+        href: '/orders',
       }}
       secondaryAction={{
         label: 'Go Home',

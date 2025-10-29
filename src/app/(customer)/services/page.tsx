@@ -23,14 +23,26 @@ export default function ServicesPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [showVehicleModal, setShowVehicleModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
 
   // Get selected vehicle from context
   const { selectedVehicle, vehicles, selectVehicle } = useVehicleContext();
+
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 500); // 500ms debounce delay
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   // API filters
   const filters: ServiceFilters = {
     vehicleType: selectedVehicleTypes.length > 0 ? selectedVehicleTypes[0] as 'car' | 'bike' : undefined,
     category: selectedCategories.length > 0 ? selectedCategories[0] : undefined,
+    search: debouncedSearch || undefined,
   };
 
   // API calls
@@ -77,7 +89,7 @@ export default function ServicesPage() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedVehicleTypes, selectedCategories]);
+  }, [selectedVehicleTypes, selectedCategories, debouncedSearch]);
 
   const toggleVehicleType = (typeId: string) => {
     setSelectedVehicleTypes(prev => {
@@ -118,9 +130,10 @@ export default function ServicesPage() {
   const clearAllFilters = () => {
     setSelectedVehicleTypes([]);
     setSelectedCategories([]);
+    setSearchQuery('');
   };
 
-  const totalActiveFilters = selectedVehicleTypes.length + selectedCategories.length;
+  const totalActiveFilters = selectedVehicleTypes.length + selectedCategories.length + (debouncedSearch ? 1 : 0);
 
   // Loading state
   if (servicesLoading || categoriesLoading) {
@@ -214,6 +227,31 @@ export default function ServicesPage() {
             {/* Desktop Sidebar */}
             <aside className="hidden lg:block">
               <div className="sticky top-24 space-y-4">
+                {/* Search Bar */}
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-foreground block">
+                    Search Services
+                  </label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <input
+                      type="text"
+                      placeholder="Search services..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full pl-10 pr-10 py-2.5 text-sm border-2 border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-background text-foreground placeholder:text-muted-foreground transition-all"
+                    />
+                    {searchQuery && (
+                      <button
+                        onClick={() => setSearchQuery('')}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+
                 <VehicleTypeFilter
                   vehicleTypes={vehicleTypes}
                   selectedTypes={selectedVehicleTypes}
@@ -240,8 +278,19 @@ export default function ServicesPage() {
               {/* Active Filters Pills */}
               {totalActiveFilters > 0 && (
                 <div className="flex flex-wrap items-center gap-2 mb-4 sm:mb-6 p-3 sm:p-4 bg-muted rounded-lg">
-                  <span className="text-xs font-medium text-muted-foreground">Filters:</span>
+                  <span className="text-xs font-medium text-muted-foreground">Active:</span>
                   
+                  {debouncedSearch && (
+                    <Badge
+                      variant="default"
+                      className="cursor-pointer hover:opacity-80 transition-opacity text-xs"
+                      onClick={() => setSearchQuery('')}
+                    >
+                      Search: {debouncedSearch}
+                      <X className="h-3 w-3 ml-1" />
+                    </Badge>
+                  )}
+
                   {selectedVehicleTypes.map((typeId) => {
                     const type = vehicleTypes.find(t => t.id === typeId);
                     return (
@@ -336,10 +385,10 @@ export default function ServicesPage() {
                     No services found
                   </h3>
                   <p className="text-xs sm:text-sm text-muted-foreground mb-4 sm:mb-6">
-                    Try adjusting your filters
+                    Try adjusting your search or filters
                   </p>
                   <Button onClick={clearAllFilters} size="sm">
-                    Clear Filters
+                    Clear All
                   </Button>
                 </div>
               )}
@@ -405,6 +454,31 @@ export default function ServicesPage() {
 
             {/* Modal Content */}
             <div className="overflow-y-auto flex-1 px-5 py-5 space-y-5">
+              {/* Search Bar */}
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-foreground block">
+                  Search Services
+                </label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                  <input
+                    type="text"
+                    placeholder="Search services..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-10 pr-10 py-3 text-base border-2 border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-background text-foreground placeholder:text-muted-foreground transition-all"
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      <X className="h-5 w-5" />
+                    </button>
+                  )}
+                </div>
+              </div>
+
               <VehicleTypeFilter
                 vehicleTypes={vehicleTypes}
                 selectedTypes={selectedVehicleTypes}
@@ -433,7 +507,7 @@ export default function ServicesPage() {
                   className="flex-1 h-11 font-semibold text-sm"
                   onClick={clearAllFilters}
                 >
-                  Clear
+                  Clear All
                 </Button>
                 <Button
                   className="flex-1 h-11 font-semibold text-sm shadow-md"

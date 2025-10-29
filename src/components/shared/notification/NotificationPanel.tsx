@@ -11,79 +11,97 @@ import {
   CheckCircle, 
   AlertCircle, 
   X,
-  Settings
+  Settings,
+  Loader2,
+  CheckCheck
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { useInfiniteNotifications, useMarkAsRead, useMarkAllAsRead } from '@/api/domains/notifications/queries';
+import type { Notification } from '@/types/notification';
+import Loading from '@/components/shared/display/Loading';
 
 interface NotificationPanelProps {
   isOpen: boolean;
   onClose: () => void;
+  isAuthenticated?: boolean;
 }
 
-const mockNotifications = [
-  {
-    id: '1',
-    type: 'order',
-    title: 'Order Delivered',
-    message: 'Your order #ORD001 has been delivered successfully',
-    time: '5 min ago',
-    read: false,
-    icon: Package,
-  },
-  {
-    id: '2',
-    type: 'booking',
-    title: 'Booking Confirmed',
-    message: 'Your car wash service is confirmed for tomorrow at 10:00 AM',
-    time: '1 hour ago',
-    read: false,
-    icon: CheckCircle,
-  },
-  {
-    id: '3',
-    type: 'promotion',
-    title: 'Special Offer',
-    message: 'Get 20% off on premium car wash services this weekend',
-    time: '2 hours ago',
-    read: false,
-    icon: ShoppingBag,
-  },
-  {
-    id: '4',
-    type: 'reminder',
-    title: 'Service Due',
-    message: 'Your car is due for maintenance service',
-    time: '1 day ago',
-    read: true,
-    icon: AlertCircle,
-  },
-  {
-    id: '5',
-    type: 'order',
-    title: 'Payment Received',
-    message: 'Payment for order #ORD002 has been confirmed',
-    time: '2 days ago',
-    read: true,
-    icon: Package,
-  },
-];
+// Icon mapping for notification types
+const getNotificationIcon = (type: string) => {
+  switch (type) {
+    case 'order':
+      return Package;
+    case 'booking':
+      return CheckCircle;
+    case 'promotion':
+      return ShoppingBag;
+    case 'payment':
+      return CheckCircle;
+    case 'system':
+      return AlertCircle;
+    default:
+      return Bell;
+  }
+};
 
-export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
+// Format relative time
+const getRelativeTime = (dateString: string) => {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffMins < 1) return 'Just now';
+  if (diffMins < 60) return `${diffMins} min ago`;
+  if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+  return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+};
+
+export function NotificationPanel({ isOpen, onClose, isAuthenticated = false }: NotificationPanelProps) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'unread' | 'all'>('unread');
   const [mounted, setMounted] = useState(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const observerTarget = useRef<HTMLDivElement>(null);
+  
+  // Fetch notifications with infinite scrolling - only if authenticated
+  const { 
+    data,
+    isLoading,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage
+  } = useInfiniteNotifications(
+    activeTab === 'unread' ? { read: false } : undefined,
+    isAuthenticated
+  );
+  
+  const markAsReadMutation = useMarkAsRead();
+  const markAllAsReadMutation = useMarkAllAsRead();
 
-  // Prevent body scroll when panel is open on mobile
+  // Prevent body scroll when panel is open and prevent layout shift
   useEffect(() => {
     if (isOpen) {
+      // Get scrollbar width before hiding it
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+      
+      // Prevent scroll and add padding to compensate for scrollbar
       document.body.style.overflow = 'hidden';
+      if (scrollbarWidth > 0) {
+        document.body.style.paddingRight = `${scrollbarWidth}px`;
+      }
     } else {
       document.body.style.overflow = 'unset';
+      document.body.style.paddingRight = '0px';
     }
     return () => {
       document.body.style.overflow = 'unset';
+      document.body.style.paddingRight = '0px';
     };
   }, [isOpen]);
 
@@ -93,11 +111,53 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
     return () => setMounted(false);
   }, []);
 
+  // Infinite scroll observer
+  useEffect(() => {
+    if (!isAuthenticated || !isOpen) return;
+
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1, root: scrollContainerRef.current }
+    );
+
+    const currentTarget = observerTarget.current;
+    if (currentTarget) {
+      observer.observe(currentTarget);
+    }
+
+    return () => {
+      if (currentTarget) {
+        observer.unobserve(currentTarget);
+      }
+    };
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage, isAuthenticated, isOpen]);
+
   if (!isOpen || !mounted) return null;
 
-  const unreadNotifications = mockNotifications.filter(n => !n.read);
-  const displayNotifications = activeTab === 'unread' ? unreadNotifications : mockNotifications;
+  // Flatten all pages of notifications
+  const notifications = data?.pages.flatMap(page => page.data) || [];
+  const totalCount = data?.pages[0]?.total || 0;
+  const unreadNotifications = notifications.filter(n => !n.read);
+  const displayNotifications = activeTab === 'unread' ? unreadNotifications : notifications;
   const unreadCount = unreadNotifications.length;
+
+  const handleNotificationClick = (notification: Notification) => {
+    if (!notification.read) {
+      markAsReadMutation.mutate(notification.id);
+    }
+    if (notification.actionUrl) {
+      router.push(notification.actionUrl);
+    }
+    onClose();
+  };
+
+  const handleMarkAllAsRead = () => {
+    markAllAsReadMutation.mutate();
+  };
 
   return createPortal(
     <>
@@ -114,9 +174,9 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
       />
 
       {/* Notification Panel */}
-      <Card className="fixed lg:absolute right-0 top-0 lg:top-auto lg:mt-2 w-full lg:w-96 h-full lg:h-auto lg:max-h-[85vh] rounded-none lg:rounded-lg shadow-2xl border-0 lg:border-2 lg:border-border z-[1001] overflow-hidden flex flex-col vehicle-modal-bg">
+      <Card className="fixed right-0 top-0 lg:top-16 lg:right-4 w-full lg:w-96 h-full lg:h-auto lg:min-h-[400px] lg:max-h-[85vh] rounded-none lg:rounded-lg shadow-2xl border-0 lg:border-2 lg:border-border z-[1001] overflow-hidden flex flex-col bg-white dark:bg-card">
         {/* Header */}
-        <div className="p-4 border-b border-border flex-shrink-0 vehicle-modal-bg">
+        <div className="p-4 border-b border-border flex-shrink-0 bg-gray-50 dark:bg-muted/50">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <div className="p-1.5 bg-primary/10 rounded-lg">
@@ -169,7 +229,7 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
               <Badge variant="secondary" className={`ml-1.5 text-xs ${
                 activeTab === 'all' ? 'bg-primary-foreground text-primary' : ''
               }`}>
-                {mockNotifications.length}
+                {notifications.length}
               </Badge>
             </Button>
           </div>
@@ -180,10 +240,8 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
               variant="outline"
               size="sm"
               className="text-xs flex-1 h-8"
-              onClick={() => {
-                // Mark all as read logic
-              }}
-              disabled={unreadCount === 0}
+              onClick={handleMarkAllAsRead}
+              disabled={unreadCount === 0 || markAllAsReadMutation.isPending}
             >
               Mark all read
             </Button>
@@ -203,52 +261,103 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
         </div>
 
         {/* Notifications List */}
-        <div className="overflow-y-auto flex-1 scrollbar-thin vehicle-modal-bg">
-          {displayNotifications.length > 0 ? (
-            <div>
-              {displayNotifications.map((notification, index) => {
-                const Icon = notification.icon;
-                
-                return (
-                  <div key={notification.id}>
-                    <button
-                      onClick={() => {
-                        // Handle notification click
-                        onClose();
-                      }}
-                      className={`w-full p-3 sm:p-4 hover:bg-accent transition-colors text-left ${
-                        !notification.read ? 'bg-primary/5' : ''
-                      }`}
-                    >
-                      <div className="flex items-start gap-3">
-                        <div className="p-2 bg-primary/10 rounded-lg flex-shrink-0">
-                          <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-2 mb-1">
-                            <h4 className={`font-semibold text-xs sm:text-sm ${
-                              !notification.read ? 'text-foreground' : 'text-muted-foreground'
-                            }`}>
-                              {notification.title}
-                            </h4>
-                            {!notification.read && (
-                              <div className="h-2 w-2 rounded-full bg-primary flex-shrink-0 mt-1" />
-                            )}
-                          </div>
-                          <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 mb-1 leading-relaxed">
-                            {notification.message}
-                          </p>
-                          <p className="text-[10px] sm:text-xs text-muted-foreground/80">
-                            {notification.time}
-                          </p>
-                        </div>
-                      </div>
-                    </button>
-                    {index < displayNotifications.length - 1 && <Separator />}
-                  </div>
-                );
-              })}
+        <div ref={scrollContainerRef} className="overflow-y-auto flex-1 scrollbar-thin bg-white dark:bg-card">
+          {!isAuthenticated ? (
+            <div className="flex flex-col items-center justify-center py-16 px-4">
+              <div className="p-4 bg-muted rounded-full mb-4">
+                <Bell className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <p className="text-sm font-semibold text-foreground mb-1">Login Required</p>
+              <p className="text-xs text-muted-foreground text-center mb-4">Please login to view notifications</p>
+              <Button
+                size="sm"
+                onClick={() => {
+                  router.push('/auth/login');
+                  onClose();
+                }}
+              >
+                Login
+              </Button>
             </div>
+          ) : isLoading ? (
+            <Loading text="Loading notifications..." fullScreen={false} size="md" />
+          ) : error ? (
+            <div className="flex flex-col items-center justify-center py-16 px-4">
+              <div className="p-4 bg-red-100 dark:bg-red-900/20 rounded-full mb-4">
+                <AlertCircle className="h-8 w-8 text-red-600 dark:text-red-400" />
+              </div>
+              <p className="text-sm font-semibold text-foreground mb-1">Failed to load notifications</p>
+              <p className="text-xs text-muted-foreground text-center">Please try again later</p>
+            </div>
+          ) : displayNotifications.length > 0 ? (
+            <>
+              <div>
+                {displayNotifications.map((notification, index) => {
+                  const Icon = getNotificationIcon(notification.type);
+                  
+                  return (
+                    <div key={notification.id}>
+                      <button
+                        onClick={() => handleNotificationClick(notification)}
+                        className={`w-full p-3 sm:p-4 hover:bg-accent transition-colors text-left cursor-pointer ${
+                          !notification.read ? 'bg-primary/5' : ''
+                        }`}
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className="p-2 bg-primary/10 rounded-lg flex-shrink-0">
+                            <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-2 mb-1">
+                              <h4 className={`font-semibold text-xs sm:text-sm ${
+                                !notification.read ? 'text-foreground' : 'text-muted-foreground'
+                              }`}>
+                                {notification.title}
+                              </h4>
+                              {!notification.read && (
+                                <div className="h-2 w-2 rounded-full bg-primary flex-shrink-0 mt-1" />
+                              )}
+                            </div>
+                            <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 mb-1 leading-relaxed">
+                              {notification.message}
+                            </p>
+                            <p className="text-[10px] sm:text-xs text-muted-foreground/80">
+                              {getRelativeTime(notification.createdAt)}
+                            </p>
+                          </div>
+                        </div>
+                      </button>
+                      {index < displayNotifications.length - 1 && <Separator />}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Loading indicator for infinite scroll */}
+              {isFetchingNextPage && (
+                <Loading text="Loading more..." fullScreen={false} size="sm" />
+              )}
+
+              {/* End of list message */}
+              {!hasNextPage && displayNotifications.length > 0 && (
+                <div className="flex justify-center items-center py-6">
+                  <div className="flex flex-col items-center gap-2 text-center">
+                    <div className="p-2 bg-primary/10 rounded-full">
+                      <CheckCheck className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-foreground">All caught up!</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                        {activeTab === 'unread' ? unreadCount : totalCount} total
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Invisible div for intersection observer */}
+              <div ref={observerTarget} className="h-2" />
+            </>
           ) : (
             <div className="flex flex-col items-center justify-center py-16 px-4">
               <div className="p-4 bg-muted rounded-full mb-4">
@@ -265,7 +374,7 @@ export function NotificationPanel({ isOpen, onClose }: NotificationPanelProps) {
         </div>
 
         {/* Footer */}
-        <div className="p-3 border-t border-border vehicle-modal-bg flex-shrink-0">
+        <div className="p-3 border-t border-border bg-gray-50 dark:bg-muted/50 flex-shrink-0">
           <Button
             variant="ghost"
             size="sm"

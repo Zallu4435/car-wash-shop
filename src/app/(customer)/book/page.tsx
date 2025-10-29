@@ -43,13 +43,14 @@ export default function BookingPage() {
   const [paymentOption, setPaymentOption] = useState('online');
   
   // API hooks
-  const { data: servicesResponse, isLoading: servicesLoading } = useServices({
+  const { data: servicesResponse, isLoading: servicesLoading, error: servicesError } = useServices({
     vehicleType: serviceType ? serviceType as 'car' | 'bike' : undefined,
   });
   const { data: categories = [], isLoading: categoriesLoading } = useServiceCategories();
-  const { data: vehiclesData = [], isLoading: vehiclesLoading } = useVehicles();
-  const { data: addressesData = [], isLoading: addressesLoading } = useAddresses();
+  const { data: vehiclesData, isLoading: vehiclesLoading, error: vehiclesError } = useVehicles();
+  const { data: addressesData, isLoading: addressesLoading, error: addressesError } = useAddresses();
   const createBookingMutation = useCreateBooking();
+  
 
   // Service types from mock data
   const serviceTypes = mockServiceTypes;
@@ -74,32 +75,14 @@ export default function BookingPage() {
   }, [servicesResponse]);
 
   useEffect(() => {
-    if (vehiclesData) {
-      // Convert API vehicles to component format
-      const convertedVehicles = vehiclesData.map(vehicle => ({
-        id: vehicle.id,
-        brandId: vehicle.make,
-        brandName: vehicle.make,
-        modelId: vehicle.model,
-        modelName: vehicle.model,
-        plateNumber: vehicle.registrationNumber,
-        year: vehicle.year,
-        vehicleTypeId: vehicle.type,
-      }));
-      setVehicles(convertedVehicles as any);
+    if (vehiclesData && Array.isArray(vehiclesData)) {
+      setVehicles(vehiclesData);
     }
   }, [vehiclesData]);
 
   useEffect(() => {
-    if (addressesData) {
-      // Convert API addresses to component format
-      const convertedAddresses = addressesData.map(address => ({
-        id: address.id,
-        label: address.label,
-        address: `${address.line1}${address.line2 ? ', ' + address.line2 : ''}, ${address.city}, ${address.state} - ${address.pincode}`,
-        isPrimary: address.isPrimary,
-      }));
-      setAddresses(convertedAddresses as any);
+    if (addressesData && Array.isArray(addressesData)) {
+      setAddresses(addressesData);
     }
   }, [addressesData]);
 
@@ -310,6 +293,7 @@ export default function BookingPage() {
                 selectedTime={selectedTime}
                 onDateSelect={setSelectedDate}
                 onTimeSelect={setSelectedTime}
+                serviceId={selectedService}
               />
             </div>
           )}

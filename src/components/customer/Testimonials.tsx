@@ -113,7 +113,7 @@ export function Testimonials({ testimonials }: TestimonialsProps) {
               setCurrentIndex(index);
               setIsAutoPlaying(false);
             }}
-            className={`h-1.5 sm:h-2 rounded-full transition-all ${
+            className={`h-1.5 sm:h-2 rounded-full transition-all cursor-pointer ${
               index === currentIndex
                 ? 'w-6 sm:w-8 bg-primary'
                 : 'w-1.5 sm:w-2 bg-muted-foreground/30 hover:bg-muted-foreground/50'

@@ -59,8 +59,9 @@ export const useCreateBooking = () => {
     mutationFn: (input: BookingInput) => bookingFetchers.createBooking(input),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: bookingKeys.lists() });
-      toast.success('Booking created successfully');
-      router.push(`/checkout?bookingId=${data.id}`);
+      toast.success('Booking created successfully!');
+      // Redirect to success page with service flag
+      router.push(`/payment/receipt?serviceId=${data.id}&service=true`);
     },
     onError: (error: any) => {
       toast.error(error.message || 'Failed to create booking');

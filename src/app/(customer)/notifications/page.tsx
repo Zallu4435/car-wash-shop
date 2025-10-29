@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -14,25 +14,60 @@ import {
   Clock,
   Trash2,
   SlidersHorizontal,
-  X
+  X,
+  Loader2,
+  CheckCheck
 } from 'lucide-react';
-import { useNotifications, useMarkAsRead, useMarkAllAsRead } from '@/api/domains/notifications/queries';
+import { useInfiniteNotifications, useMarkAsRead, useMarkAllAsRead } from '@/api/domains/notifications/queries';
 import { EmptyState } from '@/components/shared/display/EmptyState';
 import Loading from '@/components/shared/display/Loading';
 
 export default function NotificationsPage() {
   const [filter, setFilter] = useState<string>('all');
   const [showFilters, setShowFilters] = useState(false);
+  const observerTarget = useRef<HTMLDivElement>(null);
 
-  // API calls
-  const { data: notificationsResponse, isLoading: notificationsLoading } = useNotifications({
+  // API calls with infinite scrolling
+  const { 
+    data,
+    isLoading: notificationsLoading,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage
+  } = useInfiniteNotifications({
     read: filter === 'all' ? undefined : filter === 'read' ? true : false,
-  });
+  }, true);
+  
   const markAsReadMutation = useMarkAsRead();
   const markAllAsReadMutation = useMarkAllAsRead();
 
-  const notifications = notificationsResponse?.data || [];
+  const notifications = data?.pages.flatMap(page => page.data) || [];
   const unreadCount = notifications.filter(n => !n.read).length;
+  const totalCount = data?.pages[0]?.total || 0;
+
+  // Infinite scroll observer
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    const currentTarget = observerTarget.current;
+    if (currentTarget) {
+      observer.observe(currentTarget);
+    }
+
+    return () => {
+      if (currentTarget) {
+        observer.unobserve(currentTarget);
+      }
+    };
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const markAllAsRead = () => {
     markAllAsReadMutation.mutate();
@@ -57,6 +92,28 @@ export default function NotificationsPage() {
   // Loading state
   if (notificationsLoading) {
     return <Loading text="Loading notifications..." />;
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="max-w-md w-full">
+          <CardContent className="p-8 text-center">
+            <div className="p-4 bg-red-100 dark:bg-red-900/20 rounded-full inline-flex mb-4">
+              <AlertCircle className="h-8 w-8 text-red-600 dark:text-red-400" />
+            </div>
+            <h2 className="text-xl font-bold text-foreground mb-2">Failed to Load Notifications</h2>
+            <p className="text-sm text-muted-foreground mb-4">
+              There was an error loading your notifications. Please try again later.
+            </p>
+            <Button onClick={() => window.location.reload()}>
+              Retry
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   return (
@@ -101,8 +158,9 @@ export default function NotificationsPage() {
 
             {/* Notifications List */}
             {notifications.length > 0 ? (
-              <div className="space-y-2.5 sm:space-y-3">
-                {notifications.map((notif) => {
+              <>
+                <div className="space-y-2.5 sm:space-y-3">
+                  {notifications.map((notif) => {
                   // Map notification type to icon and colors
                   const getNotificationIcon = (type: string) => {
                     switch (type) {
@@ -195,8 +253,34 @@ export default function NotificationsPage() {
                       </CardContent>
                     </Card>
                   );
-                })}
-              </div>
+                  })}
+                </div>
+
+                {/* Loading indicator for infinite scroll */}
+                {isFetchingNextPage && (
+                  <Loading text="Loading more notifications..." fullScreen={false} size="md" />
+                )}
+
+                {/* End of list message */}
+                {!hasNextPage && notifications.length > 0 && (
+                  <div className="flex justify-center items-center py-8">
+                    <div className="flex flex-col items-center gap-3 text-center">
+                      <div className="p-3 bg-primary/10 rounded-full">
+                        <CheckCheck className="h-6 w-6 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-foreground">You're all caught up!</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {totalCount} notification{totalCount !== 1 ? 's' : ''} in total
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Invisible div for intersection observer */}
+                <div ref={observerTarget} className="h-4" />
+              </>
             ) : (
               <EmptyState
                 icon={Bell}
@@ -254,7 +338,7 @@ export default function NotificationsPage() {
                 </div>
                 <div>
                   <h2 className="text-base font-bold text-foreground">Filters</h2>
-                  <p className="text-xs text-muted-foreground">{notifications.length} total</p>
+                  <p className="text-xs text-muted-foreground">{totalCount} total</p>
                 </div>
               </div>
               <Button variant="ghost" size="icon" onClick={() => setShowFilters(false)} className="rounded-full h-9 w-9">
@@ -297,7 +381,7 @@ export default function NotificationsPage() {
                   className="flex-1 h-11 font-semibold text-sm shadow-md"
                   onClick={() => setShowFilters(false)}
                 >
-                  Show {notifications.length}
+                  Show {totalCount}
                 </Button>
               </div>
             </div>

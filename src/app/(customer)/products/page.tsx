@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { ProductCard } from '@/components/customer/ProductCard';
 import { CategoryFilter } from '@/components/shared/selectors/CategoryFilter';
 import { Pagination } from '@/components/shared/crud/Pagination';
@@ -17,10 +17,22 @@ export default function ProductsPage() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 500); // 500ms debounce delay
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   // API filters
   const filters: ProductFilters = {
     category: selectedCategories.length > 0 ? selectedCategories[0] : undefined,
+    search: debouncedSearch || undefined,
     page: currentPage,
     limit: ITEMS_PER_PAGE,
   };
@@ -45,7 +57,7 @@ export default function ProductsPage() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedCategories]);
+  }, [selectedCategories, debouncedSearch]);
 
   const toggleCategory = (categoryId: string) => {
     setSelectedCategories(prev =>
@@ -96,6 +108,9 @@ export default function ProductsPage() {
                   selectedCategories={selectedCategories}
                   onToggle={toggleCategory}
                   onClearAll={() => setSelectedCategories([])}
+                  showSearch={true}
+                  searchValue={searchQuery}
+                  onSearchChange={setSearchQuery}
                 />
               </div>
             </aside>
@@ -103,9 +118,19 @@ export default function ProductsPage() {
             {/* Products grid */}
             <div className="flex-1 min-w-0">
               {/* Active Filters Pills */}
-              {selectedCategories.length > 0 && (
+              {(selectedCategories.length > 0 || debouncedSearch) && (
                 <div className="flex flex-wrap items-center gap-2 mb-4 sm:mb-6 p-3 sm:p-4 bg-muted rounded-lg">
-                  <span className="text-xs font-medium text-muted-foreground">Filters:</span>
+                  <span className="text-xs font-medium text-muted-foreground">Active:</span>
+                  {debouncedSearch && (
+                    <Badge
+                      variant="default"
+                      className="cursor-pointer hover:opacity-80 transition-opacity text-xs"
+                      onClick={() => setSearchQuery('')}
+                    >
+                      Search: {debouncedSearch}
+                      <X className="h-3 w-3 ml-1" />
+                    </Badge>
+                  )}
                   {selectedCategories.map((categoryId) => {
                     const category = categoryFilters.find(c => c.id === categoryId);
                     return (
@@ -123,7 +148,10 @@ export default function ProductsPage() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => setSelectedCategories([])}
+                    onClick={() => {
+                      setSelectedCategories([]);
+                      setSearchQuery('');
+                    }}
                     className="text-xs h-7 ml-auto"
                   >
                     Clear All
@@ -171,10 +199,16 @@ export default function ProductsPage() {
                     No products found
                   </h3>
                   <p className="text-xs sm:text-sm text-muted-foreground mb-4 sm:mb-6">
-                    Try adjusting your filters
+                    Try adjusting your search or filters
                   </p>
-                  <Button onClick={() => setSelectedCategories([])} size="sm">
-                    Clear Filters
+                  <Button 
+                    onClick={() => {
+                      setSelectedCategories([]);
+                      setSearchQuery('');
+                    }} 
+                    size="sm"
+                  >
+                    Clear All
                   </Button>
                 </div>
               )}
@@ -194,12 +228,12 @@ export default function ProductsPage() {
           >
             <SlidersHorizontal className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
             <span>Filters</span>
-            {selectedCategories.length > 0 && (
+            {(selectedCategories.length > 0 || debouncedSearch) && (
               <Badge
                 variant="secondary"
                 className="ml-2 bg-accent text-accent-foreground font-bold text-xs"
               >
-                {selectedCategories.length}
+                {selectedCategories.length + (debouncedSearch ? 1 : 0)}
               </Badge>
             )}
           </Button>
@@ -245,6 +279,9 @@ export default function ProductsPage() {
                 selectedCategories={selectedCategories}
                 onToggle={toggleCategory}
                 onClearAll={() => setSelectedCategories([])}
+                showSearch={true}
+                searchValue={searchQuery}
+                onSearchChange={setSearchQuery}
               />
             </div>
 
@@ -254,9 +291,12 @@ export default function ProductsPage() {
                 <Button
                   variant="outline"
                   className="flex-1 h-11 font-semibold text-sm"
-                  onClick={() => setSelectedCategories([])}
+                  onClick={() => {
+                    setSelectedCategories([]);
+                    setSearchQuery('');
+                  }}
                 >
-                  Clear
+                  Clear All
                 </Button>
                 <Button
                   className="flex-1 h-11 font-semibold text-sm shadow-md"

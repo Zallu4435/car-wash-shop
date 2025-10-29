@@ -146,7 +146,7 @@ export default function EnhancedHeader() {
         <nav className="container-custom">
           <div className="flex items-center justify-between h-16 sm:h-20">
             {/* Logo Section - Responsive */}
-            <button onClick={() => handleNavigation('/')} className="flex items-center gap-2 sm:gap-3 group">
+            <button onClick={() => handleNavigation('/')} className="flex items-center gap-2 sm:gap-3 group cursor-pointer">
               <div className="relative">
                 <div className="absolute inset-0 bg-primary rounded-lg sm:rounded-xl blur-md sm:blur-lg opacity-40 group-hover:opacity-60 transition-all"></div>
                 <div className="relative bg-primary p-2 sm:p-2.5 rounded-lg sm:rounded-xl shadow-lg group-hover:shadow-xl group-hover:scale-105 transition-all">
@@ -171,7 +171,7 @@ export default function EnhancedHeader() {
                   <button
                     key={item.name}
                     onClick={() => handleNavigation(item.href)}
-                    className={`relative px-3 lg:px-5 py-2 lg:py-2.5 text-sm font-medium transition-all rounded-lg lg:rounded-xl ${
+                    className={`relative px-3 lg:px-5 py-2 lg:py-2.5 text-sm font-medium transition-all rounded-lg lg:rounded-xl cursor-pointer ${
                       isActive
                         ? 'text-primary bg-primary/10'
                         : 'text-foreground hover:text-primary hover:bg-muted'
@@ -193,7 +193,7 @@ export default function EnhancedHeader() {
                 <div className="relative hidden sm:block group/vehicle">
                   <button
                     onClick={handleVehicleClick}
-                    className="relative p-2 sm:p-2.5 rounded-lg sm:rounded-xl hover:bg-muted transition-colors group"
+                    className="relative p-2 sm:p-2.5 rounded-lg sm:rounded-xl hover:bg-muted transition-colors group cursor-pointer"
                   >
                     <Car className="h-4 w-4 sm:h-5 sm:w-5 text-foreground group-hover:text-primary" />
                     {selectedVehicle && (
@@ -221,7 +221,7 @@ export default function EnhancedHeader() {
               <div className="relative hidden sm:block">
                 <button
                   onClick={() => setShowThemeMenu(!showThemeMenu)}
-                  className="p-2 sm:p-2.5 rounded-lg sm:rounded-xl hover:bg-muted transition-colors group"
+                  className="p-2 sm:p-2.5 rounded-lg sm:rounded-xl hover:bg-muted transition-colors group cursor-pointer"
                 >
                   {resolvedTheme === 'dark' ? (
                     <Moon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground group-hover:text-primary" />
@@ -244,7 +244,7 @@ export default function EnhancedHeader() {
                               setTheme(option.value);
                               setShowThemeMenu(false);
                             }}
-                            className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
+                            className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors cursor-pointer ${
                               isActive ? 'text-primary bg-primary/10' : 'text-foreground hover:bg-muted'
                             }`}
                           >
@@ -263,7 +263,7 @@ export default function EnhancedHeader() {
               <div className="relative">
                 <button
                   onClick={() => setShowNotifications(!showNotifications)}
-                  className="relative p-2 sm:p-2.5 rounded-lg sm:rounded-xl hover:bg-muted transition-colors group"
+                  className="relative p-2 sm:p-2.5 rounded-lg sm:rounded-xl hover:bg-muted transition-colors group cursor-pointer"
                 >
                   <Bell className="h-4 w-4 sm:h-5 sm:w-5 text-foreground group-hover:text-primary" />
                   {unreadCount > 0 && (
@@ -276,13 +276,14 @@ export default function EnhancedHeader() {
                 <NotificationPanel 
                   isOpen={showNotifications}
                   onClose={() => setShowNotifications(false)}
+                  isAuthenticated={isAuthenticated}
                 />
               </div>
 
               {/* Shopping Cart */}
               <button
                 onClick={() => handleNavigation('/cart')}
-                className="relative p-2 sm:p-2.5 rounded-lg sm:rounded-xl hover:bg-muted transition-colors group"
+                className="relative p-2 sm:p-2.5 rounded-lg sm:rounded-xl hover:bg-muted transition-colors group cursor-pointer"
               >
                 <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5 text-foreground group-hover:text-primary" />
                 {cartCount > 0 && (
@@ -297,7 +298,7 @@ export default function EnhancedHeader() {
                 <div className="relative hidden md:block">
                   <button
                     onClick={() => setShowUserMenu(!showUserMenu)}
-                    className="flex items-center gap-2 px-2 lg:px-3 py-2 rounded-lg lg:rounded-xl hover:bg-muted transition-colors group"
+                    className="flex items-center gap-2 px-2 lg:px-3 py-2 rounded-lg lg:rounded-xl hover:bg-muted transition-colors group cursor-pointer"
                   >
                     <img 
                       src={getAvatarSrc()} 
@@ -311,8 +312,8 @@ export default function EnhancedHeader() {
                   {showUserMenu && (
                     <>
                       <div className="fixed inset-0 z-40" onClick={() => setShowUserMenu(false)} />
-                      <div className="absolute right-0 mt-2 w-64 bg-card rounded-lg sm:rounded-xl shadow-lg border border-border overflow-hidden z-50">
-                        <div className="px-4 py-3 bg-muted/50 border-b border-border">
+                      <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-card rounded-lg sm:rounded-xl shadow-lg border border-border overflow-hidden z-50">
+                        <div className="px-4 py-3 bg-gray-50 dark:bg-muted/50 border-b border-border">
                           <p className="text-sm font-semibold text-foreground truncate">{user?.name}</p>
                           <p className="text-xs text-muted-foreground mt-0.5 truncate">{user?.email || user?.phone}</p>
                         </div>
@@ -323,7 +324,7 @@ export default function EnhancedHeader() {
                               handleNavigation('/profile');
                               setShowUserMenu(false);
                             }}
-                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-muted"
+                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-muted cursor-pointer"
                           >
                             <UserCircle className="h-4 w-4 text-muted-foreground" />
                             <span>My Profile</span>
@@ -334,7 +335,7 @@ export default function EnhancedHeader() {
                               handleNavigation('/orders');
                               setShowUserMenu(false);
                             }}
-                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-muted"
+                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-muted cursor-pointer"
                           >
                             <Package className="h-4 w-4 text-muted-foreground" />
                             <span>My Orders</span>
@@ -344,7 +345,7 @@ export default function EnhancedHeader() {
 
                           <button
                             onClick={handleLogout}
-                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20"
+                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 cursor-pointer"
                           >
                             <LogOut className="h-4 w-4" />
                             <span>Logout</span>
@@ -357,7 +358,7 @@ export default function EnhancedHeader() {
               ) : (
                 <button
                   onClick={() => handleNavigation('/auth/login')}
-                  className="hidden md:flex items-center gap-2 px-4 lg:px-5 py-2 lg:py-2.5 rounded-lg lg:rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:opacity-90 transition-all shadow-md hover:shadow-xl hover:scale-105"
+                  className="hidden md:flex items-center gap-2 px-4 lg:px-5 py-2 lg:py-2.5 rounded-lg lg:rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:opacity-90 transition-all shadow-md hover:shadow-xl hover:scale-105 cursor-pointer"
                 >
                   <User className="h-4 w-4" />
                   <span>Login</span>
@@ -367,7 +368,7 @@ export default function EnhancedHeader() {
               {/* Mobile Menu Toggle */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="md:hidden p-2 rounded-lg hover:bg-muted transition-all"
+                className="md:hidden p-2 rounded-lg hover:bg-muted transition-all cursor-pointer"
               >
                 <div className="relative w-5 h-5">
                   <Menu 
@@ -412,7 +413,7 @@ export default function EnhancedHeader() {
                     </div>
                     <button
                       onClick={handleVehicleClick}
-                      className="relative p-1.5 sm:p-2 rounded-lg hover:bg-muted flex-shrink-0"
+                      className="relative p-1.5 sm:p-2 rounded-lg hover:bg-muted flex-shrink-0 cursor-pointer"
                     >
                       <Car className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
                       {selectedVehicle && (
@@ -440,7 +441,7 @@ export default function EnhancedHeader() {
                     key={item.name}
                     onClick={() => handleNavigation(item.href)}
                     style={{ animationDelay: `${index * 50}ms` }}
-                    className={`w-full px-3 sm:px-4 py-3 sm:py-3.5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium text-left transition-all ${
+                    className={`w-full px-3 sm:px-4 py-3 sm:py-3.5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium text-left transition-all cursor-pointer ${
                       mobileMenuOpen ? 'animate-slide-up' : ''
                     } ${
                       isActive
@@ -465,7 +466,7 @@ export default function EnhancedHeader() {
                       handleVehicleClick();
                       setMobileMenuOpen(false);
                     }}
-                    className="w-full flex items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl text-xs sm:text-sm hover:bg-muted"
+                    className="w-full flex items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl text-xs sm:text-sm hover:bg-muted cursor-pointer"
                   >
                     <div className="flex items-center gap-2 sm:gap-3">
                       <Car className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
@@ -481,7 +482,7 @@ export default function EnhancedHeader() {
                       handleNavigation('/profile');
                       setMobileMenuOpen(false);
                     }}
-                    className="w-full flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl text-xs sm:text-sm hover:bg-muted"
+                    className="w-full flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl text-xs sm:text-sm hover:bg-muted cursor-pointer"
                   >
                     <UserCircle className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
                     <span>My Profile</span>
@@ -492,7 +493,7 @@ export default function EnhancedHeader() {
                       handleNavigation('/orders');
                       setMobileMenuOpen(false);
                     }}
-                    className="w-full flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl text-xs sm:text-sm hover:bg-muted"
+                    className="w-full flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl text-xs sm:text-sm hover:bg-muted cursor-pointer"
                   >
                     <Package className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
                     <span>My Orders</span>
@@ -500,7 +501,7 @@ export default function EnhancedHeader() {
 
                   <button
                     onClick={handleLogout}
-                    className="w-full flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl text-xs sm:text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20"
+                    className="w-full flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl text-xs sm:text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 cursor-pointer"
                   >
                     <LogOut className="h-4 w-4 sm:h-5 sm:w-5" />
                     <span>Logout</span>
@@ -521,7 +522,7 @@ export default function EnhancedHeader() {
                       <button
                         key={option.value}
                         onClick={() => setTheme(option.value)}
-                        className={`flex flex-col items-center gap-1.5 sm:gap-2 p-2.5 sm:p-3 rounded-lg sm:rounded-xl transition-all ${
+                        className={`flex flex-col items-center gap-1.5 sm:gap-2 p-2.5 sm:p-3 rounded-lg sm:rounded-xl transition-all cursor-pointer ${
                           isActive
                             ? 'bg-primary/10 text-primary border-2 border-primary'
                             : 'bg-muted hover:bg-muted/80 border-2 border-transparent'
@@ -539,7 +540,7 @@ export default function EnhancedHeader() {
               {!isAuthenticated && (
                 <button
                   onClick={() => handleNavigation('/auth/login')}
-                  className="flex items-center justify-center gap-2 w-full mt-3 sm:mt-4 px-4 sm:px-5 py-3 sm:py-3.5 rounded-lg sm:rounded-xl bg-primary text-primary-foreground text-xs sm:text-sm font-semibold hover:opacity-90 transition-all shadow-md"
+                  className="flex items-center justify-center gap-2 w-full mt-3 sm:mt-4 px-4 sm:px-5 py-3 sm:py-3.5 rounded-lg sm:rounded-xl bg-primary text-primary-foreground text-xs sm:text-sm font-semibold hover:opacity-90 transition-all shadow-md cursor-pointer"
                 >
                   <User className="h-4 w-4" />
                   <span>Login</span>

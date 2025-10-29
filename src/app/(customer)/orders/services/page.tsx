@@ -7,15 +7,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useOrders } from '@/api/domains/orders/queries';
+import { useBookings } from '@/api/domains/bookings/queries';
 import { Package, Calendar, ChevronRight, ShoppingBag, Car, Bike, Home, ArrowLeft, Search, Filter, SlidersHorizontal, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { EmptyState } from '@/components/shared/display/EmptyState';
 import { mockServiceTypes } from '@/mocks/data/customer-mock-data';
 
 export default function ServiceOrdersPage() {
-  const { data: ordersResponse } = useOrders({ type: 'service' });
-  const orders = ordersResponse?.data || [];
+  const { data: bookingsResponse } = useBookings();
+  const orders = bookingsResponse?.data || [];
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [serviceTypeFilter, setServiceTypeFilter] = useState('all');
@@ -250,7 +250,7 @@ export default function ServiceOrdersPage() {
                       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 pt-3 sm:pt-4 border-t border-border">
                         <div>
                           <p className="text-xs sm:text-sm text-muted-foreground mb-0.5 sm:mb-1">Total Amount</p>
-                          <p className="text-xl sm:text-2xl font-bold text-primary">₹{order.totalAmount}</p>
+                          <p className="text-xl sm:text-2xl font-bold text-primary">₹{order.amount || order.totalAmount || 0}</p>
                         </div>
                         <Button asChild variant="outline" className="group w-full sm:w-auto h-9 sm:h-10" size="sm">
                           <Link href={`/orders/${order.id}`} className="text-xs sm:text-sm">

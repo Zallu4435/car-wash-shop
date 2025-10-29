@@ -2,19 +2,53 @@
 
 import { use } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Download, Package, MapPin, CreditCard, Calendar, FileText, XCircle } from 'lucide-react';
+import { ArrowLeft, Download, Package, MapPin, CreditCard, Calendar, FileText, XCircle, Wrench } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { OrderTracker } from '@/components/customer/OrderTracker';
 import { Separator } from '@/components/ui/separator';
+import { useOrder } from '@/api/domains/orders/queries';
+import { useBooking } from '@/api/domains/bookings/queries';
+import Loading from '@/components/shared/display/Loading';
+import Error from '@/components/shared/display/Error';
 
 export default function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
 
+  // Determine if it's a booking based on ID prefix
+  const isBookingId = id.startsWith('booking_');
+  
+  // Fetch based on ID type
+  const { data: order, isLoading: orderLoading, error: orderError } = useOrder(id);
+  const { data: booking, isLoading: bookingLoading } = useBooking(id);
+
+  // Determine which data to use
+  const isService = isBookingId ? true : (booking && !order);
+  const data = isService ? booking : order;
+  const isLoading = orderLoading || bookingLoading;
+
+  if (isLoading) {
+    return <Loading text="Loading details..." />;
+  }
+
+  if (!data) {
+    return <Error message={isService ? "Booking not found" : "Order not found"} onRetry={() => window.location.reload()} />;
+  }
+
+  // Map booking status to order status for tracker
+  const getTrackerStatus = () => {
+    if (isService) {
+      const status = (data as any).status?.toLowerCase();
+      if (status === 'completed') return 'delivered';
+      if (status === 'in_progress') return 'shipped';
+      if (status === 'confirmed') return 'confirmed';
+      return 'processing';
+    }
+    return (data as any).status || 'processing';
+  };
+
   const statusHistory = [
-    { status: 'processing', timestamp: '2025-10-24, 10:00 AM', label: 'Order Placed' },
-    { status: 'confirmed', timestamp: '2025-10-24, 10:15 AM', label: 'Order Confirmed' },
-    { status: 'shipped', timestamp: '2025-10-24, 2:30 PM', label: 'Shipped' },
+    { status: 'processing', timestamp: new Date(data.createdAt || Date.now()).toLocaleString(), label: isService ? 'Booking Placed' : 'Order Placed' },
   ];
 
   return (
@@ -31,14 +65,18 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
             <div className="flex items-center gap-2 sm:gap-3">
               <div className="p-2 sm:p-3 bg-primary/10 rounded-lg sm:rounded-xl flex-shrink-0">
-                <Package className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary" />
+                {isService ? (
+                  <Wrench className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary" />
+                ) : (
+                  <Package className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary" />
+                )}
               </div>
               <div className="min-w-0">
                 <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-foreground">
-                  Order Details
+                  {isService ? 'Service Booking Details' : 'Order Details'}
                 </h1>
                 <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1 truncate">
-                  Order #{id}
+                  {isService ? 'Booking' : 'Order'} #{id}
                 </p>
               </div>
             </div>
@@ -69,7 +107,9 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                         <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
                         <p className="text-xs sm:text-sm font-medium text-muted-foreground">Order Date</p>
                       </div>
-                      <p className="font-semibold text-sm sm:text-base text-foreground">October 24, 2025</p>
+                      <p className="font-semibold text-sm sm:text-base text-foreground">
+                        {new Date(data.createdAt || Date.now()).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                      </p>
                     </div>
 
                     <div className="p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl">
@@ -77,7 +117,9 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                         <CreditCard className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
                         <p className="text-xs sm:text-sm font-medium text-muted-foreground">Payment Method</p>
                       </div>
-                      <p className="font-semibold text-sm sm:text-base text-foreground">Online Payment</p>
+                      <p className="font-semibold text-sm sm:text-base text-foreground">
+                        {(data as any).paymentMethod || (data as any).paymentStatus || 'Online Payment'}
+                      </p>
                     </div>
                   </div>
                 </CardContent>
@@ -90,38 +132,44 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                     <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
                       <Package className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                     </div>
-                    <CardTitle className="text-base sm:text-lg">Order Items</CardTitle>
+                    <CardTitle className="text-base sm:text-lg">{isService ? 'Service Details' : 'Order Items'}</CardTitle>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3 sm:space-y-4">
-                    {/* Item 1 */}
-                    <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl">
-                      <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
-                        <Package className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+                    {isService ? (
+                      <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl">
+                        <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
+                          <Wrench className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-sm sm:text-base text-foreground truncate">
+                            {(data as any).serviceName || 'Service Booking'}
+                          </h3>
+                          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1">
+                            Scheduled: {(data as any).scheduledDate} at {(data as any).scheduledTime}
+                          </p>
+                          <p className="text-base sm:text-lg font-bold text-primary mt-1 sm:mt-2">₹{(data as any).amount || (data as any).totalAmount}</p>
+                        </div>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-sm sm:text-base text-foreground truncate">
-                          Premium Car Shampoo
-                        </h3>
-                        <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1">Quantity: 2</p>
-                        <p className="text-base sm:text-lg font-bold text-primary mt-1 sm:mt-2">₹598</p>
-                      </div>
-                    </div>
-
-                    {/* Item 2 */}
-                    <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl">
-                      <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
-                        <Package className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-sm sm:text-base text-foreground truncate">
-                          Microfiber Cloth Set
-                        </h3>
-                        <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1">Quantity: 1</p>
-                        <p className="text-base sm:text-lg font-bold text-primary mt-1 sm:mt-2">₹199</p>
-                      </div>
-                    </div>
+                    ) : (
+                      (data as any).items?.map((item: any, index: number) => (
+                        <div key={index} className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl">
+                          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
+                            <Package className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold text-sm sm:text-base text-foreground truncate">
+                              {item.productName || item.name || 'Product'}
+                            </h3>
+                            <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1">Quantity: {item.quantity}</p>
+                            <p className="text-base sm:text-lg font-bold text-primary mt-1 sm:mt-2">₹{item.price * item.quantity}</p>
+                          </div>
+                        </div>
+                      )) || (
+                        <div className="p-4 text-center text-muted-foreground">No items found</div>
+                      )
+                    )}
                   </div>
 
                   <Separator className="my-3 sm:my-4" />
@@ -130,62 +178,100 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                   <div className="space-y-2">
                     <div className="flex justify-between text-xs sm:text-sm">
                       <span className="text-muted-foreground">Subtotal</span>
-                      <span className="font-medium text-foreground">₹797</span>
+                      <span className="font-medium text-foreground">₹{(data as any).subtotal || (data as any).amount || (data as any).totalAmount || 0}</span>
                     </div>
-                    <div className="flex justify-between text-xs sm:text-sm">
-                      <span className="text-green-600 dark:text-green-400">Discount</span>
-                      <span className="font-medium text-green-600 dark:text-green-400">-₹100</span>
-                    </div>
+                    {(data as any).discount > 0 && (
+                      <div className="flex justify-between text-xs sm:text-sm">
+                        <span className="text-green-600 dark:text-green-400">Discount</span>
+                        <span className="font-medium text-green-600 dark:text-green-400">-₹{(data as any).discount}</span>
+                      </div>
+                    )}
                     <Separator />
                     <div className="flex justify-between items-center pt-2">
                       <span className="font-bold text-base sm:text-lg text-foreground">Total</span>
-                      <span className="text-xl sm:text-2xl font-bold text-primary">₹697</span>
+                      <span className="text-xl sm:text-2xl font-bold text-primary">₹{(data as any).total || (data as any).amount || (data as any).totalAmount || 0}</span>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Delivery Address */}
+              {/* Service Location / Delivery Address */}
               <Card className="border-2">
                 <CardHeader className="pb-3 sm:pb-4">
                   <div className="flex items-center gap-2 sm:gap-3">
                     <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
                       <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                     </div>
-                    <CardTitle className="text-base sm:text-lg">Delivery Address</CardTitle>
+                    <CardTitle className="text-base sm:text-lg">
+                      {isService ? 'Service Location' : 'Delivery Address'}
+                    </CardTitle>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <div className="p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl">
-                    <p className="font-semibold text-sm sm:text-base text-foreground mb-1.5 sm:mb-2">
-                      John Doe
-                    </p>
                     <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                      123, MG Road, Bandra West<br />
-                      Mumbai - 400050<br />
-                      Maharashtra, India<br />
-                      Phone: +91 98765 43210
+                      {(data as any).address || (data as any).deliveryAddress || 'Address not available'}
                     </p>
                   </div>
                 </CardContent>
               </Card>
+              
+              {/* Vehicle Details - Only for Services */}
+              {isService && (data as any).vehicleDetails && (
+                <Card className="border-2">
+                  <CardHeader className="pb-3 sm:pb-4">
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
+                        <Package className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                      </div>
+                      <CardTitle className="text-base sm:text-lg">Vehicle Details</CardTitle>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Vehicle Type</span>
+                        <span className="font-medium text-foreground capitalize">
+                          {(data as any).vehicleDetails.type}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Model</span>
+                        <span className="font-medium text-foreground">
+                          {(data as any).vehicleDetails.make} {(data as any).vehicleDetails.model}
+                        </span>
+                      </div>
+                      {(data as any).vehicleDetails.number && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Number</span>
+                          <span className="font-medium text-foreground">
+                            {(data as any).vehicleDetails.number}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Actions */}
               <div className="flex flex-col sm:flex-row gap-3">
-                <Button asChild variant="outline" className="flex-1 h-10 sm:h-11">
-                  <Link href={`/orders/${id}/invoice`} className="text-xs sm:text-sm">
-                    <Download className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                    Download Invoice
-                  </Link>
-                </Button>
+                {!isService && (
+                  <Button asChild variant="outline" className="flex-1 h-10 sm:h-11">
+                    <Link href={`/orders/${id}/invoice`} className="text-xs sm:text-sm">
+                      <Download className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                      Download Invoice
+                    </Link>
+                  </Button>
+                )}
                 <Button 
                   asChild 
                   variant="outline" 
-                  className="flex-1 h-10 sm:h-11 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20"
+                  className={`${!isService ? 'flex-1' : 'w-full'} h-10 sm:h-11 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20`}
                 >
                   <Link href={`/orders/${id}/cancel`} className="text-xs sm:text-sm">
                     <XCircle className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                    Cancel Order
+                    {isService ? 'Cancel Booking' : 'Cancel Order'}
                   </Link>
                 </Button>
               </div>
@@ -194,8 +280,9 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
             {/* Right Column - Order Tracker */}
             <div className="lg:col-span-1">
               <OrderTracker
-                currentStatus="shipped"
+                currentStatus={getTrackerStatus()}
                 statusHistory={statusHistory}
+                isService={isService}
               />
             </div>
           </div>

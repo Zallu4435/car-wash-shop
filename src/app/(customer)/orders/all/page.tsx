@@ -9,20 +9,39 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Pagination } from '@/components/shared/crud/Pagination';
 import { useOrders } from '@/api/domains/orders/queries';
-import { Package, Calendar, ChevronRight, ShoppingBag, ArrowLeft, Search, Filter, X, Car, SlidersHorizontal } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useBookings } from '@/api/domains/bookings/queries';
+import { Package, Calendar, ChevronRight, ShoppingBag, ArrowLeft, Search, Filter, X, Car, SlidersHorizontal, Wrench } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
 import Loading from '@/components/shared/display/Loading';
 import { EmptyState } from '@/components/shared/display/EmptyState';
 
 const ITEMS_PER_PAGE = 6;
 
 export default function AllOrdersPage() {
-  // If data became async: add loading state
-  // For now, as a placeholder (in real usage, tie to isLoading from API)
-  const { data: ordersResponse, isLoading } = useOrders();
+  // Fetch both orders and bookings
+  const { data: ordersResponse, isLoading: ordersLoading } = useOrders();
+  const { data: bookingsResponse, isLoading: bookingsLoading } = useBookings();
+  
+  const isLoading = ordersLoading || bookingsLoading;
   if (isLoading) { return <Loading text="Loading orders..." /> }
 
-  const orders = ordersResponse?.data || [];
+  // Merge orders and bookings
+  const productOrders = ordersResponse?.data || [];
+  const serviceBookings = bookingsResponse?.data || [];
+  
+  // Combine and mark each with a type
+  const allOrders = useMemo(() => {
+    const combined = [
+      ...productOrders.map(order => ({ ...order, _type: 'order' as const })),
+      ...serviceBookings.map(booking => ({ ...booking, _type: 'booking' as const }))
+    ];
+    // Sort by creation date, newest first
+    return combined.sort((a, b) => 
+      new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+    );
+  }, [productOrders, serviceBookings]);
+
+  const orders = allOrders;
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
@@ -43,23 +62,17 @@ export default function AllOrdersPage() {
 
   const filteredOrders = orders.filter(order => {
     const serviceName = order.serviceName?.toLowerCase() || '';
+    const isBooking = (order as any)._type === 'booking';
+    
     const matchesSearch = order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
       serviceName.includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === 'all' || order.status.toLowerCase() === statusFilter;
 
     let matchesType = true;
     if (typeFilter === 'services') {
-      matchesType = serviceName.includes('wash') ||
-        serviceName.includes('service') ||
-        serviceName.includes('cleaning') ||
-        serviceName.includes('bike') ||
-        serviceName.includes('car');
+      matchesType = isBooking;
     } else if (typeFilter === 'products') {
-      matchesType = !serviceName.includes('wash') &&
-        !serviceName.includes('service') &&
-        !serviceName.includes('cleaning') &&
-        !serviceName.includes('bike') &&
-        !serviceName.includes('car');
+      matchesType = !isBooking;
     }
 
     return matchesSearch && matchesStatus && matchesType;
@@ -193,24 +206,19 @@ export default function AllOrdersPage() {
             <>
               <div className="space-y-3 sm:space-y-4 mb-6 sm:mb-8">
                 {paginatedOrders.map((order) => {
-                  const serviceName = order.serviceName?.toLowerCase() || '';
-                  const isService = serviceName.includes('wash') ||
-                    serviceName.includes('service') ||
-                    serviceName.includes('cleaning') ||
-                    serviceName.includes('bike') ||
-                    serviceName.includes('car');
+                  const isBooking = (order as any)._type === 'booking';
 
                   return (
                     <Card key={order.id} className="hover:shadow-lg transition-shadow border-2 border-border">
                       <CardContent className="p-4 sm:p-5 md:p-6">
                         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-3 sm:mb-4 pb-3 sm:pb-4 border-b border-border">
                           <div className="flex items-start gap-2 sm:gap-3 min-w-0 flex-1">
-                            <div className={`p-1.5 sm:p-2 rounded-lg flex-shrink-0 ${isService
+                            <div className={`p-1.5 sm:p-2 rounded-lg flex-shrink-0 ${isBooking
                                 ? 'bg-blue-50 dark:bg-blue-950/20'
                                 : 'bg-purple-50 dark:bg-purple-950/20'
                               }`}>
-                              {isService ? (
-                                <Car className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 dark:text-blue-400" />
+                              {isBooking ? (
+                                <Wrench className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 dark:text-blue-400" />
                               ) : (
                                 <ShoppingBag className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600 dark:text-purple-400" />
                               )}
@@ -221,10 +229,10 @@ export default function AllOrdersPage() {
                               </p>
                               <div className="flex items-center gap-1.5 sm:gap-2 mt-0.5 sm:mt-1 text-xs sm:text-sm text-muted-foreground">
                                 <Calendar className="h-3 w-3 sm:h-3.5 sm:w-3.5 flex-shrink-0" />
-                                <span className="truncate">{new Date(order.createdAt).toLocaleDateString()}</span>
+                                <span className="truncate">{new Date(order.createdAt || Date.now()).toLocaleDateString()}</span>
                               </div>
                               <Badge variant="outline" className="mt-1.5 sm:mt-2 text-xs">
-                                {isService ? 'Service' : 'Product'}
+                                {isBooking ? 'Service Booking' : 'Product Order'}
                               </Badge>
                             </div>
                           </div>
@@ -235,7 +243,7 @@ export default function AllOrdersPage() {
 
                         <div className="space-y-1.5 sm:space-y-2 mb-3 sm:mb-4 p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl">
                           <div className="flex justify-between text-xs sm:text-sm gap-2">
-                            <span className="text-foreground truncate flex-1">{order.serviceName}</span>
+                            <span className="text-foreground truncate flex-1">{order.serviceName || 'Order'}</span>
                             <span className="text-muted-foreground flex-shrink-0">× 1</span>
                           </div>
                           {order.vehicleDetails && (
@@ -248,7 +256,7 @@ export default function AllOrdersPage() {
                         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 pt-3 sm:pt-4 border-t border-border">
                           <div>
                             <p className="text-xs sm:text-sm text-muted-foreground mb-0.5 sm:mb-1">Total Amount</p>
-                            <p className="text-xl sm:text-2xl font-bold text-primary">₹{order.totalAmount}</p>
+                            <p className="text-xl sm:text-2xl font-bold text-primary">₹{(order as any).amount || order.totalAmount || 0}</p>
                           </div>
                           <Button asChild variant="outline" className="group w-full sm:w-auto h-9 sm:h-10" size="sm">
                             <Link href={`/orders/${order.id}`} className="text-xs sm:text-sm">

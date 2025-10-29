@@ -3,6 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Star, ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useAddToCart } from '@/api/domains/cart/queries';
 
 interface Product {
   id: string;
@@ -29,6 +30,19 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
+  const addToCartMutation = useAddToCart();
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    addToCartMutation.mutate({
+      type: 'product',
+      itemId: product.id,
+      quantity: 1,
+    });
+  };
+
   return (
     <Card className="group hover:shadow-lg transition-all duration-300 h-full overflow-hidden">
       <Link href={`/products/${product.id}`}>
@@ -97,14 +111,13 @@ export function ProductCard({ product }: ProductCardProps) {
           <Button 
             className="w-full group/btn h-9 sm:h-10" 
             size="sm"
-            disabled={product.stock === 0}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-            }}
+            disabled={product.stock === 0 || addToCartMutation.isPending}
+            onClick={handleAddToCart}
           >
             <ShoppingCart className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 group-hover/btn:scale-110 transition-transform" />
-            <span className="text-xs sm:text-sm">Add to Cart</span>
+            <span className="text-xs sm:text-sm">
+              {addToCartMutation.isPending ? 'Adding...' : 'Add to Cart'}
+            </span>
           </Button>
         </div>
       </CardContent>

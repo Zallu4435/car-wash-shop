@@ -1,6 +1,6 @@
 'use client';
 
-import { use } from 'react';
+import { use, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, AlertTriangle, XCircle } from 'lucide-react';
@@ -9,15 +9,41 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import { useCancelOrder } from '@/api/domains/orders/queries';
+import { useCancelBooking } from '@/api/domains/bookings/queries';
 
 export default function CancelOrderPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
+  const [reason, setReason] = useState('');
+  
+  // Determine if it's a booking based on ID prefix
+  const isBooking = id.startsWith('booking_');
+  
+  const cancelOrderMutation = useCancelOrder();
+  const cancelBookingMutation = useCancelBooking();
 
   const handleCancel = (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success('Order cancelled successfully');
-    router.push('/orders');
+    
+    if (!reason.trim()) {
+      toast.error('Please provide a reason for cancellation');
+      return;
+    }
+    
+    if (isBooking) {
+      cancelBookingMutation.mutate(id, {
+        onSuccess: () => {
+          router.push('/orders');
+        },
+      });
+    } else {
+      cancelOrderMutation.mutate(id, {
+        onSuccess: () => {
+          router.push('/orders');
+        },
+      });
+    }
   };
 
   return (
@@ -28,7 +54,7 @@ export default function CancelOrderPage({ params }: { params: Promise<{ id: stri
           <Link href={`/orders/${id}`}>
             <Button variant="ghost" className="mb-4 hover:bg-muted">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Order
+              {isBooking ? 'Back to Booking' : 'Back to Order'}
             </Button>
           </Link>
           <div className="flex items-center gap-3">
@@ -36,8 +62,12 @@ export default function CancelOrderPage({ params }: { params: Promise<{ id: stri
               <XCircle className="h-8 w-8 text-red-600 dark:text-red-400" />
             </div>
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-foreground">Cancel Order</h1>
-              <p className="text-muted-foreground mt-1">Order #{id}</p>
+              <h1 className="text-3xl md:text-4xl font-bold text-foreground">
+                {isBooking ? 'Cancel Booking' : 'Cancel Order'}
+              </h1>
+              <p className="text-muted-foreground mt-1">
+                {isBooking ? 'Booking' : 'Order'} #{id}
+              </p>
             </div>
           </div>
         </div>
@@ -67,7 +97,9 @@ export default function CancelOrderPage({ params }: { params: Promise<{ id: stri
                           Warning: This action cannot be undone
                         </p>
                         <p className="text-sm text-amber-800 dark:text-amber-200">
-                          Are you sure you want to cancel this order? Your refund will be processed within 5-7 business days.
+                          {isBooking 
+                            ? 'Are you sure you want to cancel this booking? Cancellation charges may apply based on the timing.'
+                            : 'Are you sure you want to cancel this order? Your refund will be processed within 5-7 business days.'}
                         </p>
                       </div>
                     </div>
@@ -77,9 +109,13 @@ export default function CancelOrderPage({ params }: { params: Promise<{ id: stri
                   <div className="space-y-2">
                     <Label required>Reason for Cancellation</Label>
                     <Textarea 
-                      placeholder="Please tell us why you're cancelling this order..." 
+                      placeholder={isBooking 
+                        ? "Please tell us why you're cancelling this booking..."
+                        : "Please tell us why you're cancelling this order..."}
                       rows={5}
                       required
+                      value={reason}
+                      onChange={(e) => setReason(e.target.value)}
                     />
                     <p className="text-xs text-muted-foreground">
                       Your feedback helps us improve our service
@@ -94,7 +130,7 @@ export default function CancelOrderPage({ params }: { params: Promise<{ id: stri
                       className="flex-1" 
                       onClick={() => router.back()}
                     >
-                      Keep Order
+                      {isBooking ? 'Keep Booking' : 'Keep Order'}
                     </Button>
                     <Button 
                       type="submit" 
@@ -102,7 +138,9 @@ export default function CancelOrderPage({ params }: { params: Promise<{ id: stri
                       className="flex-1 shadow-lg"
                     >
                       <XCircle className="mr-2 h-4 w-4" />
-                      Cancel Order
+                      {cancelOrderMutation.isPending || cancelBookingMutation.isPending
+                        ? 'Cancelling...'
+                        : isBooking ? 'Cancel Booking' : 'Cancel Order'}
                     </Button>
                   </div>
                 </form>

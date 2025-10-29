@@ -52,7 +52,7 @@ export function VehicleSelectionModal({
             </div>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-muted rounded-xl transition-colors"
+              className="p-2 hover:bg-muted rounded-xl transition-colors cursor-pointer"
             >
               <X className="h-5 w-5 text-muted-foreground" />
             </button>
@@ -69,7 +69,7 @@ export function VehicleSelectionModal({
                 <p className="text-sm text-muted-foreground mb-6">Add your first vehicle to get started</p>
                 <button
                   onClick={handleAddVehicle}
-                  className="px-6 py-2.5 bg-primary text-primary-foreground rounded-xl font-medium hover:opacity-90 transition-opacity flex items-center gap-2"
+                  className="px-6 py-2.5 bg-primary text-primary-foreground rounded-xl font-medium hover:opacity-90 transition-opacity flex items-center gap-2 cursor-pointer"
                 >
                   <Plus className="h-4 w-4" />
                   Add Vehicle
@@ -88,7 +88,7 @@ export function VehicleSelectionModal({
                     <button
                       key={vehicle.id}
                       onClick={() => handleVehicleSelect(vehicle)}
-                      className={`w-full p-4 rounded-xl border-2 transition-all text-left group ${
+                      className={`w-full p-4 rounded-xl border-2 transition-all text-left group cursor-pointer ${
                         isSelected
                           ? 'border-primary bg-primary/10 shadow-sm'
                           : 'border-border hover:border-primary/50 hover:bg-white dark:hover:bg-card hover:shadow-sm'
@@ -130,7 +130,7 @@ export function VehicleSelectionModal({
                 {/* Add Vehicle Button */}
                 <button
                   onClick={handleAddVehicle}
-                  className="w-full p-4 rounded-xl border-2 border-dashed border-border hover:border-primary hover:bg-primary/5 transition-all text-left group mt-2"
+                  className="w-full p-4 rounded-xl border-2 border-dashed border-border hover:border-primary hover:bg-primary/5 transition-all text-left group mt-2 cursor-pointer"
                 >
                   <div className="flex items-center gap-3">
                     <div className="p-2.5 rounded-lg bg-muted group-hover:bg-primary/10">
