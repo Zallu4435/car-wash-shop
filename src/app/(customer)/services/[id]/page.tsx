@@ -10,72 +10,60 @@ import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { useState } from 'react';
-
-const getService = (id: string) => ({
-  id,
-  name: 'Premium Wash',
-  categoryId: 'cat_ext',
-  category: { id: 'cat_ext', name: 'Exterior Wash', description: '', icon: 'car', active: true, order: 1 },
-  description: 'Complete exterior wash with foam, high-pressure rinse, and tire cleaning. Our premium service ensures your car looks brand new with professional-grade products and techniques.',
-  price: 499,
-  duration: 30,
-  inclusions: [
-    'High-pressure foam wash',
-    'Wheel and tire cleaning',
-    'Underbody wash',
-    'Window cleaning',
-    'Exterior wipe and dry',
-    'Tire shine application',
-  ],
-  addOns: [
-    {
-      id: 'addon_wax',
-      name: 'Wax Coating',
-      description: 'Protective wax layer for long-lasting shine',
-      price: 150,
-      duration: 15,
-    },
-    {
-      id: 'addon_polish',
-      name: 'Polish',
-      description: 'Deep polish to remove minor scratches',
-      price: 200,
-      duration: 20,
-    },
-    {
-      id: 'addon_engine',
-      name: 'Engine Bay Cleaning',
-      description: 'Professional engine compartment cleaning',
-      price: 250,
-      duration: 20,
-    },
-  ],
-  imageUrl: '/images/services/premium-wash.jpg',
-  rating: 4.5,
-  reviewCount: 128,
-  active: true,
-  createdAt: '2025-01-15T10:00:00Z',
-});
+import { useService } from '@/api/domains/services/queries';
+import Loading from '@/components/shared/display/Loading';
+import Error from '@/components/shared/display/Error';
+import { useRouter } from 'next/navigation';
 
 export default function ServiceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const service = getService(id);
+  const { data: service, isLoading: serviceLoading } = useService(id);
   const [selectedAddOns, setSelectedAddOns] = useState<string[]>([]);
+  const router = useRouter();
+
+  // Loading state
+  if (serviceLoading) {
+    return <Loading text="Loading service..." />;
+  }
+
+  // Service not found
+  if (!service) {
+    return (
+      <Error 
+        message="Service Not Found" 
+        onRetry={() => router.push('/services')} 
+        details="The service you're looking for doesn't exist." 
+      />
+    );
+  }
 
   const calculateTotal = () => {
+    // For now, we'll use a mock addOns structure since the API Service type doesn't include addOns
+    const mockAddOns = [
+      { id: 'addon_wax', name: 'Wax Coating', price: 150, duration: 15 },
+      { id: 'addon_polish', name: 'Polish', price: 200, duration: 20 },
+      { id: 'addon_engine', name: 'Engine Bay Cleaning', price: 250, duration: 20 },
+    ];
+    
     const addOnsTotal = selectedAddOns.reduce((sum, addonId) => {
-      const addon = service.addOns.find((a) => a.id === addonId);
+      const addon = mockAddOns.find((a) => a.id === addonId);
       return sum + (addon?.price || 0);
     }, 0);
     return service.price + addOnsTotal;
   };
 
   const calculateDuration = () => {
+    const mockAddOns = [
+      { id: 'addon_wax', name: 'Wax Coating', price: 150, duration: 15 },
+      { id: 'addon_polish', name: 'Polish', price: 200, duration: 20 },
+      { id: 'addon_engine', name: 'Engine Bay Cleaning', price: 250, duration: 20 },
+    ];
+    
     const addOnsDuration = selectedAddOns.reduce((sum, addonId) => {
-      const addon = service.addOns.find((a) => a.id === addonId);
+      const addon = mockAddOns.find((a) => a.id === addonId);
       return sum + (addon?.duration || 0);
     }, 0);
-    return service.duration + addOnsDuration;
+    return 30 + addOnsDuration; // Default 30 minutes for base service
   };
 
   const toggleAddOn = (addonId: string) => {
@@ -108,17 +96,17 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
               </div>
               <Badge className="absolute top-3 sm:top-4 right-3 sm:right-4 bg-card border-border shadow-lg text-xs sm:text-sm">
                 <Star className="h-3 w-3 fill-amber-400 text-amber-400 mr-1" />
-                {service.rating} ({service.reviewCount})
+                4.5 (128)
               </Badge>
             </div>
 
             {/* Service Info */}
             <div>
               <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3 flex-wrap">
-                <Badge variant="default" className="text-xs sm:text-sm">{service.category.name}</Badge>
+                <Badge variant="default" className="text-xs sm:text-sm">{service.category}</Badge>
                 <div className="flex items-center text-xs sm:text-sm text-muted-foreground">
                   <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1" />
-                  {service.duration} mins
+                  30 mins
                 </div>
               </div>
               <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2 sm:mb-3">
@@ -141,7 +129,14 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
               </CardHeader>
               <CardContent>
                 <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
-                  {service.inclusions.map((item, index) => (
+                  {[
+                    'High-pressure foam wash',
+                    'Wheel and tire cleaning',
+                    'Underbody wash',
+                    'Window cleaning',
+                    'Exterior wipe and dry',
+                    'Tire shine application',
+                  ].map((item, index) => (
                     <li key={index} className="flex items-start">
                       <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 dark:text-green-500 mr-2 sm:mr-3 mt-0.5 flex-shrink-0" />
                       <span className="text-foreground text-xs sm:text-sm">{item}</span>
@@ -166,7 +161,29 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
               </CardHeader>
               <CardContent>
                 <div className="space-y-2.5 sm:space-y-3">
-                  {service.addOns.map((addon) => {
+                  {[
+                    {
+                      id: 'addon_wax',
+                      name: 'Wax Coating',
+                      description: 'Protective wax layer for long-lasting shine',
+                      price: 150,
+                      duration: 15,
+                    },
+                    {
+                      id: 'addon_polish',
+                      name: 'Polish',
+                      description: 'Deep polish to remove minor scratches',
+                      price: 200,
+                      duration: 20,
+                    },
+                    {
+                      id: 'addon_engine',
+                      name: 'Engine Bay Cleaning',
+                      description: 'Professional engine compartment cleaning',
+                      price: 250,
+                      duration: 20,
+                    },
+                  ].map((addon) => {
                     const isSelected = selectedAddOns.includes(addon.id);
                     return (
                       <div 
@@ -234,7 +251,12 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
                     <>
                       <Separator />
                       {selectedAddOns.map((addonId) => {
-                        const addon = service.addOns.find((a) => a.id === addonId);
+                        const mockAddOns = [
+                          { id: 'addon_wax', name: 'Wax Coating', price: 150 },
+                          { id: 'addon_polish', name: 'Polish', price: 200 },
+                          { id: 'addon_engine', name: 'Engine Bay Cleaning', price: 250 },
+                        ];
+                        const addon = mockAddOns.find((a) => a.id === addonId);
                         return (
                           <div key={addonId} className="flex justify-between text-xs sm:text-sm">
                             <span className="text-muted-foreground truncate mr-2">{addon?.name}</span>

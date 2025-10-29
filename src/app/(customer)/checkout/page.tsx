@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,21 +9,93 @@ import { PaymentOptionSelector } from '@/components/shared/pricing/PaymentOption
 import { PricingBreakdown } from '@/components/shared/pricing/PricingBreakdown';
 import { MapPicker } from '@/components/shared/selectors/MapPicker';
 import { ShoppingBag, MapPin, CreditCard, Lock } from 'lucide-react';
+import { useCart } from '@/api/domains/cart/queries';
+import { useAddresses } from '@/api/domains/addresses/queries';
+import { useCreateCheckoutSession } from '@/api/domains/checkout/queries';
+import { useValidateCoupon } from '@/api/domains/orders/queries';
+import Loading from '@/components/shared/display/Loading';
 
 export default function CheckoutPage() {
   const router = useRouter();
   const [paymentMethod, setPaymentMethod] = useState<'cod' | 'online'>('online');
   const [showMapPicker, setShowMapPicker] = useState(false);
-  const [selectedAddress, setSelectedAddress] = useState('123, MG Road, Bandra West, Mumbai - 400050');
+  const [selectedAddressId, setSelectedAddressId] = useState<string>('');
+  const [appliedCoupon, setAppliedCoupon] = useState('');
+  const [discount, setDiscount] = useState(0);
   
-  const subtotal = 797;
-  const discount = 100;
+  // API calls
+  const { data: cart, isLoading: cartLoading } = useCart();
+  const { data: addresses = [], isLoading: addressesLoading } = useAddresses();
+  const createCheckoutSessionMutation = useCreateCheckoutSession();
+  const validateCouponMutation = useValidateCoupon();
+
+  const selectedAddress = addresses.find(addr => addr.id === selectedAddressId);
+  const subtotal = cart?.subtotal || 0;
   const deliveryFee = paymentMethod === 'cod' ? 40 : 0;
   const total = subtotal - discount + deliveryFee;
 
-  const handlePlaceOrder = () => {
-    router.push('/payment/status?status=success');
+  // Set default address when addresses load
+  useEffect(() => {
+    if (addresses.length > 0 && !selectedAddressId) {
+      setSelectedAddressId(addresses[0].id);
+    }
+  }, [addresses, selectedAddressId]);
+
+  const handlePlaceOrder = async () => {
+    if (!selectedAddressId || !cart) {
+      return;
+    }
+
+    try {
+      // For now, we'll create a temporary booking ID
+      // In a real app, you'd create a booking first
+      const tempBookingId = `temp_${Date.now()}`;
+      
+      const checkoutData = {
+        bookingId: tempBookingId,
+        paymentType: paymentMethod === 'cod' ? 'full' : 'advance' as 'full' | 'advance',
+        amount: total,
+      };
+
+      createCheckoutSessionMutation.mutate(checkoutData);
+    } catch (error) {
+      console.error('Checkout error:', error);
+    }
   };
+
+  const handleApplyCoupon = async (code: string) => {
+    if (!code) return;
+    
+    try {
+      const result = await validateCouponMutation.mutateAsync({
+        code,
+        amount: subtotal,
+      });
+      
+      if (result.isValid) {
+        setAppliedCoupon(code);
+        setDiscount(result.discount);
+      }
+    } catch (error) {
+      console.error('Coupon validation error:', error);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon('');
+    setDiscount(0);
+  };
+
+  // Loading state
+  if (cartLoading || addressesLoading) {
+    return <Loading text="Loading checkout..." />;
+  }
+
+  // Redirect if cart is empty
+  if (!cart || cart.items.length === 0) {
+    router.push('/cart');
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-background pb-32 lg:pb-8">
@@ -63,26 +135,50 @@ export default function CheckoutPage() {
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-3 sm:space-y-4">
-                  <div className="p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl">
-                    <p className="text-xs sm:text-sm text-foreground leading-relaxed break-words">
-                      {selectedAddress}
-                    </p>
+                  {selectedAddress ? (
+                    <div className="p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl">
+                      <p className="text-xs sm:text-sm text-foreground leading-relaxed break-words">
+                        {selectedAddress.line1}, {selectedAddress.line2}, {selectedAddress.city}, {selectedAddress.state} - {selectedAddress.pincode}
+                      </p>
+                      {selectedAddress.landmark && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Landmark: {selectedAddress.landmark}
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl text-center">
+                      <p className="text-xs sm:text-sm text-muted-foreground">
+                        No address selected
+                      </p>
+                    </div>
+                  )}
+                  
+                  <div className="space-y-2">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setShowMapPicker(!showMapPicker)}
+                      className="w-full sm:w-auto h-9 sm:h-10 text-xs sm:text-sm"
+                    >
+                      <MapPin className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                      {showMapPicker ? 'Hide Map' : 'Change Location'}
+                    </Button>
+                    
+                    <Button 
+                      variant="outline" 
+                      onClick={() => router.push('/profile/addresses')}
+                      className="w-full sm:w-auto h-9 sm:h-10 text-xs sm:text-sm"
+                    >
+                      Manage Addresses
+                    </Button>
                   </div>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => setShowMapPicker(!showMapPicker)}
-                    className="w-full sm:w-auto h-9 sm:h-10 text-xs sm:text-sm"
-                  >
-                    <MapPin className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                    {showMapPicker ? 'Hide Map' : 'Change Location'}
-                  </Button>
                   
                   {showMapPicker && (
                     <div className="mt-3 sm:mt-4">
                       <MapPicker
-                        initialAddress={selectedAddress}
+                        initialAddress={selectedAddress ? `${selectedAddress.line1}, ${selectedAddress.city}` : ''}
                         onLocationSelect={(location) => {
-                          setSelectedAddress(location.address);
+                          // In a real app, you'd create a new address here
                           setShowMapPicker(false);
                         }}
                       />
@@ -142,9 +238,10 @@ export default function CheckoutPage() {
                     onClick={handlePlaceOrder} 
                     className="w-full shadow-lg h-11 sm:h-12 text-sm sm:text-base" 
                     size="lg"
+                    disabled={createCheckoutSessionMutation.isPending || !selectedAddressId}
                   >
                     <Lock className="mr-2 h-4 w-4" />
-                    Place Order
+                    {createCheckoutSessionMutation.isPending ? 'Processing...' : 'Place Order'}
                   </Button>
 
                   {/* Trust Info */}
@@ -182,9 +279,10 @@ export default function CheckoutPage() {
                     onClick={handlePlaceOrder} 
                     className="w-full shadow-lg h-12 text-sm font-semibold" 
                     size="lg"
+                    disabled={createCheckoutSessionMutation.isPending || !selectedAddressId}
                   >
                     <Lock className="mr-2 h-4 w-4" />
-                    Place Order - ₹{total}
+                    {createCheckoutSessionMutation.isPending ? 'Processing...' : `Place Order - ₹${total}`}
                   </Button>
                 </div>
               </div>

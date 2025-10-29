@@ -11,10 +11,16 @@ import { Pagination } from '@/components/shared/crud/Pagination';
 import { getMockData } from '@/lib/api/mockData';
 import { Package, Calendar, ChevronRight, ShoppingBag, ArrowLeft, Search, Filter, X, Car, SlidersHorizontal } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import Loading from '@/components/shared/display/Loading';
 
 const ITEMS_PER_PAGE = 6;
 
 export default function AllOrdersPage() {
+  // If data became async: add loading state
+  // For now, as a placeholder (in real usage, tie to isLoading from API)
+  // const { data: orders, isLoading } = useOrders();
+  // if (isLoading) { return <Loading text="Loading orders..." /> }
+
   const orders = getMockData.orders();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');

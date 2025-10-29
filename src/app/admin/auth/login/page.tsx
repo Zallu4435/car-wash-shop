@@ -1,23 +1,41 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Mail, Lock } from 'lucide-react';
+import { Phone, KeyRound } from 'lucide-react';
 import { toast } from 'sonner';
+import { useLogin } from '@/api/domains/auth/queries';
+import { AdminRoutes } from '@/lib/constants/routes';
 
 export default function AdminLoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const searchParams = useSearchParams();
+  const [phone, setPhone] = useState('');
+  const [otp, setOtp] = useState('');
+  const loginMutation = useLogin();
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success('Admin login successful!');
-    router.push('/dashboard');
+    loginMutation.mutate(
+      { phone, otp },
+      {
+        onSuccess: (data) => {
+          if (data.user.role !== 'admin') {
+            toast.error('You do not have admin access');
+            return;
+          }
+          const next = searchParams.get('next');
+          router.push(next || AdminRoutes.DASHBOARD);
+        },
+        onError: (err: any) => {
+          toast.error(err?.message || 'Login failed');
+        },
+      }
+    );
   };
 
   return (
@@ -29,36 +47,39 @@ export default function AdminLoginPage() {
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="phone">Phone Number</Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <Input
-                  id="email"
-                  type="email"
-                  placeholder="admin@carwash.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  id="phone"
+                  type="tel"
+                  placeholder="9876543210"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
                   className="pl-10"
                   required
                 />
               </div>
             </div>
             <div>
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="otp">One-Time Password</Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <Input
-                  id="password"
-                  type="password"
-                  placeholder="Enter password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  id="otp"
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="Enter OTP"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
                   className="pl-10"
                   required
                 />
               </div>
             </div>
-            <Button type="submit" className="w-full">Login to Dashboard</Button>
+            <Button type="submit" className="w-full" disabled={loginMutation.isPending}>
+              {loginMutation.isPending ? 'Logging in...' : 'Login to Dashboard'}
+            </Button>
           </form>
         </CardContent>
       </Card>

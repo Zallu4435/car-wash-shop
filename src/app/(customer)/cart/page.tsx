@@ -7,29 +7,37 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { CartSummary } from '@/components/customer/CartSummary';
 import { CouponInput } from '@/components/shared/pricing/CouponInput';
-
-const mockCartItems = [
-  { id: 'prod_001', name: 'Premium Car Shampoo', price: 299, quantity: 2, image: '' },
-  { id: 'prod_002', name: 'Microfiber Cloth Set', price: 199, quantity: 1, image: '' },
-];
+import { useCart, useUpdateCartItem, useRemoveFromCart } from '@/api/domains/cart/queries';
+import Loading from '@/components/shared/display/Loading';
+import { EmptyState } from '@/components/shared/display/EmptyState';
 
 export default function CartPage() {
   const router = useRouter();
-  const [items, setItems] = useState(mockCartItems);
   const [appliedCoupon, setAppliedCoupon] = useState('');
   const [discount, setDiscount] = useState(0);
 
-  const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  // API calls
+  const { data: cart, isLoading: cartLoading } = useCart();
+  const updateCartItemMutation = useUpdateCartItem();
+  const removeFromCartMutation = useRemoveFromCart();
+
+  const items = cart?.items || [];
+  const subtotal = cart?.subtotal || 0;
   const total = subtotal - discount;
 
   const updateQuantity = (id: string, change: number) => {
-    setItems(items.map(item =>
-      item.id === id ? { ...item, quantity: Math.max(1, item.quantity + change) } : item
-    ));
+    const item = items.find(item => item.id === id);
+    if (item) {
+      const newQuantity = Math.max(1, item.quantity + change);
+      updateCartItemMutation.mutate({
+        itemId: id,
+        input: { quantity: newQuantity }
+      });
+    }
   };
 
   const removeItem = (id: string) => {
-    setItems(items.filter(item => item.id !== id));
+    removeFromCartMutation.mutate(id);
   };
 
   const handleApplyCoupon = (code: string) => {
@@ -41,6 +49,11 @@ export default function CartPage() {
     setAppliedCoupon('');
     setDiscount(0);
   };
+
+  // Loading state
+  if (cartLoading) {
+    return <Loading text="Loading cart..." />;
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -83,7 +96,7 @@ export default function CartPage() {
                           <div className="flex items-start justify-between gap-2 mb-3">
                             <div className="flex-1 min-w-0">
                               <h3 className="font-semibold text-sm sm:text-base md:text-lg text-foreground mb-1 line-clamp-2">
-                                {item.name}
+                                {item.product?.name || item.service?.name || 'Item'}
                               </h3>
                               <p className="text-lg sm:text-xl md:text-2xl font-bold text-primary">₹{item.price}</p>
                             </div>
@@ -177,19 +190,16 @@ export default function CartPage() {
               </div>
             </div>
           ) : (
-            // Empty Cart State - Responsive
-            <div className="text-center py-12 sm:py-16">
-              <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-muted rounded-full mb-4 sm:mb-6">
-                <ShoppingCart className="h-8 w-8 sm:h-10 sm:w-10 text-muted-foreground" />
-              </div>
-              <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-2">Your cart is empty</h2>
-              <p className="text-sm sm:text-base text-muted-foreground mb-6 sm:mb-8">
-                Add items to your cart to get started
-              </p>
-              <Button onClick={() => router.push('/products')} size="lg" className="h-10 sm:h-11">
-                <span className="text-sm sm:text-base">Browse Products</span>
-              </Button>
-            </div>
+            <EmptyState
+              icon={ShoppingCart}
+              title="Your cart is empty"
+              description="Add items to your cart to get started"
+              action={
+                <Button onClick={() => router.push('/products')} size="lg" className="h-10 sm:h-11">
+                  <span className="text-sm sm:text-base">Browse Products</span>
+                </Button>
+              }
+            />
           )}
         </div>
       </section>

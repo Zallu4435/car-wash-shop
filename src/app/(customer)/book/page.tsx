@@ -11,20 +11,25 @@ import { DynamicAddOnSelector } from '@/components/customer/DynamicAddOnSelector
 import { PaymentOptionSelector } from '@/components/shared/pricing/PaymentOptionSelector';
 import { AddressSelector } from '@/components/customer/AddressSelector';
 import { toast } from 'sonner';
-import { bookingApi, type ServiceType, type Service, type Vehicle, type Address, type AddOn } from '@/lib/api/bookingApi';
+import { useServices, useServiceCategories } from '@/api/domains/services/queries';
+import { useVehicles } from '@/api/domains/vehicles/queries';
+import { useAddresses } from '@/api/domains/addresses/queries';
+import { useCreateBooking } from '@/api/domains/bookings/queries';
 import { DynamicServiceSelector } from '@/components/customer/DynamicServiceSelector';
+import type { Service, ServiceCategory } from '@/types/service';
+import type { Vehicle } from '@/types/vehicle';
+import type { Address } from '@/types/address';
+import Loading from '@/components/shared/display/Loading';
 
 export default function BookingPage() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   
   // Data from API
-  const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
   const [services, setServices] = useState<Service[]>([]);
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [addresses, setAddresses] = useState<Address[]>([]);
-  const [serviceAddresses, setServiceAddresses] = useState<Address[]>([]);
-  const [addOns, setAddOns] = useState<AddOn[]>([]);
+  const [addOns, setAddOns] = useState<any[]>([]);
   
   // Selections
   const [serviceType, setServiceType] = useState<string>('');
@@ -36,67 +41,76 @@ export default function BookingPage() {
   const [selectedAddOns, setSelectedAddOns] = useState<string[]>([]);
   const [paymentOption, setPaymentOption] = useState('online');
   
-  // Loading states
-  const [loading, setLoading] = useState(false);
+  // API hooks
+  const { data: servicesResponse, isLoading: servicesLoading } = useServices({
+    vehicleType: serviceType ? serviceType as 'car' | 'bike' : undefined,
+  });
+  const { data: categories = [], isLoading: categoriesLoading } = useServiceCategories();
+  const { data: vehiclesData = [], isLoading: vehiclesLoading } = useVehicles();
+  const { data: addressesData = [], isLoading: addressesLoading } = useAddresses();
+  const createBookingMutation = useCreateBooking();
 
-  // Load service types on mount
-  useEffect(() => {
-    loadServiceTypes();
-    loadServiceAddresses();
-  }, []);
+  // Service types - hardcoded for now since categories don't have vehicleTypeId
+  const serviceTypes = [
+    { id: 'car', name: 'Car Services', icon: 'Car', description: 'Professional car wash and detailing' },
+    { id: 'bike', name: 'Bike Services', icon: 'Bike', description: 'Quick bike wash and maintenance' },
+  ];
 
   // Load data when service type changes
   useEffect(() => {
-    if (serviceType) {
-      loadServiceTypeData(serviceType);
+    if (servicesResponse?.data) {
+      // Convert API services to component format
+      const convertedServices = servicesResponse.data.map(service => ({
+        id: service.id,
+        name: service.name,
+        description: service.description,
+        price: service.price,
+        duration: service.duration,
+        vehicleTypeId: service.vehicleType,
+        features: service.features,
+        popular: false,
+        image: service.image,
+      }));
+      setServices(convertedServices as any);
     }
-  }, [serviceType]);
+  }, [servicesResponse]);
 
-  const loadServiceTypes = async () => {
-    try {
-      const types = await bookingApi.getServiceTypes();
-      setServiceTypes(types);
-      if (types.length > 0) {
-        setServiceType(types[0].id);
-      }
-    } catch (error) {
-      toast.error('Failed to load service types');
+  useEffect(() => {
+    if (vehiclesData) {
+      // Convert API vehicles to component format
+      const convertedVehicles = vehiclesData.map(vehicle => ({
+        id: vehicle.id,
+        brandId: vehicle.make,
+        brandName: vehicle.make,
+        modelId: vehicle.model,
+        modelName: vehicle.model,
+        plateNumber: vehicle.registrationNumber,
+        year: vehicle.year,
+        vehicleTypeId: vehicle.type,
+      }));
+      setVehicles(convertedVehicles as any);
     }
-  };
+  }, [vehiclesData]);
 
-  const loadServiceAddresses = async () => {
-    try {
-      const addressesData = await bookingApi.getUserAddresses();
-      setServiceAddresses(addressesData);
-    } catch (error) {
-      toast.error('Failed to load addresses');
+  useEffect(() => {
+    if (addressesData) {
+      // Convert API addresses to component format
+      const convertedAddresses = addressesData.map(address => ({
+        id: address.id,
+        label: address.label,
+        address: `${address.line1}${address.line2 ? ', ' + address.line2 : ''}, ${address.city}, ${address.state} - ${address.pincode}`,
+        isPrimary: address.isPrimary,
+      }));
+      setAddresses(convertedAddresses as any);
     }
-  };
+  }, [addressesData]);
 
-  const loadServiceTypeData = async (typeId: string) => {
-    setLoading(true);
-    try {
-      const [servicesData, addOnsData] = await Promise.all([
-        bookingApi.getServicesByType(typeId),
-        bookingApi.getAddOnsByType(typeId),
-      ]);
-
-      setServices(servicesData);
-      setAddOns(addOnsData);
-
-      // Load vehicles for car/bike services
-      if (typeId !== 'home') {
-        const vehiclesData = await bookingApi.getUserVehicles(typeId);
-        setVehicles(vehiclesData);
-      } else {
-        setVehicles([]);
-      }
-    } catch (error) {
-      toast.error('Failed to load data');
-    } finally {
-      setLoading(false);
+  // Set default service type
+  useEffect(() => {
+    if (!serviceType && serviceTypes.length > 0) {
+      setServiceType(serviceTypes[0].id);
     }
-  };
+  }, [serviceType, serviceTypes]);
 
   const handleServiceTypeChange = (type: string) => {
     setServiceType(type);
@@ -107,17 +121,14 @@ export default function BookingPage() {
     setSelectedAddOns([]);
   };
 
-  const handleVehicleAdded = async () => {
-    // Reload vehicles
-    if (serviceType !== 'home') {
-      const vehiclesData = await bookingApi.getUserVehicles(serviceType);
-      setVehicles(vehiclesData);
-    }
+  const handleVehicleAdded = () => {
+    // Vehicles will be automatically refetched by React Query
+    toast.success('Vehicle added successfully!');
   };
 
-  const handleAddressAdded = async () => {
-    // Reload addresses
-    await loadServiceAddresses();
+  const handleAddressAdded = () => {
+    // Addresses will be automatically refetched by React Query
+    toast.success('Address added successfully!');
   };
 
   const handleNext = () => {
@@ -145,8 +156,23 @@ export default function BookingPage() {
 
     if (currentStep === 7) {
       // Final step - complete booking
-      toast.success('Booking confirmed!');
-      router.push('/orders');
+      if (!selectedDate || !selectedTime || !selectedVehicle) {
+        toast.error('Please fill in all required fields');
+        return;
+      }
+      
+      const scheduledAt = new Date(`${selectedDate.toDateString()} ${selectedTime}`).toISOString();
+      
+      const bookingData = {
+        serviceId: selectedService,
+        vehicleId: selectedVehicle,
+        addressId: selectedAddress,
+        scheduledAt,
+        addOns: selectedAddOns,
+        paymentType: paymentOption === 'online' ? 'full' as const : 'advance' as const,
+      };
+      
+      createBookingMutation.mutate(bookingData);
     } else {
       // Skip vehicle step for home service
       if (currentStep === 2 && serviceType === 'home') {
@@ -174,15 +200,10 @@ export default function BookingPage() {
     );
   };
 
-  if (loading && serviceTypes.length === 0) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground text-sm sm:text-base">Loading...</p>
-        </div>
-      </div>
-    );
+  const isLoading = servicesLoading || categoriesLoading || vehiclesLoading || addressesLoading;
+
+  if (isLoading && serviceTypes.length === 0) {
+    return <Loading />;
   }
 
   return (
@@ -225,10 +246,10 @@ export default function BookingPage() {
                 </p>
               </div>
               <DynamicServiceSelector
-                services={services}
+                services={services as any}
                 selectedService={selectedService}
                 onServiceSelect={setSelectedService}
-                loading={loading}
+                loading={servicesLoading}
               />
             </div>
           )}
@@ -246,8 +267,8 @@ export default function BookingPage() {
               </div>
               <DynamicVehicleSelector
                 serviceType={serviceType}
-                vehicles={vehicles}
-                addresses={[]}
+                vehicles={vehicles as any}
+                addresses={addresses as any}
                 selectedId={selectedVehicle}
                 onSelect={setSelectedVehicle}
                 onVehicleAdded={handleVehicleAdded}
@@ -267,7 +288,7 @@ export default function BookingPage() {
                 </p>
               </div>
               <AddressSelector
-                addresses={serviceAddresses}
+                addresses={addresses as any}
                 selectedId={selectedAddress}
                 onSelect={setSelectedAddress}
                 onAddressAdded={handleAddressAdded}

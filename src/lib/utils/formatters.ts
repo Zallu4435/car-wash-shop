@@ -42,3 +42,11 @@ export const truncateText = (text: string, maxLength: number): string => {
 export const formatPercentage = (value: number): string => {
   return `${value}%`;
 };
+
+export function debounce<T extends (...args: any[]) => void>(fn: T, wait: number) {
+  let timeout: any;
+  return (...args: Parameters<T>) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => fn(...args), wait);
+  };
+}

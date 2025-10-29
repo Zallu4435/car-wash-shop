@@ -42,17 +42,42 @@ export const ROUTES = {
     VEHICLES: '/profile/vehicles',
     ADD_VEHICLE: '/profile/vehicles/add',
     ADDRESSES: '/profile/addresses',
+    ADDRESSES_PRIMARY: (id: string) => `/profile/addresses/${id}/primary`,
     ADD_ADDRESS: '/profile/addresses/add',
+    PROFILE_SECURITY: '/profile/security',
+    PROFILE_DELETE: '/profile/delete',
     
     // Support
     FEEDBACK: '/feedback',
     SUPPORT: '/support',
     COMPLAINTS: '/support/complaints',
     COMPLAINT_DETAIL: (id: string) => `/support/complaints/${id}`,
+    SUPPORT_TICKETS: '/support/tickets',
+    SUPPORT_TOPICS: '/support/topics',
     
     // Notifications
     NOTIFICATIONS: '/notifications',
     SEARCH: '/search',
+    BOOKINGS: '/bookings',
+    BOOKINGS_PREVIEW: '/bookings/preview',
+    BOOKINGS_SLOTS: '/bookings/slots',
+    SERVICES_CATEGORIES: '/services/categories',
+    PRODUCTS_CATEGORIES: '/products/categories',
+    COUPONS_APPLY: '/coupons/apply',
+    CHECKOUT_SESSION: '/checkout/session',
+    CHECKOUT_SUCCESS: '/checkout/success',
+    CHECKOUT_FAILURE: '/checkout/failure',
+    AUTH_SEND_OTP: '/auth/send-otp',
+    AUTH_VERIFY_OTP: '/auth/verify-otp',
+    AUTH_REGISTER: '/auth/register',
+    AUTH_LOGIN: '/auth/login',
+    AUTH_FORGOT_PASSWORD: '/auth/forgot-password',
+    AUTH_RESET_PASSWORD: '/auth/reset-password',
+    AUTH_ME: '/auth/me',
+    AUTH_LOGOUT: '/auth/logout',
+    AUTH_REFRESH: '/auth/refresh',
+    NOTIFICATIONS_READ:`/notifications/read`,
+    NOTIFICATIONS_READ_ALL: '/notifications/read-all',
   },
 
   // Staff Routes (with /staff prefix)
@@ -74,6 +99,9 @@ export const ROUTES = {
     // Other
     HISTORY: '/staff/history',
     PROFILE: '/staff/profile',
+    LOGOUT: '/staff/logout',
+    NOTIFICATIONS: '/staff/notifications',
+    MARK_NOTIFICATION_AS_READ: '/staff/notifications/mark-read',
   },
 
   // Admin Routes (with /admin prefix)
@@ -163,6 +191,10 @@ export const ROUTES = {
     SETTINGS: '/admin/settings',
     SETTINGS_DELIVERY: '/admin/settings/delivery-fees',
     SETTINGS_PAYMENT: '/admin/settings/payment-settings',
+    PROFILE: '/admin/profile',
+    NOTIFICATIONS: '/admin/notifications',
+    PAYMENTS: '/admin/payments',
+    SLOTS: '/admin/slots',
   },
 
   // Special Routes
@@ -173,4 +205,4 @@ export const ROUTES = {
 export const CustomerRoutes = ROUTES.CUSTOMER;
 export const StaffRoutes = ROUTES.STAFF;
 export const AdminRoutes = ROUTES.ADMIN;
-SLOTS: '/admin/slots',
+// NOTE: Keep all route constants within ROUTES to preserve typing

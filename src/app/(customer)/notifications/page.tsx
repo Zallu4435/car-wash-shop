@@ -16,92 +16,36 @@ import {
   SlidersHorizontal,
   X
 } from 'lucide-react';
-// Removed old select filter
-
-const mockNotifications = [
-  { 
-    id: 1, 
-    type: 'success', 
-    icon: CheckCircle, 
-    title: 'Order Delivered', 
-    message: 'Your order #ORD001 has been delivered successfully to your address', 
-    time: '2 hours ago', 
-    read: false,
-    color: 'text-green-600 dark:text-green-400',
-    bgColor: 'bg-green-100 dark:bg-green-950/30',
-  },
-  { 
-    id: 2, 
-    type: 'info', 
-    icon: Calendar, 
-    title: 'Booking Confirmed', 
-    message: 'Premium Wash scheduled for Oct 25 at 10:00 AM. We\'ll send you a reminder before your appointment', 
-    time: '5 hours ago', 
-    read: false,
-    color: 'text-blue-600 dark:text-blue-400',
-    bgColor: 'bg-blue-100 dark:bg-blue-950/30',
-  },
-  { 
-    id: 3, 
-    type: 'warning', 
-    icon: Package, 
-    title: 'Order Shipped', 
-    message: 'Your order #ORD002 is out for delivery. Expected to arrive today by 6:00 PM', 
-    time: '1 day ago', 
-    read: true,
-    color: 'text-orange-600 dark:text-orange-400',
-    bgColor: 'bg-orange-100 dark:bg-orange-950/30',
-  },
-  { 
-    id: 4, 
-    type: 'promo', 
-    icon: ShoppingBag, 
-    title: 'Special Offer', 
-    message: 'Get 20% off on all car wash services this weekend. Limited time offer!', 
-    time: '2 days ago', 
-    read: true,
-    color: 'text-purple-600 dark:text-purple-400',
-    bgColor: 'bg-purple-100 dark:bg-purple-950/30',
-  },
-  { 
-    id: 5, 
-    type: 'reminder', 
-    icon: Clock, 
-    title: 'Service Due', 
-    message: 'Your vehicle is due for regular maintenance service. Book now to keep it in top condition', 
-    time: '3 days ago', 
-    read: true,
-    color: 'text-amber-600 dark:text-amber-400',
-    bgColor: 'bg-amber-100 dark:bg-amber-950/30',
-  },
-];
+import { useNotifications, useMarkAsRead, useMarkAllAsRead } from '@/api/domains/notifications/queries';
+import { EmptyState } from '@/components/shared/display/EmptyState';
+import Loading from '@/components/shared/display/Loading';
 
 export default function NotificationsPage() {
-  const [notifications, setNotifications] = useState(mockNotifications);
   const [filter, setFilter] = useState<string>('all');
   const [showFilters, setShowFilters] = useState(false);
 
+  // API calls
+  const { data: notificationsResponse, isLoading: notificationsLoading } = useNotifications({
+    read: filter === 'all' ? undefined : filter === 'read' ? true : false,
+  });
+  const markAsReadMutation = useMarkAsRead();
+  const markAllAsReadMutation = useMarkAllAsRead();
+
+  const notifications = notificationsResponse?.data || [];
   const unreadCount = notifications.filter(n => !n.read).length;
 
   const markAllAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    markAllAsReadMutation.mutate();
   };
 
-  const markAsRead = (id: number) => {
-    setNotifications(prev => 
-      prev.map(n => n.id === id ? { ...n, read: true } : n)
-    );
+  const markAsRead = (id: string) => {
+    markAsReadMutation.mutate(id);
   };
 
-  const deleteNotification = (id: number) => {
-    setNotifications(prev => prev.filter(n => n.id !== id));
+  const deleteNotification = (id: string) => {
+    // Note: No delete API available yet, so we'll just mark as read
+    markAsRead(id);
   };
-
-  const filteredNotifications = notifications.filter(n => {
-    if (filter === 'unread') return !n.read;
-    if (filter === 'read') return n.read;
-    return true;
-  });
 
   // Lock body scroll when mobile filter is open
   React.useEffect(() => {
@@ -109,6 +53,11 @@ export default function NotificationsPage() {
     else document.body.style.overflow = 'unset';
     return () => { document.body.style.overflow = 'unset'; };
   }, [showFilters]);
+
+  // Loading state
+  if (notificationsLoading) {
+    return <Loading text="Loading notifications..." />;
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -151,10 +100,35 @@ export default function NotificationsPage() {
             {/* Filter bar removed; using the mobile sheet trigger below */}
 
             {/* Notifications List */}
-            {filteredNotifications.length > 0 ? (
+            {notifications.length > 0 ? (
               <div className="space-y-2.5 sm:space-y-3">
-                {filteredNotifications.map((notif) => {
-                  const Icon = notif.icon;
+                {notifications.map((notif) => {
+                  // Map notification type to icon and colors
+                  const getNotificationIcon = (type: string) => {
+                    switch (type) {
+                      case 'success': return CheckCircle;
+                      case 'info': return Calendar;
+                      case 'warning': return Package;
+                      case 'promo': return ShoppingBag;
+                      case 'reminder': return Clock;
+                      default: return Bell;
+                    }
+                  };
+
+                  const getNotificationColors = (type: string) => {
+                    switch (type) {
+                      case 'success': return { color: 'text-green-600 dark:text-green-400', bgColor: 'bg-green-100 dark:bg-green-950/30' };
+                      case 'info': return { color: 'text-blue-600 dark:text-blue-400', bgColor: 'bg-blue-100 dark:bg-blue-950/30' };
+                      case 'warning': return { color: 'text-orange-600 dark:text-orange-400', bgColor: 'bg-orange-100 dark:bg-orange-950/30' };
+                      case 'promo': return { color: 'text-purple-600 dark:text-purple-400', bgColor: 'bg-purple-100 dark:bg-purple-950/30' };
+                      case 'reminder': return { color: 'text-amber-600 dark:text-amber-400', bgColor: 'bg-amber-100 dark:bg-amber-950/30' };
+                      default: return { color: 'text-gray-600 dark:text-gray-400', bgColor: 'bg-gray-100 dark:bg-gray-950/30' };
+                    }
+                  };
+
+                  const Icon = getNotificationIcon(notif.type);
+                  const colors = getNotificationColors(notif.type);
+
                   return (
                     <Card 
                       key={notif.id} 
@@ -165,8 +139,8 @@ export default function NotificationsPage() {
                       <CardContent className="p-3 sm:p-4 md:p-6">
                         <div className="flex items-start gap-2.5 sm:gap-3 md:gap-4">
                           {/* Icon */}
-                          <div className={`p-2 sm:p-2.5 md:p-3 ${notif.bgColor} rounded-lg sm:rounded-xl flex-shrink-0`}>
-                            <Icon className={`h-4 w-4 sm:h-5 sm:w-5 ${notif.color}`} />
+                          <div className={`p-2 sm:p-2.5 md:p-3 ${colors.bgColor} rounded-lg sm:rounded-xl flex-shrink-0`}>
+                            <Icon className={`h-4 w-4 sm:h-5 sm:w-5 ${colors.color}`} />
                           </div>
 
                           {/* Content */}
@@ -192,7 +166,7 @@ export default function NotificationsPage() {
                             <div className="flex flex-col xs:flex-row items-start xs:items-center justify-between gap-2 xs:gap-4">
                               <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-muted-foreground">
                                 <Clock className="h-3 w-3" />
-                                <span>{notif.time}</span>
+                                <span>{new Date(notif.createdAt).toLocaleDateString()}</span>
                               </div>
                               <div className="flex items-center gap-2 w-full xs:w-auto">
                                 {!notif.read && (
@@ -224,24 +198,21 @@ export default function NotificationsPage() {
                 })}
               </div>
             ) : (
-              // Empty State
-              <Card className="border-2">
-                <CardContent className="py-12 sm:py-14 md:py-16 text-center px-4">
-                  <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 bg-muted rounded-full mb-3 sm:mb-4">
-                    <Bell className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground" />
-                  </div>
-                  <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-1.5 sm:mb-2">
-                    No notifications
-                  </h3>
-                  <p className="text-xs sm:text-sm text-muted-foreground max-w-md mx-auto">
-                    {filter === 'unread' 
-                      ? 'You have no unread notifications' 
-                      : filter === 'read'
-                      ? 'You have no read notifications'
-                      : 'You have no notifications at the moment'}
-                  </p>
-                </CardContent>
-              </Card>
+              <EmptyState
+                icon={Bell}
+                title={
+                  filter === 'unread' ? 'No unread notifications'
+                  : filter === 'read' ? 'No read notifications'
+                  : 'No notifications'
+                }
+                description={
+                  filter === 'unread'
+                    ? 'You have no unread notifications'
+                    : filter === 'read'
+                    ? 'You have no read notifications'
+                    : 'You have no notifications at the moment'
+                }
+              />
             )}
           </div>
         </div>
@@ -326,7 +297,7 @@ export default function NotificationsPage() {
                   className="flex-1 h-11 font-semibold text-sm shadow-md"
                   onClick={() => setShowFilters(false)}
                 >
-                  Show {filteredNotifications.length}
+                  Show {notifications.length}
                 </Button>
               </div>
             </div>

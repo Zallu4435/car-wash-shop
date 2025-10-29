@@ -4,24 +4,33 @@ import { useState, useEffect } from 'react';
 import { ProductCard } from '@/components/customer/ProductCard';
 import { CategoryFilter } from '@/components/shared/selectors/CategoryFilter';
 import { Pagination } from '@/components/shared/crud/Pagination';
-import { getMockData } from '@/lib/api/mockData';
+import { useProducts, useProductCategories } from '@/api/domains/products/queries';
 import { Search, SlidersHorizontal, X, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import type { ProductFilters } from '@/types/product';
+import Loading from '@/components/shared/display/Loading';
 
 const ITEMS_PER_PAGE = 8;
 
 export default function ProductsPage() {
-  const products = getMockData.products();
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const categories = [
-    { id: 'cat_clean', name: 'Cleaning Products', count: 2 },
-    { id: 'cat_polish', name: 'Polish & Wax', count: 1 },
-    { id: 'cat_accessories', name: 'Accessories', count: 1 },
-  ];
+  // API filters
+  const filters: ProductFilters = {
+    category: selectedCategories.length > 0 ? selectedCategories[0] : undefined,
+    page: currentPage,
+    limit: ITEMS_PER_PAGE,
+  };
+
+  // API calls
+  const { data: productsResponse, isLoading: productsLoading } = useProducts(filters);
+  const { data: categories = [], isLoading: categoriesLoading } = useProductCategories();
+
+  const products = productsResponse?.data || [];
+  const totalPages = productsResponse?.totalPages || 1;
 
   useEffect(() => {
     if (showFilters) {
@@ -46,14 +55,20 @@ export default function ProductsPage() {
     );
   };
 
-  const filteredProducts = selectedCategories.length > 0
-    ? products.filter(p => selectedCategories.includes(p.categoryId))
-    : products;
+  // Convert categories to the expected format
+  const categoryFilters = categories.map(cat => ({
+    id: cat.id,
+    name: cat.name,
+    count: products.filter(p => p.category === cat.id).length,
+  }));
 
-  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
-  const paginatedProducts = filteredProducts.slice(startIndex, endIndex);
+
+  // Loading state
+  if (productsLoading || categoriesLoading) {
+    return <Loading text="Loading products..." />;
+  }
 
   return (
     <div className="min-h-screen bg-background pb-32 lg:pb-8">
@@ -77,7 +92,7 @@ export default function ProductsPage() {
             <aside className="hidden lg:block">
               <div className="sticky top-24">
                 <CategoryFilter
-                  categories={categories}
+                  categories={categoryFilters}
                   selectedCategories={selectedCategories}
                   onToggle={toggleCategory}
                   onClearAll={() => setSelectedCategories([])}
@@ -92,7 +107,7 @@ export default function ProductsPage() {
                 <div className="flex flex-wrap items-center gap-2 mb-4 sm:mb-6 p-3 sm:p-4 bg-muted rounded-lg">
                   <span className="text-xs font-medium text-muted-foreground">Filters:</span>
                   {selectedCategories.map((categoryId) => {
-                    const category = categories.find(c => c.id === categoryId);
+                    const category = categoryFilters.find(c => c.id === categoryId);
                     return (
                       <Badge
                         key={categoryId}
@@ -120,17 +135,17 @@ export default function ProductsPage() {
               <div className="mb-4">
                 <p className="text-xs sm:text-sm text-muted-foreground">
                   Showing <span className="font-semibold text-foreground">{startIndex + 1}</span>-
-                  <span className="font-semibold text-foreground">{Math.min(endIndex, filteredProducts.length)}</span> of{' '}
-                  <span className="font-semibold text-foreground">{filteredProducts.length}</span> results
+                  <span className="font-semibold text-foreground">{Math.min(endIndex, products.length)}</span> of{' '}
+                  <span className="font-semibold text-foreground">{products.length}</span> results
                 </p>
               </div>
 
               {/* Products Grid */}
-              {paginatedProducts.length > 0 ? (
+              {products.length > 0 ? (
                 <>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
-                    {paginatedProducts.map((product) => (
-                      <ProductCard key={product.id} product={product} />
+                    {products.map((product) => (
+                      <ProductCard key={product.id} product={product as any} />
                     ))}
                   </div>
 
@@ -142,7 +157,7 @@ export default function ProductsPage() {
                         totalPages={totalPages}
                         onPageChange={setCurrentPage}
                         itemsPerPage={ITEMS_PER_PAGE}
-                        totalItems={filteredProducts.length}
+                        totalItems={products.length}
                       />
                     </div>
                   )}
@@ -209,7 +224,7 @@ export default function ProductsPage() {
                 <div>
                   <h2 className="text-base sm:text-lg font-bold text-foreground">Filters</h2>
                   <p className="text-xs text-muted-foreground">
-                    {filteredProducts.length} result{filteredProducts.length !== 1 ? 's' : ''}
+                    {products.length} result{products.length !== 1 ? 's' : ''}
                   </p>
                 </div>
               </div>
@@ -226,7 +241,7 @@ export default function ProductsPage() {
             {/* Modal Content */}
             <div className="overflow-y-auto flex-1 px-5 py-5">
               <CategoryFilter
-                categories={categories}
+                categories={categoryFilters}
                 selectedCategories={selectedCategories}
                 onToggle={toggleCategory}
                 onClearAll={() => setSelectedCategories([])}
@@ -247,7 +262,7 @@ export default function ProductsPage() {
                   className="flex-1 h-11 font-semibold text-sm shadow-md"
                   onClick={() => setShowFilters(false)}
                 >
-                  Show {filteredProducts.length}
+                  Show {products.length}
                 </Button>
               </div>
             </div>

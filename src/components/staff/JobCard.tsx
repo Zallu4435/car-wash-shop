@@ -7,7 +7,7 @@ import Link from 'next/link';
 interface Job {
   id: string;
   customer: string;
-  phone: string;
+  phone?: string;
   service: string;
   time: string;
   address: string;
@@ -66,13 +66,15 @@ export function JobCard({ job }: JobCardProps) {
               <User className="h-5 w-5 text-muted-foreground" />
               <h3 className="text-lg font-bold text-foreground">{job.customer}</h3>
             </div>
-            <a 
-              href={`tel:${job.phone}`}
-              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
-            >
-              <Phone className="h-4 w-4" />
-              <span>{job.phone}</span>
-            </a>
+            {job.phone && (
+              <a 
+                href={`tel:${job.phone}`}
+                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
+              >
+                <Phone className="h-4 w-4" />
+                <span>{job.phone}</span>
+              </a>
+            )}
           </div>
           
           <div className="flex flex-col items-end gap-1">

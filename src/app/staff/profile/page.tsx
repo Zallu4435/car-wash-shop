@@ -7,13 +7,18 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { useStaffProfile, useStaffLogout } from '@/api/domains/staff/queries';
+import { StaffRoutes } from '@/lib/constants/routes';
 
 export default function StaffProfilePage() {
   const router = useRouter();
+  const { data: profile } = useStaffProfile();
+  const logoutMutation = useStaffLogout();
 
   const handleLogout = () => {
-    toast.success('Logged out successfully');
-    router.push('/auth/login');
+    logoutMutation.mutate(undefined, {
+      onSuccess: () => toast.success('Logged out successfully'),
+    });
   };
 
   return (
@@ -30,7 +35,7 @@ export default function StaffProfilePage() {
         </div>
         <Button 
           variant="outline" 
-          onClick={() => router.push('/staff/profile/edit')}
+          onClick={() => router.push(`${StaffRoutes.PROFILE}/edit`)}
           className="w-full sm:w-auto h-9 sm:h-10 text-xs sm:text-sm"
         >
           <Edit className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -59,10 +64,10 @@ export default function StaffProfilePage() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="font-bold text-base sm:text-lg text-foreground truncate">
-                    Rahul Kumar
+                    {profile?.name ?? '—'}
                   </p>
                   <p className="text-xs sm:text-sm text-muted-foreground truncate">
-                    Senior Detailer
+                    {profile?.role ?? '—'}
                   </p>
                 </div>
               </div>
@@ -79,7 +84,7 @@ export default function StaffProfilePage() {
                     </p>
                   </div>
                   <p className="font-semibold text-sm sm:text-base text-foreground">
-                    +91 98765 43210
+                    {profile?.phone ?? '—'}
                   </p>
                 </div>
 
@@ -91,7 +96,7 @@ export default function StaffProfilePage() {
                     </p>
                   </div>
                   <p className="font-semibold text-sm sm:text-base text-foreground break-all">
-                    rahul@example.com
+                    {profile?.email ?? '—'}
                   </p>
                 </div>
               </div>
@@ -105,7 +110,7 @@ export default function StaffProfilePage() {
                   </p>
                 </div>
                 <p className="font-semibold text-sm sm:text-base text-foreground">
-                  Bandra, Khar, Andheri West
+                  {profile?.area ?? '—'}
                 </p>
               </div>
 
@@ -119,7 +124,7 @@ export default function StaffProfilePage() {
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge variant="default" className="text-xs sm:text-sm">
-                    Senior Detailer
+                    {profile?.role ?? '—'}
                   </Badge>
                   <Badge variant="outline" className="text-xs sm:text-sm">
                     <CheckCircle className="h-3 w-3 mr-1" />
@@ -181,7 +186,7 @@ export default function StaffProfilePage() {
                     Total Jobs
                   </p>
                 </div>
-                <p className="text-3xl sm:text-4xl font-bold text-foreground">156</p>
+                <p className="text-3xl sm:text-4xl font-bold text-foreground">{profile?.totalJobs ?? 0}</p>
                 <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">
                   Completed successfully
                 </p>
@@ -196,7 +201,7 @@ export default function StaffProfilePage() {
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <p className="text-3xl sm:text-4xl font-bold text-foreground">4.8</p>
+                  <p className="text-3xl sm:text-4xl font-bold text-foreground">{profile?.avgRating ?? '—'}</p>
                   <div className="flex gap-0.5">
                     {[1, 2, 3, 4, 5].map((star) => (
                       <Star
@@ -227,7 +232,7 @@ export default function StaffProfilePage() {
                 </div>
                 <div className="flex items-center gap-1">
                   <IndianRupee className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-                  <p className="text-2xl sm:text-3xl font-bold text-foreground">1,25,600</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-foreground">{profile?.earnings?.toLocaleString?.() ?? 0}</p>
                 </div>
                 <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">
                   Lifetime earnings

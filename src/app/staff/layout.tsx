@@ -5,22 +5,28 @@ import { usePathname, useRouter } from 'next/navigation';
 import { LayoutDashboard, Briefcase, History, User, LogOut, Menu, IndianRupee } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { toast } from 'sonner';
+import { useStaffLogout } from '@/api/domains/staff/queries';
+import { StaffRoutes } from '@/lib/constants/routes';
 
 const navigation = [
-  { name: 'Dashboard', href: '/staff/dashboard', icon: LayoutDashboard },
-  { name: 'My Jobs', href: '/staff/jobs', icon: Briefcase },
-  { name: 'Payments', href: '/staff/payments', icon: IndianRupee },
-  { name: 'History', href: '/staff/history', icon: History },
-  { name: 'Profile', href: '/staff/profile', icon: User },
+  { name: 'Dashboard', href: StaffRoutes.DASHBOARD, icon: LayoutDashboard },
+  { name: 'My Jobs', href: StaffRoutes.JOBS, icon: Briefcase },
+  { name: 'Payments', href: StaffRoutes.PAYMENTS, icon: IndianRupee },
+  { name: 'History', href: StaffRoutes.HISTORY, icon: History },
+  { name: 'Profile', href: StaffRoutes.PROFILE, icon: User },
 ];
 
 export default function StaffLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
+  const logoutMutation = useStaffLogout();
 
   const handleLogout = () => {
-    toast.success('Logged out successfully');
-    router.push('/auth/login');
+    logoutMutation.mutate(undefined, {
+      onSuccess: () => {
+        toast.success('Logged out successfully');
+      },
+    });
   };
 
   return (

@@ -8,13 +8,34 @@ import { PosterSection } from '@/components/customer/PosterSection';
 import { Testimonials } from '@/components/customer/Testimonials';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { getMockData } from '@/lib/api/mockData';
+import { useServices, useServiceCategories } from '@/api/domains/services/queries';
+import { useProducts } from '@/api/domains/products/queries';
 import { ArrowRight, Sparkles, Users, Award, TrendingUp, MessageSquare } from 'lucide-react';
+import Loading from '@/components/shared/display/Loading';
 
 export default function HomePage() {
-  const services = getMockData.services().slice(0, 3);
-  const products = getMockData.products().slice(0, 4);
-  const posters = getMockData.posters();
+  // API calls
+  const { data: servicesResponse, isLoading: servicesLoading } = useServices({ limit: 3 });
+  const { data: productsResponse, isLoading: productsLoading } = useProducts({ limit: 4 });
+  
+  const services = servicesResponse?.data || [];
+  const products = productsResponse?.data || [];
+  
+  // Mock posters for now (no API available yet)
+  const posters = [
+    {
+      id: '1',
+      title: 'Premium Car Wash',
+      description: 'Get 20% off on all premium car wash services',
+      imageUrl: '/images/posters/car-wash-offer.jpg',
+    },
+    {
+      id: '2', 
+      title: 'New Products',
+      description: 'Check out our latest car care products',
+      imageUrl: '/images/posters/new-products.jpg',
+    },
+  ];
 
   const promos = [
     {
@@ -80,6 +101,11 @@ export default function HomePage() {
     },
   ];
 
+  // Loading state
+  if (servicesLoading || productsLoading) {
+    return <Loading />;
+  }
+
   return (
     <div className="bg-background text-foreground">
       {/* Hero Section */}
@@ -142,7 +168,7 @@ export default function HomePage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {services.map((service) => (
-              <ServiceCard key={service.id} service={service} />
+              <ServiceCard key={service.id} service={service as any} />
             ))}
           </div>
         </div>
@@ -236,7 +262,7 @@ export default function HomePage() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
             {products.map((product) => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard key={product.id} product={product as any} />
             ))}
           </div>
         </div>

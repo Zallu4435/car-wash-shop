@@ -27,60 +27,61 @@ import {
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils/cn';
 import { toast } from 'sonner';
+import { AdminRoutes } from '@/lib/constants/routes';
 
 const navigationGroups = [
   {
     title: 'Overview',
     items: [
-      { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
-      { name: 'Reports', href: '/admin/reports', icon: FileText },
+      { name: 'Dashboard', href: AdminRoutes.DASHBOARD, icon: LayoutDashboard },
+      { name: 'Reports', href: AdminRoutes.REPORTS, icon: FileText },
     ]
   },
   {
     title: 'Operations',
     items: [
-      { name: 'Service Requests', href: '/admin/requests', icon: Calendar },
-      { name: 'Slot Management', href: '/admin/slots', icon: Clock },
-      { name: 'Orders', href: '/admin/orders', icon: ShoppingBag },
-      { name: 'Payments', href: '/admin/payments', icon: CreditCard },
+      { name: 'Service Requests', href: AdminRoutes.REQUESTS, icon: Calendar },
+      { name: 'Slot Management', href: AdminRoutes.SLOTS, icon: Clock },
+      { name: 'Orders', href: AdminRoutes.ORDERS, icon: ShoppingBag },
+      { name: 'Payments', href: AdminRoutes.PAYMENTS, icon: CreditCard },
     ]
   },
   {
     title: 'Catalog',
     items: [
-      { name: 'Services', href: '/admin/services', icon: Car },
-      { name: 'Products', href: '/admin/products', icon: Package },
-      { name: 'Categories', href: '/admin/categories', icon: Folder },
+      { name: 'Services', href: AdminRoutes.SERVICES, icon: Car },
+      { name: 'Products', href: AdminRoutes.PRODUCTS, icon: Package },
+      { name: 'Categories', href: AdminRoutes.CATEGORIES, icon: Folder },
     ]
   },
   {
     title: 'Marketing',
     items: [
-      { name: 'Banners', href: '/admin/banners', icon: Megaphone },
-      { name: 'Campaigns', href: '/admin/campaigns', icon: Megaphone },
-      { name: 'Posters', href: '/admin/posters', icon: Megaphone },
-      { name: 'Coupons', href: '/admin/coupons', icon: Tag },
+      { name: 'Banners', href: AdminRoutes.BANNERS, icon: Megaphone },
+      { name: 'Campaigns', href: AdminRoutes.CAMPAIGNS, icon: Megaphone },
+      { name: 'Posters', href: AdminRoutes.POSTERS, icon: Megaphone },
+      { name: 'Coupons', href: AdminRoutes.COUPONS, icon: Tag },
     ]
   },
   {
     title: 'Management',
     items: [
-      { name: 'Staff', href: '/admin/staff', icon: UserCog },
-      { name: 'Customers', href: '/admin/customers', icon: Users },
-      { name: 'Vehicles', href: '/admin/vehicles', icon: Car },
+      { name: 'Staff', href: AdminRoutes.STAFF, icon: UserCog },
+      { name: 'Customers', href: AdminRoutes.CUSTOMERS, icon: Users },
+      { name: 'Vehicles', href: AdminRoutes.VEHICLE_BRANDS, icon: Car }, // use brands for root
     ]
   },
   {
     title: 'Support',
     items: [
-      { name: 'Feedback', href: '/admin/feedback', icon: Star },
-      { name: 'Tickets', href: '/admin/tickets', icon: Ticket },
+      { name: 'Feedback', href: AdminRoutes.FEEDBACK, icon: Star },
+      { name: 'Tickets', href: AdminRoutes.TICKETS, icon: Ticket },
     ]
   },
   {
     title: 'System',
     items: [
-      { name: 'Settings', href: '/admin/settings', icon: Settings },
+      { name: 'Settings', href: AdminRoutes.SETTINGS, icon: Settings },
     ]
   }
 ];

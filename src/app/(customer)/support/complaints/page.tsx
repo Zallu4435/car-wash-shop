@@ -11,18 +11,32 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { useCreateTicket } from '@/api/domains/support/queries';
 
 export default function ComplaintsPage() {
   const router = useRouter();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [orderId, setOrderId] = useState('');
+  const [issueType, setIssueType] = useState('');
+  const [subject, setSubject] = useState('');
+  const [description, setDescription] = useState('');
+
+  // API call
+  const createTicketMutation = useCreateTicket();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    setTimeout(() => {
-      toast.success('Complaint submitted successfully. We will get back to you soon.');
-      router.push('/support');
-    }, 1500);
+    
+    if (!orderId || !issueType || !subject || !description) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    createTicketMutation.mutate({
+      topic: 'complaint',
+      subject,
+      description: `Order ID: ${orderId}\nIssue Type: ${issueType}\n\nDescription: ${description}`,
+      priority: 'high',
+    });
   };
 
   return (
@@ -73,6 +87,8 @@ export default function ComplaintsPage() {
                     <Input 
                       placeholder="e.g., ORD001" 
                       required
+                      value={orderId}
+                      onChange={(e) => setOrderId(e.target.value)}
                       className="h-10 sm:h-11 text-xs sm:text-sm"
                     />
                     <p className="text-[10px] sm:text-xs text-muted-foreground">
@@ -85,7 +101,7 @@ export default function ComplaintsPage() {
                     <Label className="text-xs sm:text-sm">
                       Issue Type <span className="text-red-500">*</span>
                     </Label>
-                    <Select required>
+                    <Select required value={issueType} onValueChange={setIssueType}>
                       <SelectTrigger className="h-10 sm:h-11">
                         <SelectValue placeholder="Select issue type" />
                       </SelectTrigger>
@@ -107,6 +123,8 @@ export default function ComplaintsPage() {
                     <Input 
                       placeholder="Brief description of your issue" 
                       required
+                      value={subject}
+                      onChange={(e) => setSubject(e.target.value)}
                       className="h-10 sm:h-11 text-xs sm:text-sm"
                     />
                   </div>
@@ -120,6 +138,8 @@ export default function ComplaintsPage() {
                       placeholder="Please provide detailed information about your complaint..."
                       rows={6}
                       required
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
                       className="text-xs sm:text-sm resize-none"
                     />
                   </div>
@@ -145,9 +165,9 @@ export default function ComplaintsPage() {
                       type="submit" 
                       className="w-full shadow-lg h-11 sm:h-12 text-sm sm:text-base" 
                       size="lg"
-                      disabled={isSubmitting}
+                      disabled={createTicketMutation.isPending}
                     >
-                      {isSubmitting ? (
+                      {createTicketMutation.isPending ? (
                         <>Submitting...</>
                       ) : (
                         <>

@@ -1,18 +1,28 @@
-export type CouponType = 'percentage' | 'flat';
-export type CouponApplicableOn = 'services' | 'products' | 'both';
-
 export interface Coupon {
   id: string;
   code: string;
-  type: CouponType;
-  value: number;
+  title: string;
+  description: string;
+  discountType: 'percentage' | 'fixed';
+  discountValue: number;
   minOrderValue?: number;
   maxDiscount?: number;
   validFrom: string;
-  validUntil: string;
-  usageLimit: number;
+  validTo: string;
+  usageLimit?: number;
   usedCount: number;
-  applicableOn: CouponApplicableOn;
-  active: boolean;
-  createdAt: string;
+  applicableOn: 'all' | 'products' | 'services';
+  isActive: boolean;
+}
+
+export interface ApplyCouponInput {
+  code: string;
+  amount: number;
+}
+
+export interface CouponValidation {
+  valid: boolean;
+  discount: number;
+  finalAmount: number;
+  message?: string;
 }

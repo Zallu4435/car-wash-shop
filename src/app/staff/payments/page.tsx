@@ -4,13 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { IndianRupee, Calendar, Briefcase, TrendingUp, Clock } from 'lucide-react';
-
-const payments = [
-  { id: 'PAY001', date: '2025-10-24', jobs: 3, amount: 1398, status: 'paid' },
-  { id: 'PAY002', date: '2025-10-23', jobs: 2, amount: 1198, status: 'paid' },
-  { id: 'PAY003', date: '2025-10-22', jobs: 4, amount: 2196, status: 'pending' },
-  { id: 'PAY004', date: '2025-10-21', jobs: 3, amount: 1457, status: 'paid' },
-];
+import { useStaffPayments } from '@/api/domains/staff/queries';
 
 const statusConfig = {
   paid: {
@@ -24,15 +18,10 @@ const statusConfig = {
 };
 
 export default function StaffPaymentsPage() {
-  const totalEarnings = payments
-    .filter(p => p.status === 'paid')
-    .reduce((sum, p) => sum + p.amount, 0);
-  
-  const pendingAmount = payments
-    .filter(p => p.status === 'pending')
-    .reduce((sum, p) => sum + p.amount, 0);
-  
-  const totalJobs = payments.reduce((sum, p) => sum + p.jobs, 0);
+  const { data } = useStaffPayments();
+  const totalEarnings = data?.totalEarnings ?? 0;
+  const pendingAmount = data?.pendingPayments ?? 0;
+  const totalJobs = data?.history?.length ?? 0;
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -123,25 +112,22 @@ export default function StaffPaymentsPage() {
               <CardTitle className="text-base sm:text-lg">Payment History</CardTitle>
             </div>
             <Badge variant="outline" className="text-xs w-fit">
-              {payments.length} records
+              {data?.history?.length ?? 0} records
             </Badge>
           </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {payments.map((payment) => {
-              const status = statusConfig[payment.status as keyof typeof statusConfig];
+            {(data?.history ?? []).map((payment) => {
+              const status = statusConfig['paid'];
               return (
-                <Card key={payment.id} className="hover:shadow-md transition-shadow border-2 border-border">
+                <Card key={`${payment.date}-${payment.amount}`} className="hover:shadow-md transition-shadow border-2 border-border">
                   <CardContent className="p-3 sm:p-4">
                     {/* Desktop/Tablet Layout */}
                     <div className="hidden sm:flex items-center justify-between gap-4">
                       {/* Left Section */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1.5 sm:mb-2">
-                          <Badge variant="outline" className="font-mono text-xs">
-                            {payment.id}
-                          </Badge>
                           <Badge variant={status.variant} className="text-xs">
                             {status.label}
                           </Badge>
@@ -153,7 +139,7 @@ export default function StaffPaymentsPage() {
                           </div>
                           <div className="flex items-center gap-1">
                             <Briefcase className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
-                            <span>{payment.jobs} jobs</span>
+                            <span>{payment.service ? 1 : 0} jobs</span>
                           </div>
                         </div>
                       </div>
@@ -177,7 +163,7 @@ export default function StaffPaymentsPage() {
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex flex-wrap items-center gap-1.5">
                           <Badge variant="outline" className="font-mono text-xs">
-                            {payment.id}
+                            {payment.jobId ?? payment.service ?? 'PAY'}
                           </Badge>
                           <Badge variant={status.variant} className="text-xs">
                             {status.label}
@@ -197,7 +183,7 @@ export default function StaffPaymentsPage() {
                         </div>
                         <div className="flex items-center gap-1">
                           <Briefcase className="h-3.5 w-3.5 flex-shrink-0" />
-                          <span>{payment.jobs} jobs</span>
+                          <span>{payment.service ? 1 : 0} jobs</span>
                         </div>
                       </div>
                       <Button variant="ghost" size="sm" className="w-full h-8 text-xs">

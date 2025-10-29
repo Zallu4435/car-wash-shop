@@ -9,123 +9,9 @@ import { Search, SlidersHorizontal, X, Car, Bike } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { VehicleSelectionModal } from '@/components/shared/selectors/VehicleSelectionModal';
-
-// Mock services data
-const allServices = [
-  // Car services
-  {
-    id: 'service_001',
-    name: 'Premium Car Wash',
-    description: 'Complete exterior wash with premium products',
-    price: 499,
-    duration: 45,
-    rating: 4.8,
-    reviewCount: 120,
-    categoryId: 'cat_ext',
-    vehicleTypeId: 'car',
-    image: '/images/services/car-wash.jpg',
-  },
-  {
-    id: 'service_002',
-    name: 'Interior Deep Clean',
-    description: 'Professional interior detailing and sanitization',
-    price: 799,
-    duration: 90,
-    rating: 4.9,
-    reviewCount: 95,
-    categoryId: 'cat_int',
-    vehicleTypeId: 'car',
-    image: '/images/services/interior-clean.jpg',
-  },
-  {
-    id: 'service_003',
-    name: 'Full Car Detailing',
-    description: 'Complete interior and exterior detailing package',
-    price: 1499,
-    duration: 180,
-    rating: 5.0,
-    reviewCount: 78,
-    categoryId: 'cat_full',
-    vehicleTypeId: 'car',
-    image: '/images/services/full-detailing.jpg',
-  },
-  
-  // Bike services
-  {
-    id: 'service_004',
-    name: 'Bike Express Wash',
-    description: 'Quick and efficient bike washing',
-    price: 199,
-    duration: 20,
-    rating: 4.7,
-    reviewCount: 156,
-    categoryId: 'cat_bike_wash',
-    vehicleTypeId: 'bike',
-    image: '/images/services/bike-wash.jpg',
-  },
-  {
-    id: 'service_005',
-    name: 'Bike Premium Wash',
-    description: 'Complete bike wash with wax polish',
-    price: 299,
-    duration: 30,
-    rating: 4.8,
-    reviewCount: 89,
-    categoryId: 'cat_bike_wash',
-    vehicleTypeId: 'bike',
-    image: '/images/services/bike-premium.jpg',
-  },
-  {
-    id: 'service_006',
-    name: 'Basic Bike Service',
-    description: 'Oil change and basic maintenance',
-    price: 599,
-    duration: 45,
-    rating: 4.6,
-    reviewCount: 67,
-    categoryId: 'cat_bike_service',
-    vehicleTypeId: 'bike',
-    image: '/images/services/bike-service.jpg',
-  },
-  
-  // Home cleaning services
-  {
-    id: 'service_007',
-    name: 'Deep House Cleaning',
-    description: 'Complete deep cleaning of entire house',
-    price: 1999,
-    duration: 240,
-    rating: 4.9,
-    reviewCount: 102,
-    categoryId: 'cat_home_deep',
-    vehicleTypeId: 'home',
-    image: '/images/services/deep-clean.jpg',
-  },
-  {
-    id: 'service_008',
-    name: 'Regular House Cleaning',
-    description: 'Daily cleaning and maintenance',
-    price: 899,
-    duration: 120,
-    rating: 4.7,
-    reviewCount: 134,
-    categoryId: 'cat_home_regular',
-    vehicleTypeId: 'home',
-    image: '/images/services/regular-clean.jpg',
-  },
-  {
-    id: 'service_009',
-    name: 'Kitchen Deep Clean',
-    description: 'Specialized kitchen cleaning service',
-    price: 699,
-    duration: 90,
-    rating: 4.8,
-    reviewCount: 87,
-    categoryId: 'cat_home_deep',
-    vehicleTypeId: 'home',
-    image: '/images/services/kitchen-clean.jpg',
-  },
-];
+import { useServices, useServiceCategories } from '@/api/domains/services/queries';
+import type { ServiceFilters } from '@/types/service';
+import Loading from '@/components/shared/display/Loading';
 
 const ITEMS_PER_PAGE = 6;
 
@@ -135,6 +21,18 @@ export default function ServicesPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [showVehicleModal, setShowVehicleModal] = useState(false);
+
+  // API filters
+  const filters: ServiceFilters = {
+    vehicleType: selectedVehicleTypes.length > 0 ? selectedVehicleTypes[0] as 'car' | 'bike' : undefined,
+    category: selectedCategories.length > 0 ? selectedCategories[0] : undefined,
+  };
+
+  // API calls
+  const { data: servicesResponse, isLoading: servicesLoading } = useServices(filters);
+  const { data: categories = [], isLoading: categoriesLoading } = useServiceCategories();
+
+  const allServices = servicesResponse?.data || [];
 
   // Dummy user's vehicles (no API/localStorage) - first becomes default
   type SelectedVehicle = {
@@ -159,21 +57,17 @@ export default function ServicesPage() {
 
   // Vehicle types with actual counts
   const vehicleTypes = [
-    { id: 'car', name: 'Car Services', icon: 'Car', count: 3 },
-    { id: 'bike', name: 'Bike Services', icon: 'Bike', count: 3 },
-    { id: 'home', name: 'Home Cleaning', icon: 'Home', count: 3 },
+    { id: 'car', name: 'Car Services', icon: 'Car', count: allServices.filter((s: any) => s.vehicleType === 'car').length },
+    { id: 'bike', name: 'Bike Services', icon: 'Bike', count: allServices.filter((s: any) => s.vehicleType === 'bike').length },
   ];
 
-  // All categories
-  const allCategories = [
-    { id: 'cat_ext', name: 'Exterior Wash', vehicleTypeId: 'car', count: 1 },
-    { id: 'cat_int', name: 'Interior Detailing', vehicleTypeId: 'car', count: 1 },
-    { id: 'cat_full', name: 'Full Detailing', vehicleTypeId: 'car', count: 1 },
-    { id: 'cat_bike_wash', name: 'Bike Wash', vehicleTypeId: 'bike', count: 2 },
-    { id: 'cat_bike_service', name: 'Bike Service', vehicleTypeId: 'bike', count: 1 },
-    { id: 'cat_home_deep', name: 'Deep Cleaning', vehicleTypeId: 'home', count: 2 },
-    { id: 'cat_home_regular', name: 'Regular Cleaning', vehicleTypeId: 'home', count: 1 },
-  ];
+  // All categories from API
+  const allCategories = categories.map(cat => ({
+    id: cat.id,
+    name: cat.name,
+    vehicleTypeId: 'car', // Default to car for now
+    count: allServices.filter((s: any) => s.category === cat.id).length,
+  }));
 
   const getFilteredCategories = () => {
     if (selectedVehicleTypes.length === 0) {
@@ -182,7 +76,7 @@ export default function ServicesPage() {
     return allCategories.filter(cat => selectedVehicleTypes.includes(cat.vehicleTypeId));
   };
 
-  const categories = getFilteredCategories();
+  const filteredCategories = getFilteredCategories();
 
   useEffect(() => {
     if (showFilters) {
@@ -220,12 +114,12 @@ export default function ServicesPage() {
     );
   };
 
-  const filteredServices = allServices.filter(service => {
+  const filteredServices = allServices.filter((service: any) => {
     const matchesVehicleType = selectedVehicleTypes.length === 0 || 
-      selectedVehicleTypes.includes(service.vehicleTypeId);
+      selectedVehicleTypes.includes(service.vehicleType);
     
     const matchesCategory = selectedCategories.length === 0 || 
-      selectedCategories.includes(service.categoryId);
+      selectedCategories.includes(service.category);
     
     return matchesVehicleType && matchesCategory;
   });
@@ -241,6 +135,11 @@ export default function ServicesPage() {
   };
 
   const totalActiveFilters = selectedVehicleTypes.length + selectedCategories.length;
+
+  // Loading state
+  if (servicesLoading || categoriesLoading) {
+    return <Loading text="Loading services..." />;
+  }
 
   // Pricing multipliers
   const vehiclePriceDelta: Record<string, number> = {
@@ -331,9 +230,9 @@ export default function ServicesPage() {
                   }}
                 />
 
-                {categories.length > 0 && (
+                {filteredCategories.length > 0 && (
                   <CategoryFilter
-                    categories={categories}
+                    categories={filteredCategories}
                     selectedCategories={selectedCategories}
                     onToggle={toggleCategory}
                     onClearAll={() => setSelectedCategories([])}
@@ -403,8 +302,8 @@ export default function ServicesPage() {
               {paginatedServices.length > 0 ? (
                 <>
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
-                    {paginatedServices.map((service) => {
-                      const dynamic = computeDynamicPrice(service.price, service.vehicleTypeId);
+                    {paginatedServices.map((service: any) => {
+                      const dynamic = computeDynamicPrice(service.price, service.vehicleType);
                       const priceDisplay = dynamic ? `₹${dynamic.price}` : undefined;
                       const pricingBadge = dynamic ? `(${dynamic.badgeLabel})` : undefined;
                       const bodyTypeBadge = dynamic ? dynamic.bodyTypeBadge : undefined;
@@ -522,9 +421,9 @@ export default function ServicesPage() {
                 }}
               />
 
-              {categories.length > 0 && (
+              {filteredCategories.length > 0 && (
                 <CategoryFilter
-                  categories={categories}
+                  categories={filteredCategories}
                   selectedCategories={selectedCategories}
                   onToggle={toggleCategory}
                   onClearAll={() => setSelectedCategories([])}

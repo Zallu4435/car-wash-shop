@@ -25,6 +25,8 @@ import { Input } from '@/components/ui/input';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useTheme } from '@/context/ThemeContext';
+import { useAdminLogout } from '@/api/domains/auth/queries';
+import { AdminRoutes } from '@/lib/constants/routes';
 
 interface AdminHeaderProps {
   setSidebarOpen: (open: boolean) => void;
@@ -72,6 +74,7 @@ const mockNotifications = [
 export function AdminHeader({ setSidebarOpen }: AdminHeaderProps) {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
+  const logoutMutation = useAdminLogout();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showThemeMenu, setShowThemeMenu] = useState(false);
@@ -79,8 +82,11 @@ export function AdminHeader({ setSidebarOpen }: AdminHeaderProps) {
   const unreadCount = mockNotifications.filter(n => !n.read).length;
 
   const handleLogout = () => {
-    toast.success('Logged out successfully');
-    router.push('/auth/login');
+    logoutMutation.mutate(undefined, {
+      onSuccess: () => {
+        toast.success('Logged out successfully');
+      },
+    });
   };
 
   const themeOptions = [
@@ -273,7 +279,7 @@ export function AdminHeader({ setSidebarOpen }: AdminHeaderProps) {
                       size="sm"
                       className="w-full text-[10px] sm:text-xs h-7 sm:h-8"
                       onClick={() => {
-                        router.push('/admin/notifications');
+                        router.push(AdminRoutes.NOTIFICATIONS || '/admin/notifications');
                         setShowNotifications(false);
                       }}
                     >
@@ -319,7 +325,7 @@ export function AdminHeader({ setSidebarOpen }: AdminHeaderProps) {
                     {/* Menu Items */}
                     <button
                       onClick={() => {
-                        router.push('/admin/profile');
+                        router.push(AdminRoutes.PROFILE);
                         setShowUserMenu(false);
                       }}
                       className="w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm rounded-lg hover:bg-muted transition-colors text-foreground"
@@ -329,7 +335,7 @@ export function AdminHeader({ setSidebarOpen }: AdminHeaderProps) {
                     </button>
                     <button
                       onClick={() => {
-                        router.push('/admin/settings');
+                        router.push(AdminRoutes.SETTINGS);
                         setShowUserMenu(false);
                       }}
                       className="w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm rounded-lg hover:bg-muted transition-colors text-foreground"

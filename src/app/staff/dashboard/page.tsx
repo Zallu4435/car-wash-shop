@@ -15,61 +15,45 @@ import {
   ArrowRight
 } from 'lucide-react';
 
-const stats = [
-  { 
-    name: "Today's Jobs", 
-    value: '3', 
-    icon: Briefcase, 
-    color: 'text-primary', 
-    bgColor: 'bg-primary/10',
-    trend: '+2 from yesterday'
-  },
-  { 
-    name: 'This Week', 
-    value: '12', 
-    icon: TrendingUp, 
-    color: 'text-primary', 
-    bgColor: 'bg-primary/10',
-    trend: '+4 from last week'
-  },
-  { 
-    name: 'Earnings', 
-    value: '₹5,600', 
-    icon: DollarSign, 
-    color: 'text-primary', 
-    bgColor: 'bg-primary/10',
-    trend: 'This week'
-  },
-  { 
-    name: 'Rating', 
-    value: '4.8', 
-    icon: Star, 
-    color: 'text-amber-600 dark:text-amber-400', 
-    bgColor: 'bg-amber-100 dark:bg-amber-950/30',
-    trend: 'Based on 24 reviews'
-  },
-];
-
-const upcomingJobs = [
-  {
-    id: 'job_001',
-    service: 'Premium Car Wash',
-    customer: 'John Doe',
-    time: '10:00 AM',
-    location: 'Bandra West, Mumbai',
-    status: 'confirmed',
-  },
-  {
-    id: 'job_002',
-    service: 'Interior Detailing',
-    customer: 'Jane Smith',
-    time: '2:00 PM',
-    location: 'Andheri East, Mumbai',
-    status: 'pending',
-  },
-];
+import { useStaffDashboard, useUpcomingJobs } from '@/api/domains/staff/queries';
 
 export default function StaffDashboardPage() {
+  const { data: summary } = useStaffDashboard();
+  const { data: upcomingJobs } = useUpcomingJobs();
+  const stats = [
+    { 
+      name: "Today's Jobs", 
+      value: String(summary?.todayJobs ?? 0), 
+      icon: Briefcase, 
+      color: 'text-primary', 
+      bgColor: 'bg-primary/10',
+      trend: summary?.statsTrends.todayJobs ?? ''
+    },
+    { 
+      name: 'This Week', 
+      value: String(summary?.weekJobs ?? 0), 
+      icon: TrendingUp, 
+      color: 'text-primary', 
+      bgColor: 'bg-primary/10',
+      trend: summary?.statsTrends.weekJobs ?? ''
+    },
+    { 
+      name: 'Earnings', 
+      value: summary?.earnings ? `₹${summary.earnings}` : '₹0', 
+      icon: DollarSign, 
+      color: 'text-primary', 
+      bgColor: 'bg-primary/10',
+      trend: summary?.statsTrends.earnings ?? ''
+    },
+    { 
+      name: 'Rating', 
+      value: summary?.rating ? String(summary.rating) : '—', 
+      icon: Star, 
+      color: 'text-amber-600 dark:text-amber-400', 
+      bgColor: 'bg-amber-100 dark:bg-amber-950/30',
+      trend: summary?.statsTrends.rating ?? ''
+    },
+  ];
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Welcome Section */}
@@ -103,7 +87,7 @@ export default function StaffDashboardPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-3 sm:space-y-4">
-            {upcomingJobs.map((job) => (
+            {(upcomingJobs ?? []).map((job) => (
               <Card key={job.id} className="hover:shadow-md transition-shadow border-border">
                 <CardContent className="p-3 sm:p-4">
                   {/* Desktop/Tablet Layout */}

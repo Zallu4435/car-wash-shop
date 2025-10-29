@@ -9,6 +9,8 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { CheckCircle, Star, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
+import { useUpdateJobStatus } from '@/api/domains/staff/queries';
+import { StaffRoutes } from '@/lib/constants/routes';
 
 export default function CompleteJobPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -16,10 +18,19 @@ export default function CompleteJobPage({ params }: { params: Promise<{ id: stri
   const [notes, setNotes] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('cash');
   const [rating, setRating] = useState(5);
+  const updateJobStatus = useUpdateJobStatus();
 
   const handleComplete = () => {
-    toast.success('Job completed successfully!');
-    router.push('/staff/jobs');
+    updateJobStatus.mutate(
+      { jobId: id, input: { status: 'completed', notes } },
+      {
+        onSuccess: () => {
+          toast.success('Job completed successfully!');
+          router.push(StaffRoutes.JOBS);
+        },
+        onError: (err: any) => toast.error(err?.message || 'Failed to complete job'),
+      }
+    );
   };
 
   return (
@@ -123,9 +134,10 @@ export default function CompleteJobPage({ params }: { params: Promise<{ id: stri
             onClick={handleComplete} 
             className="w-full shadow-lg" 
             size="lg"
+            disabled={updateJobStatus.isPending}
           >
             <CheckCircle className="mr-2 h-5 w-5" />
-            Mark as Completed
+            {updateJobStatus.isPending ? 'Completing...' : 'Mark as Completed'}
           </Button>
         </CardContent>
       </Card>

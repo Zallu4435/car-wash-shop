@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { ThemeProvider } from '@/context/ThemeContext';
+import { QueryProvider } from '@/providers/providers';
+import { AuthProvider } from '@/context/AuthContext';
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -58,9 +60,13 @@ export default function RootLayout({
       <body 
         className={`${inter.variable} font-sans antialiased text-foreground transition-colors duration-300`}
       >
-        <ThemeProvider>
-          {children}
-        </ThemeProvider>
+        <QueryProvider>
+          <AuthProvider>
+            <ThemeProvider>
+              {children}
+            </ThemeProvider>
+          </AuthProvider>
+        </QueryProvider>
       </body>
     </html>
   );

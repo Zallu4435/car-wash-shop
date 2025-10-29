@@ -15,6 +15,9 @@ import { bookingApi } from '@/lib/api/bookingApi';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema } from '@/schemas/auth';
+import { useSendOtp, useLogin } from '@/api/domains/auth/queries';
+import Loading from '@/components/shared/display/Loading';
+import Error from '@/components/shared/display/Error';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -46,31 +49,34 @@ export default function LoginPage() {
     defaultValues: { otp: '' },
   });
 
+  const sendOtpMutation = useSendOtp();
+  const loginMutation = useLogin();
+
   const onSendOtp = ({ phone }: { phone: string }) => {
-    setIsLoading(true);
-    setTimeout(() => {
-      setStep('otp');
-      setIsLoading(false);
-      toast.success('OTP sent to your phone');
-    }, 1000);
+    sendOtpMutation.mutate(phone, {
+      onSuccess: () => {
+        toast.success('OTP sent to your phone');
+        setStep('otp');
+      },
+      onError: (err: any) => {
+        toast.error(err?.message || 'Failed to send OTP');
+      },
+    });
   };
 
-  const onVerifyOtp = async ({ otp }: { otp: string }) => {
-    setIsLoading(true);
-    setTimeout(async () => {
-      toast.success('Login successful!');
-      // Mock: After login, check vehicles for demo: Try both car and bike arrays
-      const carVehicles = await bookingApi.getUserVehicles('car');
-      const bikeVehicles = await bookingApi.getUserVehicles('bike');
-      const allVehicles = [...(carVehicles || []), ...(bikeVehicles || [])];
-      setUserVehicles(allVehicles);
-      if (allVehicles.length === 0) {
-        setShowVehicleModal(true);
-      } else {
+  const onVerifyOtp = ({ otp }: { otp: string }) => {
+    loginMutation.mutate({ 
+      phone: getPhoneValue('phone'), 
+      otp 
+    }, {
+      onSuccess: () => {
+        toast.success('Login successful!');
         router.push('/');
-      }
-      setIsLoading(false);
-    }, 1000);
+      },
+      onError: (err: any) => {
+        toast.error(err?.message || 'Invalid OTP');
+      },
+    });
   };
 
   const handleVehicleSelect = (_vehicle: any) => {
@@ -84,6 +90,24 @@ export default function LoginPage() {
     setShowVehicleModal(false);
     router.push('/');
   };
+
+  // Loading: show global page spinner if OTP or Login is pending
+  if (sendOtpMutation.isPending || loginMutation.isPending) {
+    return <Loading text={sendOtpMutation.isPending ? 'Sending OTP...' : 'Verifying...'} />;
+  }
+  // Error: show page-level error for failed OTP send or login
+  if (sendOtpMutation.isError) {
+    return <Error message={sendOtpMutation.error?.message || 'Failed to send OTP'} onRetry={() => {
+      // re-attempt submit with last entered phone
+      handlePhoneSubmit(onSendOtp)();
+    }} />;
+  }
+  if (loginMutation.isError) {
+    return <Error message={loginMutation.error?.message || 'Invalid OTP'} onRetry={() => {
+      // re-attempt submit with last entered OTP
+      handleOtpSubmit(onVerifyOtp)();
+    }} />;
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background py-8 sm:py-12 px-4">
@@ -140,9 +164,9 @@ export default function LoginPage() {
                   type="submit" 
                   className="w-full shadow-lg h-11 sm:h-12 text-sm sm:text-base" 
                   size="lg" 
-                  disabled={isLoading}
+                  disabled={sendOtpMutation.isPending}
                 >
-                  {isLoading ? 'Sending OTP...' : 'Send OTP'}
+                  {sendOtpMutation.isPending ? 'Sending OTP...' : 'Send OTP'}
                 </Button>
               </form>
             ) : (
@@ -183,9 +207,9 @@ export default function LoginPage() {
                     type="submit" 
                     className="w-full shadow-lg h-11 sm:h-12 text-sm sm:text-base" 
                     size="lg" 
-                    disabled={isLoading}
+                    disabled={loginMutation.isPending}
                   >
-                    {isLoading ? 'Verifying...' : 'Verify & Login'}
+                    {loginMutation.isPending ? 'Verifying...' : 'Verify & Login'}
                   </Button>
 
                   <Button

@@ -1,23 +1,41 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Phone, Lock } from 'lucide-react';
+import { Phone, KeyRound } from 'lucide-react';
 import { toast } from 'sonner';
+import { useLogin } from '@/api/domains/auth/queries';
+import { StaffRoutes } from '@/lib/constants/routes';
 
 export default function StaffLoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [phone, setPhone] = useState('');
-  const [password, setPassword] = useState('');
+  const [otp, setOtp] = useState('');
+  const loginMutation = useLogin();
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success('Login successful!');
-    router.push('/dashboard');
+    loginMutation.mutate(
+      { phone, otp },
+      {
+        onSuccess: (data) => {
+          if (data.user.role !== 'staff') {
+            toast.error('You do not have staff access');
+            return;
+          }
+          const next = searchParams.get('next');
+          router.push(next || StaffRoutes.DASHBOARD);
+        },
+        onError: (err: any) => {
+          toast.error(err?.message || 'Login failed');
+        },
+      }
+    );
   };
 
   return (
@@ -44,21 +62,24 @@ export default function StaffLoginPage() {
               </div>
             </div>
             <div>
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="otp">One-Time Password</Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <Input
-                  id="password"
-                  type="password"
-                  placeholder="Enter password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  id="otp"
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="Enter OTP"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
                   className="pl-10"
                   required
                 />
               </div>
             </div>
-            <Button type="submit" className="w-full">Login</Button>
+            <Button type="submit" className="w-full" disabled={loginMutation.isPending}>
+              {loginMutation.isPending ? 'Logging in...' : 'Login'}
+            </Button>
           </form>
         </CardContent>
       </Card>

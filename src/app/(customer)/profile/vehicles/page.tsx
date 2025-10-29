@@ -9,6 +9,9 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { VehicleSelectionModal } from '@/components/shared/selectors/VehicleSelectionModal';
+import { EmptyState } from '@/components/shared/display/EmptyState';
+import Loading from '@/components/shared/display/Loading';
+import Error from '@/components/shared/display/Error';
 
 interface Vehicle {
   id: string;
@@ -202,26 +205,21 @@ export default function VehiclesPage() {
       <section className="py-6 sm:py-8 lg:py-12">
         <div className="container-custom">
           {vehicles.length === 0 ? (
-            <div className="max-w-2xl mx-auto text-center py-12 sm:py-16">
-              <div 
-                className="inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 rounded-full mb-4 sm:mb-6"
-                style={{ backgroundColor: 'hsl(var(--primary) / 0.1)' }}
-              >
-                <Car className="h-10 w-10 sm:h-12 sm:w-12" style={{ color: 'hsl(var(--primary))' }} />
-              </div>
-              <h2 className="text-xl sm:text-2xl font-bold mb-2">No Vehicles Added Yet</h2>
-              <p className="text-sm sm:text-base text-muted-foreground mb-6 px-4">
-                Add your first vehicle to get started with quick bookings
-              </p>
-              <Button 
-                size="lg" 
-                onClick={() => setIsAddModalOpen(true)}
-                className="h-10 sm:h-11"
-              >
-                <Plus className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                <span className="text-sm sm:text-base">Add Your First Vehicle</span>
-              </Button>
-            </div>
+            <EmptyState
+              icon={Car}
+              title="No Vehicles Added Yet"
+              description="Add your first vehicle to get started with quick bookings"
+              action={
+                <Button 
+                  size="lg" 
+                  onClick={() => setIsAddModalOpen(true)}
+                  className="h-10 sm:h-11"
+                >
+                  <Plus className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+                  <span className="text-sm sm:text-base">Add Your First Vehicle</span>
+                </Button>
+              }
+            />
           ) : (
             <div className="max-w-6xl mx-auto space-y-6 sm:space-y-8">
               {/* Cars Section */}

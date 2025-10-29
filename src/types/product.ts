@@ -1,24 +1,39 @@
-export interface ProductCategory {
-  id: string;
-  name: string;
-  description: string;
-  icon?: string;
-  active: boolean;
-  order: number;
-}
-
 export interface Product {
   id: string;
   name: string;
-  categoryId: string;
-  category: ProductCategory;
   description: string;
+  image: string;
   price: number;
-  stock: number;
-  images: string[];
-  rating: number;
-  reviewCount: number;
-  specifications?: Record<string, string>;
-  active: boolean;
-  createdAt: string;
+  brand?: string;
+  category: string;
+  isAvailable: boolean;
+  rating?: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface ProductCategory {
+  id: string;
+  name: string;
+}
+
+export interface ProductFilters {
+  category?: string;
+  search?: string;
+  brand?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  isAvailable?: boolean;
+  page?: number;
+  limit?: number;
+  sortBy?: 'price' | 'name' | 'rating';
+  sortOrder?: 'asc' | 'desc';
+}
+
+export interface ProductListResponse {
+  data: Product[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
 }

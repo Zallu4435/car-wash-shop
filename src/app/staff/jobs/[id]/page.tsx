@@ -6,16 +6,16 @@ import { ArrowLeft, CheckCircle, User, Calendar, Clock, Car, DollarSign, Phone }
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { NavigationMap } from '@/components/staff/NavigationMap';
-import { getBookingById } from '@/lib/api/mockData';
+import { useStaffJob } from '@/api/domains/staff/queries';
+import { StaffRoutes } from '@/lib/constants/routes';
 
 export default function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
-  const booking = getBookingById(id);
+  const { data: job } = useStaffJob(id);
 
-  if (!booking) {
+  if (!job) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="max-w-md w-full border-2">
@@ -24,7 +24,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
               Job not found
             </p>
             <Button 
-              onClick={() => router.push('/staff/jobs')}
+              onClick={() => router.push(StaffRoutes.JOBS)}
               className="h-10 sm:h-11 text-sm sm:text-base"
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
@@ -42,14 +42,14 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <Button 
           variant="ghost" 
-          onClick={() => router.push('/staff/jobs')}
+          onClick={() => router.push(StaffRoutes.JOBS)}
           className="w-full sm:w-auto h-9 sm:h-10 text-xs sm:text-sm"
         >
           <ArrowLeft className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Back to Jobs
         </Button>
         <Badge variant="default" className="text-xs sm:text-sm w-fit capitalize">
-          {booking.status}
+          {job.status}
         </Badge>
       </div>
 
@@ -79,15 +79,9 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                   </p>
                 </div>
                 <p className="font-bold text-base sm:text-lg text-foreground truncate">
-                  {booking.customer.name}
+                  {job.customer.name}
                 </p>
-                <a 
-                  href={`tel:${booking.customer.phone}`}
-                  className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-primary hover:underline mt-1"
-                >
-                  <Phone className="h-3 w-3 flex-shrink-0" />
-                  <span>{booking.customer.phone}</span>
-                </a>
+                {/* Phone not available in StaffJobDetail */}
               </div>
 
               {/* Service */}
@@ -99,7 +93,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                   </p>
                 </div>
                 <p className="font-semibold text-sm sm:text-base text-foreground">
-                  {booking.service}
+                  {job.service}
                 </p>
               </div>
 
@@ -113,7 +107,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                     </p>
                   </div>
                   <p className="font-semibold text-xs sm:text-sm md:text-base text-foreground">
-                    {booking.date}
+                    {job.datetime?.split('T')[0]}
                   </p>
                 </div>
                 <div className="p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl">
@@ -124,7 +118,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                     </p>
                   </div>
                   <p className="font-semibold text-xs sm:text-sm md:text-base text-foreground">
-                    {booking.time}
+                    {job.datetime?.split('T')[1]?.slice(0,5)}
                   </p>
                 </div>
               </div>
@@ -137,12 +131,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                     Vehicle
                   </p>
                 </div>
-                <p className="font-semibold text-sm sm:text-base text-foreground truncate">
-                  {booking.vehicle.brand} {booking.vehicle.model}
-                </p>
-                <p className="text-xs sm:text-sm text-muted-foreground font-mono truncate">
-                  {booking.vehicle.plateNumber}
-                </p>
+                {/* Vehicle details may not be available in StaffJobDetail */}
               </div>
             </CardContent>
           </Card>
@@ -161,26 +150,10 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
               <div className="flex justify-between items-center p-2.5 sm:p-3 bg-muted rounded-lg">
                 <span className="text-xs sm:text-sm text-muted-foreground">Total Amount</span>
                 <span className="font-bold text-base sm:text-lg text-foreground">
-                  ₹{booking.amount}
+                  ₹{job.amount ?? 0}
                 </span>
               </div>
-              <div className="flex justify-between items-center p-2.5 sm:p-3 bg-green-50 dark:bg-green-950/20 rounded-lg">
-                <span className="text-xs sm:text-sm text-green-700 dark:text-green-400">
-                  Advance Paid
-                </span>
-                <span className="font-bold text-base sm:text-lg text-green-600 dark:text-green-400">
-                  ₹{booking.advancePaid}
-                </span>
-              </div>
-              <Separator />
-              <div className="flex justify-between items-center p-2.5 sm:p-3 bg-primary/10 rounded-lg">
-                <span className="font-semibold text-xs sm:text-sm text-foreground">
-                  Balance to Collect
-                </span>
-                <span className="font-bold text-xl sm:text-2xl text-primary">
-                  ₹{booking.balanceAmount}
-                </span>
-              </div>
+              {/* Additional payment breakdown not available */}
             </CardContent>
           </Card>
 
@@ -190,7 +163,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
             className="w-full shadow-lg h-11 sm:h-12 text-sm sm:text-base" 
             size="lg"
           >
-            <a href={`/staff/jobs/${id}/complete`}>
+            <a href={`${StaffRoutes.JOBS}/${id}/complete`}>
               <CheckCircle className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
               Mark as Completed
             </a>
@@ -200,8 +173,8 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
         {/* Right Column - Navigation */}
         <div className="lg:col-span-1">
           <NavigationMap
-            address={booking.address}
-            customerPhone={booking.customer.phone}
+            address={job.location}
+            customerPhone={''}
           />
         </div>
       </div>

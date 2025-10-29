@@ -1,0 +1,51 @@
+export interface Order {
+    id: string;
+    bookingId: string;
+    userId: string;
+    status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
+    serviceName: string;
+    serviceImage?: string;
+    scheduledAt: string;
+    completedAt?: string;
+    totalAmount: number;
+    paymentStatus: 'paid' | 'pending' | 'refunded';
+    paymentMethod?: string;
+    invoiceUrl?: string;
+    feedback?: OrderFeedback;
+    vehicleDetails?: {
+      type: string;
+      model: string;
+      number: string;
+    };
+    addressDetails?: string;
+    createdAt: string;
+    updatedAt: string;
+  }
+  
+  export interface OrderFeedback {
+    rating: number;
+    comment?: string;
+    createdAt?: string;
+  }
+  
+  export interface OrderFeedbackInput {
+    orderId: string;
+    rating: number;
+    comment?: string;
+  }
+  
+  export interface OrderFilters {
+    status?: string;
+    fromDate?: string;
+    toDate?: string;
+    page?: number;
+    limit?: number;
+  }
+  
+  export interface CouponValidation {
+    code: string;
+    isValid: boolean;
+    discount: number;
+    message?: string;
+  }
+  

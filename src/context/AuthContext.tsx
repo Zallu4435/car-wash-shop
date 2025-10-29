@@ -1,86 +1,30 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useRouter } from 'next/navigation';
+import { createContext, useContext, type ReactNode } from 'react';
+import { useCurrentUser, useLogout } from '@/api/domains/auth/queries';
+import type { AuthUser } from '@/types/auth';
 
-interface User {
-  id: string;
-  name: string;
-  email?: string;
-  phone: string;
-  role: 'customer' | 'staff' | 'admin';
-}
-
-interface AuthContextType {
-  user: User | null;
-  isAuthenticated: boolean;
+interface AuthContextValue {
+  user: AuthUser | undefined;
   isLoading: boolean;
-  login: (phone: string, otp: string) => Promise<void>;
-  register: (data: any) => Promise<void>;
+  isAuthenticated: boolean;
   logout: () => void;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const router = useRouter();
+  const { data: user, isLoading } = useCurrentUser();
+  const logoutMutation = useLogout();
 
-  useEffect(() => {
-    // Check for stored user
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    setIsLoading(false);
-  }, []);
-
-  const login = async (phone: string, otp: string) => {
-    // Mock login - replace with actual API call
-    const mockUser: User = {
-      id: 'user_001',
-      name: 'John Doe',
-      phone,
-      role: 'customer',
-    };
-    setUser(mockUser);
-    localStorage.setItem('user', JSON.stringify(mockUser));
+  const value: AuthContextValue = {
+    user,
+    isLoading,
+    isAuthenticated: !!user,
+    logout: () => logoutMutation.mutate(),
   };
 
-  const register = async (data: any) => {
-    // Mock register - replace with actual API call
-    const mockUser: User = {
-      id: 'user_new',
-      name: data.name,
-      phone: data.phone,
-      email: data.email,
-      role: 'customer',
-    };
-    setUser(mockUser);
-    localStorage.setItem('user', JSON.stringify(mockUser));
-  };
-
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('user');
-    router.push('/');
-  };
-
-  return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isAuthenticated: !!user,
-        isLoading,
-        login,
-        register,
-        logout,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {

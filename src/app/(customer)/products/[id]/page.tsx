@@ -8,37 +8,53 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
-
-const product = {
-  id: 'prod_001',
-  name: 'Premium Car Shampoo',
-  category: 'Cleaning Products',
-  description: 'Professional-grade car shampoo with pH-balanced formula. Gentle on paint, tough on dirt. Creates rich foam for effective cleaning without stripping wax or sealants.',
-  price: 299,
-  stock: 50,
-  rating: 4.5,
-  reviewCount: 89,
-  specifications: {
-    Volume: '500ml',
-    'pH Level': 'Neutral (7.0)',
-    Scent: 'Fresh Citrus',
-    'Usage': '20-30ml per wash',
-  },
-  features: [
-    'pH-balanced formula safe for all paint types',
-    'High foam action for effective cleaning',
-    'Biodegradable and eco-friendly',
-    'Safe on wax and sealants',
-    'Concentrated formula - dilute 1:100',
-  ],
-};
+import { useProduct } from '@/api/domains/products/queries';
+import { useAddToCart } from '@/api/domains/cart/queries';
+import Loading from '@/components/shared/display/Loading';
+import Error from '@/components/shared/display/Error';
+import { useRouter } from 'next/navigation';
 
 export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const [quantity, setQuantity] = useState(1);
+  const router = useRouter();
+
+  // API calls
+  const { data: product, isLoading: productLoading } = useProduct(id);
+  const addToCartMutation = useAddToCart();
+
+  // Loading state
+  if (productLoading) {
+    return <Loading text="Loading product..." />;
+  }
+
+  // Product not found
+  if (!product) {
+    return (
+      <Error 
+        message="Product Not Found" 
+        onRetry={() => router.push('/products')} 
+        details="The product you're looking for doesn't exist." 
+      />
+    );
+  }
 
   const handleAddToCart = () => {
-    toast.success(`${quantity} ${product.name} added to cart`);
+    addToCartMutation.mutate({
+      type: 'product',
+      itemId: product.id,
+      quantity: quantity,
+    });
+  };
+
+  const handleBuyNow = () => {
+    addToCartMutation.mutate({
+      type: 'product',
+      itemId: product.id,
+      quantity: quantity,
+    });
+    // In a real app, you'd redirect to checkout
+    toast.success('Redirecting to checkout...');
   };
 
   return (
@@ -69,9 +85,9 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                     <p className="text-muted-foreground">Product Image</p>
                   </div>
                 </div>
-                {product.stock <= 5 && product.stock > 0 && (
-                  <Badge className="absolute top-4 left-4 bg-orange-500 hover:bg-orange-600 text-white shadow-lg">
-                    Only {product.stock} left!
+                {!product.isAvailable && (
+                  <Badge className="absolute top-4 left-4 bg-red-500 hover:bg-red-600 text-white shadow-lg">
+                    Out of Stock
                   </Badge>
                 )}
               </div>
@@ -99,7 +115,13 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                     <h3 className="font-semibold text-lg text-foreground">Key Features</h3>
                   </div>
                   <ul className="space-y-3">
-                    {product.features.map((feature, index) => (
+                    {[
+                      'High-quality materials and construction',
+                      'Professional-grade performance',
+                      'Easy to use and maintain',
+                      'Long-lasting durability',
+                      'Value for money',
+                    ].map((feature, index) => (
                       <li key={index} className="flex items-start gap-3">
                         <div className="p-1 bg-green-100 dark:bg-green-950/30 rounded-full mt-0.5">
                           <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
@@ -116,7 +138,12 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 <CardContent className="p-6">
                   <h3 className="font-semibold text-lg text-foreground mb-4">Specifications</h3>
                   <div className="space-y-3">
-                    {Object.entries(product.specifications).map(([key, value]) => (
+                    {[
+                      { key: 'Category', value: product.category },
+                      { key: 'Brand', value: product.brand || 'Premium' },
+                      { key: 'Availability', value: product.isAvailable ? 'In Stock' : 'Out of Stock' },
+                      { key: 'Quality', value: 'Professional Grade' },
+                    ].map(({ key, value }) => (
                       <div 
                         key={key} 
                         className="flex justify-between items-center p-3 bg-muted rounded-lg"
@@ -143,14 +170,14 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                     <div className="flex flex-wrap items-center gap-3">
                       <div className="flex items-center gap-2 p-2 bg-muted rounded-lg">
                         <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-                        <span className="font-semibold text-foreground text-sm">{product.rating}</span>
-                        <span className="text-xs text-muted-foreground">({product.reviewCount})</span>
+                        <span className="font-semibold text-foreground text-sm">4.5</span>
+                        <span className="text-xs text-muted-foreground">(89)</span>
                       </div>
                       <Badge 
-                        variant={product.stock > 10 ? 'success' : 'warning'}
+                        variant={product.isAvailable ? 'default' : 'error'}
                         className="px-2 py-1 text-xs"
                       >
-                        {product.stock > 10 ? 'In Stock' : `${product.stock} left`}
+                        {product.isAvailable ? 'In Stock' : 'Out of Stock'}
                       </Badge>
                     </div>
                   </div>
@@ -182,8 +209,8 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                         variant="outline"
                         size="icon"
                         className="h-10 w-10"
-                        onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
-                        disabled={quantity >= product.stock}
+                        onClick={() => setQuantity(quantity + 1)}
+                        disabled={!product.isAvailable}
                       >
                         <Plus className="h-4 w-4" />
                       </Button>
@@ -202,15 +229,17 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                       size="lg" 
                       className="w-full shadow-lg h-12" 
                       onClick={handleAddToCart}
+                      disabled={!product.isAvailable || addToCartMutation.isPending}
                     >
                       <ShoppingCart className="mr-2 h-5 w-5" />
-                      Add to Cart
+                      {addToCartMutation.isPending ? 'Adding...' : 'Add to Cart'}
                     </Button>
                     <Button 
                       size="lg" 
                       variant="outline" 
                       className="w-full h-12" 
-                      onClick={handleAddToCart}
+                      onClick={handleBuyNow}
+                      disabled={!product.isAvailable || addToCartMutation.isPending}
                     >
                       <ShoppingBag className="mr-2 h-5 w-5" />
                       Buy Now

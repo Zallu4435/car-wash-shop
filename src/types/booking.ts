@@ -1,44 +1,82 @@
-import { Address } from './shared';
-import { Service, AddOn } from './service';
-import { Vehicle } from './vehicle';
-
-export type BookingStatus = 'pending' | 'confirmed' | 'assigned' | 'in-progress' | 'completed' | 'cancelled';
-export type PaymentType = 'full' | 'advance';
-export type PaymentMethod = 'online' | 'cod';
+export interface BookingInput {
+  serviceId: string;
+  vehicleId: string;
+  scheduledAt: string; // ISO date-time
+  addressId: string;
+  addOns?: string[];
+  couponCode?: string;
+  paymentType: 'full' | 'advance';
+  notes?: string;
+}
 
 export interface Booking {
   id: string;
-  customerId: string;
-  customerName: string;
-  customerPhone: string;
+  userId: string;
   serviceId: string;
-  service: Service;
-  addOns: AddOn[];
   vehicleId: string;
-  vehicle: Vehicle;
-  scheduledTime: string;
-  address: Address;
-  pricing: {
-    basePrice: number;
-    addOnsTotal: number;
-    subtotal: number;
-    couponCode?: string;
-    discount: number;
-    total: number;
+  scheduledAt: string;
+  addressId: string;
+  status: 'pending' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled';
+  totalAmount: number;
+  advanceAmount?: number;
+  paymentStatus: 'paid' | 'pending' | 'refunded';
+  addOns?: AddOn[];
+  service?: {
+    id: string;
+    name: string;
+    duration: string;
   };
-  payment: {
-    type: PaymentType;
-    method: PaymentMethod;
-    advanceAmount?: number;
-    balanceAmount?: number;
-    advanceStatus: 'pending' | 'paid';
-    balanceStatus: 'pending' | 'paid';
-    transactionId?: string;
+  vehicle?: {
+    id: string;
+    type: string;
+    model: string;
+    number: string;
   };
-  status: BookingStatus;
-  staffId?: string;
-  staffName?: string;
-  notes?: string;
+  address?: {
+    id: string;
+    line1: string;
+    line2?: string;
+    city: string;
+    pincode: string;
+  };
   createdAt: string;
   updatedAt: string;
+}
+
+export interface AddOn {
+  id: string;
+  name: string;
+  price: number;
+}
+
+export interface BookingPreview {
+  servicePrice: number;
+  addOnsTotal: number;
+  discount: number;
+  taxAmount: number;
+  totalAmount: number;
+  advanceAmount?: number;
+  couponApplied?: {
+    code: string;
+    discount: number;
+  };
+}
+
+export interface TimeSlot {
+  startTime: string;
+  endTime: string;
+  isAvailable: boolean;
+}
+
+export interface AvailableSlotsResponse {
+  date: string;
+  slots: TimeSlot[];
+}
+
+export interface BookingFilters {
+  status?: string;
+  fromDate?: string;
+  toDate?: string;
+  page?: number;
+  limit?: number;
 }

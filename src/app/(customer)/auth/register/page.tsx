@@ -13,6 +13,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Separator } from '@/components/ui/separator';
 import { User, Phone, Mail, Lock, Eye, EyeOff, UserPlus, Droplet, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { useRegister } from '@/api/domains/auth/queries';
 
 interface Vehicle {
   id: string;
@@ -28,7 +29,7 @@ export default function RegisterPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const registerMutation = useRegister();
 
   const {
     register,
@@ -38,13 +39,16 @@ export default function RegisterPage() {
     resolver: zodResolver(registerSchema),
   });
 
-  const onSubmit = async (data: RegisterInput) => {
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      toast.success('Registration successful!');
-      router.push('/');
-    }, 1500);
+  const onSubmit = (data: RegisterInput) => {
+    registerMutation.mutate(data, {
+      onSuccess: () => {
+        toast.success('Registration successful!');
+        router.push('/');
+      },
+      onError: (err: any) => {
+        toast.error(err?.message || 'Registration failed');
+      },
+    });
   };
 
   return (
@@ -200,9 +204,9 @@ export default function RegisterPage() {
                   type="submit" 
                   className="w-full shadow-lg h-11 sm:h-12 text-sm sm:text-base" 
                   size="lg" 
-                  disabled={isLoading}
+                  disabled={registerMutation.isPending}
                 >
-                  {isLoading ? 'Creating Account...' : 'Create Account'}
+                  {registerMutation.isPending ? 'Creating Account...' : 'Create Account'}
                 </Button>
               </div>
             </form>

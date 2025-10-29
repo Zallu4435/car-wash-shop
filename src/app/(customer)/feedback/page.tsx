@@ -9,22 +9,30 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MessageSquare, Send, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useCreateTicket } from '@/api/domains/support/queries';
 
 export default function FeedbackPage() {
-  const [isLoading, setIsLoading] = useState(false);
   const [selectedType, setSelectedType] = useState('');
+  const [subject, setSubject] = useState('');
+  const [feedback, setFeedback] = useState('');
+
+  // API call
+  const createTicketMutation = useCreateTicket();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
     
-    setTimeout(() => {
-      toast.success('Thank you for your feedback!');
-      setIsLoading(false);
-      // Reset form
-      setSelectedType('');
-      (e.target as HTMLFormElement).reset();
-    }, 1000);
+    if (!selectedType || !subject || !feedback) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    createTicketMutation.mutate({
+      topic: 'feedback',
+      subject,
+      description: feedback,
+      priority: selectedType === 'bug' ? 'high' : 'medium',
+    });
   };
 
   const feedbackTypes = [
@@ -104,6 +112,8 @@ export default function FeedbackPage() {
                       id="subject"
                       placeholder="Brief description of your feedback" 
                       required
+                      value={subject}
+                      onChange={(e) => setSubject(e.target.value)}
                       className="h-10 sm:h-11 text-xs sm:text-sm"
                     />
                   </div>
@@ -118,6 +128,8 @@ export default function FeedbackPage() {
                       placeholder="Tell us more about your experience..." 
                       rows={6} 
                       required
+                      value={feedback}
+                      onChange={(e) => setFeedback(e.target.value)}
                       className="text-xs sm:text-sm resize-none"
                     />
                     <p className="text-[10px] sm:text-xs text-muted-foreground">
@@ -130,9 +142,9 @@ export default function FeedbackPage() {
                     type="submit" 
                     className="w-full shadow-lg h-11 sm:h-12 text-sm sm:text-base" 
                     size="lg"
-                    disabled={isLoading}
+                    disabled={createTicketMutation.isPending}
                   >
-                    {isLoading ? (
+                    {createTicketMutation.isPending ? (
                       'Submitting...'
                     ) : (
                       <>

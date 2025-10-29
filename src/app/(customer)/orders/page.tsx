@@ -4,28 +4,27 @@ import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { getMockData } from '@/lib/api/mockData';
+import { useOrders } from '@/api/domains/orders/queries';
 import { Package, Calendar, ChevronRight, ShoppingBag, Car, Clock, ArrowRight } from 'lucide-react';
+import { EmptyState } from '@/components/shared/display/EmptyState';
 
 export default function OrdersLandingPage() {
-  const orders = getMockData.orders();
+  // API calls
+  const { data: ordersResponse, isLoading: ordersLoading } = useOrders({ limit: 10 });
+  const orders = ordersResponse?.data || [];
 
   const recentOrders = orders.slice(0, 3);
 
   const allServiceOrders = orders.filter(order => 
-    order.items.some(item => 
-      item.name.toLowerCase().includes('wash') || 
-      item.name.toLowerCase().includes('service') ||
-      item.name.toLowerCase().includes('cleaning')
-    )
+    order.serviceName.toLowerCase().includes('wash') || 
+    order.serviceName.toLowerCase().includes('service') ||
+    order.serviceName.toLowerCase().includes('cleaning')
   );
   
   const productOrders = orders.filter(order => 
-    order.items.some(item => 
-      !item.name.toLowerCase().includes('wash') && 
-      !item.name.toLowerCase().includes('service') &&
-      !item.name.toLowerCase().includes('cleaning')
-    )
+    !order.serviceName.toLowerCase().includes('wash') && 
+    !order.serviceName.toLowerCase().includes('service') &&
+    !order.serviceName.toLowerCase().includes('cleaning')
   );
 
   const getStatusVariant = (status: string) => {
@@ -65,6 +64,18 @@ export default function OrdersLandingPage() {
       href: '/orders/products',
     },
   ];
+
+  // Loading state
+  if (ordersLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground text-sm sm:text-base">Loading orders...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -177,7 +188,7 @@ export default function OrdersLandingPage() {
                             </p>
                             <div className="flex items-center gap-1.5 sm:gap-2 mt-0.5 sm:mt-1 text-xs sm:text-sm text-muted-foreground">
                               <Calendar className="h-3 w-3 sm:h-3.5 sm:w-3.5 flex-shrink-0" />
-                              <span className="truncate">{order.orderDate}</span>
+                              <span className="truncate">{new Date(order.createdAt).toLocaleDateString()}</span>
                             </div>
                           </div>
                         </div>
@@ -188,24 +199,17 @@ export default function OrdersLandingPage() {
                       
                       {/* Order Items */}
                       <div className="space-y-1.5 sm:space-y-2 mb-3 sm:mb-4 p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl">
-                        {order.items.slice(0, 2).map((item) => (
-                          <div key={item.id} className="flex justify-between text-xs sm:text-sm gap-2">
-                            <span className="text-foreground truncate flex-1">{item.name}</span>
-                            <span className="text-muted-foreground flex-shrink-0">× {item.quantity}</span>
-                          </div>
-                        ))}
-                        {order.items.length > 2 && (
-                          <p className="text-[10px] sm:text-xs text-muted-foreground text-center pt-1 sm:pt-2">
-                            +{order.items.length - 2} more items
-                          </p>
-                        )}
+                        <div className="flex justify-between text-xs sm:text-sm gap-2">
+                          <span className="text-foreground truncate flex-1">{order.serviceName}</span>
+                          <span className="text-muted-foreground flex-shrink-0">× 1</span>
+                        </div>
                       </div>
 
                       {/* Order Footer */}
                       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 pt-3 sm:pt-4 border-t border-border">
                         <div>
                           <p className="text-xs sm:text-sm text-muted-foreground mb-0.5 sm:mb-1">Total Amount</p>
-                          <p className="text-xl sm:text-2xl font-bold text-primary">₹{order.total}</p>
+                          <p className="text-xl sm:text-2xl font-bold text-primary">₹{order.totalAmount}</p>
                         </div>
                         <Button asChild variant="outline" className="group w-full sm:w-auto h-9 sm:h-10" size="sm">
                           <Link href={`/orders/${order.id}`} className="text-xs sm:text-sm">
@@ -219,24 +223,21 @@ export default function OrdersLandingPage() {
                 ))}
               </div>
             ) : (
-              // Empty State - Responsive
-              <div className="text-center py-12 sm:py-16 bg-muted/30 rounded-xl border-2 border-dashed border-border">
-                <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-background rounded-full mb-4 sm:mb-6 shadow-sm">
-                  <Package className="h-8 w-8 sm:h-10 sm:w-10 text-muted-foreground" />
-                </div>
-                <h3 className="text-lg sm:text-xl font-bold text-foreground mb-2">No orders yet</h3>
-                <p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6 px-4">
-                  Start shopping to see your orders here
-                </p>
-                <div className="flex flex-col sm:flex-row gap-3 justify-center px-4">
-                  <Button asChild className="w-full sm:w-auto h-10 sm:h-11">
-                    <Link href="/services" className="text-sm sm:text-base">Browse Services</Link>
-                  </Button>
-                  <Button asChild variant="outline" className="w-full sm:w-auto h-10 sm:h-11">
-                    <Link href="/products" className="text-sm sm:text-base">Browse Products</Link>
-                  </Button>
-                </div>
-              </div>
+              <EmptyState
+                icon={Package}
+                title="No orders yet"
+                description="Start shopping to see your orders here"
+                action={
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center px-4">
+                    <Button asChild className="w-full sm:w-auto h-10 sm:h-11">
+                      <Link href="/services" className="text-sm sm:text-base">Browse Services</Link>
+                    </Button>
+                    <Button asChild variant="outline" className="w-full sm:w-auto h-10 sm:h-11">
+                      <Link href="/products" className="text-sm sm:text-base">Browse Products</Link>
+                    </Button>
+                  </div>
+                }
+              />
             )}
           </div>
         </div>

@@ -1,29 +1,24 @@
-export interface Brand {
-  id: string;
-  name: string;
-  logo?: string;
-  popular: boolean;
-  createdAt: string;
-}
-
-export interface Model {
-  id: string;
-  brandId: string;
-  name: string;
-  year: number;
-  type: 'sedan' | 'suv' | 'hatchback' | 'coupe' | 'truck';
-  createdAt: string;
-}
-
 export interface Vehicle {
   id: string;
   userId: string;
-  brandId: string;
-  modelId: string;
-  brand: Brand;
-  model: Model;
+  type: 'car' | 'bike';
+  make: string;
+  model: string;
   year: number;
-  plateNumber?: string;
+  registrationNumber: string;
   color?: string;
+  fuelType?: 'petrol' | 'diesel' | 'electric' | 'hybrid';
+  isPrimary: boolean;
   createdAt: string;
+  updatedAt: string;
+}
+
+export interface VehicleInput {
+  type: 'car' | 'bike';
+  make: string;
+  model: string;
+  year: number;
+  registrationNumber: string;
+  color?: string;
+  fuelType?: 'petrol' | 'diesel' | 'electric' | 'hybrid';
 }

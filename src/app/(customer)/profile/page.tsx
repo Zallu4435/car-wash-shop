@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,10 +10,33 @@ import { Separator } from '@/components/ui/separator';
 import { User, Mail, Phone, MapPin, Car, LogOut, Shield } from 'lucide-react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import { useCurrentUser } from '@/api/domains/auth/queries';
+import { useUpdateProfile } from '@/api/domains/profile/queries';
 
 export default function ProfilePage() {
   const router = useRouter();
   const [avatar, setAvatar] = useState<string>('');
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+  });
+
+  // API calls
+  const { data: user, isLoading: userLoading } = useCurrentUser();
+  const updateProfileMutation = useUpdateProfile();
+
+  // Update form data when user data loads
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        name: user.name || '',
+        email: user.email || '',
+        phone: user.phone || '',
+      });
+      setAvatar('');
+    }
+  }, [user]);
 
   const handleAvatarUpload = (file: File) => {
     // In production, upload to server
@@ -27,8 +50,27 @@ export default function ProfilePage() {
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success('Profile updated successfully!');
+    updateProfileMutation.mutate({
+      name: formData.name,
+      email: formData.email,
+    });
   };
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  // Loading state
+  if (userLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground text-sm sm:text-base">Loading profile...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -119,7 +161,8 @@ export default function ProfilePage() {
                     <Label htmlFor="name" className="text-xs sm:text-sm">Full Name</Label>
                     <Input
                       id="name"
-                      defaultValue="John Doe"
+                      value={formData.name}
+                      onChange={(e) => handleInputChange('name', e.target.value)}
                       required
                       placeholder="Enter your full name"
                       className="h-10 sm:h-11"
@@ -130,8 +173,8 @@ export default function ProfilePage() {
                     <Input
                       id="email"
                       type="email"
-                      defaultValue="john@example.com"
-                      required
+                      value={formData.email}
+                      disabled
                       placeholder="Enter your email"
                       className="h-10 sm:h-11"
                     />
@@ -140,7 +183,8 @@ export default function ProfilePage() {
                     <Label htmlFor="phone" className="text-xs sm:text-sm">Phone</Label>
                     <Input
                       id="phone"
-                      defaultValue="+91 98765 43210"
+                      value={formData.phone}
+                      onChange={(e) => handleInputChange('phone', e.target.value)}
                       required
                       placeholder="Enter your phone number"
                       className="h-10 sm:h-11"
@@ -149,8 +193,13 @@ export default function ProfilePage() {
 
                   <Separator />
 
-                  <Button type="submit" className="w-full shadow-lg h-11 sm:h-12 text-sm sm:text-base" size="lg">
-                    Save Changes
+                  <Button 
+                    type="submit" 
+                    className="w-full shadow-lg h-11 sm:h-12 text-sm sm:text-base" 
+                    size="lg"
+                    disabled={updateProfileMutation.isPending}
+                  >
+                    {updateProfileMutation.isPending ? 'Saving...' : 'Save Changes'}
                   </Button>
                 </form>
               </CardContent>
