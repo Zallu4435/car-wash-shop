@@ -2,12 +2,14 @@
 
 import { use } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Edit, Tag, Percent, IndianRupee, Calendar, TrendingUp } from 'lucide-react';
+import { ArrowLeft, Edit, Tag, Percent, IndianRupee, Calendar, TrendingUp, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Progress } from '@/components/ui/progress';
+import { useConfirmation } from '@/hooks/useConfirmation';
+import { toast } from 'sonner';
 
 const coupon = {
   id: 'coupon_001',
@@ -24,8 +26,26 @@ const coupon = {
 export default function CouponDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
+  const deleteConfirmation = useConfirmation();
 
   const usagePercentage = (coupon.usedCount / coupon.usageLimit) * 100;
+
+  const handleDeleteClick = async () => {
+    const confirmed = await deleteConfirmation.confirm({
+      type: 'delete',
+      title: 'Delete Coupon?',
+      description: 'This will permanently delete this coupon. Customers will no longer be able to use this code. This action cannot be undone.',
+      confirmText: 'Yes, Delete Coupon',
+      cancelText: 'Cancel',
+      itemName: coupon.code,
+    });
+
+    if (confirmed) {
+      // TODO: Implement delete coupon API
+      toast.success(`Coupon "${coupon.code}" has been deleted`);
+      router.push('/admin/coupons');
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -133,8 +153,38 @@ export default function CouponDetailPage({ params }: { params: Promise<{ id: str
               </div>
             </CardContent>
           </Card>
+
+          {/* Danger Zone */}
+          <Card className="border-2 border-red-200 dark:border-red-900 bg-red-50/50 dark:bg-red-950/20">
+            <CardHeader>
+              <CardTitle className="text-lg">Danger Zone</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Irreversible actions that affect this coupon
+              </p>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between p-4 bg-background rounded-lg border border-border">
+                <div>
+                  <p className="font-semibold text-foreground">Delete Coupon</p>
+                  <p className="text-sm text-muted-foreground">
+                    Permanently remove this coupon from the system
+                  </p>
+                </div>
+                <Button
+                  variant="destructive"
+                  onClick={handleDeleteClick}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
+
+      {/* Confirmation Dialog */}
+      <deleteConfirmation.ConfirmDialog />
     </div>
   );
 }

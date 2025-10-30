@@ -22,6 +22,7 @@ import { Clock, Ban, CheckCircle, AlertTriangle, Plus, Users, Calendar as Calend
 import { useAdminSlots, useBlockSlot, useUnblockSlot } from '@/api/domains/admin-requests/queries';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
+import { useConfirmation } from '@/hooks/useConfirmation';
 import { StatCard } from '@/components/admin/StatCard';
 
 const timeSlots = [
@@ -37,6 +38,8 @@ const staff = [
 ];
 
 export default function SlotManagementPage() {
+  const blockAllConfirmation = useConfirmation();
+  const enableAllConfirmation = useConfirmation();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const { data: slotsData, isLoading, error, refetch } = useAdminSlots();
   const blockSlotMutation = useBlockSlot();
@@ -85,24 +88,56 @@ export default function SlotManagementPage() {
     }
   };
 
-  const blockFullDay = () => {
-    // Block all slots
-    timeSlots.forEach(slot => {
-      if (!blockedSlots.includes(slot)) {
-        blockSlotMutation.mutate(slot);
-      }
+  const blockFullDay = async () => {
+    const confirmed = await blockAllConfirmation.confirm({
+      type: 'block',
+      title: 'Block Full Day?',
+      description: 'This will block all time slots for the selected date. Customers will not be able to book any appointments on this day.',
+      confirmText: 'Yes, Block Full Day',
+      cancelText: 'Cancel',
+      itemName: selectedDate?.toLocaleDateString('en-IN', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      }),
     });
-    setTimeout(() => refetch(), 500);
-    toast.success('Full day blocked');
+
+    if (confirmed) {
+      // Block all slots
+      timeSlots.forEach(slot => {
+        if (!blockedSlots.includes(slot)) {
+          blockSlotMutation.mutate(slot);
+        }
+      });
+      
+      toast.success('Full day blocked');
+    }
   };
 
-  const unblockFullDay = () => {
-    // Unblock all slots
-    blockedSlots.forEach(slot => {
-      unblockSlotMutation.mutate(slot);
+  const unblockFullDay = async () => {
+    const confirmed = await enableAllConfirmation.confirm({
+      type: 'warning',
+      title: 'Enable All Slots?',
+      description: 'This will enable all blocked time slots for the selected date. Customers will be able to book appointments on this day.',
+      confirmText: 'Yes, Enable All Slots',
+      cancelText: 'Cancel',
+      itemName: selectedDate?.toLocaleDateString('en-IN', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      }),
     });
-    setTimeout(() => refetch(), 500);
-    toast.success('All slots enabled');
+
+    if (confirmed) {
+      // Unblock all slots
+      blockedSlots.forEach(slot => {
+        unblockSlotMutation.mutate(slot);
+      });
+      
+      toast.success('Full day enabled');
+    }
   };
 
   const handleCreateSlot = () => {
@@ -137,7 +172,7 @@ export default function SlotManagementPage() {
           <Button variant="outline" onClick={unblockFullDay} className="h-9 sm:h-10 text-xs sm:text-sm flex-1 sm:flex-initial">
             <CheckCircle className="mr-0 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
             <span className="hidden xs:inline">Enable All</span>
-            <span className="xs:hidden">Enable</span>
+            <span className="xs:hidden">Enable All</span>
           </Button>
           <Button onClick={() => setShowCreateDialog(true)} className="h-9 sm:h-10 text-xs sm:text-sm w-full sm:w-auto">
             <Plus className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -399,6 +434,10 @@ export default function SlotManagementPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Confirmation Dialogs */}
+      <blockAllConfirmation.ConfirmDialog />
+      <enableAllConfirmation.ConfirmDialog />
     </div>
   );
 }

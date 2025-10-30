@@ -22,8 +22,13 @@ import { EmptyState } from '@/components/shared/display/EmptyState';
 import { SearchFilter } from '@/components/admin/SearchFilter';
 import { StatCard } from '@/components/admin/StatCard';
 import { Pagination } from '@/components/admin/Pagination';
+import { useConfirmation } from '@/hooks/useConfirmation';
+import { toast } from 'sonner';
 
 export default function AdminFeedbackPage() {
+  const blockConfirmation = useConfirmation();
+  const unblockConfirmation = useConfirmation();
+  const reportConfirmation = useConfirmation();
   const [search, setSearch] = useState('');
   const [filterValues, setFilterValues] = useState<Record<string, string>>({});
   const [page, setPage] = useState(1);
@@ -77,20 +82,40 @@ export default function AdminFeedbackPage() {
   const productReviews = allFeedback.filter((item: any) => item.feedbackType === 'product').length;
   const totalAllFeedback = allFeedback.length;
 
-  const handleBlockFeedback = (feedbackId: string) => {
-    if (confirm('Are you sure you want to block this feedback? It will be hidden from public view.')) {
+  const handleBlockFeedback = async (feedbackId: string, feedbackAuthor: string) => {
+    const confirmed = await blockConfirmation.confirm({
+      type: 'block',
+      title: 'Block Feedback?',
+      description: 'This feedback will be hidden from public view. The user will not be notified.',
+      confirmText: 'Yes, Block Feedback',
+      cancelText: 'Cancel',
+      itemName: `Feedback from ${feedbackAuthor}`,
+    });
+
+    if (confirmed) {
       setBlockedFeedback(prev => new Set(prev).add(feedbackId));
+      toast.success('Feedback has been blocked');
       // TODO: Call API to block feedback
     }
   };
 
-  const handleUnblockFeedback = (feedbackId: string) => {
-    if (confirm('Are you sure you want to unblock this feedback?')) {
+  const handleUnblockFeedback = async (feedbackId: string, feedbackAuthor: string) => {
+    const confirmed = await unblockConfirmation.confirm({
+      type: 'warning',
+      title: 'Unblock Feedback?',
+      description: 'This feedback will be visible to the public again.',
+      confirmText: 'Yes, Unblock Feedback',
+      cancelText: 'Cancel',
+      itemName: `Feedback from ${feedbackAuthor}`,
+    });
+
+    if (confirmed) {
       setBlockedFeedback(prev => {
         const newSet = new Set(prev);
         newSet.delete(feedbackId);
         return newSet;
       });
+      toast.success('Feedback has been unblocked');
       // TODO: Call API to unblock feedback
     }
   };
@@ -100,8 +125,18 @@ export default function AdminFeedbackPage() {
     console.log('Mark helpful:', feedbackId);
   };
 
-  const handleReportFeedback = (feedbackId: string) => {
-    if (confirm('Report this feedback as inappropriate?')) {
+  const handleReportFeedback = async (feedbackId: string, feedbackAuthor: string) => {
+    const confirmed = await reportConfirmation.confirm({
+      type: 'warning',
+      title: 'Report Feedback?',
+      description: 'This will flag the feedback as inappropriate for review. The feedback will be reviewed by moderators.',
+      confirmText: 'Yes, Report Feedback',
+      cancelText: 'Cancel',
+      itemName: `Feedback from ${feedbackAuthor}`,
+    });
+
+    if (confirmed) {
+      toast.success('Feedback has been reported for review');
       // TODO: Call API to report feedback
       console.log('Report feedback:', feedbackId);
     }
@@ -325,7 +360,7 @@ export default function AdminFeedbackPage() {
                           variant="ghost" 
                           size="sm" 
                           className="h-8 text-xs gap-1.5"
-                          onClick={() => handleReportFeedback(item.id)}
+                          onClick={() => handleReportFeedback(item.id, item.customerName)}
                         >
                           <Flag className="h-3.5 w-3.5" />
                           Report
@@ -346,7 +381,7 @@ export default function AdminFeedbackPage() {
                               variant="outline" 
                               size="sm" 
                               className="h-8 text-xs gap-1.5 text-green-600 hover:text-green-600 hover:bg-green-50"
-                              onClick={() => handleUnblockFeedback(item.id)}
+                              onClick={() => handleUnblockFeedback(item.id, item.customerName)}
                             >
                               <CheckCircle className="h-3.5 w-3.5" />
                               Unblock
@@ -356,7 +391,7 @@ export default function AdminFeedbackPage() {
                               variant="outline" 
                               size="sm" 
                               className="h-8 text-xs gap-1.5 text-destructive hover:text-destructive hover:bg-destructive/10"
-                              onClick={() => handleBlockFeedback(item.id)}
+                              onClick={() => handleBlockFeedback(item.id, item.customerName)}
                             >
                               <Ban className="h-3.5 w-3.5" />
                               Block
@@ -388,6 +423,11 @@ export default function AdminFeedbackPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Confirmation Dialogs */}
+      <blockConfirmation.ConfirmDialog />
+      <unblockConfirmation.ConfirmDialog />
+      <reportConfirmation.ConfirmDialog />
     </div>
   );
 }

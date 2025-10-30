@@ -14,9 +14,12 @@ import { EmptyState } from '@/components/shared/display/EmptyState';
 import { SearchFilter } from '@/components/admin/SearchFilter';
 import { StatCard } from '@/components/admin/StatCard';
 import { Pagination } from '@/components/admin/Pagination';
+import { useConfirmation } from '@/hooks/useConfirmation';
+import { toast } from 'sonner';
 
 export default function CampaignsPage() {
   const router = useRouter();
+  const deleteConfirmation = useConfirmation();
   const [search, setSearch] = useState('');
   const [filterValues, setFilterValues] = useState<Record<string, string>>({});
   const [page, setPage] = useState(1);
@@ -38,9 +41,19 @@ export default function CampaignsPage() {
   const totalPages = campaignsData?.totalPages || 0;
   const filteredCampaigns = campaigns; // Already filtered by API
 
-  const handleDelete = async (campaignId: string) => {
-    if (confirm('Are you sure you want to delete this campaign?')) {
+  const handleDelete = async (campaignId: string, campaignTitle: string) => {
+    const confirmed = await deleteConfirmation.confirm({
+      type: 'delete',
+      title: 'Delete Campaign?',
+      description: 'This will permanently delete this campaign and all associated data. This action cannot be undone.',
+      confirmText: 'Yes, Delete Campaign',
+      cancelText: 'Cancel',
+      itemName: campaignTitle,
+    });
+
+    if (confirmed) {
       await deleteCampaignMutation.mutateAsync(campaignId);
+      toast.success(`Campaign "${campaignTitle}" has been deleted`);
     }
   };
 
@@ -242,6 +255,8 @@ export default function CampaignsPage() {
                       variant="outline" 
                       size="sm"
                       className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20 h-9 px-3"
+                      onClick={() => handleDelete(campaign.id, campaign.title)}
+                      disabled={deleteCampaignMutation.isPending}
                     >
                       <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                     </Button>
@@ -269,6 +284,9 @@ export default function CampaignsPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Confirmation Dialog */}
+      <deleteConfirmation.ConfirmDialog />
     </div>
   );
 }

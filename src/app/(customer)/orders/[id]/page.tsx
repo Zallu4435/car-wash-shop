@@ -1,19 +1,23 @@
 'use client';
 
-import { use } from 'react';
+import { use, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Download, Package, MapPin, CreditCard, Calendar, FileText, XCircle, Wrench } from 'lucide-react';
+import { ArrowLeft, Download, Package, MapPin, CreditCard, Calendar, FileText, XCircle, Wrench, Star, Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { OrderTracker } from '@/components/customer/OrderTracker';
 import { Separator } from '@/components/ui/separator';
 import { useOrder } from '@/api/domains/orders/queries';
 import { useBooking } from '@/api/domains/bookings/queries';
+import { useReviewByOrder, useReviewByBooking, useReviewsByProduct, useReviewsByService } from '@/api/domains/reviews/queries';
+import { ReviewModal } from '@/components/customer/ReviewModal';
+import { ReviewsList } from '@/components/customer/ReviewsList';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
 
 export default function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
+  const [showReviewModal, setShowReviewModal] = useState(false);
 
   // Determine if it's a booking based on ID prefix
   const isBookingId = id.startsWith('booking_');
@@ -21,11 +25,31 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
   // Fetch based on ID type
   const { data: order, isLoading: orderLoading, error: orderError } = useOrder(id);
   const { data: booking, isLoading: bookingLoading } = useBooking(id);
+  
+  // Fetch existing review
+  const { data: orderReview } = useReviewByOrder(id);
+  const { data: bookingReview } = useReviewByBooking(id);
 
   // Determine which data to use
   const isService = isBookingId ? true : (booking && !order);
   const data = isService ? booking : order;
   const isLoading = orderLoading || bookingLoading;
+  const existingReview = isService ? bookingReview : orderReview;
+  
+  // Check if order/booking is completed
+  const isCompleted = (data as any)?.status?.toLowerCase() === 'completed' || (data as any)?.status?.toLowerCase() === 'delivered';
+  
+  // Fetch all reviews for the product/service
+  const productId = !isService ? (data as any)?.items?.[0]?.productId || 'product_001' : undefined;
+  const serviceId = isService ? (data as any)?.serviceId || 'service_001' : undefined;
+  
+  const { data: productReviews = [] } = useReviewsByProduct(productId || 'product_001');
+  const { data: serviceReviews = [] } = useReviewsByService(serviceId || 'service_001');
+  
+  const allReviews = isService ? serviceReviews : productReviews;
+  const averageRating = allReviews.length > 0 
+    ? allReviews.reduce((sum, review) => sum + review.rating, 0) / allReviews.length 
+    : 0;
 
   if (isLoading) {
     return <Loading text="Loading details..." />;
@@ -254,6 +278,70 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                 </Card>
               )}
 
+              {/* Review Section - Show if completed */}
+              {isCompleted && (
+                <Card className="border-2 bg-gradient-to-br from-primary/5 to-background">
+                  <CardContent className="p-4 sm:p-6">
+                    <div className="flex items-start gap-3 sm:gap-4">
+                      <div className="p-2 sm:p-3 bg-primary/10 rounded-lg sm:rounded-xl flex-shrink-0">
+                        <Star className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-sm sm:text-base text-foreground mb-1 sm:mb-2">
+                          {existingReview ? 'Your Review' : 'Rate Your Experience'}
+                        </h3>
+                        {existingReview ? (
+                          <div className="space-y-2 sm:space-y-3">
+                            <div className="flex items-center gap-2">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <Star
+                                  key={star}
+                                  className={`h-4 w-4 sm:h-5 sm:w-5 ${
+                                    star <= existingReview.rating
+                                      ? 'fill-yellow-400 text-yellow-400'
+                                      : 'text-gray-300'
+                                  }`}
+                                />
+                              ))}
+                              <span className="text-sm sm:text-base font-medium text-foreground ml-1">
+                                {existingReview.rating}.0
+                              </span>
+                            </div>
+                            {existingReview.comment && (
+                              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                                {existingReview.comment}
+                              </p>
+                            )}
+                            <Button
+                              onClick={() => setShowReviewModal(true)}
+                              variant="outline"
+                              size="sm"
+                              className="mt-2 h-9 text-xs sm:text-sm"
+                            >
+                              <Edit className="mr-2 h-3.5 w-3.5" />
+                              Edit Review
+                            </Button>
+                          </div>
+                        ) : (
+                          <div>
+                            <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">
+                              Share your experience to help others and improve our service
+                            </p>
+                            <Button
+                              onClick={() => setShowReviewModal(true)}
+                              className="h-10 sm:h-11 shadow-lg text-xs sm:text-sm"
+                            >
+                              <Star className="mr-2 h-4 w-4" />
+                              Write a Review
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
               {/* Actions */}
               <div className="flex flex-col sm:flex-row gap-3">
                 {!isService && (
@@ -264,16 +352,18 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                     </Link>
                   </Button>
                 )}
-                <Button 
-                  asChild 
-                  variant="outline" 
-                  className={`${!isService ? 'flex-1' : 'w-full'} h-10 sm:h-11 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20`}
-                >
-                  <Link href={`/orders/${id}/cancel`} className="text-xs sm:text-sm">
-                    <XCircle className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                    {isService ? 'Cancel Booking' : 'Cancel Order'}
-                  </Link>
-                </Button>
+                {!isCompleted && (
+                  <Button 
+                    asChild 
+                    variant="outline" 
+                    className={`${!isService ? 'flex-1' : 'w-full'} h-10 sm:h-11 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20`}
+                  >
+                    <Link href={`/orders/${id}/cancel`} className="text-xs sm:text-sm">
+                      <XCircle className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                      {isService ? 'Cancel Booking' : 'Cancel Order'}
+                    </Link>
+                  </Button>
+                )}
               </div>
             </div>
 
@@ -286,8 +376,32 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
               />
             </div>
           </div>
+
+          {/* Customer Reviews Section - Full Width */}
+          <div className="mt-6 sm:mt-8">
+            <ReviewsList
+              reviews={allReviews}
+              averageRating={averageRating}
+              totalReviews={allReviews.length}
+              productName={!isService ? (data as any)?.items?.[0]?.productName : undefined}
+              serviceName={isService ? (data as any)?.serviceName : undefined}
+            />
+          </div>
         </div>
       </section>
+
+      {/* Review Modal */}
+      <ReviewModal
+        isOpen={showReviewModal}
+        onClose={() => setShowReviewModal(false)}
+        orderId={!isService ? id : undefined}
+        bookingId={isService ? id : undefined}
+        productId={!isService ? (data as any)?.items?.[0]?.productId : undefined}
+        serviceId={isService ? (data as any)?.serviceId : undefined}
+        itemName={isService ? (data as any)?.serviceName || 'Service' : (data as any)?.items?.[0]?.productName || 'Order'}
+        isService={isService}
+        existingReview={existingReview}
+      />
     </div>
   );
 }

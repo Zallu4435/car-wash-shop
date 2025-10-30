@@ -11,7 +11,8 @@ import {
   Edit,
   Trash2,
   TrendingUp,
-  CheckCircle
+  CheckCircle,
+  Eye
 } from 'lucide-react';
 import { useState, useMemo } from 'react';
 import { useAdminCategoryList, useDeleteCategory } from '@/api/domains/admin-catalog/queries';
@@ -21,9 +22,12 @@ import { EmptyState } from '@/components/shared/display/EmptyState';
 import { SearchFilter } from '@/components/admin/SearchFilter';
 import { Pagination } from '@/components/admin/Pagination';
 import { StatCard } from '@/components/admin/StatCard';
+import { useConfirmation } from '@/hooks/useConfirmation';
+import { toast } from 'sonner';
 
 export default function CategoriesPage() {
   const router = useRouter();
+  const deleteConfirmation = useConfirmation();
   const [search, setSearch] = useState('');
   const [filterValues, setFilterValues] = useState<Record<string, string>>({});
   const [page, setPage] = useState(1);
@@ -44,9 +48,19 @@ export default function CategoriesPage() {
   const totalItems = categoriesResponse?.total || 0;
   const totalPages = categoriesResponse?.totalPages || 0;
 
-  const handleDelete = async (categoryId: string) => {
-    if (confirm('Are you sure you want to delete this category?')) {
+  const handleDelete = async (categoryId: string, categoryName: string) => {
+    const confirmed = await deleteConfirmation.confirm({
+      type: 'delete',
+      title: 'Delete Category?',
+      description: 'This will permanently delete this category. Products in this category will need to be reassigned. This action cannot be undone.',
+      confirmText: 'Yes, Delete Category',
+      cancelText: 'Cancel',
+      itemName: categoryName,
+    });
+
+    if (confirmed) {
       await deleteCategoryMutation.mutateAsync(categoryId);
+      toast.success(`Category "${categoryName}" has been deleted`);
     }
   };
 
@@ -193,15 +207,25 @@ export default function CategoriesPage() {
                       variant="outline" 
                       size="sm" 
                       className="flex-1 h-9 text-xs sm:text-sm"
+                      onClick={() => router.push(`/admin/categories/${category.id}`)}
+                    >
+                      <Eye className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                      <span className="hidden xs:inline">View</span>
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="h-9 px-3"
                       onClick={() => router.push(`/admin/categories/${category.id}/edit`)}
                     >
-                      <Edit className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                      <span className="hidden xs:inline">Edit</span>
+                      <Edit className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                     </Button>
                     <Button 
                       variant="outline" 
                       size="sm"
                       className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20 h-9 px-3"
+                      onClick={() => handleDelete(category.id, category.name)}
+                      disabled={deleteCategoryMutation.isPending}
                     >
                       <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                     </Button>
@@ -229,6 +253,9 @@ export default function CategoriesPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Confirmation Dialog */}
+      <deleteConfirmation.ConfirmDialog />
     </div>
   );
 }

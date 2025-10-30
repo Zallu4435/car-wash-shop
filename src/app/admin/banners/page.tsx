@@ -14,9 +14,12 @@ import { EmptyState } from '@/components/shared/display/EmptyState';
 import { SearchFilter } from '@/components/admin/SearchFilter';
 import { StatCard } from '@/components/admin/StatCard';
 import { Pagination } from '@/components/admin/Pagination';
+import { useConfirmation } from '@/hooks/useConfirmation';
+import { toast } from 'sonner';
 
 export default function BannersPage() {
   const router = useRouter();
+  const deleteConfirmation = useConfirmation();
   const [search, setSearch] = useState('');
   const [filterValues, setFilterValues] = useState<Record<string, string>>({});
   const [page, setPage] = useState(1);
@@ -38,9 +41,19 @@ export default function BannersPage() {
   const totalPages = bannersData?.totalPages || 0;
   const filteredBanners = banners; // Already filtered by API
 
-  const handleDelete = async (bannerId: string) => {
-    if (confirm('Are you sure you want to delete this banner?')) {
+  const handleDelete = async (bannerId: string, bannerTitle: string) => {
+    const confirmed = await deleteConfirmation.confirm({
+      type: 'delete',
+      title: 'Delete Banner?',
+      description: 'This will permanently delete this banner. It will no longer be displayed to customers. This action cannot be undone.',
+      confirmText: 'Yes, Delete Banner',
+      cancelText: 'Cancel',
+      itemName: bannerTitle,
+    });
+
+    if (confirmed) {
       await deleteBannerMutation.mutateAsync(bannerId);
+      toast.success(`Banner "${bannerTitle}" has been deleted`);
     }
   };
 
@@ -231,6 +244,8 @@ export default function BannersPage() {
                         variant="outline" 
                         size="sm"
                         className="text-destructive hover:text-destructive hover:bg-destructive/10 h-9 px-3"
+                        onClick={() => handleDelete(banner.id, banner.title)}
+                        disabled={deleteBannerMutation.isPending}
                       >
                         <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                       </Button>
@@ -259,6 +274,9 @@ export default function BannersPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Confirmation Dialog */}
+      <deleteConfirmation.ConfirmDialog />
     </div>
   );
 }

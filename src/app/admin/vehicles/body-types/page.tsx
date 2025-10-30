@@ -9,6 +9,8 @@ import { Car, Bike, Plus, Edit, Trash2, Move, Layers, ArrowLeft } from 'lucide-r
 import { SearchFilter } from '@/components/admin/SearchFilter';
 import { Pagination } from '@/components/admin/Pagination';
 import { EmptyState } from '@/components/shared/display/EmptyState';
+import { useConfirmation } from '@/hooks/useConfirmation';
+import { toast } from 'sonner';
 
 // Body types data
 const bodyTypes = [
@@ -28,10 +30,27 @@ const iconMap = { Car, Bike };
 
 export default function BodyTypesPage() {
   const router = useRouter();
+  const deleteConfirmation = useConfirmation();
   const [search, setSearch] = useState('');
   const [filterValues, setFilterValues] = useState<Record<string, string>>({});
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+
+  const handleDelete = async (bodyTypeId: string, bodyTypeName: string) => {
+    const confirmed = await deleteConfirmation.confirm({
+      type: 'delete',
+      title: 'Delete Body Type?',
+      description: 'This will permanently delete this body type. Vehicle models using this body type will need to be reassigned. This action cannot be undone.',
+      confirmText: 'Yes, Delete Body Type',
+      cancelText: 'Cancel',
+      itemName: bodyTypeName,
+    });
+
+    if (confirmed) {
+      // TODO: Implement delete body type API
+      toast.success(`Body type "${bodyTypeName}" has been deleted`);
+    }
+  };
 
   // Apply filters
   const filteredTypes = useMemo(() => {
@@ -187,10 +206,11 @@ export default function BodyTypesPage() {
                           <Edit className="mr-2 h-4 w-4" />
                           Edit
                         </Button>
-                        <Button
-                          variant="outline"
+                        <Button 
+                          variant="outline" 
                           size="sm"
                           className="text-destructive hover:text-destructive hover:bg-destructive/10 h-9 px-3"
+                          onClick={() => handleDelete(type.id, type.name)}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -241,6 +261,7 @@ export default function BodyTypesPage() {
                           variant="outline"
                           size="sm"
                           className="text-destructive hover:text-destructive hover:bg-destructive/10 h-9 px-3"
+                          onClick={() => handleDelete(type.id, type.name)}
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                         </Button>
@@ -321,6 +342,9 @@ export default function BodyTypesPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Confirmation Dialog */}
+      <deleteConfirmation.ConfirmDialog />
     </div>
   );
 }

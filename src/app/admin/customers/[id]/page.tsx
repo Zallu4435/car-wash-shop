@@ -2,38 +2,79 @@
 
 import { use } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Mail, Phone, Calendar, MapPin, Car, ShoppingBag, IndianRupee, TrendingUp } from 'lucide-react';
+import { ArrowLeft, Mail, Phone, Calendar, MapPin, Car, ShoppingBag, IndianRupee, TrendingUp, Ban, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-
-const customer = {
-  id: 'cust_001',
-  name: 'John Doe',
-  email: 'john@example.com',
-  phone: '+91 98765 43210',
-  joinedDate: '2025-01-15',
-  totalOrders: 12,
-  totalSpent: 8430,
-  vehicles: [
-    { id: 'veh_001', brand: 'Toyota', model: 'Camry', plateNumber: 'MH12AB1234' },
-    { id: 'veh_002', brand: 'Honda', model: 'City', plateNumber: 'MH14CD5678' },
-  ],
-  addresses: [
-    { id: 'addr_001', label: 'Home', address: '123, MG Road, Bandra West, Mumbai - 400050' },
-    { id: 'addr_002', label: 'Office', address: '456, Linking Road, Khar, Mumbai - 400052' },
-  ],
-  recentOrders: [
-    { id: 'ORD001', type: 'service', name: 'Premium Wash', date: '2025-10-20', amount: 649, status: 'completed' },
-    { id: 'ORD002', type: 'product', name: 'Car Shampoo', date: '2025-10-18', amount: 498, status: 'delivered' },
-    { id: 'ORD003', type: 'service', name: 'Interior Detailing', date: '2025-10-15', amount: 699, status: 'completed' },
-  ],
-};
+import { useConfirmation } from '@/hooks/useConfirmation';
+import { useAdminCustomerDetail, useUpdateCustomerStatus } from '@/api/domains/admin-customers/queries';
+import Loading from '@/components/shared/display/Loading';
+import Error from '@/components/shared/display/Error';
+import { toast } from 'sonner';
 
 export default function CustomerDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
+  
+  // Fetch customer data
+  const { data: customer, isLoading, error } = useAdminCustomerDetail(id);
+  const updateStatusMutation = useUpdateCustomerStatus();
+  
+  // Use the confirmation hook
+  const blockConfirmation = useConfirmation();
+  const deleteConfirmation = useConfirmation();
+
+  const handleBlockClick = async () => {
+    if (!customer) return;
+    
+    const confirmed = await blockConfirmation.confirm({
+      type: 'block',
+      title: 'Block Customer?',
+      description: 'This customer will be blocked from placing new orders. They will not be able to access their account until unblocked.',
+      confirmText: 'Yes, Block Customer',
+      cancelText: 'Cancel',
+      itemName: customer.name,
+    });
+
+    if (confirmed) {
+      updateStatusMutation.mutate({ customerId: id, status: 'blocked' });
+    }
+  };
+
+  const handleDeleteClick = async () => {
+    if (!customer) return;
+    
+    const confirmed = await deleteConfirmation.confirm({
+      type: 'delete',
+      title: 'Delete Customer?',
+      description: 'This will permanently delete the customer account and all associated data including orders, vehicles, and addresses. This action cannot be undone.',
+      confirmText: 'Yes, Delete Permanently',
+      cancelText: 'Cancel',
+      itemName: customer.name,
+    });
+
+    if (confirmed) {
+      // TODO: Implement delete customer API
+      toast.success(`Customer ${customer.name} has been deleted`);
+      router.push('/admin/customers');
+    }
+  };
+
+  // Loading state
+  if (isLoading) {
+    return <Loading text="Loading customer details..." />;
+  }
+
+  // Error state
+  if (error || !customer) {
+    return (
+      <Error 
+        message="Failed to load customer" 
+        details={error?.message}
+        onRetry={() => window.location.reload()}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -111,7 +152,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                     </div>
                     <div>
                       <p className="font-semibold text-foreground">{vehicle.brand} {vehicle.model}</p>
-                      <p className="text-sm text-muted-foreground font-mono">{vehicle.plateNumber}</p>
+                      <p className="text-sm text-muted-foreground font-mono">{vehicle.number}</p>
                     </div>
                   </div>
                 ))}
@@ -135,7 +176,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                   <div key={addr.id} className="p-4 bg-muted rounded-xl">
                     <div className="flex items-center gap-2 mb-2">
                       <MapPin className="h-4 w-4 text-muted-foreground" />
-                      <Badge variant="outline">{addr.label}</Badge>
+                      <Badge variant="outline">{addr.type}</Badge>
                     </div>
                     <p className="text-sm text-foreground leading-relaxed">{addr.address}</p>
                   </div>
@@ -161,9 +202,9 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                     <div>
                       <div className="flex items-center gap-2 mb-2">
                         <Badge variant="outline" className="font-mono">{order.id}</Badge>
-                        <Badge variant="secondary" className="capitalize">{order.type}</Badge>
+                        <Badge variant="secondary" className="capitalize">{order.status}</Badge>
                       </div>
-                      <p className="font-semibold text-foreground">{order.name}</p>
+                      <p className="font-semibold text-foreground">{order.service}</p>
                       <p className="text-xs text-muted-foreground mt-1">
                         <Calendar className="h-3 w-3 inline mr-1" />
                         {order.date}
@@ -220,8 +261,56 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
               </div>
             </CardContent>
           </Card>
+
+          {/* Action Buttons */}
+          <Card className="border-2 border-red-200 dark:border-red-900 bg-red-50/50 dark:bg-red-950/20">
+            <CardHeader>
+              <CardTitle className="text-lg">Danger Zone</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Irreversible actions that affect this customer
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-center justify-between p-4 bg-background rounded-lg border border-border">
+                <div>
+                  <p className="font-semibold text-foreground">Block Customer</p>
+                  <p className="text-sm text-muted-foreground">
+                    Prevent customer from placing new orders
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={handleBlockClick}
+                  className="border-orange-300 dark:border-orange-800 text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950/30"
+                >
+                  <Ban className="mr-2 h-4 w-4" />
+                  Block
+                </Button>
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-background rounded-lg border border-border">
+                <div>
+                  <p className="font-semibold text-foreground">Delete Customer</p>
+                  <p className="text-sm text-muted-foreground">
+                    Permanently remove customer and all data
+                  </p>
+                </div>
+                <Button
+                  variant="destructive"
+                  onClick={handleDeleteClick}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
+
+      {/* Confirmation Dialogs */}
+      <blockConfirmation.ConfirmDialog />
+      <deleteConfirmation.ConfirmDialog />
     </div>
   );
 }

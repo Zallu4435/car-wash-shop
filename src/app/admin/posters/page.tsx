@@ -14,9 +14,12 @@ import { EmptyState } from '@/components/shared/display/EmptyState';
 import { SearchFilter } from '@/components/admin/SearchFilter';
 import { StatCard } from '@/components/admin/StatCard';
 import { Pagination } from '@/components/admin/Pagination';
+import { useConfirmation } from '@/hooks/useConfirmation';
+import { toast } from 'sonner';
 
 export default function PostersPage() {
   const router = useRouter();
+  const deleteConfirmation = useConfirmation();
   const [search, setSearch] = useState('');
   const [filterValues, setFilterValues] = useState<Record<string, string>>({});
   const [page, setPage] = useState(1);
@@ -38,9 +41,19 @@ export default function PostersPage() {
   const totalPages = postersData?.totalPages || 0;
   const filteredPosters = posters; // Already filtered by API
 
-  const handleDelete = async (posterId: string) => {
-    if (confirm('Are you sure you want to delete this poster?')) {
+  const handleDelete = async (posterId: string, posterTitle: string) => {
+    const confirmed = await deleteConfirmation.confirm({
+      type: 'delete',
+      title: 'Delete Poster?',
+      description: 'This will permanently delete this poster. It will no longer be displayed to customers. This action cannot be undone.',
+      confirmText: 'Yes, Delete Poster',
+      cancelText: 'Cancel',
+      itemName: posterTitle,
+    });
+
+    if (confirmed) {
       await deletePosterMutation.mutateAsync(posterId);
+      toast.success(`Poster "${posterTitle}" has been deleted`);
     }
   };
 
@@ -206,6 +219,8 @@ export default function PostersPage() {
                       variant="outline" 
                       size="sm"
                       className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20 h-9 px-3"
+                      onClick={() => handleDelete(poster.id, poster.title)}
+                      disabled={deletePosterMutation.isPending}
                     >
                       <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                     </Button>
@@ -233,6 +248,9 @@ export default function PostersPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Confirmation Dialog */}
+      <deleteConfirmation.ConfirmDialog />
     </div>
   );
 }

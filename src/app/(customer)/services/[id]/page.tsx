@@ -11,6 +11,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { useState } from 'react';
 import { useService } from '@/api/domains/services/queries';
+import { useReviewsByService } from '@/api/domains/reviews/queries';
+import { ReviewsList } from '@/components/customer/ReviewsList';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
 import { useRouter } from 'next/navigation';
@@ -21,6 +23,12 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
   const { data: service, isLoading: serviceLoading } = useService(id);
   const [selectedAddOns, setSelectedAddOns] = useState<string[]>([]);
   const router = useRouter();
+  const { data: reviews = [] } = useReviewsByService(id);
+  
+  // Calculate average rating
+  const averageRating = reviews.length > 0 
+    ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length 
+    : 0;
 
   // Loading state
   if (serviceLoading) {
@@ -314,6 +322,16 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Customer Reviews Section - Full Width */}
+        <div className="mt-8 lg:mt-12">
+          <ReviewsList
+            reviews={reviews}
+            averageRating={averageRating}
+            totalReviews={reviews.length}
+            serviceName={service.name}
+          />
         </div>
       </div>
     </div>

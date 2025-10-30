@@ -276,6 +276,13 @@ export const adminCatalogFetchers = {
   },
 
   async getCategoryById(categoryId: string): Promise<AdminCategory> {
+    if (USE_MOCK_DATA) {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      const category = mockCategories.find(c => c.id === categoryId);
+      if (!category) throw new Error('Category not found');
+      return category;
+    }
+
     const { data } = await apiClient.get<ApiResponse<AdminCategory>>(
       `${AdminRoutes.CATEGORIES}/${categoryId}`
     );

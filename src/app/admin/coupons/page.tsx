@@ -23,9 +23,12 @@ import { SearchFilter } from '@/components/admin/SearchFilter';
 import { Pagination } from '@/components/admin/Pagination';
 import { AdminRoutes } from '@/lib/constants/routes';
 import { StatCard } from '@/components/admin/StatCard';
+import { useConfirmation } from '@/hooks/useConfirmation';
+import { toast } from 'sonner';
 
 export default function CouponsPage() {
   const router = useRouter();
+  const deleteConfirmation = useConfirmation();
   const [search, setSearch] = useState('');
   const [filterValues, setFilterValues] = useState<Record<string, string>>({});
   const [page, setPage] = useState(1);
@@ -47,9 +50,19 @@ export default function CouponsPage() {
   const totalPages = couponsData?.totalPages || 0;
   const filteredCoupons = coupons; // Already filtered by API
 
-  const handleDelete = async (couponId: string) => {
-    if (confirm('Are you sure you want to delete this coupon?')) {
+  const handleDelete = async (couponId: string, couponCode: string) => {
+    const confirmed = await deleteConfirmation.confirm({
+      type: 'delete',
+      title: 'Delete Coupon?',
+      description: 'This will permanently delete this coupon. Customers will no longer be able to use this code. This action cannot be undone.',
+      confirmText: 'Yes, Delete Coupon',
+      cancelText: 'Cancel',
+      itemName: couponCode,
+    });
+
+    if (confirmed) {
       await deleteCouponMutation.mutateAsync(couponId);
+      toast.success(`Coupon "${couponCode}" has been deleted`);
     }
   };
 
@@ -251,6 +264,8 @@ export default function CouponsPage() {
                       variant="outline" 
                       size="sm"
                       className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20 h-9 px-3"
+                      onClick={() => handleDelete(coupon.id, coupon.code)}
+                      disabled={deleteCouponMutation.isPending}
                     >
                       <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                     </Button>
@@ -278,6 +293,9 @@ export default function CouponsPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Confirmation Dialog */}
+      <deleteConfirmation.ConfirmDialog />
     </div>
   );
 }

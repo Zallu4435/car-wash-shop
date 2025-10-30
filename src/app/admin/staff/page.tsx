@@ -25,10 +25,14 @@ import { EmptyState } from '@/components/shared/display/EmptyState';
 import { SearchFilter } from '@/components/admin/SearchFilter';
 import { StatCard } from '@/components/admin/StatCard';
 import { Pagination } from '@/components/admin/Pagination';
+import { useConfirmation } from '@/hooks/useConfirmation';
+import { toast } from 'sonner';
 import { AdminRoutes } from '@/lib/constants/routes';
 
 export default function StaffPage() {
   const router = useRouter();
+  const blockConfirmation = useConfirmation();
+  const deleteConfirmation = useConfirmation();
   const [search, setSearch] = useState('');
   const [filterValues, setFilterValues] = useState<Record<string, string>>({});
   const [page, setPage] = useState(1);
@@ -52,16 +56,38 @@ export default function StaffPage() {
   const totalPages = staffData?.totalPages || 0;
   const filteredStaff = staff; // Already filtered by API
 
-  const handleDelete = async (staffId: string) => {
-    if (confirm('Are you sure you want to delete this staff member?')) {
+  const handleDelete = async (staffId: string, staffName: string) => {
+    const confirmed = await deleteConfirmation.confirm({
+      type: 'delete',
+      title: 'Delete Staff Member?',
+      description: 'This will permanently delete this staff member and all associated data. This action cannot be undone.',
+      confirmText: 'Yes, Delete Staff',
+      cancelText: 'Cancel',
+      itemName: staffName,
+    });
+
+    if (confirmed) {
       await deleteStaffMutation.mutateAsync(staffId);
+      toast.success(`Staff member "${staffName}" has been deleted`);
     }
   };
 
-  const handleToggleStatus = async (staffId: string, currentStatus: string) => {
+  const handleToggleStatus = async (staffId: string, currentStatus: string, staffName: string) => {
     const newStatus = currentStatus === 'suspended' ? 'active' : 'suspended';
     const action = newStatus === 'suspended' ? 'suspend' : 'activate';
-    if (confirm(`Are you sure you want to ${action} this staff member?`)) {
+    
+    const confirmed = await blockConfirmation.confirm({
+      type: newStatus === 'suspended' ? 'block' : 'warning',
+      title: newStatus === 'suspended' ? 'Suspend Staff Member?' : 'Activate Staff Member?',
+      description: newStatus === 'suspended' 
+        ? 'This staff member will be suspended and unable to accept new jobs until reactivated.'
+        : 'This staff member will be reactivated and able to accept jobs again.',
+      confirmText: newStatus === 'suspended' ? 'Yes, Suspend Staff' : 'Yes, Activate Staff',
+      cancelText: 'Cancel',
+      itemName: staffName,
+    });
+
+    if (confirmed) {
       await updateStatusMutation.mutateAsync({ staffId, status: newStatus });
     }
   };
@@ -254,7 +280,7 @@ export default function StaffPage() {
                       variant="outline" 
                       size="sm"
                       className={member.status === 'suspended' ? 'text-green-600 hover:text-green-600 hover:bg-green-50 h-9 px-3' : 'text-orange-600 hover:text-orange-600 hover:bg-orange-50 h-9 px-3'}
-                      onClick={() => handleToggleStatus(member.id, member.status)}
+                      onClick={() => handleToggleStatus(member.id, member.status, member.name)}
                       disabled={updateStatusMutation.isPending}
                       title={member.status === 'suspended' ? 'Activate' : 'Suspend'}
                     >
@@ -268,7 +294,7 @@ export default function StaffPage() {
                       variant="outline" 
                       size="sm"
                       className="text-destructive hover:text-destructive hover:bg-destructive/10 h-9 px-3"
-                      onClick={() => handleDelete(member.id)}
+                      onClick={() => handleDelete(member.id, member.name)}
                       disabled={deleteStaffMutation.isPending}
                     >
                       <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -297,6 +323,10 @@ export default function StaffPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Confirmation Dialogs */}
+      <blockConfirmation.ConfirmDialog />
+      <deleteConfirmation.ConfirmDialog />
     </div>
   );
 }

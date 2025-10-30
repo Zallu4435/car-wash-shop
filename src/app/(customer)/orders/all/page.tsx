@@ -22,8 +22,12 @@ export default function AllOrdersPage() {
   const { data: ordersResponse, isLoading: ordersLoading } = useOrders();
   const { data: bookingsResponse, isLoading: bookingsLoading } = useBookings();
   
-  const isLoading = ordersLoading || bookingsLoading;
-  if (isLoading) { return <Loading text="Loading orders..." /> }
+  // State hooks MUST be called before any conditional returns
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [typeFilter, setTypeFilter] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   // Merge orders and bookings
   const productOrders = ordersResponse?.data || [];
@@ -42,13 +46,8 @@ export default function AllOrdersPage() {
   }, [productOrders, serviceBookings]);
 
   const orders = allOrders;
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [typeFilter, setTypeFilter] = useState('all');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [showMobileFilters, setShowMobileFilters] = useState(false);
-
-  // Prevent body scroll when modal is open
+  
+  // Prevent body scroll when modal is open - MUST be before conditional return
   useEffect(() => {
     if (showMobileFilters) {
       document.body.style.overflow = 'hidden';
@@ -59,6 +58,10 @@ export default function AllOrdersPage() {
       document.body.style.overflow = 'unset';
     };
   }, [showMobileFilters]);
+  
+  // Check loading state AFTER all hooks
+  const isLoading = ordersLoading || bookingsLoading;
+  if (isLoading) { return <Loading text="Loading orders..." /> }
 
   const filteredOrders = orders.filter(order => {
     const serviceName = order.serviceName?.toLowerCase() || '';

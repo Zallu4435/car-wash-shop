@@ -2,11 +2,13 @@
 
 import { use } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Edit, Package, IndianRupee, TrendingUp, ShoppingBag, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Edit, Package, IndianRupee, TrendingUp, ShoppingBag, AlertTriangle, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { useConfirmation } from '@/hooks/useConfirmation';
+import { toast } from 'sonner';
 
 const product = {
   id: 'prod_001',
@@ -27,8 +29,26 @@ const product = {
 export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
+  const deleteConfirmation = useConfirmation();
 
   const stockStatus = product.stock > 20 ? 'good' : product.stock > 10 ? 'low' : 'critical';
+
+  const handleDeleteClick = async () => {
+    const confirmed = await deleteConfirmation.confirm({
+      type: 'delete',
+      title: 'Delete Product?',
+      description: 'This will permanently delete this product and all associated data. Customers will no longer be able to purchase this product. This action cannot be undone.',
+      confirmText: 'Yes, Delete Product',
+      cancelText: 'Cancel',
+      itemName: product.name,
+    });
+
+    if (confirmed) {
+      // TODO: Implement delete product API
+      toast.success(`Product "${product.name}" has been deleted`);
+      router.push('/admin/products');
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -167,8 +187,38 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               )}
             </CardContent>
           </Card>
+
+          {/* Danger Zone */}
+          <Card className="border-2 border-red-200 dark:border-red-900 bg-red-50/50 dark:bg-red-950/20">
+            <CardHeader>
+              <CardTitle className="text-lg">Danger Zone</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Irreversible actions that affect this product
+              </p>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between p-4 bg-background rounded-lg border border-border">
+                <div>
+                  <p className="font-semibold text-foreground">Delete Product</p>
+                  <p className="text-sm text-muted-foreground">
+                    Permanently remove this product from the system
+                  </p>
+                </div>
+                <Button
+                  variant="destructive"
+                  onClick={handleDeleteClick}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
+
+      {/* Confirmation Dialog */}
+      <deleteConfirmation.ConfirmDialog />
     </div>
   );
 }

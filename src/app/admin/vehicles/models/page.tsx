@@ -9,6 +9,8 @@ import { Car, Bike, Plus, Edit, Trash2, Eye, Layers, ArrowLeft } from 'lucide-re
 import { SearchFilter } from '@/components/admin/SearchFilter';
 import { Pagination } from '@/components/admin/Pagination';
 import { EmptyState } from '@/components/shared/display/EmptyState';
+import { useConfirmation } from '@/hooks/useConfirmation';
+import { toast } from 'sonner';
 import { useVehicleModels } from '@/api/domains/admin-vehicles/queries';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
@@ -17,10 +19,27 @@ const iconMap = { Car, Bike };
 
 export default function VehicleModelsPage() {
   const router = useRouter();
+  const deleteConfirmation = useConfirmation();
   const [search, setSearch] = useState('');
   const [filterValues, setFilterValues] = useState<Record<string, string>>({});
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+
+  const handleDelete = async (modelId: string, modelName: string) => {
+    const confirmed = await deleteConfirmation.confirm({
+      type: 'delete',
+      title: 'Delete Vehicle Model?',
+      description: 'This will permanently delete this vehicle model. Customer vehicles using this model will need to be updated. This action cannot be undone.',
+      confirmText: 'Yes, Delete Model',
+      cancelText: 'Cancel',
+      itemName: modelName,
+    });
+
+    if (confirmed) {
+      // TODO: Implement delete model API
+      toast.success(`Vehicle model "${modelName}" has been deleted`);
+    }
+  };
 
   const { data: modelsData, isLoading, error, refetch } = useVehicleModels();
   const vehicles = modelsData || [];
@@ -210,10 +229,11 @@ export default function VehicleModelsPage() {
                         <Edit className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                         <span className="hidden xs:inline">Edit</span>
                       </Button>
-                      <Button
-                        variant="outline"
+                      <Button 
+                        variant="outline" 
                         size="sm"
                         className="text-destructive hover:text-destructive hover:bg-destructive/10 h-9 px-3"
+                        onClick={() => handleDelete(vehicle.id, vehicle.brandName + ' ' + vehicle.modelName)}
                       >
                         <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                       </Button>
@@ -241,6 +261,9 @@ export default function VehicleModelsPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Confirmation Dialog */}
+      <deleteConfirmation.ConfirmDialog />
     </div>
   );
 }

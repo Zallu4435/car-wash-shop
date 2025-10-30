@@ -22,9 +22,12 @@ import { EmptyState } from '@/components/shared/display/EmptyState';
 import { SearchFilter } from '@/components/admin/SearchFilter';
 import { Pagination } from '@/components/admin/Pagination';
 import { StatCard } from '@/components/admin/StatCard';
+import { useConfirmation } from '@/hooks/useConfirmation';
+import { toast } from 'sonner';
 
 export default function ProductsPage() {
   const router = useRouter();
+  const deleteConfirmation = useConfirmation();
   const [search, setSearch] = useState('');
   const [filterValues, setFilterValues] = useState<Record<string, string>>({});
   const [page, setPage] = useState(1);
@@ -48,9 +51,19 @@ export default function ProductsPage() {
   const totalPages = productsResponse?.totalPages || 0;
   const filteredProducts = products; // Already filtered by API
 
-  const handleDelete = async (productId: string) => {
-    if (confirm('Are you sure you want to delete this product?')) {
+  const handleDelete = async (productId: string, productName: string) => {
+    const confirmed = await deleteConfirmation.confirm({
+      type: 'delete',
+      title: 'Delete Product?',
+      description: 'This will permanently delete this product. Customers will no longer be able to purchase this product. This action cannot be undone.',
+      confirmText: 'Yes, Delete Product',
+      cancelText: 'Cancel',
+      itemName: productName,
+    });
+
+    if (confirmed) {
       await deleteProductMutation.mutateAsync(productId);
+      toast.success(`Product "${productName}" has been deleted`);
     }
   };
 
@@ -288,6 +301,8 @@ export default function ProductsPage() {
                           size="sm"
                           style={{ color: 'hsl(0 63% 55%)' }}
                           className="hover:bg-destructive/10 border-border h-9 px-3"
+                          onClick={() => handleDelete(product.id, product.name)}
+                          disabled={deleteProductMutation.isPending}
                         >
                           <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                         </Button>
@@ -316,6 +331,9 @@ export default function ProductsPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Confirmation Dialog */}
+      <deleteConfirmation.ConfirmDialog />
     </div>
   );
 }

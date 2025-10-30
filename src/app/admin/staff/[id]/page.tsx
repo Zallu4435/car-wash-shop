@@ -2,11 +2,13 @@
 
 import { use } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Edit, Phone, Mail, MapPin, Star, Briefcase, IndianRupee, Calendar } from 'lucide-react';
+import { ArrowLeft, Edit, Phone, Mail, MapPin, Star, Briefcase, IndianRupee, Calendar, Ban, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { useConfirmation } from '@/hooks/useConfirmation';
+import { toast } from 'sonner';
 
 const staffMember = {
   id: 'staff_001',
@@ -31,6 +33,41 @@ const recentJobs = [
 export default function StaffDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
+  const blockConfirmation = useConfirmation();
+  const deleteConfirmation = useConfirmation();
+
+  const handleBlockClick = async () => {
+    const confirmed = await blockConfirmation.confirm({
+      type: 'block',
+      title: 'Block Staff Member?',
+      description: 'This staff member will be blocked from accepting new jobs. They will not be able to access their account until unblocked.',
+      confirmText: 'Yes, Block Staff',
+      cancelText: 'Cancel',
+      itemName: staffMember.name,
+    });
+
+    if (confirmed) {
+      // TODO: Implement block staff API
+      toast.success(`Staff member "${staffMember.name}" has been blocked`);
+    }
+  };
+
+  const handleDeleteClick = async () => {
+    const confirmed = await deleteConfirmation.confirm({
+      type: 'delete',
+      title: 'Delete Staff Member?',
+      description: 'This will permanently delete this staff member and all associated data. This action cannot be undone.',
+      confirmText: 'Yes, Delete Staff',
+      cancelText: 'Cancel',
+      itemName: staffMember.name,
+    });
+
+    if (confirmed) {
+      // TODO: Implement delete staff API
+      toast.success(`Staff member "${staffMember.name}" has been deleted`);
+      router.push('/admin/staff');
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -183,8 +220,56 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
               </div>
             </CardContent>
           </Card>
+
+          {/* Danger Zone */}
+          <Card className="border-2 border-red-200 dark:border-red-900 bg-red-50/50 dark:bg-red-950/20">
+            <CardHeader>
+              <CardTitle className="text-lg">Danger Zone</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Irreversible actions that affect this staff member
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-center justify-between p-4 bg-background rounded-lg border border-border">
+                <div>
+                  <p className="font-semibold text-foreground">Block Staff Member</p>
+                  <p className="text-sm text-muted-foreground">
+                    Prevent staff from accepting new jobs
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={handleBlockClick}
+                  className="border-orange-300 dark:border-orange-800 text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950/30"
+                >
+                  <Ban className="mr-2 h-4 w-4" />
+                  Block
+                </Button>
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-background rounded-lg border border-border">
+                <div>
+                  <p className="font-semibold text-foreground">Delete Staff Member</p>
+                  <p className="text-sm text-muted-foreground">
+                    Permanently remove staff member from system
+                  </p>
+                </div>
+                <Button
+                  variant="destructive"
+                  onClick={handleDeleteClick}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
+
+      {/* Confirmation Dialogs */}
+      <blockConfirmation.ConfirmDialog />
+      <deleteConfirmation.ConfirmDialog />
     </div>
   );
 }

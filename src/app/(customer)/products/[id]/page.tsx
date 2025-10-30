@@ -10,6 +10,8 @@ import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { useProduct } from '@/api/domains/products/queries';
 import { useAddToCart } from '@/api/domains/cart/queries';
+import { useReviewsByProduct } from '@/api/domains/reviews/queries';
+import { ReviewsList } from '@/components/customer/ReviewsList';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
 import { useRouter } from 'next/navigation';
@@ -22,6 +24,12 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   // API calls
   const { data: product, isLoading: productLoading } = useProduct(id);
   const addToCartMutation = useAddToCart();
+  const { data: reviews = [] } = useReviewsByProduct(id);
+  
+  // Calculate average rating
+  const averageRating = reviews.length > 0 
+    ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length 
+    : 0;
 
   // Loading state
   if (productLoading) {
@@ -275,6 +283,16 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 </CardContent>
               </Card>
             </div>
+          </div>
+
+          {/* Customer Reviews Section - Full Width */}
+          <div className="mt-8 lg:mt-12">
+            <ReviewsList
+              reviews={reviews}
+              averageRating={averageRating}
+              totalReviews={reviews.length}
+              productName={product.name}
+            />
           </div>
         </div>
       </section>
