@@ -40,9 +40,14 @@ export default function SupportPage() {
                   <p className="text-xs sm:text-sm text-muted-foreground mb-4 sm:mb-6 leading-relaxed">
                     Had an issue with your service or order? Let us know and we'll resolve it quickly.
                   </p>
-                  <Button asChild className="w-full shadow-md h-9 sm:h-10">
-                    <Link href="/support/complaints" className="text-xs sm:text-sm">Submit Complaint</Link>
-                  </Button>
+                  <div className="flex flex-col gap-2">
+                    <Button asChild className="w-full shadow-md h-9 sm:h-10">
+                      <Link href="/support/complaints" className="text-xs sm:text-sm">Submit Complaint</Link>
+                    </Button>
+                    <Button asChild variant="outline" className="w-full h-9 sm:h-10">
+                      <Link href="/support/complaints/list" className="text-xs sm:text-sm">View My Complaints</Link>
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
 

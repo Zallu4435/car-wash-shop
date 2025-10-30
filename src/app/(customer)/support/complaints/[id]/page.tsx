@@ -7,32 +7,36 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { useTicket } from '@/api/domains/support/queries';
+import Loading from '@/components/shared/display/Loading';
+import Error from '@/components/shared/display/Error';
 
 export default function ComplaintDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
 
-  // Mock data - replace with actual API call
-  const complaint = {
-    id,
-    orderId: 'ORD001',
-    issueType: 'Service Quality',
-    subject: 'Incomplete Service',
-    description: 'The service was not completed as expected. Several areas were left unwashed and the interior cleaning was rushed. I would like a refund or a complimentary service to make up for this.',
-    status: 'under_review',
-    submittedAt: '2025-10-20T14:30:00Z',
-    updatedAt: '2025-10-21T10:15:00Z',
-    customerName: 'John Doe',
-    response: 'We are reviewing your complaint. Our team will contact you within 24 hours to resolve this issue.',
-  };
+  // Fetch ticket from API
+  const { data: complaint, isLoading, error, refetch } = useTicket(id);
+
+  // Loading state
+  if (isLoading) {
+    return <Loading text="Loading complaint details..." />;
+  }
+
+  // Error state
+  if (error || !complaint) {
+    return <Error message="Failed to load complaint details" onRetry={refetch} />;
+  }
 
   const getStatusConfig = (status: string) => {
     switch (status) {
-      case 'under_review':
-        return { label: 'Under Review', variant: 'secondary' as const, icon: Clock };
+      case 'in_progress':
+        return { label: 'In Progress', variant: 'secondary' as const, icon: Clock };
       case 'resolved':
         return { label: 'Resolved', variant: 'success' as const, icon: CheckCircle2 };
-      case 'pending':
-        return { label: 'Pending', variant: 'warning' as const, icon: AlertCircle };
+      case 'open':
+        return { label: 'Open', variant: 'warning' as const, icon: AlertCircle };
+      case 'closed':
+        return { label: 'Closed', variant: 'default' as const, icon: CheckCircle2 };
       default:
         return { label: 'Open', variant: 'default' as const, icon: AlertCircle };
     }
@@ -46,10 +50,10 @@ export default function ComplaintDetailPage({ params }: { params: Promise<{ id: 
       {/* Header */}
       <section className="bg-gradient-to-br from-primary/5 to-background border-b border-border">
         <div className="container-custom py-8">
-          <Link href="/support/complaints">
+          <Link href="/support/complaints/list">
             <Button variant="ghost" className="mb-4 hover:bg-muted">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Complaints
+              Back to My Complaints
             </Button>
           </Link>
           <div className="flex items-start justify-between gap-4">
@@ -58,7 +62,7 @@ export default function ComplaintDetailPage({ params }: { params: Promise<{ id: 
                 Complaint #{id}
               </h1>
               <p className="text-muted-foreground">
-                Submitted on {new Date(complaint.submittedAt).toLocaleDateString('en-IN', {
+                Submitted on {new Date(complaint.createdAt).toLocaleDateString('en-IN', {
                   day: 'numeric',
                   month: 'long',
                   year: 'numeric'
@@ -89,17 +93,19 @@ export default function ComplaintDetailPage({ params }: { params: Promise<{ id: 
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Order ID */}
+                  {/* Topic */}
                   <div className="space-y-2">
-                    <p className="text-sm font-medium text-muted-foreground">Order ID</p>
-                    <p className="text-base font-semibold text-foreground">{complaint.orderId}</p>
+                    <p className="text-sm font-medium text-muted-foreground">Topic</p>
+                    <Badge variant="outline" className="font-semibold capitalize">
+                      {complaint.topic}
+                    </Badge>
                   </div>
 
-                  {/* Issue Type */}
+                  {/* Priority */}
                   <div className="space-y-2">
-                    <p className="text-sm font-medium text-muted-foreground">Issue Type</p>
-                    <Badge variant="outline" className="font-semibold">
-                      {complaint.issueType}
+                    <p className="text-sm font-medium text-muted-foreground">Priority</p>
+                    <Badge variant="outline" className="font-semibold capitalize">
+                      {complaint.priority}
                     </Badge>
                   </div>
                 </div>
@@ -136,9 +142,15 @@ export default function ComplaintDetailPage({ params }: { params: Promise<{ id: 
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <p className="text-sm font-medium text-muted-foreground">Name</p>
-                  <p className="text-base font-semibold text-foreground">{complaint.customerName}</p>
+                  <p className="text-sm font-medium text-muted-foreground">User ID</p>
+                  <p className="text-base font-semibold text-foreground">{complaint.userId}</p>
                 </div>
+                {complaint.assignedTo && (
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-muted-foreground">Assigned To</p>
+                    <p className="text-base font-semibold text-foreground">{complaint.assignedTo}</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -167,7 +179,9 @@ export default function ComplaintDetailPage({ params }: { params: Promise<{ id: 
                         minute: '2-digit'
                       })}
                     </p>
-                    <p className="text-foreground leading-relaxed">{complaint.response}</p>
+                    <p className="text-foreground leading-relaxed">
+                      Status: {statusConfig.label}
+                    </p>
                   </div>
                 </div>
 
@@ -178,14 +192,14 @@ export default function ComplaintDetailPage({ params }: { params: Promise<{ id: 
                     <div className="space-y-1">
                       <p className="text-sm font-semibold text-foreground">Complaint Submitted</p>
                       <p className="text-xs text-muted-foreground">
-                        {new Date(complaint.submittedAt).toLocaleString('en-IN')}
+                        {new Date(complaint.createdAt).toLocaleString('en-IN')}
                       </p>
                     </div>
                   </div>
                   <div className="relative">
                     <div className="absolute -left-[1.4rem] top-1 w-4 h-4 rounded-full bg-muted border-4 border-background"></div>
                     <div className="space-y-1">
-                      <p className="text-sm font-semibold text-foreground">Under Review</p>
+                      <p className="text-sm font-semibold text-foreground capitalize">{statusConfig.label}</p>
                       <p className="text-xs text-muted-foreground">
                         {new Date(complaint.updatedAt).toLocaleString('en-IN')}
                       </p>
@@ -212,7 +226,7 @@ export default function ComplaintDetailPage({ params }: { params: Promise<{ id: 
                         <Link href="/support">Contact Support</Link>
                       </Button>
                       <Button variant="ghost" size="sm" asChild>
-                        <Link href="/support/complaints">View All Complaints</Link>
+                        <Link href="/support/complaints/list">View All Complaints</Link>
                       </Button>
                     </div>
                   </div>

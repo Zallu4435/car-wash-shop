@@ -195,6 +195,7 @@ export default function BookingPage() {
           totalSteps={7}
           onNext={handleNext}
           onPrev={handlePrev}
+          isBooking={createBookingMutation.isPending}
         >
           {/* Step 1: Service Type Selection */}
           {currentStep === 1 && (

@@ -15,7 +15,9 @@ import { useCreateTicket } from '@/api/domains/support/queries';
 
 export default function ComplaintsPage() {
   const router = useRouter();
+  const [complaintCategory, setComplaintCategory] = useState('');
   const [orderId, setOrderId] = useState('');
+  const [serviceId, setServiceId] = useState('');
   const [issueType, setIssueType] = useState('');
   const [subject, setSubject] = useState('');
   const [description, setDescription] = useState('');
@@ -26,15 +28,24 @@ export default function ComplaintsPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!orderId || !issueType || !subject || !description) {
+    if (!complaintCategory || !issueType || !subject || !description) {
       toast.error('Please fill in all required fields');
       return;
     }
 
+    // Build description based on category
+    let fullDescription = `Complaint Category: ${complaintCategory}\n`;
+    if (complaintCategory === 'order' && orderId) {
+      fullDescription += `Order ID: ${orderId}\n`;
+    } else if (complaintCategory === 'service' && serviceId) {
+      fullDescription += `Service ID: ${serviceId}\n`;
+    }
+    fullDescription += `Issue Type: ${issueType}\n\nDescription: ${description}`;
+
     createTicketMutation.mutate({
       topic: 'complaint',
       subject,
-      description: `Order ID: ${orderId}\nIssue Type: ${issueType}\n\nDescription: ${description}`,
+      description: fullDescription,
       priority: 'high',
     });
   };
@@ -79,22 +90,59 @@ export default function ComplaintsPage() {
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
-                  {/* Order ID */}
+                  {/* Complaint Category */}
                   <div className="space-y-1.5 sm:space-y-2">
                     <Label className="text-xs sm:text-sm">
-                      Order ID <span className="text-red-500">*</span>
+                      Complaint About <span className="text-red-500">*</span>
                     </Label>
-                    <Input 
-                      placeholder="e.g., ORD001" 
-                      required
-                      value={orderId}
-                      onChange={(e) => setOrderId(e.target.value)}
-                      className="h-10 sm:h-11 text-xs sm:text-sm"
-                    />
-                    <p className="text-[10px] sm:text-xs text-muted-foreground">
-                      You can find this in your order history
-                    </p>
+                    <Select required value={complaintCategory} onValueChange={setComplaintCategory}>
+                      <SelectTrigger className="h-10 sm:h-11">
+                        <SelectValue placeholder="What is your complaint about?" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="order">Order Issue</SelectItem>
+                        <SelectItem value="service">Service Issue</SelectItem>
+                        <SelectItem value="general">General Complaint</SelectItem>
+                        <SelectItem value="website">Website/App Issue</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
+
+                  {/* Order ID - Show only if order is selected */}
+                  {complaintCategory === 'order' && (
+                    <div className="space-y-1.5 sm:space-y-2">
+                      <Label className="text-xs sm:text-sm">
+                        Order ID <span className="text-xs text-muted-foreground">(Optional)</span>
+                      </Label>
+                      <Input 
+                        placeholder="e.g., ORD001" 
+                        value={orderId}
+                        onChange={(e) => setOrderId(e.target.value)}
+                        className="h-10 sm:h-11 text-xs sm:text-sm"
+                      />
+                      <p className="text-[10px] sm:text-xs text-muted-foreground">
+                        You can find this in your order history
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Service ID - Show only if service is selected */}
+                  {complaintCategory === 'service' && (
+                    <div className="space-y-1.5 sm:space-y-2">
+                      <Label className="text-xs sm:text-sm">
+                        Service Name <span className="text-xs text-muted-foreground">(Optional)</span>
+                      </Label>
+                      <Input 
+                        placeholder="e.g., Premium Car Wash" 
+                        value={serviceId}
+                        onChange={(e) => setServiceId(e.target.value)}
+                        className="h-10 sm:h-11 text-xs sm:text-sm"
+                      />
+                      <p className="text-[10px] sm:text-xs text-muted-foreground">
+                        Which service are you complaining about?
+                      </p>
+                    </div>
+                  )}
 
                   {/* Issue Type */}
                   <div className="space-y-1.5 sm:space-y-2">

@@ -54,7 +54,18 @@ export function middleware(request: NextRequest) {
   }
 
   // Protect customer-only routes (profile, orders, bookings, etc.)
-  const protectedCustomerRoutes = ['/profile', '/orders', '/bookings', '/cart', '/checkout'];
+  const protectedCustomerRoutes = [
+    '/profile', 
+    '/orders', 
+    '/bookings', 
+    '/cart', 
+    '/checkout', 
+    '/book',
+    '/feedback',
+    '/notifications',
+    '/payment',
+    '/support'
+  ];
   const isProtectedCustomerRoute = protectedCustomerRoutes.some(route => 
     pathname.startsWith(route)
   );

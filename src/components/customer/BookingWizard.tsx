@@ -11,6 +11,7 @@ interface BookingWizardProps {
   onNext: () => void;
   onPrev: () => void;
   children: React.ReactNode;
+  isBooking?: boolean;
 }
 
 const steps = [
@@ -22,7 +23,7 @@ const steps = [
   'Payment',
 ];
 
-export function BookingWizard({ currentStep, totalSteps, onNext, onPrev, children }: BookingWizardProps) {
+export function BookingWizard({ currentStep, totalSteps, onNext, onPrev, children, isBooking = false }: BookingWizardProps) {
   const progress = (currentStep / totalSteps) * 100;
 
   return (
@@ -106,8 +107,9 @@ export function BookingWizard({ currentStep, totalSteps, onNext, onPrev, childre
           onClick={onNext}
           size="lg"
           className="w-full sm:w-auto shadow-lg h-11 sm:h-12 text-sm sm:text-base"
+          disabled={isBooking}
         >
-          {currentStep === totalSteps ? 'Complete Booking' : 'Continue'}
+          {currentStep === totalSteps ? (isBooking ? 'Completing...' : 'Complete Booking') : 'Continue'}
         </Button>
       </div>
     </div>

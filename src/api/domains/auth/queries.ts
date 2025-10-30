@@ -50,8 +50,8 @@ export const useRegister = () => {
       }
       // Set lightweight cookies for middleware
       if (typeof document !== 'undefined') {
-        document.cookie = `auth_token=${data.token}; path=/`;
-        document.cookie = `auth_role=${data.user.role}; path=/`;
+        document.cookie = `auth_token=${data.token}; path=/; max-age=2592000; SameSite=Lax`;
+        document.cookie = `auth_role=${data.user.role}; path=/; max-age=2592000; SameSite=Lax`;
       }
       
       // Update cache with user data
@@ -79,8 +79,8 @@ export const useLogin = () => {
       }
       // Set lightweight cookies for middleware
       if (typeof document !== 'undefined') {
-        document.cookie = `auth_token=${data.token}; path=/`;
-        document.cookie = `auth_role=${data.user.role}; path=/`;
+        document.cookie = `auth_token=${data.token}; path=/; max-age=2592000; SameSite=Lax`;
+        document.cookie = `auth_role=${data.user.role}; path=/; max-age=2592000; SameSite=Lax`;
       }
       
       // Update cache with user data

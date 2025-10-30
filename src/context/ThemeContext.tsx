@@ -121,7 +121,14 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 export function useTheme() {
   const context = useContext(ThemeContext);
   if (context === undefined) {
-    throw new Error('useTheme must be used within a ThemeProvider');
+    // Return default values instead of throwing to prevent hydration errors
+    console.warn('useTheme: ThemeProvider not found, using default values');
+    return {
+      theme: 'light' as Theme,
+      resolvedTheme: 'light' as ResolvedTheme,
+      toggleTheme: () => {},
+      setTheme: () => {},
+    };
   }
   return context;
 }

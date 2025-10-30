@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { X, Car as CarIcon, Bike, Check, Plus } from 'lucide-react';
 import { useVehicleContext } from '@/context/VehicleContext';
 import { useRouter } from 'next/navigation';
@@ -20,6 +21,24 @@ export function VehicleSelectionModal({
 }: VehicleSelectionModalProps) {
   const { vehicles } = useVehicleContext();
   const router = useRouter();
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    const checkTheme = () => {
+      setIsDark(document.documentElement.classList.contains('dark'));
+    };
+    
+    checkTheme();
+    
+    // Watch for theme changes
+    const observer = new MutationObserver(checkTheme);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class'],
+    });
+    
+    return () => observer.disconnect();
+  }, []);
 
   const handleVehicleSelect = (vehicle: Vehicle) => {
     onSelect(vehicle);
@@ -43,9 +62,19 @@ export function VehicleSelectionModal({
 
       {/* Modal */}
       <div className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-full max-w-md">
-        <div className="bg-white dark:bg-card border-2 border-border rounded-2xl shadow-2xl max-h-[85vh] overflow-hidden flex flex-col mx-4">
+        <div 
+          className="border-2 border-border rounded-2xl shadow-2xl max-h-[85vh] overflow-hidden flex flex-col mx-4"
+          style={{
+            backgroundColor: isDark ? 'rgb(17, 24, 39)' : 'rgb(255, 255, 255)',
+          }}
+        >
           {/* Header */}
-          <div className="flex items-center justify-between px-5 py-4 border-b border-border bg-gray-50 dark:bg-muted/10">
+          <div 
+            className="flex items-center justify-between px-5 py-4 border-b border-border"
+            style={{
+              backgroundColor: isDark ? 'rgb(31, 41, 55)' : 'rgb(249, 250, 251)',
+            }}
+          >
             <div>
               <h2 className="text-lg font-bold text-foreground">My Vehicles</h2>
               <p className="text-xs text-muted-foreground mt-0.5">Select or add a vehicle</p>
@@ -59,7 +88,12 @@ export function VehicleSelectionModal({
           </div>
 
           {/* Content */}
-          <div className="flex-1 overflow-y-auto p-4 bg-gray-50 dark:bg-muted/5">
+          <div 
+            className="flex-1 overflow-y-auto p-4"
+            style={{
+              backgroundColor: isDark ? 'rgb(31, 41, 55)' : 'rgb(249, 250, 251)',
+            }}
+          >
             {vehicles.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center mb-4">
@@ -91,7 +125,7 @@ export function VehicleSelectionModal({
                       className={`w-full p-4 rounded-xl border-2 transition-all text-left group cursor-pointer ${
                         isSelected
                           ? 'border-primary bg-primary/10 shadow-sm'
-                          : 'border-border hover:border-primary/50 hover:bg-white dark:hover:bg-card hover:shadow-sm'
+                          : 'border-border hover:border-primary/50 hover:shadow-sm'
                       }`}
                     >
                       <div className="flex items-center gap-3">
@@ -148,7 +182,12 @@ export function VehicleSelectionModal({
 
           {/* Footer */}
           {vehicles.length > 0 && (
-            <div className="px-5 py-3 border-t border-border bg-gray-50 dark:bg-muted/10">
+            <div 
+              className="px-5 py-3 border-t border-border"
+              style={{
+                backgroundColor: isDark ? 'rgb(31, 41, 55)' : 'rgb(249, 250, 251)',
+              }}
+            >
               <p className="text-xs text-muted-foreground text-center">
                 {selectedVehicleId ? 'Tap a vehicle to switch' : 'Select a vehicle to continue'}
               </p>
