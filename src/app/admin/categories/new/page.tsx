@@ -27,7 +27,7 @@ export default function NewCategoryPage() {
     <div className="max-w-2xl space-y-6">
       {/* Header */}
       <div>
-        <Button variant="ghost" onClick={() => router.push('/admin/catalog/categories')}>
+        <Button variant="ghost" onClick={() => router.push('/admin/categories')} className="cursor-pointer">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Categories
         </Button>

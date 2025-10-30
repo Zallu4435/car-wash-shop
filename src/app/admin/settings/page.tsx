@@ -1,253 +1,542 @@
 'use client';
 
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
-import { Settings, Truck, CreditCard, IndianRupee, CheckCircle } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { 
+  User,
+  Lock,
+  Bell,
+  Mail,
+  Phone,
+  Camera,
+  Save,
+  ArrowLeft,
+  Shield,
+  Check
+} from 'lucide-react';
 import { toast } from 'sonner';
-import { useAdminSettings, useUpdateSettings } from '@/api/domains/admin-settings/queries';
+import { AdminRoutes } from '@/lib/constants/routes';
+import {
+  useAdminProfile,
+  useUpdateAdminProfile,
+  useChangePassword,
+  useNotificationPreferences,
+  useUpdateNotificationPreferences,
+  useUploadAvatar,
+} from '@/api/domains/admin-profile/queries';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
 
+type SettingsTab = 'profile' | 'security' | 'notifications';
+
 export default function SettingsPage() {
-  const { data: settings, isLoading, error, refetch } = useAdminSettings();
-  const updateSettingsMutation = useUpdateSettings();
-  const [codEnabled, setCodEnabled] = useState(settings?.codEnabled ?? true);
-  const [advancePaymentsEnabled, setAdvancePaymentsEnabled] = useState(settings?.advancePaymentsEnabled ?? true);
+  const router = useRouter();
+  const [activeTab, setActiveTab] = useState<SettingsTab>('profile');
 
-  if (isLoading) {
-    return <Loading text="Loading settings..." />;
-  }
+  // API hooks
+  const { data: profile, isLoading: profileLoading, error: profileError, refetch: refetchProfile } = useAdminProfile();
+  const { data: notificationPrefsData, isLoading: notifLoading, error: notifError } = useNotificationPreferences();
+  const updateProfileMutation = useUpdateAdminProfile();
+  const changePasswordMutation = useChangePassword();
+  const updateNotificationPrefsMutation = useUpdateNotificationPreferences();
+  const uploadAvatarMutation = useUploadAvatar();
 
-  if (error) {
-    return <Error message="Failed to load settings" details={(error as any)?.message} onRetry={() => refetch()} />;
-  }
+  // Profile state
+  const [profileData, setProfileData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    role: '',
+  });
 
-  const handleSave = async () => {
-    try {
-      await updateSettingsMutation.mutateAsync({ 
-        enableCOD: codEnabled,
-        enableOnline: advancePaymentsEnabled,
-        enableWallet: true,
-        codCharges: 0,
-        paymentGateway: 'razorpay',
-        codEnabled,
-        advancePaymentsEnabled
+  // Password state
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
+
+  // Notification preferences
+  const [notificationPrefs, setNotificationPrefs] = useState({
+    emailNotifications: true,
+    pushNotifications: true,
+    smsNotifications: false,
+  });
+
+  // Update profile data when loaded from API
+  useEffect(() => {
+    if (profile) {
+      setProfileData({
+        name: profile.name,
+        email: profile.email,
+        phone: profile.phone,
+        role: profile.role,
       });
-      toast.success('Settings saved successfully!');
-    } catch (err) {
-      toast.error('Failed to save settings');
+    }
+  }, [profile]);
+
+  // Update notification preferences when loaded from API
+  useEffect(() => {
+    if (notificationPrefsData) {
+      setNotificationPrefs(notificationPrefsData);
+    }
+  }, [notificationPrefsData]);
+
+  // Log any errors for debugging
+  useEffect(() => {
+    if (profileError) {
+      console.error('Profile error:', profileError);
+    }
+    if (notifError) {
+      console.error('Notification preferences error:', notifError);
+    }
+  }, [profileError, notifError]);
+
+  const tabs = [
+    { id: 'profile' as SettingsTab, label: 'Profile', icon: User, description: 'Manage your profile information' },
+    { id: 'security' as SettingsTab, label: 'Security', icon: Lock, description: 'Update your password and security settings' },
+    { id: 'notifications' as SettingsTab, label: 'Notifications', icon: Bell, description: 'Configure notification preferences' },
+  ];
+
+  const handleProfileUpdate = async () => {
+    try {
+      await updateProfileMutation.mutateAsync({
+        name: profileData.name,
+        email: profileData.email,
+        phone: profileData.phone,
+      });
+      toast.success('Profile updated successfully!');
+    } catch (error) {
+      toast.error('Failed to update profile');
     }
   };
 
+  const handlePasswordChange = async () => {
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      toast.error('Passwords do not match');
+      return;
+    }
+    if (passwordData.newPassword.length < 8) {
+      toast.error('Password must be at least 8 characters');
+      return;
+    }
+    try {
+      await changePasswordMutation.mutateAsync({
+        currentPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword,
+      });
+      toast.success('Password changed successfully!');
+      setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    } catch (error) {
+      toast.error('Failed to change password');
+    }
+  };
+
+  const handleNotificationSave = async () => {
+    try {
+      await updateNotificationPrefsMutation.mutateAsync(notificationPrefs);
+      toast.success('Preferences saved successfully!');
+    } catch (error) {
+      toast.error('Failed to save preferences');
+    }
+  };
+
+  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image size should be less than 5MB');
+      return;
+    }
+
+    try {
+      await uploadAvatarMutation.mutateAsync(file);
+      toast.success('Profile picture updated successfully!');
+    } catch (error) {
+      toast.error('Failed to upload profile picture');
+    }
+  };
+
+  // Loading state
+  if (profileLoading) {
+    return <Loading text="Loading settings..." />;
+  }
+
+  // Error state
+  if (profileError) {
+    return <Error message="Failed to load profile" details={(profileError as any)?.message} onRetry={() => refetchProfile()} />;
+  }
+
+  // If profile is not loaded yet, show loading
+  if (!profile) {
+    return <Loading text="Loading profile..." />;
+  }
+
   return (
-    <div className="space-y-4 sm:space-y-6 max-w-4xl">
+    <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">
-          Settings
-        </h1>
-        <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1">
-          Configure your application settings
-        </p>
+      <div className="space-y-4">
+        <div>
+          <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
+            Settings
+          </h1>
+          <p className="text-muted-foreground mt-1.5">
+            Manage your account settings and preferences
+          </p>
+        </div>
       </div>
 
-      {/* Delivery Settings */}
-      <Card className="border-2 border-border">
-        <CardHeader className="pb-3 sm:pb-4">
-          <div className="flex items-start sm:items-center gap-2 sm:gap-3">
-            <div 
-              className="p-1.5 sm:p-2 rounded-lg flex-shrink-0"
-              style={{ backgroundColor: 'hsl(221 83% 53% / 0.1)' }}
-            >
-              <Truck className="h-4 w-4 sm:h-5 sm:w-5" style={{ color: 'hsl(221 83% 53%)' }} />
-            </div>
-            <div className="min-w-0 flex-1">
-              <CardTitle className="text-base sm:text-lg">Delivery Settings</CardTitle>
-              <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1">
-                Configure delivery fees and options
-              </p>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4 sm:space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-            <div className="space-y-1.5 sm:space-y-2">
-              <Label htmlFor="codFee" className="text-xs sm:text-sm">COD Delivery Fee (₹)</Label>
-              <div className="relative">
-                <IndianRupee className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
-                <Input id="codFee" type="number" defaultValue="40" className="pl-9 sm:pl-10 h-10 sm:h-11 text-xs sm:text-sm" />
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* Sidebar Navigation */}
+        <aside className="lg:w-64 flex-shrink-0">
+          <nav className="space-y-1">
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`w-full flex items-start gap-3 px-4 py-3 rounded-lg transition-all text-left ${
+                    isActive
+                      ? 'bg-primary/10 text-primary border-l-2 border-primary'
+                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                  }`}
+                >
+                  <Icon className="h-5 w-5 mt-0.5 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm">{tab.label}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5 hidden sm:block">
+                      {tab.description}
+                    </p>
+                  </div>
+                  {isActive && (
+                    <Check className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                  )}
+                </button>
+              );
+            })}
+          </nav>
+        </aside>
+
+        {/* Main Content */}
+        <div className="flex-1 min-w-0">
+          {/* Profile Tab */}
+          {activeTab === 'profile' && (
+            <div className="space-y-6">
+              <Card className="border-2">
+                <CardHeader className="space-y-1">
+                  <CardTitle>Profile Information</CardTitle>
+                  <CardDescription>
+                    Update your account profile information and email address
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* Profile Picture Section */}
+                  <div className="flex items-center gap-6 p-4 bg-muted/30 rounded-lg">
+                    <div className="relative group">
+                      <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center ring-4 ring-background overflow-hidden">
+                        {profile?.avatar ? (
+                          <img src={profile.avatar} alt={profileData.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <User className="h-12 w-12 text-primary" />
+                        )}
+                      </div>
+                      <input
+                        type="file"
+                        id="avatar-upload"
+                        accept="image/*"
+                        onChange={handleAvatarUpload}
+                        className="hidden"
+                      />
+                      <label
+                        htmlFor="avatar-upload"
+                        className="absolute bottom-0 right-0 p-2 bg-primary text-primary-foreground rounded-full shadow-lg hover:bg-primary/90 transition-colors cursor-pointer"
+                      >
+                        <Camera className="h-4 w-4" />
+                      </label>
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-lg">{profileData.name}</h3>
+                      <p className="text-sm text-muted-foreground">{profileData.role}</p>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="mt-2 h-8 text-xs"
+                        onClick={() => document.getElementById('avatar-upload')?.click()}
+                        disabled={uploadAvatarMutation.isPending}
+                      >
+                        <Camera className="mr-2 h-3 w-3" />
+                        {uploadAvatarMutation.isPending ? 'Uploading...' : 'Change Photo'}
+                      </Button>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  {/* Form Fields */}
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="name" className="text-sm font-medium">
+                          Full Name
+                        </Label>
+                        <div className="relative">
+                          <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <Input
+                            id="name"
+                            value={profileData.name}
+                            onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
+                            className="pl-10 h-10"
+                            placeholder="Enter your full name"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="email" className="text-sm font-medium">
+                          Email Address
+                        </Label>
+                        <div className="relative">
+                          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <Input
+                            id="email"
+                            type="email"
+                            value={profileData.email}
+                            onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
+                            className="pl-10 h-10"
+                            placeholder="Enter your email"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="phone" className="text-sm font-medium">
+                          Phone Number
+                        </Label>
+                        <div className="relative">
+                          <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <Input
+                            id="phone"
+                            value={profileData.phone}
+                            onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
+                            className="pl-10 h-10"
+                            placeholder="Enter your phone number"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="role" className="text-sm font-medium">
+                          Role
+                        </Label>
+                        <div className="relative">
+                          <Shield className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <Input
+                            id="role"
+                            value={profileData.role}
+                            disabled
+                            className="pl-10 h-10 bg-muted cursor-not-allowed"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <div className="flex justify-end gap-3">
+                <Button variant="outline" onClick={() => router.push(AdminRoutes.DASHBOARD)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleProfileUpdate} disabled={updateProfileMutation.isPending}>
+                  <Save className="mr-2 h-4 w-4" />
+                  {updateProfileMutation.isPending ? 'Saving...' : 'Save Changes'}
+                </Button>
               </div>
-              <p className="text-[10px] sm:text-xs text-muted-foreground">
-                Fee charged for Cash on Delivery orders
-              </p>
             </div>
+          )}
 
-            <div className="space-y-1.5 sm:space-y-2">
-              <Label htmlFor="freeDelivery" className="text-xs sm:text-sm">Free Delivery Minimum (₹)</Label>
-              <div className="relative">
-                <IndianRupee className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
-                <Input id="freeDelivery" type="number" defaultValue="500" className="pl-9 sm:pl-10 h-10 sm:h-11 text-xs sm:text-sm" />
+          {/* Security Tab */}
+          {activeTab === 'security' && (
+            <div className="space-y-6">
+              <Card className="border-2">
+                <CardHeader className="space-y-1">
+                  <CardTitle>Change Password</CardTitle>
+                  <CardDescription>
+                    Ensure your account is using a strong password to stay secure
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="currentPassword" className="text-sm font-medium">
+                      Current Password
+                    </Label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="currentPassword"
+                        type="password"
+                        value={passwordData.currentPassword}
+                        onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                        className="pl-10 h-10"
+                        placeholder="Enter current password"
+                      />
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  <div className="space-y-2">
+                    <Label htmlFor="newPassword" className="text-sm font-medium">
+                      New Password
+                    </Label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="newPassword"
+                        type="password"
+                        value={passwordData.newPassword}
+                        onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                        className="pl-10 h-10"
+                        placeholder="Enter new password"
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                      <span className="w-1 h-1 rounded-full bg-muted-foreground"></span>
+                      Must be at least 8 characters long
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="confirmPassword" className="text-sm font-medium">
+                      Confirm New Password
+                    </Label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="confirmPassword"
+                        type="password"
+                        value={passwordData.confirmPassword}
+                        onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                        className="pl-10 h-10"
+                        placeholder="Confirm new password"
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <div className="flex justify-end gap-3">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' })}
+                >
+                  Cancel
+                </Button>
+                <Button onClick={handlePasswordChange} disabled={changePasswordMutation.isPending}>
+                  <Lock className="mr-2 h-4 w-4" />
+                  {changePasswordMutation.isPending ? 'Updating...' : 'Update Password'}
+                </Button>
               </div>
-              <p className="text-[10px] sm:text-xs text-muted-foreground">
-                Minimum order value for free delivery
-              </p>
             </div>
-          </div>
+          )}
 
-          <Separator />
+          {/* Notifications Tab */}
+          {activeTab === 'notifications' && (
+            <div className="space-y-6">
+              <Card className="border-2">
+                <CardHeader className="space-y-1">
+                  <CardTitle>Notification Preferences</CardTitle>
+                  <CardDescription>
+                    Manage how you receive notifications and updates
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors">
+                      <div className="space-y-0.5 flex-1">
+                        <div className="flex items-center gap-2">
+                          <Mail className="h-4 w-4 text-muted-foreground" />
+                          <Label className="font-medium text-sm cursor-pointer">Email Notifications</Label>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Receive email updates about your account activity
+                        </p>
+                      </div>
+                      <Switch
+                        checked={notificationPrefs.emailNotifications}
+                        onCheckedChange={(checked) => 
+                          setNotificationPrefs({ ...notificationPrefs, emailNotifications: checked })
+                        }
+                      />
+                    </div>
 
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 p-4 sm:p-5 bg-muted rounded-lg sm:rounded-xl border border-border">
-            <div className="flex-1 min-w-0">
-              <Label htmlFor="enableCod" className="cursor-pointer text-sm sm:text-base font-semibold block">
-                Enable COD
-              </Label>
-              <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1">
-                Allow customers to pay on delivery
-              </p>
-            </div>
-            <Switch 
-              id="enableCod" 
-              checked={codEnabled} 
-              onCheckedChange={setCodEnabled}
-              className="flex-shrink-0" 
-            />
-          </div>
-        </CardContent>
-      </Card>
+                    <div className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors">
+                      <div className="space-y-0.5 flex-1">
+                        <div className="flex items-center gap-2">
+                          <Bell className="h-4 w-4 text-muted-foreground" />
+                          <Label className="font-medium text-sm cursor-pointer">Push Notifications</Label>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Receive push notifications in your browser
+                        </p>
+                      </div>
+                      <Switch
+                        checked={notificationPrefs.pushNotifications}
+                        onCheckedChange={(checked) => 
+                          setNotificationPrefs({ ...notificationPrefs, pushNotifications: checked })
+                        }
+                      />
+                    </div>
 
-      {/* Payment Settings */}
-      <Card className="border-2 border-border">
-        <CardHeader className="pb-3 sm:pb-4">
-          <div className="flex items-start sm:items-center gap-2 sm:gap-3">
-            <div 
-              className="p-1.5 sm:p-2 rounded-lg flex-shrink-0"
-              style={{ backgroundColor: 'hsl(160 60% 45% / 0.1)' }}
-            >
-              <CreditCard className="h-4 w-4 sm:h-5 sm:w-5" style={{ color: 'hsl(160 60% 45%)' }} />
-            </div>
-            <div className="min-w-0 flex-1">
-              <CardTitle className="text-base sm:text-lg">Payment Settings</CardTitle>
-              <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1">
-                Configure payment options and rules
-              </p>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4 sm:space-y-6">
-          <div className="space-y-1.5 sm:space-y-2">
-            <Label htmlFor="advancePercent" className="text-xs sm:text-sm">
-              Advance Payment Percentage (%)
-            </Label>
-            <Input id="advancePercent" type="number" defaultValue="30" className="h-10 sm:h-11 text-xs sm:text-sm" />
-            <p className="text-[10px] sm:text-xs text-muted-foreground">
-              Percentage of total amount to be paid in advance
-            </p>
-          </div>
+                    <div className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors">
+                      <div className="space-y-0.5 flex-1">
+                        <div className="flex items-center gap-2">
+                          <Phone className="h-4 w-4 text-muted-foreground" />
+                          <Label className="font-medium text-sm cursor-pointer">SMS Notifications</Label>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Receive text messages for important updates
+                        </p>
+                      </div>
+                      <Switch
+                        checked={notificationPrefs.smsNotifications}
+                        onCheckedChange={(checked) => 
+                          setNotificationPrefs({ ...notificationPrefs, smsNotifications: checked })
+                        }
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
-          <Separator />
-
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 p-4 sm:p-5 bg-muted rounded-lg sm:rounded-xl border border-border">
-            <div className="flex-1 min-w-0">
-              <Label htmlFor="enableAdvance" className="cursor-pointer text-sm sm:text-base font-semibold block">
-                Allow Advance Payments
-              </Label>
-              <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1">
-                Let customers pay partial amount upfront
-              </p>
-            </div>
-            <Switch 
-              id="enableAdvance" 
-              checked={advancePaymentsEnabled} 
-              onCheckedChange={setAdvancePaymentsEnabled}
-              className="flex-shrink-0"
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Additional Settings Card */}
-      <Card className="border-2 border-border">
-        <CardHeader className="pb-3 sm:pb-4">
-          <div className="flex items-start sm:items-center gap-2 sm:gap-3">
-            <div 
-              className="p-1.5 sm:p-2 rounded-lg flex-shrink-0"
-              style={{ backgroundColor: 'hsl(280 65% 60% / 0.1)' }}
-            >
-              <Settings className="h-4 w-4 sm:h-5 sm:w-5" style={{ color: 'hsl(280 65% 60%)' }} />
-            </div>
-            <div className="min-w-0 flex-1">
-              <CardTitle className="text-base sm:text-lg">General Settings</CardTitle>
-              <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1">
-                Configure general application settings
-              </p>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4 sm:space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-            <div className="space-y-1.5 sm:space-y-2">
-              <Label htmlFor="taxRate" className="text-xs sm:text-sm">Tax Rate (%)</Label>
-              <Input id="taxRate" type="number" defaultValue="18" step="0.01" className="h-10 sm:h-11 text-xs sm:text-sm" />
-              <p className="text-[10px] sm:text-xs text-muted-foreground">
-                GST/Tax percentage for orders
-              </p>
-            </div>
-
-            <div className="space-y-1.5 sm:space-y-2">
-              <Label htmlFor="cancellationWindow" className="text-xs sm:text-sm">
-                Cancellation Window (hours)
-              </Label>
-              <Input id="cancellationWindow" type="number" defaultValue="24" className="h-10 sm:h-11 text-xs sm:text-sm" />
-              <p className="text-[10px] sm:text-xs text-muted-foreground">
-                Time limit for free cancellation
-              </p>
-            </div>
-          </div>
-
-          <Separator />
-
-          <div className="space-y-3 sm:space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 p-4 sm:p-5 bg-muted rounded-lg sm:rounded-xl border border-border">
-              <div className="flex-1 min-w-0">
-                <Label htmlFor="notifications" className="cursor-pointer text-sm sm:text-base font-semibold block">
-                  Email Notifications
-                </Label>
-                <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1">
-                  Send email updates to customers
-                </p>
+              <div className="flex justify-end gap-3">
+                <Button variant="outline" onClick={() => setActiveTab('profile')}>
+                  Cancel
+                </Button>
+                <Button onClick={handleNotificationSave} disabled={updateNotificationPrefsMutation.isPending}>
+                  <Save className="mr-2 h-4 w-4" />
+                  {updateNotificationPrefsMutation.isPending ? 'Saving...' : 'Save Preferences'}
+                </Button>
               </div>
-              <Switch id="notifications" defaultChecked className="flex-shrink-0" />
             </div>
-
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 p-4 sm:p-5 bg-muted rounded-lg sm:rounded-xl border border-border">
-              <div className="flex-1 min-w-0">
-                <Label htmlFor="autoConfirm" className="cursor-pointer text-sm sm:text-base font-semibold block">
-                  Auto-confirm Bookings
-                </Label>
-                <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1">
-                  Automatically confirm new bookings
-                </p>
-              </div>
-              <Switch id="autoConfirm" defaultChecked className="flex-shrink-0" />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Save Button */}
-      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pb-4 sm:pb-6">
-        <Button onClick={handleSave} size="lg" className="shadow-lg h-11 sm:h-12 text-sm sm:text-base w-full sm:w-auto">
-          <CheckCircle className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-          Save Settings
-        </Button>
-        <Button variant="outline" size="lg" className="h-11 sm:h-12 text-sm sm:text-base w-full sm:w-auto">
-          Reset to Defaults
-        </Button>
+          )}
+        </div>
       </div>
     </div>
   );

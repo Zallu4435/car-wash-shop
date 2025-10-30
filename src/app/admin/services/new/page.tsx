@@ -26,7 +26,7 @@ export default function NewServicePage() {
     <div className="max-w-2xl space-y-6">
       {/* Header */}
       <div>
-        <Button variant="ghost" onClick={() => router.push('/admin/services')}>
+        <Button variant="ghost" onClick={() => router.push('/admin/services')} className="cursor-pointer">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Services
         </Button>

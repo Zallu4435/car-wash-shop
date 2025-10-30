@@ -25,7 +25,7 @@ export default function NewCampaignPage() {
     <div className="max-w-2xl space-y-6">
       {/* Header */}
       <div>
-        <Button variant="ghost" onClick={() => router.push(AdminRoutes.CAMPAIGNS)}>
+        <Button variant="ghost" onClick={() => router.push(AdminRoutes.CAMPAIGNS)} className="cursor-pointer">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Campaigns
         </Button>

@@ -148,7 +148,7 @@ export default function BannersPage() {
               }
             />
           ) : (
-            <div className="space-y-2.5 sm:space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               {filteredBanners.map((banner) => {
               const ctr = banner.clicks && banner.impressions ? ((banner.clicks / banner.impressions) * 100).toFixed(2) : '0.00';
               return (

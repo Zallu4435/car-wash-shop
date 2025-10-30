@@ -39,7 +39,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <Button variant="ghost" onClick={() => router.push('/admin/customers')}>
+        <Button variant="ghost" onClick={() => router.push('/admin/customers')} className="cursor-pointer">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Customers
         </Button>

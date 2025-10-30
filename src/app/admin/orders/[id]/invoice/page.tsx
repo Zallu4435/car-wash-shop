@@ -49,7 +49,7 @@ export default function AdminOrderInvoicePage({ params }: { params: Promise<{ id
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       {/* Header Actions */}
       <div className="flex items-center justify-between mb-6">
-        <Button variant="ghost" onClick={() => router.push(`/admin/orders/${id}`)}>
+        <Button variant="ghost" onClick={() => router.push(`/admin/orders/${id}`)} className="cursor-pointer">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Order
         </Button>

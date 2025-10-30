@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { 
@@ -22,9 +23,11 @@ import {
   Folder,
   Star,
   X,
-  CreditCard
+  CreditCard,
+  Search
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils/cn';
 import { toast } from 'sonner';
 import { AdminRoutes } from '@/lib/constants/routes';
@@ -94,11 +97,20 @@ interface AdminSidebarProps {
 export function AdminSidebar({ sidebarOpen, setSidebarOpen }: AdminSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState('');
 
   const handleLogout = () => {
     toast.success('Logged out successfully');
     router.push('/auth/login');
   };
+
+  // Filter navigation items based on search
+  const filteredGroups = navigationGroups.map(group => ({
+    ...group,
+    items: group.items.filter(item =>
+      item.name.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+  })).filter(group => group.items.length > 0);
 
   return (
     <>
@@ -144,9 +156,30 @@ export function AdminSidebar({ sidebarOpen, setSidebarOpen }: AdminSidebarProps)
             </Button>
           </div>
 
+          {/* Search Bar */}
+          <div className="px-3 sm:px-4 py-2 sm:py-3 border-b border-border">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search menu..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 h-9 text-sm"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+          </div>
+
           {/* Mobile Navigation with Custom Scrollbar */}
           <nav className="flex-1 px-3 sm:px-4 py-3 sm:py-4 overflow-y-auto space-y-4 sm:space-y-6 scrollbar-thin">
-            {navigationGroups.map((group) => (
+            {filteredGroups.map((group) => (
               <div key={group.title}>
                 <p className="px-2 sm:px-3 mb-1.5 sm:mb-2 text-[10px] sm:text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   {group.title}
@@ -212,9 +245,30 @@ export function AdminSidebar({ sidebarOpen, setSidebarOpen }: AdminSidebarProps)
             </div>
           </div>
 
+          {/* Search Bar */}
+          <div className="px-4 py-3 border-b border-border">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search menu..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 h-10 text-sm"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+          </div>
+
           {/* Desktop Navigation with Custom Scrollbar */}
           <nav className="flex-1 px-4 py-4 overflow-y-auto space-y-6 scrollbar-thin">
-            {navigationGroups.map((group) => (
+            {filteredGroups.map((group) => (
               <div key={group.title}>
                 <p className="px-3 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   {group.title}

@@ -25,7 +25,7 @@ export default function NewCouponPage() {
     <div className="max-w-2xl space-y-6">
       {/* Header */}
       <div>
-        <Button variant="ghost" onClick={() => router.push('/admin/coupons')}>
+        <Button variant="ghost" onClick={() => router.push('/admin/coupons')} className="cursor-pointer">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Coupons
         </Button>

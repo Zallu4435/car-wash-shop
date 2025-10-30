@@ -39,7 +39,7 @@ export default function NewPosterPage() {
     <div className="max-w-2xl space-y-6">
       {/* Header */}
       <div>
-        <Button variant="ghost" onClick={() => router.push(AdminRoutes.POSTERS)}>
+        <Button variant="ghost" onClick={() => router.push(AdminRoutes.POSTERS)} className="cursor-pointer">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Posters
         </Button>

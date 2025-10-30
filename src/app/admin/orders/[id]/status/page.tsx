@@ -38,7 +38,7 @@ export default function OrderStatusPage({ params }: { params: Promise<{ id: stri
     <div className="max-w-2xl mx-auto space-y-6">
       {/* Header */}
       <div>
-        <Button variant="ghost" onClick={() => router.push(`/admin/orders/${id}`)}>
+        <Button variant="ghost" onClick={() => router.push(`/admin/orders/${id}`)} className="cursor-pointer">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Order
         </Button>

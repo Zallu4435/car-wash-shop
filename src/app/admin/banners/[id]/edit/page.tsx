@@ -4,6 +4,7 @@ import { use } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
+import { AdminRoutes } from '@/lib/constants/routes';
 import { Button } from '@/components/ui/button';
 import { FormBuilder } from '@/components/shared/crud/FormBuilder';
 import { z } from 'zod';
@@ -49,12 +50,12 @@ export default function EditBannerPage({ params }: { params: Promise<{ id: strin
 
   const handleSubmit = (data: any) => {
     toast.success('Banner updated!');
-    router.push('/marketing/banners');
+    router.push(AdminRoutes.BANNERS);
   };
 
   return (
     <div className="max-w-2xl">
-      <Link href="/marketing/banners">
+      <Link href={AdminRoutes.BANNERS}>
         <Button variant="ghost" className="mb-6">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back

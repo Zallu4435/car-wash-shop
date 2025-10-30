@@ -82,7 +82,10 @@ export default function AdminDashboardPage() {
             Welcome back! Here's what's happening today
           </p>
         </div>
-        <Button className="w-full sm:w-auto h-9 sm:h-10 text-xs sm:text-sm">
+        <Button 
+          className="w-full sm:w-auto h-9 sm:h-10 text-xs sm:text-sm"
+          onClick={() => router.push('/admin/reports')}
+        >
           <TrendingUp className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           View Reports
         </Button>

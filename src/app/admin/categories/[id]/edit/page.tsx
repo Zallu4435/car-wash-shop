@@ -32,14 +32,14 @@ export default function EditCategoryPage({ params }: { params: Promise<{ id: str
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     toast.success('Category updated successfully!');
-    router.push('/admin/catalog/categories');
+    router.push('/admin/categories');
   };
 
   return (
     <div className="max-w-2xl space-y-6">
       {/* Header */}
       <div>
-        <Button variant="ghost" onClick={() => router.push('/admin/catalog/categories')}>
+        <Button variant="ghost" onClick={() => router.push('/admin/categories')} className="cursor-pointer">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Categories
         </Button>
@@ -138,12 +138,12 @@ export default function EditCategoryPage({ params }: { params: Promise<{ id: str
               <Button 
                 type="button" 
                 variant="outline" 
-                className="flex-1"
+                className="flex-1 cursor-pointer"
                 onClick={() => router.push('/admin/categories')}
               >
                 Cancel
               </Button>
-              <Button type="submit" className="flex-1 shadow-lg">
+              <Button type="submit" className="flex-1 shadow-lg cursor-pointer">
                 <Save className="mr-2 h-5 w-5" />
                 Update Category
               </Button>

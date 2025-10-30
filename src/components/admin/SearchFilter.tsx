@@ -107,7 +107,7 @@ export function SearchFilter({
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
             >
               <X className="h-4 w-4" />
             </button>
@@ -143,7 +143,7 @@ export function SearchFilter({
                       variant="ghost"
                       size="sm"
                       onClick={clearAllFilters}
-                      className="h-auto px-2 py-1 text-xs text-muted-foreground hover:text-foreground"
+                      className="h-auto px-2 py-1 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
                     >
                       Clear all
                     </Button>
@@ -291,7 +291,7 @@ export function SearchFilter({
                 <span>{optionLabel}</span>
                 <button
                   onClick={() => clearFilter(key)}
-                  className="ml-0.5 hover:bg-muted rounded-full p-0.5 transition-colors"
+                  className="ml-0.5 hover:bg-muted rounded-full p-0.5 transition-colors cursor-pointer"
                 >
                   <X className="h-3 w-3" />
                 </button>

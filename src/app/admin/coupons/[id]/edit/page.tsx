@@ -44,7 +44,7 @@ export default function EditCouponPage({ params }: { params: Promise<{ id: strin
     <div className="max-w-2xl space-y-6">
       {/* Header */}
       <div>
-        <Button variant="ghost" onClick={() => router.push(`/admin/coupons/${id}`)}>
+        <Button variant="ghost" onClick={() => router.push(`/admin/coupons/${id}`)} className="cursor-pointer">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Coupon Details
         </Button>

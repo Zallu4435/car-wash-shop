@@ -34,7 +34,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <Button variant="ghost" onClick={() => router.push('/admin/products')}>
+        <Button variant="ghost" onClick={() => router.push('/admin/products')} className="cursor-pointer">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Products
         </Button>

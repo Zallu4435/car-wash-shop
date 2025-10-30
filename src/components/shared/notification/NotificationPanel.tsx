@@ -26,6 +26,7 @@ interface NotificationPanelProps {
   isOpen: boolean;
   onClose: () => void;
   isAuthenticated?: boolean;
+  isAdmin?: boolean;
 }
 
 // Icon mapping for notification types
@@ -61,12 +62,31 @@ const getRelativeTime = (dateString: string) => {
   return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
 };
 
-export function NotificationPanel({ isOpen, onClose, isAuthenticated = false }: NotificationPanelProps) {
+export function NotificationPanel({ isOpen, onClose, isAuthenticated = false, isAdmin = false }: NotificationPanelProps) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'unread' | 'all'>('unread');
   const [mounted, setMounted] = useState(false);
+  const [isDark, setIsDark] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const observerTarget = useRef<HTMLDivElement>(null);
+  
+  // Check if dark mode is active
+  useEffect(() => {
+    const checkDarkMode = () => {
+      setIsDark(document.documentElement.classList.contains('dark'));
+    };
+    
+    checkDarkMode();
+    
+    // Watch for theme changes
+    const observer = new MutationObserver(checkDarkMode);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+    
+    return () => observer.disconnect();
+  }, []);
   
   // Fetch notifications with infinite scrolling - only if authenticated
   const { 
@@ -174,9 +194,9 @@ export function NotificationPanel({ isOpen, onClose, isAuthenticated = false }: 
       />
 
       {/* Notification Panel */}
-      <Card className="fixed right-0 top-0 lg:top-16 lg:right-4 w-full lg:w-96 h-full lg:h-auto lg:min-h-[400px] lg:max-h-[85vh] rounded-none lg:rounded-lg shadow-2xl border-0 lg:border-2 lg:border-border z-[1001] overflow-hidden flex flex-col bg-white dark:bg-card">
+      <Card className={`fixed right-0 top-0 lg:top-16 lg:right-4 w-full lg:w-96 h-full lg:h-auto lg:min-h-[400px] lg:max-h-[85vh] rounded-none lg:rounded-lg shadow-2xl border-0 lg:border-2 lg:border-border z-[1001] overflow-hidden flex flex-col ${isDark ? '!bg-gray-900' : '!bg-white'}`}>
         {/* Header */}
-        <div className="p-4 border-b border-border flex-shrink-0 bg-gray-50 dark:bg-muted/50">
+        <div className={`p-4 border-b border-border flex-shrink-0 ${isDark ? 'bg-gray-800' : 'bg-gray-50'}`}>
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <div className="p-1.5 bg-primary/10 rounded-lg">
@@ -250,7 +270,7 @@ export function NotificationPanel({ isOpen, onClose, isAuthenticated = false }: 
               size="sm"
               className="text-xs px-3 h-8"
               onClick={() => {
-                router.push('/notifications');
+                router.push(isAdmin ? '/admin/notifications' : '/notifications');
                 onClose();
               }}
             >
@@ -261,7 +281,7 @@ export function NotificationPanel({ isOpen, onClose, isAuthenticated = false }: 
         </div>
 
         {/* Notifications List */}
-        <div ref={scrollContainerRef} className="overflow-y-auto flex-1 scrollbar-thin bg-white dark:bg-card">
+        <div ref={scrollContainerRef} className={`overflow-y-auto flex-1 scrollbar-thin ${isDark ? '!bg-gray-900' : '!bg-white'}`}>
           {!isAuthenticated ? (
             <div className="flex flex-col items-center justify-center py-16 px-4">
               <div className="p-4 bg-muted rounded-full mb-4">
@@ -374,13 +394,13 @@ export function NotificationPanel({ isOpen, onClose, isAuthenticated = false }: 
         </div>
 
         {/* Footer */}
-        <div className="p-3 border-t border-border bg-gray-50 dark:bg-muted/50 flex-shrink-0">
+        <div className={`p-3 border-t border-border flex-shrink-0 ${isDark ? 'bg-gray-800' : 'bg-gray-50'}`}>
           <Button
             variant="ghost"
             size="sm"
             className="w-full text-xs h-9 font-medium"
             onClick={() => {
-              router.push('/notifications');
+              router.push(isAdmin ? '/admin/notifications' : '/notifications');
               onClose();
             }}
           >

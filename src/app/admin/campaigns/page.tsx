@@ -164,8 +164,8 @@ export default function CampaignsPage() {
               }
             />
           ) : (
-            <div className="space-y-2.5 sm:space-y-3">
-              {filteredCampaigns.map((campaign) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+              {filteredCampaigns.map((campaign: any) => (
               <Card key={campaign.id} className="border-2 hover:shadow-lg transition-all">
                 <CardContent className="p-4 sm:p-5">
                   <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4 mb-3 sm:mb-4">

@@ -27,7 +27,7 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
     <div className="max-w-2xl space-y-6">
       {/* Header */}
       <div>
-        <Button variant="ghost" onClick={() => router.push(`/admin/staff/${id}`)}>
+        <Button variant="ghost" onClick={() => router.push(`/admin/staff/${id}`)} className="cursor-pointer">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Staff Details
         </Button>
