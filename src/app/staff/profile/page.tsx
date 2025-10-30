@@ -7,12 +7,14 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { useStaffProfile, useStaffLogout } from '@/api/domains/staff/staff-index';
+import { useStaffProfile, useStaffLogout } from '@/api/domains/staff';
+import Loading from '@/components/shared/display/Loading';
+import Error from '@/components/shared/display/Error';
 import { StaffRoutes } from '@/lib/constants/routes';
 
 export default function StaffProfilePage() {
   const router = useRouter();
-  const { data: profile } = useStaffProfile();
+  const { data: profile, isLoading, error } = useStaffProfile();
   const logoutMutation = useStaffLogout();
 
   const handleLogout = () => {
@@ -20,6 +22,14 @@ export default function StaffProfilePage() {
       onSuccess: () => toast.success('Logged out successfully'),
     });
   };
+
+  if (isLoading) {
+    return <Loading text="Loading profile..." />;
+  }
+
+  if (error) {
+    return <Error message="Failed to load profile" details={error?.message} />;
+  }
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -36,7 +46,7 @@ export default function StaffProfilePage() {
         <Button 
           variant="outline" 
           onClick={() => router.push(`${StaffRoutes.PROFILE}/edit`)}
-          className="w-full sm:w-auto h-9 sm:h-10 text-xs sm:text-sm"
+          className="w-full sm:w-auto h-9 sm:h-10 text-xs sm:text-sm cursor-pointer"
         >
           <Edit className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           <span className="sm:inline">Edit Profile</span>
@@ -141,21 +151,33 @@ export default function StaffProfilePage() {
               <CardTitle className="text-base sm:text-lg">Quick Actions</CardTitle>
             </CardHeader>
             <CardContent className="grid grid-cols-2 gap-2 sm:gap-3">
-              <Button variant="outline" className="h-auto py-3 sm:py-4 flex-col gap-1.5 sm:gap-2">
+              <Button 
+                variant="outline" 
+                className="h-auto py-3 sm:py-4 flex-col gap-1.5 sm:gap-2 cursor-pointer"
+                onClick={() => router.push(StaffRoutes.JOBS)}
+              >
                 <Briefcase className="h-4 w-4 sm:h-5 sm:w-5" />
                 <span className="text-xs sm:text-sm">View Jobs</span>
               </Button>
-              <Button variant="outline" className="h-auto py-3 sm:py-4 flex-col gap-1.5 sm:gap-2">
+              <Button 
+                variant="outline" 
+                className="h-auto py-3 sm:py-4 flex-col gap-1.5 sm:gap-2 cursor-pointer"
+                onClick={() => router.push(StaffRoutes.PAYMENTS)}
+              >
                 <IndianRupee className="h-4 w-4 sm:h-5 sm:w-5" />
                 <span className="text-xs sm:text-sm">Payments</span>
               </Button>
-              <Button variant="outline" className="h-auto py-3 sm:py-4 flex-col gap-1.5 sm:gap-2">
+              <Button 
+                variant="outline" 
+                className="h-auto py-3 sm:py-4 flex-col gap-1.5 sm:gap-2 cursor-pointer"
+                onClick={() => router.push(StaffRoutes.HISTORY)}
+              >
                 <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5" />
                 <span className="text-xs sm:text-sm">History</span>
               </Button>
               <Button 
                 variant="outline" 
-                className="h-auto py-3 sm:py-4 flex-col gap-1.5 sm:gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+                className="h-auto py-3 sm:py-4 flex-col gap-1.5 sm:gap-2 text-destructive hover:text-destructive hover:bg-destructive/10 cursor-pointer"
                 onClick={handleLogout}
               >
                 <LogOut className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -217,9 +239,11 @@ export default function StaffProfilePage() {
                     ))}
                   </div>
                 </div>
-                <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">
-                  Based on 156 reviews
-                </p>
+                {profile?.totalReviews && (
+                  <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">
+                    Based on {profile.totalReviews} reviews
+                  </p>
+                )}
               </div>
 
               {/* Total Earnings */}
@@ -242,46 +266,28 @@ export default function StaffProfilePage() {
           </Card>
 
           {/* Achievements */}
-          <Card className="border-2 border-border">
-            <CardHeader className="pb-3 sm:pb-4">
-              <CardTitle className="text-base sm:text-lg">Achievements</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2.5 sm:space-y-3">
-              <div className="flex items-center gap-2.5 sm:gap-3 p-2.5 sm:p-3 bg-muted rounded-lg sm:rounded-xl">
-                <div className="text-xl sm:text-2xl flex-shrink-0">🏆</div>
-                <div className="min-w-0 flex-1">
-                  <p className="font-semibold text-xs sm:text-sm text-foreground truncate">
-                    Top Performer
-                  </p>
-                  <p className="text-[10px] sm:text-xs text-muted-foreground truncate">
-                    October 2025
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2.5 sm:gap-3 p-2.5 sm:p-3 bg-muted rounded-lg sm:rounded-xl">
-                <div className="text-xl sm:text-2xl flex-shrink-0">⭐</div>
-                <div className="min-w-0 flex-1">
-                  <p className="font-semibold text-xs sm:text-sm text-foreground truncate">
-                    5-Star Expert
-                  </p>
-                  <p className="text-[10px] sm:text-xs text-muted-foreground truncate">
-                    Excellent ratings
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2.5 sm:gap-3 p-2.5 sm:p-3 bg-muted rounded-lg sm:rounded-xl">
-                <div className="text-xl sm:text-2xl flex-shrink-0">🎯</div>
-                <div className="min-w-0 flex-1">
-                  <p className="font-semibold text-xs sm:text-sm text-foreground truncate">
-                    100+ Jobs
-                  </p>
-                  <p className="text-[10px] sm:text-xs text-muted-foreground truncate">
-                    Milestone reached
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          {profile?.achievements && profile.achievements.length > 0 && (
+            <Card className="border-2 border-border">
+              <CardHeader className="pb-3 sm:pb-4">
+                <CardTitle className="text-base sm:text-lg">Achievements</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2.5 sm:space-y-3">
+                {profile.achievements.map((achievement, index) => (
+                  <div key={index} className="flex items-center gap-2.5 sm:gap-3 p-2.5 sm:p-3 bg-muted rounded-lg sm:rounded-xl">
+                    <div className="text-xl sm:text-2xl flex-shrink-0">{achievement.icon}</div>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-semibold text-xs sm:text-sm text-foreground truncate">
+                        {achievement.label}
+                      </p>
+                      <p className="text-[10px] sm:text-xs text-muted-foreground truncate">
+                        {achievement.value}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </div>

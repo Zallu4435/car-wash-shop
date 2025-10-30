@@ -4,7 +4,6 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
 import { 
   Car, 
   Plus, 
@@ -21,22 +20,32 @@ import { useAdminServiceList, useDeleteService } from '@/api/domains/admin-catal
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
 import { EmptyState } from '@/components/shared/display/EmptyState';
+import { SearchFilter } from '@/components/admin/SearchFilter';
+import { Pagination } from '@/components/admin/Pagination';
 
 export default function ServicesPage() {
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState('');
-  const { data: servicesData, isLoading, error, refetch } = useAdminServiceList();
+  const [search, setSearch] = useState('');
+  const [filterValues, setFilterValues] = useState<Record<string, string>>({});
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  // Combine search and filters for API
+  const filters = useMemo(() => ({
+    search: search || undefined,
+    status: filterValues.status || undefined,
+    category: filterValues.category || undefined,
+    page,
+    pageSize,
+  }), [search, filterValues, page, pageSize]);
+
+  const { data: servicesResponse, isLoading, error, refetch } = useAdminServiceList(filters);
   const deleteServiceMutation = useDeleteService();
 
-  const services = servicesData || [];
-
-  const filteredServices = useMemo(() => 
-    services.filter(s => 
-      s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      s.category.toLowerCase().includes(searchQuery.toLowerCase())
-    ),
-    [services, searchQuery]
-  );
+  const services = servicesResponse?.data || [];
+  const totalItems = servicesResponse?.total || 0;
+  const totalPages = servicesResponse?.totalPages || 0;
+  const filteredServices = services; // Already filtered by API
 
   const activeServices = services.filter(s => s.status === 'active').length;
   const totalRevenue = services.reduce((sum, s) => sum + s.price, 0);
@@ -135,25 +144,44 @@ export default function ServicesPage() {
           </div>
         </CardHeader>
         <CardContent>
-          {/* Search Bar */}
-          <div className="relative mb-4 sm:mb-6">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search services..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 sm:pl-10 h-10 sm:h-11 text-xs sm:text-sm"
-            />
-          </div>
+          {/* Search and Filter */}
+          <SearchFilter
+            searchPlaceholder="Search services by name or category..."
+            onSearchChange={setSearch}
+            filterOptions={[
+              {
+                label: 'Status',
+                value: 'status',
+                options: [
+                  { label: 'All Statuses', value: '' },
+                  { label: 'Active', value: 'active' },
+                  { label: 'Inactive', value: 'inactive' },
+                ],
+              },
+              {
+                label: 'Category',
+                value: 'category',
+                options: [
+                  { label: 'All Categories', value: '' },
+                  { label: 'Exterior Wash', value: 'exterior-wash' },
+                  { label: 'Interior Cleaning', value: 'interior-cleaning' },
+                  { label: 'Detailing', value: 'detailing' },
+                  { label: 'Polish & Wax', value: 'polish-wax' },
+                ],
+              },
+            ]}
+            onFilterChange={setFilterValues}
+            className="mb-4 sm:mb-6"
+          />
 
           {/* Services Grid */}
           {filteredServices.length === 0 ? (
             <EmptyState
               icon={Car}
               title="No services found"
-              description={searchQuery ? "Try adjusting your search" : "Add your first service to get started"}
+              description={search ? "Try adjusting your search or filters" : "No services available"}
               action={
-                !searchQuery && (
+                !search && (
                   <Button onClick={() => router.push('/admin/services/new')}>
                     <Plus className="mr-2 h-4 w-4" />
                     Add Service
@@ -237,8 +265,24 @@ export default function ServicesPage() {
                   </div>
                 </CardContent>
               </Card>
-            ))}
+              ))}
             </div>
+          )}
+          
+          {/* Pagination */}
+          {filteredServices.length > 0 && (
+            <Pagination
+              currentPage={page}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={(newSize) => {
+                setPageSize(newSize);
+                setPage(1);
+              }}
+              className="mt-4 sm:mt-6"
+            />
           )}
         </CardContent>
       </Card>

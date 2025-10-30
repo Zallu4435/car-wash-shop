@@ -68,7 +68,7 @@ const navigationGroups = [
     items: [
       { name: 'Staff', href: AdminRoutes.STAFF, icon: UserCog },
       { name: 'Customers', href: AdminRoutes.CUSTOMERS, icon: Users },
-      { name: 'Vehicles', href: AdminRoutes.VEHICLE_BRANDS, icon: Car }, // use brands for root
+      { name: 'Vehicles', href: AdminRoutes.VEHICLES, icon: Car },
     ]
   },
   {

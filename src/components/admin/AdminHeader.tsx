@@ -103,7 +103,7 @@ export function AdminHeader({ setSidebarOpen }: AdminHeaderProps) {
           <Button
             variant="ghost"
             size="icon"
-            className="lg:hidden h-8 w-8 sm:h-9 sm:w-9"
+            className="lg:hidden h-8 w-8 sm:h-9 sm:w-9 cursor-pointer"
             onClick={() => setSidebarOpen(true)}
           >
             <Menu className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -124,7 +124,7 @@ export function AdminHeader({ setSidebarOpen }: AdminHeaderProps) {
         {/* Right Section - Actions */}
         <div className="flex items-center gap-1 sm:gap-2">
           {/* Search Icon (Mobile) */}
-          <Button variant="ghost" size="icon" className="md:hidden h-8 w-8 sm:h-9 sm:w-9">
+          <Button variant="ghost" size="icon" className="md:hidden h-8 w-8 sm:h-9 sm:w-9 cursor-pointer">
             <Search className="h-4 w-4 sm:h-5 sm:w-5" />
           </Button>
 
@@ -134,7 +134,7 @@ export function AdminHeader({ setSidebarOpen }: AdminHeaderProps) {
               variant="ghost"
               size="icon"
               onClick={() => setShowThemeMenu(!showThemeMenu)}
-              className="h-8 w-8 sm:h-9 sm:w-9"
+              className="h-8 w-8 sm:h-9 sm:w-9 cursor-pointer"
             >
               {theme === 'dark' ? (
                 <Moon className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -187,7 +187,7 @@ export function AdminHeader({ setSidebarOpen }: AdminHeaderProps) {
               variant="ghost"
               size="icon"
               onClick={() => setShowNotifications(!showNotifications)}
-              className="relative h-8 w-8 sm:h-9 sm:w-9"
+              className="relative h-8 w-8 sm:h-9 sm:w-9 cursor-pointer"
             >
               <Bell className="h-4 w-4 sm:h-5 sm:w-5" />
               {unreadCount > 0 && (
@@ -225,7 +225,7 @@ export function AdminHeader({ setSidebarOpen }: AdminHeaderProps) {
                         <X className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
                       </button>
                     </div>
-                    <Button variant="outline" size="sm" className="w-full text-[10px] sm:text-xs h-7 sm:h-8">
+                    <Button variant="outline" size="sm" className="w-full text-[10px] sm:text-xs h-7 sm:h-8 cursor-pointer">
                       Mark all as read
                     </Button>
                   </div>
@@ -277,7 +277,7 @@ export function AdminHeader({ setSidebarOpen }: AdminHeaderProps) {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="w-full text-[10px] sm:text-xs h-7 sm:h-8"
+                      className="w-full text-[10px] sm:text-xs h-7 sm:h-8 cursor-pointer"
                       onClick={() => {
                         router.push(AdminRoutes.NOTIFICATIONS || '/admin/notifications');
                         setShowNotifications(false);
@@ -297,7 +297,7 @@ export function AdminHeader({ setSidebarOpen }: AdminHeaderProps) {
               variant="ghost"
               size="icon"
               onClick={() => setShowUserMenu(!showUserMenu)}
-              className="rounded-full h-8 w-8 sm:h-9 sm:w-9 p-0"
+              className="rounded-full h-8 w-8 sm:h-9 sm:w-9 p-0 cursor-pointer"
             >
               <div className="w-7 h-7 sm:w-8 sm:h-8 bg-primary/10 rounded-full flex items-center justify-center">
                 <User className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />

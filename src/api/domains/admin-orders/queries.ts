@@ -5,15 +5,36 @@ import { toast } from 'sonner';
 
 export const adminOrdersKeys = {
   all: ['admin-orders'] as const,
-  list: (filters?: OrderFilters) => [...adminOrdersKeys.all, 'list', filters] as const,
+  list: (filters?: {
+    search?: string;
+    status?: string;
+    paymentMethod?: string;
+    dateRange?: string;
+    page?: number;
+    pageSize?: number;
+  }) => [...adminOrdersKeys.all, 'list', filters] as const,
   detail: (id: string) => [...adminOrdersKeys.all, 'detail', id] as const,
 };
 
-export const useAdminOrderList = (filters?: OrderFilters) => {
+export const useAdminOrderList = (filters?: {
+  search?: string;
+  status?: string;
+  paymentMethod?: string;
+  dateRange?: string;
+  page?: number;
+  pageSize?: number;
+}) => {
+  // Convert pageSize to limit for the API
+  const apiFilters = filters ? {
+    ...filters,
+    limit: filters.pageSize,
+    pageSize: undefined,
+  } : undefined;
+  
   return useQuery({
     queryKey: adminOrdersKeys.list(filters),
-    queryFn: () => adminOrdersFetchers.getOrderList(filters),
-    staleTime: 1 * 60 * 1000, // 1 minute
+    queryFn: () => adminOrdersFetchers.getOrderList(apiFilters as any),
+    staleTime: 2 * 60 * 1000, // 2 minutes
     placeholderData: (previousData) => previousData,
   });
 };

@@ -5,15 +5,33 @@ import { toast } from 'sonner';
 
 export const adminCouponsKeys = {
   all: ['admin-coupons'] as const,
-  list: () => [...adminCouponsKeys.all, 'list'] as const,
+  list: (filters?: {
+    search?: string;
+    status?: string;
+    page?: number;
+    pageSize?: number;
+  }) => [...adminCouponsKeys.all, 'list', filters] as const,
   detail: (id: string) => [...adminCouponsKeys.all, 'detail', id] as const,
 };
 
-export const useAdminCouponList = () => {
+export const useAdminCouponList = (filters?: {
+  search?: string;
+  status?: string;
+  page?: number;
+  pageSize?: number;
+}) => {
+  // Convert pageSize to limit for the API
+  const apiFilters = filters ? {
+    ...filters,
+    limit: filters.pageSize,
+    pageSize: undefined,
+  } : undefined;
+
   return useQuery({
-    queryKey: adminCouponsKeys.list(),
-    queryFn: adminCouponsFetchers.getCouponList,
+    queryKey: adminCouponsKeys.list(filters),
+    queryFn: () => adminCouponsFetchers.getCouponList(apiFilters as any),
     staleTime: 5 * 60 * 1000, // 5 minutes
+    placeholderData: (previousData) => previousData,
   });
 };
 

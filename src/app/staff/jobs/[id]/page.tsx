@@ -7,13 +7,23 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { NavigationMap } from '@/components/staff/NavigationMap';
-import { useStaffJob } from '@/api/domains/staff/queries';
+import { useStaffJobDetail } from '@/api/domains/staff';
 import { StaffRoutes } from '@/lib/constants/routes';
+import Loading from '@/components/shared/display/Loading';
+import Error from '@/components/shared/display/Error';
 
 export default function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
-  const { data: job } = useStaffJob(id);
+  const { data: job, isLoading, error } = useStaffJobDetail(id);
+
+  if (isLoading) {
+    return <Loading text="Loading job details..." />;
+  }
+
+  if (error) {
+    return <Error message="Failed to load job details" details={error?.message} />;
+  }
 
   if (!job) {
     return (

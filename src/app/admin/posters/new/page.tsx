@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { ArrowLeft, Plus, FileImage, Image as ImageIcon } from 'lucide-react';
+import { AdminRoutes } from '@/lib/constants/routes';
 import { toast } from 'sonner';
 
 export default function NewPosterPage() {
@@ -31,14 +32,14 @@ export default function NewPosterPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     toast.success('Poster created successfully!');
-    router.push('/admin/marketing/posters');
+    router.push(AdminRoutes.POSTERS);
   };
 
   return (
     <div className="max-w-2xl space-y-6">
       {/* Header */}
       <div>
-        <Button variant="ghost" onClick={() => router.push('/admin/marketing/posters')}>
+        <Button variant="ghost" onClick={() => router.push(AdminRoutes.POSTERS)}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Posters
         </Button>

@@ -4,22 +4,38 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { FileImage, Plus, Search, Edit, Trash2, Eye } from 'lucide-react';
+import { FileImage, Plus, Edit, Trash2, Eye } from 'lucide-react';
+import { AdminRoutes } from '@/lib/constants/routes';
 import { useState, useMemo } from 'react';
 import { useAdminPosterList, useDeletePoster } from '@/api/domains/admin-marketing/queries';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
 import { EmptyState } from '@/components/shared/display/EmptyState';
+import { SearchFilter } from '@/components/admin/SearchFilter';
+import { Pagination } from '@/components/admin/Pagination';
 
 export default function PostersPage() {
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState('');
-  const { data: postersData, isLoading, error, refetch } = useAdminPosterList();
+  const [search, setSearch] = useState('');
+  const [filterValues, setFilterValues] = useState<Record<string, string>>({});
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  // Combine search and filters for API
+  const filters = useMemo(() => ({
+    search: search || undefined,
+    status: filterValues.status || undefined,
+    page,
+    pageSize,
+  }), [search, filterValues, page, pageSize]);
+
+  const { data: postersData, isLoading, error, refetch } = useAdminPosterList(filters);
   const deletePosterMutation = useDeletePoster();
 
-  const posters = postersData || [];
+  const posters = postersData?.data || [];
+  const totalItems = postersData?.total || 0;
+  const totalPages = postersData?.totalPages || 0;
+  const filteredPosters = posters; // Already filtered by API
 
   const handleDelete = async (posterId: string) => {
     if (confirm('Are you sure you want to delete this poster?')) {
@@ -40,19 +56,9 @@ export default function PostersPage() {
       />
     );
   }
-  const [statusFilter, setStatusFilter] = useState('all');
 
-  const filteredPosters = posters.filter(poster => {
-    const matchesSearch = poster.title.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = 
-      statusFilter === 'all' ||
-      (statusFilter === 'active' && poster.active) ||
-      (statusFilter === 'inactive' && !poster.active);
-    return matchesSearch && matchesStatus;
-  });
-
-  const activePosters = posters.filter(p => p.active).length;
-  const totalViews = posters.reduce((sum, p) => sum + p.views, 0);
+  const activePosters = posters.filter(p => p.status === 'active').length;
+  const totalViews = posters.reduce((sum: number, p: any) => sum + (p.views || 0), 0);
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -66,7 +72,7 @@ export default function PostersPage() {
             Upload and display promotional posters
           </p>
         </div>
-        <Button onClick={() => router.push('/admin/marketing/posters/new')} className="w-full md:w-auto h-9 sm:h-10 text-xs sm:text-sm">
+        <Button onClick={() => router.push(AdminRoutes.POSTER_NEW)} className="w-full md:w-auto h-9 sm:h-10 text-xs sm:text-sm">
           <Plus className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Create Poster
         </Button>
@@ -109,32 +115,42 @@ export default function PostersPage() {
         </CardHeader>
         <CardContent>
           {/* Search & Filter */}
-          <div className="flex flex-col md:flex-row gap-3 sm:gap-4 mb-4 sm:mb-6">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search posters..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 sm:pl-10 h-10 sm:h-11 text-xs sm:text-sm"
-              />
-            </div>
-            
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full md:w-48 h-10 sm:h-11 text-xs sm:text-sm">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="inactive">Inactive</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <SearchFilter
+            searchPlaceholder="Search posters by title..."
+            onSearchChange={setSearch}
+            filterOptions={[
+              {
+                label: 'Status',
+                value: 'status',
+                options: [
+                  { label: 'All Statuses', value: '' },
+                  { label: 'Active', value: 'active' },
+                  { label: 'Inactive', value: 'inactive' },
+                ],
+              },
+            ]}
+            onFilterChange={setFilterValues}
+            className="mb-4 sm:mb-6"
+          />
 
           {/* Posters Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-            {filteredPosters.map((poster) => (
+          {filteredPosters.length === 0 ? (
+            <EmptyState
+              icon={FileImage}
+              title="No posters found"
+              description={search ? "Try adjusting your search or filters" : "No posters created yet"}
+              action={
+                !search && (
+                  <Button onClick={() => router.push(AdminRoutes.POSTER_NEW)}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Create Poster
+                  </Button>
+                )
+              }
+            />
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+              {filteredPosters.map((poster) => (
               <Card key={poster.id} className="border-2 hover:shadow-lg transition-all">
                 <CardContent className="p-4 sm:p-5">
                   <div className="mb-3 sm:mb-4">
@@ -150,8 +166,8 @@ export default function PostersPage() {
                           {poster.location}
                         </Badge>
                       </div>
-                      <Badge variant={poster.active ? 'default' : 'secondary'} className="text-xs flex-shrink-0">
-                        {poster.active ? 'Active' : 'Inactive'}
+                      <Badge variant={poster.status === 'active' ? 'default' : 'secondary'} className="text-xs flex-shrink-0">
+                        {poster.status === 'active' ? 'Active' : 'Inactive'}
                       </Badge>
                     </div>
                   </div>
@@ -173,7 +189,7 @@ export default function PostersPage() {
                       variant="outline" 
                       size="sm" 
                       className="flex-1 h-9 text-xs sm:text-sm"
-                      onClick={() => router.push(`/admin/marketing/posters/${poster.id}/edit`)}
+                      onClick={() => router.push(AdminRoutes.POSTER_EDIT(poster.id))}
                     >
                       <Edit className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                       <span className="hidden xs:inline">Edit</span>
@@ -188,8 +204,25 @@ export default function PostersPage() {
                   </div>
                 </CardContent>
               </Card>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
+          
+          {/* Pagination */}
+          {filteredPosters.length > 0 && (
+            <Pagination
+              currentPage={page}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={(newSize) => {
+                setPageSize(newSize);
+                setPage(1); // Reset to first page when changing page size
+              }}
+              className="mt-4 sm:mt-6"
+            />
+          )}
         </CardContent>
       </Card>
     </div>

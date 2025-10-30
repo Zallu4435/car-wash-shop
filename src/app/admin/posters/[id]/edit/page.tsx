@@ -4,6 +4,7 @@ import { use } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
+import { AdminRoutes } from '@/lib/constants/routes';
 import { Button } from '@/components/ui/button';
 import { FormBuilder } from '@/components/shared/crud/FormBuilder';
 import { z } from 'zod';
@@ -31,12 +32,12 @@ export default function EditPosterPage({ params }: { params: Promise<{ id: strin
 
   const handleSubmit = (data: any) => {
     toast.success('Poster updated!');
-    router.push('/admin/marketing/posters');
+    router.push(AdminRoutes.POSTERS);
   };
 
   return (
     <div className="max-w-2xl">
-      <Link href="/admin/marketing/posters">
+      <Link href={AdminRoutes.POSTERS}>
         <Button variant="ghost" className="mb-6">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back

@@ -63,7 +63,7 @@ export const useUpdateBookingStatus = () => {
 export const useAdminSlots = () => {
   return useQuery({
     queryKey: [...adminRequestsKeys.all, 'slots'],
-    queryFn: async () => ({ blockedSlots: [] as string[] }),
+    queryFn: () => adminRequestsFetchers.getSlots(),
     staleTime: 5 * 60 * 1000,
   });
 };
@@ -71,10 +71,13 @@ export const useAdminSlots = () => {
 export const useBlockSlot = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (slotId: string) => ({ message: 'Slot blocked' }),
+    mutationFn: (slotId: string) => adminRequestsFetchers.blockSlot(slotId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [...adminRequestsKeys.all, 'slots'] });
       toast.success('Slot blocked successfully');
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Failed to block slot');
     },
   });
 };
@@ -82,10 +85,13 @@ export const useBlockSlot = () => {
 export const useUnblockSlot = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (slotId: string) => ({ message: 'Slot unblocked' }),
+    mutationFn: (slotId: string) => adminRequestsFetchers.unblockSlot(slotId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [...adminRequestsKeys.all, 'slots'] });
       toast.success('Slot unblocked successfully');
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Failed to unblock slot');
     },
   });
 };

@@ -4,7 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { IndianRupee, Calendar, Briefcase, TrendingUp, Clock } from 'lucide-react';
-import { useStaffPaymentSummary } from '@/api/domains/staff/staff-index';
+import { useStaffPaymentSummary } from '@/api/domains/staff';
+import Loading from '@/components/shared/display/Loading';
+import Error from '@/components/shared/display/Error';
 
 const statusConfig = {
   paid: {
@@ -18,10 +20,18 @@ const statusConfig = {
 };
 
 export default function StaffPaymentsPage() {
-  const { data } = useStaffPaymentSummary();
+  const { data, isLoading, error } = useStaffPaymentSummary();
   const totalEarnings = data?.totalEarnings ?? 0;
   const pendingAmount = data?.pendingPayments ?? 0;
   const totalJobs = data?.history?.length ?? 0;
+
+  if (isLoading) {
+    return <Loading text="Loading payments..." />;
+  }
+
+  if (error) {
+    return <Error message="Failed to load payments" details={error?.message} />;
+  }
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -152,7 +162,7 @@ export default function StaffPaymentsPage() {
                             {payment.amount.toLocaleString()}
                           </p>
                         </div>
-                        <Button variant="ghost" size="sm" className="h-8 text-xs sm:text-sm">
+                        <Button variant="ghost" size="sm" className="h-8 text-xs sm:text-sm cursor-pointer">
                           View Details
                         </Button>
                       </div>
@@ -186,7 +196,7 @@ export default function StaffPaymentsPage() {
                           <span>{payment.service ? 1 : 0} jobs</span>
                         </div>
                       </div>
-                      <Button variant="ghost" size="sm" className="w-full h-8 text-xs">
+                      <Button variant="ghost" size="sm" className="w-full h-8 text-xs cursor-pointer">
                         View Details
                       </Button>
                     </div>

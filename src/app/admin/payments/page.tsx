@@ -4,13 +4,32 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Download, IndianRupee, CreditCard, Wallet, TrendingUp, PieChart, Smartphone, Building2 } from 'lucide-react';
-import { useCODTransactions, useCODReport } from '@/api/domains/admin-cod/queries';
+import { usePaymentTransactions, usePaymentReport } from '@/api/domains/admin-payments/queries';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
+import { SearchFilter } from '@/components/admin/SearchFilter';
+import { useState, useMemo } from 'react';
+import { EmptyState } from '@/components/shared/display/EmptyState';
+import { ExportButton } from '@/components/admin/ExportButton';
 
 export default function PaymentReportsPage() {
-  const { data: codTransactions, isLoading: transactionsLoading, error: transactionsError, refetch: refetchTransactions } = useCODTransactions();
-  const { data: codReport, isLoading: reportLoading, error: reportError, refetch: refetchReport } = useCODReport();
+  const [search, setSearch] = useState('');
+  const [filterValues, setFilterValues] = useState<Record<string, string>>({});
+
+  // Combine search and filters for API
+  const filters = useMemo(() => ({
+    search: search || undefined,
+    status: filterValues.status || undefined,
+    method: filterValues.method || undefined,
+    dateRange: filterValues.dateRange || undefined,
+  }), [search, filterValues]);
+
+  const { data: paymentTransactions, isLoading: transactionsLoading, error: transactionsError, refetch: refetchTransactions } = usePaymentTransactions(filters);
+  const { data: paymentReport, isLoading: reportLoading, error: reportError, refetch: refetchReport } = usePaymentReport();
+
+  // Use API data - the hooks already return the data directly
+  const transactions = paymentTransactions || [];
+  const report = paymentReport || {};
 
   if (transactionsLoading || reportLoading) {
     return <Loading text="Loading payment data..." />;
@@ -31,40 +50,32 @@ export default function PaymentReportsPage() {
   const paymentMethods = [
     { 
       method: 'UPI / PhonePe / Google Pay', 
-      amount: 78450, 
-      percentage: 43, 
+      amount: (report as any).upiTotal || 0,
+      percentage: (report as any).upiPercentage || 0,
       color: 'hsl(221 83% 53%)',
       icon: Smartphone 
     },
     { 
       method: 'Credit/Debit Card', 
-      amount: 45678, 
-      percentage: 25, 
+      amount: (report as any).cardTotal || 0,
+      percentage: (report as any).cardPercentage || 0,
       color: 'hsl(280 65% 60%)',
       icon: CreditCard 
     },
     { 
       method: 'Cash on Delivery', 
-      amount: 46230, 
-      percentage: 26, 
+      amount: (report as any).codTotal || 0,
+      percentage: (report as any).codPercentage || 0,
       color: 'hsl(30 80% 55%)',
       icon: Wallet 
     },
     { 
       method: 'Net Banking', 
-      amount: 11412, 
-      percentage: 6, 
+      amount: (report as any).netBankingTotal || 0,
+      percentage: (report as any).netBankingPercentage || 0,
       color: 'hsl(160 60% 45%)',
       icon: Building2 
     },
-  ];
-
-  const recentTransactions = [
-    { id: 'TXN001', type: 'Service', amount: 1299, method: 'UPI', status: 'Success', date: '2025-10-24' },
-    { id: 'TXN002', type: 'Product', amount: 2450, method: 'Card', status: 'Success', date: '2025-10-24' },
-    { id: 'TXN003', type: 'Service', amount: 899, method: 'COD', status: 'Pending', date: '2025-10-23' },
-    { id: 'TXN004', type: 'Product', amount: 1850, method: 'Net Banking', status: 'Success', date: '2025-10-23' },
-    { id: 'TXN005', type: 'Service', amount: 1599, method: 'UPI', status: 'Success', date: '2025-10-22' },
   ];
 
   return (
@@ -79,10 +90,19 @@ export default function PaymentReportsPage() {
             Financial analytics and payment methods
           </p>
         </div>
-        <Button className="w-full md:w-auto h-9 sm:h-10 text-xs sm:text-sm">
-          <Download className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-          Export Report
-        </Button>
+        <ExportButton
+          data={transactions}
+          filename={`payment-report-${new Date().toISOString().split('T')[0]}`}
+          headers={['id', 'type', 'amount', 'method', 'status', 'date']}
+          title="Payment Report"
+          filters={{
+            'Search': search || 'None',
+            'Status': filterValues.status || 'All',
+            'Method': filterValues.method || 'All',
+            'Date Range': filterValues.dateRange || 'All Time',
+          }}
+          className="w-full md:w-auto h-9 sm:h-10 text-xs sm:text-sm"
+        />
       </div>
 
       {/* Stats Grid */}
@@ -125,9 +145,9 @@ export default function PaymentReportsPage() {
                 <p className="text-[10px] sm:text-xs text-muted-foreground">This Month</p>
               </div>
             </div>
-            <p className="text-2xl sm:text-3xl font-bold text-foreground">₹1,35,540</p>
+            <p className="text-2xl sm:text-3xl font-bold text-foreground">₹{((report as any).onlineTotal || 0).toLocaleString('en-IN')}</p>
             <p className="text-xs sm:text-sm text-muted-foreground mt-1.5 sm:mt-2">
-              74.6% of total revenue
+              {(report as any).onlinePercentage || 0}% of total revenue
             </p>
           </CardContent>
         </Card>
@@ -218,8 +238,58 @@ export default function PaymentReportsPage() {
           </div>
         </CardHeader>
         <CardContent>
+          {/* Search and Filter */}
+          <SearchFilter
+            searchPlaceholder="Search by transaction ID or type..."
+            onSearchChange={setSearch}
+            filterOptions={[
+              {
+                label: 'Status',
+                value: 'status',
+                options: [
+                  { label: 'All Statuses', value: '' },
+                  { label: 'Success', value: 'success' },
+                  { label: 'Pending', value: 'pending' },
+                  { label: 'Failed', value: 'failed' },
+                ],
+              },
+              {
+                label: 'Payment Method',
+                value: 'method',
+                options: [
+                  { label: 'All Methods', value: '' },
+                  { label: 'UPI', value: 'upi' },
+                  { label: 'Card', value: 'card' },
+                  { label: 'COD', value: 'cod' },
+                  { label: 'Net Banking', value: 'netbanking' },
+                ],
+              },
+              {
+                label: 'Date Range',
+                value: 'dateRange',
+                type: 'dateRange',
+                options: [
+                  { label: 'All Time', value: '' },
+                  { label: 'Today', value: 'today' },
+                  { label: 'Last 7 Days', value: 'last-7-days' },
+                  { label: 'Last 30 Days', value: 'last-30-days' },
+                  { label: 'Last 3 Months', value: 'last-3-months' },
+                ],
+              },
+            ]}
+            onFilterChange={setFilterValues}
+            className="mb-4 sm:mb-6"
+          />
+
+          {transactions.length === 0 ? (
+            <EmptyState
+              icon={IndianRupee}
+              title="No transactions found"
+              description={search ? "Try adjusting your search or filters" : "No transactions yet"}
+            />
+          ) : (
           <div className="space-y-2.5 sm:space-y-3">
-            {recentTransactions.map((txn) => {
+            {transactions.map((txn: any) => {
               const statusStyle = txn.status === 'Success' 
                 ? {
                     backgroundColor: 'hsl(160 60% 45% / 0.1)',
@@ -269,6 +339,7 @@ export default function PaymentReportsPage() {
               );
             })}
           </div>
+          )}
         </CardContent>
       </Card>
     </div>

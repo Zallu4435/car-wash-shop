@@ -1,13 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Car, Bike, Plus, Search, Edit, Trash2, Move, Layers } from 'lucide-react';
+import { Car, Bike, Plus, Edit, Trash2, Move, Layers, ArrowLeft } from 'lucide-react';
+import { SearchFilter } from '@/components/admin/SearchFilter';
+import { Pagination } from '@/components/admin/Pagination';
+import { EmptyState } from '@/components/shared/display/EmptyState';
 
 // Body types data
 const bodyTypes = [
@@ -27,35 +28,57 @@ const iconMap = { Car, Bike };
 
 export default function BodyTypesPage() {
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [vehicleTypeFilter, setVehicleTypeFilter] = useState('all');
+  const [search, setSearch] = useState('');
+  const [filterValues, setFilterValues] = useState<Record<string, string>>({});
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
-  const filteredTypes = bodyTypes.filter(t => {
-    const matchesSearch = t.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesFilter = vehicleTypeFilter === 'all' || t.vehicleType === vehicleTypeFilter;
-    return matchesSearch && matchesFilter;
-  });
+  // Apply filters
+  const filteredTypes = useMemo(() => {
+    return bodyTypes.filter(t => {
+      const matchesSearch = search === '' || t.name.toLowerCase().includes(search.toLowerCase());
+      const matchesFilter = !filterValues.vehicleType || t.vehicleType === filterValues.vehicleType;
+      return matchesSearch && matchesFilter;
+    });
+  }, [search, filterValues]);
 
-  const fourWheelerCount = bodyTypes.filter(t => t.vehicleType === '4-Wheeler').length;
-  const twoWheelerCount = bodyTypes.filter(t => t.vehicleType === '2-Wheeler').length;
-  const activeCount = bodyTypes.filter(t => t.active).length;
+  // Pagination
+  const totalItems = filteredTypes.length;
+  const totalPages = Math.ceil(totalItems / pageSize);
+  const startIndex = (page - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const paginatedTypes = filteredTypes.slice(startIndex, endIndex);
+
+  const fourWheelerCount = bodyTypes.filter((t: any) => t.vehicleType === '4-Wheeler').length;
+  const twoWheelerCount = bodyTypes.filter((t: any) => t.vehicleType === '2-Wheeler').length;
+  const activeCount = bodyTypes.filter((t: any) => t.active).length;
 
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
-        <div className="min-w-0 flex-1">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground truncate">
-            Body Types
-          </h1>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1 truncate">
-            Manage vehicle body types and categories
-          </p>
-        </div>
-        <Button onClick={() => router.push('/admin/vehicles/body-types/new')} className="w-full md:w-auto h-9 sm:h-10 text-xs sm:text-sm">
-          <Plus className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-          Add Body Type
+      <div className="flex flex-col gap-3 sm:gap-4">
+        <Button 
+          variant="ghost" 
+          onClick={() => router.push('/admin/vehicles')} 
+          className="w-fit h-9 sm:h-10 text-xs sm:text-sm -ml-2"
+        >
+          <ArrowLeft className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+          Back to Vehicles
         </Button>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground truncate">
+              Body Types
+            </h1>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1 truncate">
+              Manage vehicle body types and categories
+            </p>
+          </div>
+          <Button onClick={() => router.push('/admin/vehicles/body-types/new')} className="w-full md:w-auto h-9 sm:h-10 text-xs sm:text-sm">
+            <Plus className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            Add Body Type
+          </Button>
+        </div>
       </div>
 
       {/* Stats */}
@@ -91,33 +114,35 @@ export default function BodyTypesPage() {
           </div>
         </CardHeader>
         <CardContent>
-          {/* Search and Filter */}
-          <div className="flex flex-col md:flex-row gap-3 sm:gap-4 mb-4 sm:mb-6">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search body types..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 sm:pl-10 h-10 sm:h-11 text-xs sm:text-sm"
-              />
-            </div>
-            
-            <Select value={vehicleTypeFilter} onValueChange={setVehicleTypeFilter}>
-              <SelectTrigger className="w-full md:w-48 h-10 sm:h-11 text-xs sm:text-sm">
-                <SelectValue placeholder="Vehicle Type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="4-Wheeler">4-Wheeler</SelectItem>
-                <SelectItem value="2-Wheeler">2-Wheeler</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          {/* Search & Filter */}
+          <SearchFilter
+            searchPlaceholder="Search body types..."
+            onSearchChange={setSearch}
+            filterOptions={[
+              {
+                label: 'Vehicle Type',
+                value: 'vehicleType',
+                options: [
+                  { label: 'All Types', value: '' },
+                  { label: '4-Wheeler', value: '4-Wheeler' },
+                  { label: '2-Wheeler', value: '2-Wheeler' },
+                ],
+              },
+            ]}
+            onFilterChange={setFilterValues}
+            className="mb-4 sm:mb-6"
+          />
 
           {/* Body Types Grid */}
-          <div className="space-y-2.5 sm:space-y-3">
-            {filteredTypes.map((type) => {
+          {paginatedTypes.length === 0 ? (
+            <EmptyState
+              icon={Layers}
+              title="No body types found"
+              description={search ? "Try adjusting your search or filters" : "No body types available"}
+            />
+          ) : (
+            <div className="space-y-2.5 sm:space-y-3">
+              {paginatedTypes.map((type) => {
               const Icon = iconMap[type.icon as keyof typeof iconMap];
               return (
                 <Card key={type.id} className="border-2 border-border hover:shadow-md transition-all">
@@ -224,20 +249,24 @@ export default function BodyTypesPage() {
                   </CardContent>
                 </Card>
               );
-            })}
-          </div>
-
-          {/* No Results */}
-          {filteredTypes.length === 0 && (
-            <div className="text-center py-10 sm:py-12 bg-muted/30 rounded-lg sm:rounded-xl border-2 border-dashed border-border">
-              <Layers className="h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground mx-auto mb-3 sm:mb-4" />
-              <h3 className="text-base sm:text-lg font-semibold text-foreground mb-1.5 sm:mb-2">
-                No body types found
-              </h3>
-              <p className="text-xs sm:text-sm text-muted-foreground">
-                Try adjusting your search or filters
-              </p>
+              })}
             </div>
+          )}
+          
+          {/* Pagination */}
+          {paginatedTypes.length > 0 && (
+            <Pagination
+              currentPage={page}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={(newSize) => {
+                setPageSize(newSize);
+                setPage(1);
+              }}
+              className="mt-4 sm:mt-6"
+            />
           )}
         </CardContent>
       </Card>

@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Car, Bike, Plus, Search, Edit, Trash2, Move } from 'lucide-react';
+import { Car, Bike, Plus, Search, Edit, Trash2, Move, ArrowLeft } from 'lucide-react';
 
 // Updated vehicle types structure
 const vehicleTypes = [
@@ -26,19 +26,29 @@ export default function VehicleTypesPage() {
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
-        <div className="min-w-0 flex-1">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground truncate">
-            Vehicle Types
-          </h1>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1 truncate">
-            Manage available vehicle categories (4-Wheeler, 2-Wheeler)
-          </p>
-        </div>
-        <Button onClick={() => router.push('/admin/vehicles/types/new')} className="w-full md:w-auto h-9 sm:h-10 text-xs sm:text-sm">
-          <Plus className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-          Add Vehicle Type
+      <div className="flex flex-col gap-3 sm:gap-4">
+        <Button 
+          variant="ghost" 
+          onClick={() => router.push('/admin/vehicles')} 
+          className="w-fit h-9 sm:h-10 text-xs sm:text-sm -ml-2"
+        >
+          <ArrowLeft className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+          Back to Vehicles
         </Button>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground truncate">
+              Vehicle Types
+            </h1>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1 truncate">
+              Manage available vehicle categories (4-Wheeler, 2-Wheeler)
+            </p>
+          </div>
+          <Button onClick={() => router.push('/admin/vehicles/types/new')} className="w-full md:w-auto h-9 sm:h-10 text-xs sm:text-sm">
+            <Plus className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            Add Vehicle Type
+          </Button>
+        </div>
       </div>
 
       {/* Stats */}

@@ -2,11 +2,16 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, Briefcase, History, User, LogOut, Menu, IndianRupee } from 'lucide-react';
+import { LayoutDashboard, Briefcase, History, User, LogOut, Menu, IndianRupee, Sun, Moon, Monitor } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { toast } from 'sonner';
-import { useStaffLogout } from '@/api/domains/staff/queries';
+import { useStaffLogout, useStaffProfile } from '@/api/domains/staff';
 import { StaffRoutes } from '@/lib/constants/routes';
+import { useState, useEffect } from 'react';
+import { useTheme } from '@/context/ThemeContext';
+
+// Default avatar for staff without profile picture
+const DEFAULT_AVATAR = '/images/avatars/default-avatar.svg';
 
 const navigation = [
   { name: 'Dashboard', href: StaffRoutes.DASHBOARD, icon: LayoutDashboard },
@@ -20,6 +25,21 @@ export default function StaffLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
   const router = useRouter();
   const logoutMutation = useStaffLogout();
+  const { data: profile } = useStaffProfile();
+  const [avatarError, setAvatarError] = useState(false);
+  const [showThemeMenu, setShowThemeMenu] = useState(false);
+  const { theme, resolvedTheme, setTheme } = useTheme();
+
+  // Reset avatar error when profile changes
+  useEffect(() => {
+    setAvatarError(false);
+  }, [profile?.avatar]);
+
+  const themeOptions = [
+    { value: 'light' as const, label: 'Light', icon: Sun },
+    { value: 'dark' as const, label: 'Dark', icon: Moon },
+    { value: 'system' as const, label: 'System', icon: Monitor },
+  ];
 
   const handleLogout = () => {
     logoutMutation.mutate(undefined, {
@@ -32,29 +52,87 @@ export default function StaffLayout({ children }: { children: React.ReactNode })
   return (
     <div className="min-h-screen bg-background">
       {/* Header - Responsive */}
-      <header className="bg-card border-b border-border sticky top-0 z-10 shadow-sm">
+      <header className="bg-card/95 backdrop-blur-xl border-b border-border sticky top-0 z-10 shadow-sm">
         <div className="container-custom">
           <div className="flex items-center justify-between h-14 sm:h-16">
             <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-              <div className="p-1.5 sm:p-2 bg-primary rounded-lg sm:rounded-xl flex-shrink-0">
-                <Menu className="h-4 w-4 sm:h-5 sm:w-5 text-primary-foreground" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
+                {profile?.avatar && !avatarError ? (
+                  <img 
+                    src={profile.avatar} 
+                    alt={profile.name} 
+                    className="w-full h-full rounded-full object-cover" 
+                    onError={() => setAvatarError(true)}
+                  />
+                ) : (
+                  <img 
+                    src={DEFAULT_AVATAR} 
+                    alt="Default avatar" 
+                    className="w-full h-full rounded-full object-cover"
+                  />
+                )}
               </div>
               <div className="min-w-0">
-                <span className="text-base sm:text-lg md:text-xl font-bold text-foreground block truncate">
-                  Staff Portal
+                <span className="text-sm sm:text-base md:text-lg font-bold text-foreground block truncate">
+                  {profile?.name || 'Staff Portal'}
                 </span>
                 <p className="text-[10px] sm:text-xs text-muted-foreground truncate">
-                  CarWash Services
+                  {profile?.role || 'CarWash Services'}
                 </p>
               </div>
             </div>
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors flex-shrink-0"
-            >
-              <LogOut className="h-4 w-4 sm:h-5 sm:w-5" />
-              <span className="hidden sm:inline text-xs sm:text-sm font-medium">Logout</span>
-            </button>
+            <div className="flex items-center gap-2">
+              {/* Theme Toggle */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowThemeMenu(!showThemeMenu)}
+                  className="p-2 rounded-lg hover:bg-muted transition-colors group cursor-pointer"
+                  aria-label="Toggle theme"
+                >
+                  {resolvedTheme === 'dark' ? (
+                    <Moon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground group-hover:text-primary" />
+                  ) : (
+                    <Sun className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground group-hover:text-primary" />
+                  )}
+                </button>
+
+                {showThemeMenu && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setShowThemeMenu(false)} />
+                    <div className="absolute right-0 mt-2 w-48 bg-card rounded-lg shadow-lg border border-border py-2 z-50">
+                      {themeOptions.map((option) => {
+                        const Icon = option.icon;
+                        const isActive = theme === option.value;
+                        return (
+                          <button
+                            key={option.value}
+                            onClick={() => {
+                              setTheme(option.value);
+                              setShowThemeMenu(false);
+                            }}
+                            className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors cursor-pointer ${
+                              isActive ? 'text-primary bg-primary/10' : 'text-foreground hover:bg-muted'
+                            }`}
+                          >
+                            <Icon className="h-4 w-4" />
+                            <span>{option.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Logout Button */}
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors flex-shrink-0 cursor-pointer"
+              >
+                <LogOut className="h-4 w-4 sm:h-5 sm:w-5" />
+                <span className="hidden sm:inline text-xs sm:text-sm font-medium">Logout</span>
+              </button>
+            </div>
           </div>
         </div>
       </header>

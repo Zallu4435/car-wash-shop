@@ -12,36 +12,47 @@ import {
   XCircle,
   FileText,
 } from 'lucide-react';
-import { useStaffWorkHistory } from '@/api/domains/staff/staff-index';
+import { useStaffWorkHistory } from '@/api/domains/staff';
+import Loading from '@/components/shared/display/Loading';
+import Error from '@/components/shared/display/Error';
+import { EmptyState } from '@/components/shared/display/EmptyState';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Pagination } from '@/components/shared/crud/Pagination';
-import React from 'react';
+import React, { useMemo } from 'react';
+import { debounce } from '@/lib/utils/formatters';
 
 export default function StaffHistoryPage() {
   const [status, setStatus] = React.useState<string>('all');
   const [search, setSearch] = React.useState('');
+  const [debouncedSearch, setDebouncedSearch] = React.useState('');
   const [fromDate, setFromDate] = React.useState('');
   const [toDate, setToDate] = React.useState('');
   const [page, setPage] = React.useState(1);
   const [limit, setLimit] = React.useState(10);
+  
+  const updateDebouncedSearch = useMemo(() => debounce((val: string) => setDebouncedSearch(val), 300), []);
 
-  const { data } = useStaffWorkHistory({
+  const filters = useMemo(() => ({
     status: status === 'all' ? undefined : (status as any),
-    search: search || undefined,
+    search: debouncedSearch || undefined,
     fromDate: fromDate || undefined,
     toDate: toDate || undefined,
-  });
+    page,
+    limit,
+  }), [status, debouncedSearch, fromDate, toDate, page, limit]);
 
-  const all = data ?? [];
-  const filtered = all;
-  const total = filtered.length;
-  const totalPages = Math.max(1, Math.ceil(total / limit));
-  const start = (page - 1) * limit;
-  const pageItems = filtered.slice(start, start + limit);
-  const completedJobs = filtered.filter(j => j.status === 'completed');
+  // Call all hooks before any conditional returns
+  const { data, isLoading, error } = useStaffWorkHistory(filters);
+  const { data: allHistoryData } = useStaffWorkHistory({ limit: 1000 });
+
+  const jobs = data ?? [];
+  const allJobs = allHistoryData ?? [];
+  const completedJobs = allJobs.filter(j => j.status === 'completed');
   const totalEarnings = completedJobs.reduce((sum, job) => sum + (job.amount ?? 0), 0);
-  const averageRating = '—';
+  const averageRating = completedJobs.length > 0 
+    ? (completedJobs.reduce((sum, job) => sum + (job.rating ?? 0), 0) / completedJobs.length).toFixed(1)
+    : '—';
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -100,7 +111,7 @@ export default function StaffHistoryPage() {
           <Input
             placeholder="Search by customer or service"
             value={search}
-            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+            onChange={(e) => { setSearch(e.target.value); updateDebouncedSearch(e.target.value); setPage(1); }}
           />
         </div>
         <Select value={status} onValueChange={(v) => { setStatus(v); setPage(1); }}>
@@ -131,9 +142,18 @@ export default function StaffHistoryPage() {
               <CardTitle className="text-base sm:text-lg">History</CardTitle>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {pageItems.map((job) => (
+          <CardContent className="min-h-[400px]">
+            {isLoading ? (
+              <div className="flex items-center justify-center h-[400px]">
+                <Loading text="Loading work history..." fullScreen={false} />
+              </div>
+            ) : error ? (
+              <div className="flex items-center justify-center h-[400px]">
+                <Error message="Failed to load work history" details={error?.message} />
+              </div>
+            ) : jobs.length > 0 ? (
+              <div className="space-y-3">
+                {jobs.map((job) => (
                 <Card key={job.id} className="hover:shadow-md transition-shadow border-2 border-border">
                   <CardContent className="p-3 sm:p-4">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
@@ -168,26 +188,35 @@ export default function StaffHistoryPage() {
                           <p className="text-xs sm:text-sm text-muted-foreground mb-0.5 sm:mb-1">Earned</p>
                           <p className="text-xl sm:text-2xl font-bold text-primary">₹{job.amount ?? 0}</p>
                         </div>
-                        <Button variant="outline" size="sm" className="h-8 sm:h-9 text-xs sm:text-sm flex-shrink-0">
+                        <Button variant="outline" size="sm" className="h-8 sm:h-9 text-xs sm:text-sm flex-shrink-0 cursor-pointer">
                           View
                         </Button>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <EmptyState
+                icon={FileText}
+                title={debouncedSearch || status !== 'all' || fromDate || toDate ? 'No history matches your filters' : 'No work history yet'}
+                description={debouncedSearch || status !== 'all' || fromDate || toDate ? 'Try adjusting your search or filters' : 'Completed jobs will appear here'}
+              />
+            )}
           </CardContent>
         </Card>
 
         {/* Pagination */}
-        <Pagination
-          currentPage={page}
-          totalPages={totalPages}
-          onPageChange={setPage}
-          itemsPerPage={limit}
-          totalItems={total}
-        />
+        {jobs.length > 0 && (
+          <Pagination
+            currentPage={page}
+            totalPages={Math.ceil(jobs.length / limit)}
+            onPageChange={setPage}
+            itemsPerPage={limit}
+            totalItems={jobs.length}
+          />
+        )}
       </div>
     </div>
   );

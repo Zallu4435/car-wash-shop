@@ -15,11 +15,16 @@ import {
   ArrowRight
 } from 'lucide-react';
 
-import { useStaffDashboardSummary, useStaffUpcomingJobs } from '@/api/domains/staff/staff-index';
+import { useStaffDashboardSummary, useStaffUpcomingJobs } from '@/api/domains/staff';
+import Loading from '@/components/shared/display/Loading';
+import Error from '@/components/shared/display/Error';
+import { useRouter } from 'next/navigation';
+import { StaffRoutes } from '@/lib/constants/routes';
 
 export default function StaffDashboardPage() {
-  const { data: summary } = useStaffDashboardSummary();
-  const { data: upcomingJobs } = useStaffUpcomingJobs();
+  const router = useRouter();
+  const { data: summary, isLoading: summaryLoading, error: summaryError } = useStaffDashboardSummary();
+  const { data: upcomingJobs, isLoading: jobsLoading, error: jobsError } = useStaffUpcomingJobs();
   const stats = [
     { 
       name: "Today's Jobs", 
@@ -54,6 +59,14 @@ export default function StaffDashboardPage() {
       trend: summary?.statsTrends.rating ?? ''
     },
   ];
+  if (summaryLoading || jobsLoading) {
+    return <Loading text="Loading dashboard..." />;
+  }
+
+  if (summaryError || jobsError) {
+    return <Error message="Failed to load dashboard" details={(summaryError || jobsError)?.message} />;
+  }
+
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Welcome Section */}
@@ -79,7 +92,12 @@ export default function StaffDashboardPage() {
               </div>
               <CardTitle className="text-base sm:text-lg">Today's Schedule</CardTitle>
             </div>
-            <Button variant="ghost" size="sm" className="w-full sm:w-auto h-9 sm:h-10 text-xs sm:text-sm">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="w-full sm:w-auto h-9 sm:h-10 text-xs sm:text-sm cursor-pointer"
+              onClick={() => router.push(StaffRoutes.JOBS)}
+            >
               View All
               <ArrowRight className="ml-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </Button>
@@ -118,7 +136,11 @@ export default function StaffDashboardPage() {
                         </p>
                       </div>
                     </div>
-                    <Button size="sm" className="flex-shrink-0 h-9 text-xs sm:text-sm">
+                    <Button 
+                      size="sm" 
+                      className="flex-shrink-0 h-9 text-xs sm:text-sm cursor-pointer"
+                      onClick={() => router.push(`${StaffRoutes.JOBS}/${job.id}`)}
+                    >
                       View Details
                     </Button>
                   </div>
@@ -149,7 +171,11 @@ export default function StaffDashboardPage() {
                         Customer: {job.customer}
                       </p>
                     </div>
-                    <Button size="sm" className="w-full h-9 text-xs">
+                    <Button 
+                      size="sm" 
+                      className="w-full h-9 text-xs cursor-pointer"
+                      onClick={() => router.push(`${StaffRoutes.JOBS}/${job.id}`)}
+                    >
                       View Details
                     </Button>
                   </div>

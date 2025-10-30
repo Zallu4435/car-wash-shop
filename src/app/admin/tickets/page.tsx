@@ -4,11 +4,8 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   Ticket, 
-  Search, 
   Eye,
   AlertCircle,
   Clock,
@@ -19,15 +16,32 @@ import { useAdminTicketList } from '@/api/domains/admin-support/queries';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
 import { EmptyState } from '@/components/shared/display/EmptyState';
+import { SearchFilter } from '@/components/admin/SearchFilter';
+import { Pagination } from '@/components/admin/Pagination';
+import { AdminRoutes } from '@/lib/constants/routes';
 
 export default function TicketsPage() {
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [priorityFilter, setPriorityFilter] = useState('all');
-  const { data: ticketsData, isLoading, error, refetch } = useAdminTicketList();
+  const [search, setSearch] = useState('');
+  const [filterValues, setFilterValues] = useState<Record<string, string>>({});
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
-  const tickets = ticketsData || [];
+  // Combine search and filters for API
+  const filters = useMemo(() => ({
+    search: search || undefined,
+    status: filterValues.status || undefined,
+    priority: filterValues.priority || undefined,
+    page,
+    pageSize,
+  }), [search, filterValues, page, pageSize]);
+
+  const { data: ticketsData, isLoading, error, refetch } = useAdminTicketList(filters);
+
+  const tickets = ticketsData?.data || [];
+  const totalItems = ticketsData?.total || 0;
+  const totalPages = ticketsData?.totalPages || 0;
+  const filteredTickets = tickets; // Already filtered by API
 
   if (isLoading) {
     return <Loading text="Loading tickets..." />;
@@ -43,19 +57,9 @@ export default function TicketsPage() {
     );
   }
 
-  const filteredTickets = useMemo(() => tickets.filter(ticket => {
-    const matchesSearch = 
-      ticket.ticketNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      ticket.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      ticket.subject.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || ticket.status === statusFilter;
-    const matchesPriority = priorityFilter === 'all' || ticket.priority === priorityFilter;
-    return matchesSearch && matchesStatus && matchesPriority;
-  }), [tickets, searchQuery, statusFilter, priorityFilter]);
-
-  const openTickets = tickets.filter(t => t.status === 'open').length;
-  const inProgressTickets = tickets.filter(t => t.status === 'in_progress').length;
-  const resolvedTickets = tickets.filter(t => t.status === 'resolved').length;
+  const openTickets = tickets.filter((t: any) => t.status === 'open').length;
+  const inProgressTickets = tickets.filter((t: any) => t.status === 'in_progress').length;
+  const resolvedTickets = tickets.filter((t: any) => t.status === 'resolved').length;
 
   const getPriorityStyle = (priority: string) => {
     switch (priority) {
@@ -130,7 +134,7 @@ export default function TicketsPage() {
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {[
-          { icon: Ticket, color: 'hsl(221 83% 53%)', label: 'Total Tickets', value: tickets.length },
+          { icon: Ticket, color: 'hsl(221 83% 53%)', label: 'Total Tickets', value: totalItems },
           { icon: AlertCircle, color: 'hsl(30 80% 55%)', label: 'Open', value: openTickets, isHighlight: true },
           { icon: Clock, color: 'hsl(221 83% 53%)', label: 'In Progress', value: inProgressTickets },
           { icon: CheckCircle, color: 'hsl(160 60% 45%)', label: 'Resolved', value: resolvedTickets, isHighlight: true },
@@ -164,50 +168,43 @@ export default function TicketsPage() {
           </div>
         </CardHeader>
         <CardContent>
-          {/* Search & Filters */}
-          <div className="flex flex-col md:flex-row gap-3 sm:gap-4 mb-4 sm:mb-6">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search tickets..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 sm:pl-10 h-10 sm:h-11 text-xs sm:text-sm"
-              />
-            </div>
-            
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full md:w-48 h-10 sm:h-11 text-xs sm:text-sm">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="open">Open</SelectItem>
-                <SelectItem value="in-progress">In Progress</SelectItem>
-                <SelectItem value="resolved">Resolved</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-              <SelectTrigger className="w-full md:w-48 h-10 sm:h-11 text-xs sm:text-sm">
-                <SelectValue placeholder="Priority" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Priority</SelectItem>
-                <SelectItem value="high">High</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
-                <SelectItem value="low">Low</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          {/* Search & Filter */}
+          <SearchFilter
+            searchPlaceholder="Search tickets by number, customer, or subject..."
+            onSearchChange={setSearch}
+            filterOptions={[
+              {
+                label: 'Status',
+                value: 'status',
+                options: [
+                  { label: 'All Statuses', value: '' },
+                  { label: 'Open', value: 'open' },
+                  { label: 'In Progress', value: 'in_progress' },
+                  { label: 'Resolved', value: 'resolved' },
+                ],
+              },
+              {
+                label: 'Priority',
+                value: 'priority',
+                options: [
+                  { label: 'All Priorities', value: '' },
+                  { label: 'High', value: 'high' },
+                  { label: 'Medium', value: 'medium' },
+                  { label: 'Low', value: 'low' },
+                ],
+              },
+            ]}
+            onFilterChange={setFilterValues}
+            className="mb-4 sm:mb-6"
+          />
 
           {/* Tickets Grid */}
           {filteredTickets.length === 0 ? (
-            <div className="text-center py-10 sm:py-12 bg-muted/30 rounded-lg sm:rounded-xl border-2 border-dashed border-border">
-              <Ticket className="h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground mx-auto mb-3 sm:mb-4" />
-              <h3 className="text-base sm:text-lg font-semibold text-foreground mb-1.5 sm:mb-2">No tickets found</h3>
-              <p className="text-xs sm:text-sm text-muted-foreground">Try adjusting your filters</p>
-            </div>
+            <EmptyState
+              icon={Ticket}
+              title="No tickets found"
+              description={search ? "Try adjusting your search or filters" : "No support tickets yet"}
+            />
           ) : (
             <div className="space-y-2.5 sm:space-y-3">
               {filteredTickets.map((ticket) => {
@@ -228,7 +225,7 @@ export default function TicketsPage() {
                           </div>
                           <div className="min-w-0 flex-1">
                             <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-0.5 sm:mb-1">
-                              <Badge variant="outline" className="font-mono text-xs">{ticket.id}</Badge>
+                              <Badge variant="outline" className="font-mono text-xs">{ticket.ticketNumber}</Badge>
                               <Badge 
                                 variant="outline"
                                 className="text-xs capitalize"
@@ -256,10 +253,10 @@ export default function TicketsPage() {
                               {ticket.subject}
                             </p>
                             <p className="text-xs sm:text-sm text-muted-foreground truncate">
-                              {ticket.customer} • {ticket.email}
+                              {ticket.customerName}
                             </p>
                             <p className="text-[10px] sm:text-xs text-muted-foreground mt-1 sm:hidden">
-                              Created: {ticket.date}
+                              Created: {new Date(ticket.createdAt).toLocaleDateString()}
                             </p>
                           </div>
                         </div>
@@ -268,12 +265,12 @@ export default function TicketsPage() {
                         <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto">
                           <div className="text-left sm:text-right hidden sm:block flex-1">
                             <p className="text-xs text-muted-foreground">Created</p>
-                            <p className="font-semibold text-sm text-foreground">{ticket.date}</p>
+                            <p className="font-semibold text-sm text-foreground">{new Date(ticket.createdAt).toLocaleDateString()}</p>
                           </div>
                           <Button 
                             variant="outline" 
                             size="sm"
-                            onClick={() => router.push(`/admin/tickets/${ticket.id}`)}
+                            onClick={() => router.push(AdminRoutes.TICKET_DETAIL(ticket.id))}
                             className="w-full sm:w-auto h-9 text-xs sm:text-sm"
                           >
                             <Eye className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -286,6 +283,22 @@ export default function TicketsPage() {
                 );
               })}
             </div>
+          )}
+          
+          {/* Pagination */}
+          {filteredTickets.length > 0 && (
+            <Pagination
+              currentPage={page}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={(newSize) => {
+                setPageSize(newSize);
+                setPage(1); // Reset to first page when changing page size
+              }}
+              className="mt-4 sm:mt-6"
+            />
           )}
         </CardContent>
       </Card>

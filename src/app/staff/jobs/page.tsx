@@ -5,13 +5,17 @@ import { JobCard } from '@/components/staff/JobCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { Briefcase, Calendar, CheckCircle, Clock } from 'lucide-react';
-import { useStaffJobs } from '@/api/domains/staff/staff-index';
+import { useStaffJobs } from '@/api/domains/staff';
+import Loading from '@/components/shared/display/Loading';
+import Error from '@/components/shared/display/Error';
+import { EmptyState } from '@/components/shared/display/EmptyState';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Pagination } from '@/components/shared/crud/Pagination';
 import { debounce } from '@/lib/utils/formatters';
 
 export default function JobsPage() {
+  const [activeTab, setActiveTab] = useState('all');
   const [status, setStatus] = useState<string | undefined>(undefined);
   const [search, setSearch] = useState('');
   const [fromDate, setFromDate] = useState('');
@@ -21,20 +25,67 @@ export default function JobsPage() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const updateDebouncedSearch = useMemo(() => debounce((val: string) => setDebouncedSearch(val), 300), []);
 
-  const filters = useMemo(() => ({
-    status: status as any,
+  // Build filters based on active tab and user selections
+  const filters = useMemo(() => {
+    const baseFilters: any = {
+      status: status as any,
+      search: debouncedSearch || undefined,
+      page,
+      limit,
+    };
+
+    // Add date filtering for Today and Upcoming tabs
+    // Only apply manual date filters on 'all' tab
+    const today = new Date().toISOString().split('T')[0];
+    if (activeTab === 'today') {
+      baseFilters.fromDate = today;
+      baseFilters.toDate = today;
+    } else if (activeTab === 'upcoming') {
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      baseFilters.fromDate = tomorrow.toISOString().split('T')[0];
+    } else if (activeTab === 'all') {
+      // Only apply manual date filters on 'all' tab
+      baseFilters.fromDate = fromDate || undefined;
+      baseFilters.toDate = toDate || undefined;
+    }
+
+    return baseFilters;
+  }, [status, debouncedSearch, fromDate, toDate, page, limit, activeTab]);
+
+  // Get counts for all tabs with search/status filters applied
+  const todayDate = new Date().toISOString().split('T')[0];
+  const tomorrowDate = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+  
+  // Build count filters with search and status
+  const countBaseFilters = {
     search: debouncedSearch || undefined,
+    status: status as any,
+    limit: 1000,
+  };
+  
+  // Call all hooks before any conditional returns
+  const { data, isLoading, isFetching, error } = useStaffJobs(filters);
+  const loading = isLoading || isFetching;
+  const { data: todayData } = useStaffJobs({ 
+    ...countBaseFilters,
+    fromDate: todayDate, 
+    toDate: todayDate,
+  });
+  const { data: upcomingData } = useStaffJobs({ 
+    ...countBaseFilters,
+    fromDate: tomorrowDate,
+  });
+  const { data: allData } = useStaffJobs({ 
+    ...countBaseFilters,
     fromDate: fromDate || undefined,
     toDate: toDate || undefined,
-    page,
-    limit,
-  }), [status, debouncedSearch, fromDate, toDate, page, limit]);
-
-  const { data } = useStaffJobs(filters);
+  });
+  
   const jobs = data?.data ?? [];
-  const todayDate = new Date().toISOString().split('T')[0];
-  const todayJobs = jobs.filter(job => (job.datetime || '').startsWith(todayDate));
-  const upcomingJobs = jobs.filter(job => (job.datetime || '').split('T')[0] > todayDate);
+  const todayCount = todayData?.total ?? 0;
+  const upcomingCount = upcomingData?.total ?? 0;
+  const totalCount = allData?.total ?? 0;
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -56,7 +107,7 @@ export default function JobsPage() {
               <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary flex-shrink-0" />
               <p className="text-[10px] sm:text-xs text-muted-foreground">Today</p>
             </div>
-            <p className="text-xl sm:text-2xl font-bold text-foreground">{todayJobs.length}</p>
+            <p className="text-xl sm:text-2xl font-bold text-foreground">{todayCount}</p>
           </CardContent>
         </Card>
 
@@ -66,7 +117,7 @@ export default function JobsPage() {
               <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary flex-shrink-0" />
               <p className="text-[10px] sm:text-xs text-muted-foreground">Upcoming</p>
             </div>
-            <p className="text-xl sm:text-2xl font-bold text-foreground">{upcomingJobs.length}</p>
+            <p className="text-xl sm:text-2xl font-bold text-foreground">{upcomingCount}</p>
           </CardContent>
         </Card>
 
@@ -76,36 +127,36 @@ export default function JobsPage() {
               <Briefcase className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary flex-shrink-0" />
               <p className="text-[10px] sm:text-xs text-muted-foreground">Total</p>
             </div>
-            <p className="text-xl sm:text-2xl font-bold text-foreground">{jobs.length}</p>
+            <p className="text-xl sm:text-2xl font-bold text-foreground">{totalCount}</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Tabs */}
-      <Tabs defaultValue="all" className="space-y-4 sm:space-y-6">
+      <Tabs value={activeTab} onValueChange={(tab) => { setActiveTab(tab); setPage(1); }} className="space-y-4 sm:space-y-6">
         <TabsList className="grid w-full grid-cols-3 h-auto">
           <TabsTrigger value="all" className="gap-1.5 sm:gap-2 text-xs sm:text-sm py-2 sm:py-2.5">
             <Briefcase className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             <span>All</span>
-            <span>({data?.total ?? 0})</span>
+            <span>({totalCount})</span>
           </TabsTrigger>
           <TabsTrigger value="today" className="gap-1.5 sm:gap-2 text-xs sm:text-sm py-2 sm:py-2.5">
             <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             <span className="hidden xs:inline">Today</span>
             <span className="xs:hidden">Now</span>
-            <span>({todayJobs.length})</span>
+            <span>({todayCount})</span>
           </TabsTrigger>
           <TabsTrigger value="upcoming" className="gap-1.5 sm:gap-2 text-xs sm:text-sm py-2 sm:py-2.5">
             <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             <span className="hidden xs:inline">Upcoming</span>
             <span className="xs:hidden">Later</span>
-            <span>({upcomingJobs.length})</span>
+            <span>({upcomingCount})</span>
           </TabsTrigger>
         </TabsList>
 
         {/* All - Filters and List */}
         <TabsContent value="all" className="space-y-4 sm:space-y-6">
-          {/* Filters */}
+          {/* Filters - Only show on All tab */}
           <div className="grid grid-cols-1 sm:grid-cols-5 gap-2 sm:gap-3">
             <div className="sm:col-span-2">
               <Input
@@ -132,7 +183,16 @@ export default function JobsPage() {
           </div>
 
           {/* List */}
-          {jobs.length > 0 ? (
+          <div className="min-h-[400px]">
+            {loading ? (
+              <div className="flex items-center justify-center h-[400px]">
+                <Loading text="Loading jobs..." fullScreen={false} />
+              </div>
+            ) : error ? (
+              <div className="flex items-center justify-center h-[400px]">
+                <Error message="Failed to load jobs" details={error?.message} />
+              </div>
+            ) : jobs.length > 0 ? (
             <div className="grid grid-cols-1 gap-3 sm:gap-4">
               {jobs.map((job) => (
                 <JobCard 
@@ -149,30 +209,64 @@ export default function JobsPage() {
               ))}
             </div>
           ) : (
-            <Card className="border-2 border-border">
-              <CardContent className="py-10 sm:py-12 text-center">
-                <p className="text-base sm:text-lg font-semibold text-foreground mb-1 px-4">
-                  No jobs found
-                </p>
-              </CardContent>
-            </Card>
+            <EmptyState
+              icon={Briefcase}
+              title={debouncedSearch || status || fromDate || toDate ? 'No jobs match your filters' : 'No jobs found'}
+              description={debouncedSearch || status || fromDate || toDate ? 'Try adjusting your search or filters to find jobs' : 'You have no assigned jobs at the moment'}
+            />
           )}
+          </div>
 
           {/* Pagination */}
-          <Pagination
-            currentPage={data?.page ?? page}
-            totalPages={data?.totalPages ?? 1}
-            onPageChange={(p) => setPage(p)}
-            itemsPerPage={data?.limit ?? limit}
-            totalItems={data?.total ?? jobs.length}
-          />
+          {jobs.length > 0 && (
+            <Pagination
+              currentPage={data?.page ?? page}
+              totalPages={data?.totalPages ?? 1}
+              onPageChange={(p) => setPage(p)}
+              itemsPerPage={data?.limit ?? limit}
+              totalItems={data?.total ?? 0}
+            />
+          )}
         </TabsContent>
 
         {/* Today Jobs */}
-        <TabsContent value="today">
-          {todayJobs.length > 0 ? (
+        <TabsContent value="today" className="space-y-4 sm:space-y-6">
+          {/* Search on Today tab */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
+            <div className="sm:col-span-2">
+              <Input
+                placeholder="Search by customer or service"
+                value={search}
+                onChange={(e) => { setSearch(e.target.value); updateDebouncedSearch(e.target.value); setPage(1); }}
+              />
+            </div>
+            <Select value={status || 'all'} onValueChange={(v) => { setStatus(v === 'all' ? undefined : v); setPage(1); }}>
+              <SelectTrigger>
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="confirmed">Confirmed</SelectItem>
+                <SelectItem value="in_progress">In Progress</SelectItem>
+                <SelectItem value="completed">Completed</SelectItem>
+                <SelectItem value="cancelled">Cancelled</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="min-h-[400px]">
+            {loading ? (
+              <div className="flex items-center justify-center h-[400px]">
+                <Loading text="Loading jobs..." fullScreen={false} />
+              </div>
+            ) : error ? (
+              <div className="flex items-center justify-center h-[400px]">
+                <Error message="Failed to load jobs" details={error?.message} />
+              </div>
+            ) : jobs.length > 0 ? (
             <div className="grid grid-cols-1 gap-3 sm:gap-4">
-              {todayJobs.map((job) => (
+              {jobs.map((job) => (
                 <JobCard 
                   key={job.id} 
                   job={{
@@ -187,27 +281,53 @@ export default function JobsPage() {
               ))}
             </div>
           ) : (
-            <Card className="border-2 border-border">
-              <CardContent className="py-10 sm:py-12 text-center">
-                <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 bg-primary/10 rounded-full mb-3 sm:mb-4">
-                  <CheckCircle className="h-7 w-7 sm:h-8 sm:w-8 text-primary" />
-                </div>
-                <p className="text-base sm:text-lg font-semibold text-foreground mb-1 px-4">
-                  No jobs scheduled today
-                </p>
-                <p className="text-xs sm:text-sm text-muted-foreground px-4">
-                  Enjoy your free time!
-                </p>
-              </CardContent>
-            </Card>
+            <EmptyState
+              icon={CheckCircle}
+              title="No jobs scheduled today"
+              description="Enjoy your free time!"
+            />
           )}
+          </div>
         </TabsContent>
 
         {/* Upcoming Jobs */}
-        <TabsContent value="upcoming">
-          {upcomingJobs.length > 0 ? (
+        <TabsContent value="upcoming" className="space-y-4 sm:space-y-6">
+          {/* Search on Upcoming tab */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
+            <div className="sm:col-span-2">
+              <Input
+                placeholder="Search by customer or service"
+                value={search}
+                onChange={(e) => { setSearch(e.target.value); updateDebouncedSearch(e.target.value); setPage(1); }}
+              />
+            </div>
+            <Select value={status || 'all'} onValueChange={(v) => { setStatus(v === 'all' ? undefined : v); setPage(1); }}>
+              <SelectTrigger>
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="confirmed">Confirmed</SelectItem>
+                <SelectItem value="in_progress">In Progress</SelectItem>
+                <SelectItem value="completed">Completed</SelectItem>
+                <SelectItem value="cancelled">Cancelled</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="min-h-[400px]">
+            {loading ? (
+              <div className="flex items-center justify-center h-[400px]">
+                <Loading text="Loading jobs..." fullScreen={false} />
+              </div>
+            ) : error ? (
+              <div className="flex items-center justify-center h-[400px]">
+                <Error message="Failed to load jobs" details={error?.message} />
+              </div>
+            ) : jobs.length > 0 ? (
             <div className="grid grid-cols-1 gap-3 sm:gap-4">
-              {upcomingJobs.map((job) => (
+              {jobs.map((job) => (
                 <JobCard 
                   key={job.id} 
                   job={{
@@ -222,20 +342,13 @@ export default function JobsPage() {
               ))}
             </div>
           ) : (
-            <Card className="border-2 border-border">
-              <CardContent className="py-10 sm:py-12 text-center">
-                <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 bg-muted rounded-full mb-3 sm:mb-4">
-                  <Calendar className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground" />
-                </div>
-                <p className="text-base sm:text-lg font-semibold text-foreground mb-1 px-4">
-                  No upcoming jobs
-                </p>
-                <p className="text-xs sm:text-sm text-muted-foreground px-4">
-                  New jobs will appear here when assigned
-                </p>
-              </CardContent>
-            </Card>
+            <EmptyState
+              icon={Calendar}
+              title="No upcoming jobs"
+              description="New jobs will appear here when assigned"
+            />
           )}
+          </div>
         </TabsContent>
       </Tabs>
     </div>

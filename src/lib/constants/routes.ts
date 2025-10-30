@@ -113,17 +113,17 @@ export const ROUTES = {
     DASHBOARD: '/admin/dashboard',
     
     // Catalog Management
-    SERVICES: '/admin/catalog/services',
-    SERVICE_NEW: '/admin/catalog/services/new',
-    SERVICE_EDIT: (id: string) => `/admin/catalog/services/${id}/edit`,
+    SERVICES: '/admin/services',
+    SERVICE_NEW: '/admin/services/new',
+    SERVICE_EDIT: (id: string) => `/admin/services/${id}/edit`,
     
-    PRODUCTS: '/admin/catalog/products',
-    PRODUCT_NEW: '/admin/catalog/products/new',
-    PRODUCT_EDIT: (id: string) => `/admin/catalog/products/${id}/edit`,
+    PRODUCTS: '/admin/products',
+    PRODUCT_NEW: '/admin/products/new',
+    PRODUCT_EDIT: (id: string) => `/admin/products/${id}/edit`,
     
-    CATEGORIES: '/admin/catalog/categories',
-    CATEGORY_NEW: '/admin/catalog/categories/new',
-    CATEGORY_EDIT: (id: string) => `/admin/catalog/categories/${id}/edit`,
+    CATEGORIES: '/admin/categories',
+    CATEGORY_NEW: '/admin/categories/new',
+    CATEGORY_EDIT: (id: string) => `/admin/categories/${id}/edit`,
     
     // Staff Management
     STAFF: '/admin/staff',
@@ -135,11 +135,15 @@ export const ROUTES = {
     CUSTOMERS: '/admin/customers',
     CUSTOMER_DETAIL: (id: string) => `/admin/customers/${id}`,
     
-    // Vehicle Management
-    VEHICLE_BRANDS: '/admin/vehicles/brands',
-    VEHICLE_BRAND_NEW: '/admin/vehicles/brands/new',
-    VEHICLE_MODELS: '/admin/vehicles/models',
-    VEHICLE_MODEL_NEW: '/admin/vehicles/models/new',
+    // Vehicle Management (Pages)
+    VEHICLES: '/admin/vehicles',
+    VEHICLE_TYPES: '/admin/vehicles/types',
+    VEHICLE_BODY_TYPES: '/admin/vehicles/body-types',
+    VEHICLE_MODELS_PAGE: '/admin/vehicles/models',
+    
+    // Vehicle Management (API Endpoints)
+    VEHICLE_BRANDS: '/api/admin/vehicles/brands',
+    VEHICLE_MODELS: '/api/admin/vehicles/models',
     
     // Order Management
     ORDERS: '/admin/orders',
@@ -153,16 +157,16 @@ export const ROUTES = {
     REQUEST_ASSIGN: (id: string) => `/admin/requests/${id}/assign`,
     
     // Marketing
-    BANNERS: '/admin/marketing/banners',
-    BANNER_NEW: '/admin/marketing/banners/new',
-    BANNER_EDIT: (id: string) => `/admin/marketing/banners/${id}/edit`,
+    BANNERS: '/admin/banners',
+    BANNER_NEW: '/admin/banners/new',
+    BANNER_EDIT: (id: string) => `/admin/banners/${id}/edit`,
     
-    POSTERS: '/admin/marketing/posters',
-    POSTER_NEW: '/admin/marketing/posters/new',
-    POSTER_EDIT: (id: string) => `/admin/marketing/posters/${id}/edit`,
+    POSTERS: '/admin/posters',
+    POSTER_NEW: '/admin/posters/new',
+    POSTER_EDIT: (id: string) => `/admin/posters/${id}/edit`,
     
-    CAMPAIGNS: '/admin/marketing/campaigns',
-    CAMPAIGN_NEW: '/admin/marketing/campaigns/new',
+    CAMPAIGNS: '/admin/campaigns',
+    CAMPAIGN_NEW: '/admin/campaigns/new',
     
     // Coupons
     COUPONS: '/admin/coupons',
@@ -170,9 +174,9 @@ export const ROUTES = {
     COUPON_DETAIL: (id: string) => `/admin/coupons/${id}`,
     COUPON_EDIT: (id: string) => `/admin/coupons/${id}/edit`,
     
-    // COD Management
-    COD: '/admin/cod',
-    COD_REPORTS: '/admin/cod/reports',
+    // Payment Management
+    PAYMENTS: '/admin/payments',
+    COD_REPORTS: '/admin/payments/cod/reports',
     
     // Cancellations
     CANCELLATIONS: '/admin/cancellations',
@@ -196,7 +200,6 @@ export const ROUTES = {
     SETTINGS_PAYMENT: '/admin/settings/payment-settings',
     PROFILE: '/admin/profile',
     NOTIFICATIONS: '/admin/notifications',
-    PAYMENTS: '/admin/payments',
     SLOTS: '/admin/slots',
   },
 

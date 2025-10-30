@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft, Plus, Megaphone } from 'lucide-react';
+import { AdminRoutes } from '@/lib/constants/routes';
 import { toast } from 'sonner';
 
 export default function NewCampaignPage() {
@@ -17,14 +18,14 @@ export default function NewCampaignPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     toast.success('Campaign created successfully!');
-    router.push('/admin/marketing/campaigns');
+    router.push(AdminRoutes.CAMPAIGNS);
   };
 
   return (
     <div className="max-w-2xl space-y-6">
       {/* Header */}
       <div>
-        <Button variant="ghost" onClick={() => router.push('/admin/marketing/campaigns')}>
+        <Button variant="ghost" onClick={() => router.push(AdminRoutes.CAMPAIGNS)}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Campaigns
         </Button>

@@ -15,7 +15,6 @@ export const useStaffJobs = (filters?: StaffJobFilters) => {
     queryKey: staffJobsKeys.list(filters),
     queryFn: () => staffJobsFetchers.getJobs(filters),
     staleTime: 1 * 60 * 1000, // 1 minute
-    placeholderData: (previousData) => previousData,
   });
 };
 

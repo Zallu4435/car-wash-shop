@@ -49,6 +49,6 @@ export * from './admin-marketing/queries';
 export * from './admin-support/fetchers';
 export * from './admin-support/queries';
 
-// COD Management
-export * from './admin-cod/fetchers';
-export * from './admin-cod/queries';
+// Payment Management
+export * from './admin-payments/fetchers';
+export * from './admin-payments/queries';

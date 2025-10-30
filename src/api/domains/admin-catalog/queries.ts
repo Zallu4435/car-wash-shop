@@ -13,21 +13,27 @@ import { toast } from 'sonner';
 export const adminCatalogKeys = {
   all: ['admin-catalog'] as const,
   services: () => [...adminCatalogKeys.all, 'services'] as const,
-  servicesList: () => [...adminCatalogKeys.services(), 'list'] as const,
+  servicesList: (filters?: any) => [...adminCatalogKeys.services(), 'list', filters] as const,
   serviceDetail: (id: string) => [...adminCatalogKeys.services(), 'detail', id] as const,
   products: () => [...adminCatalogKeys.all, 'products'] as const,
-  productsList: () => [...adminCatalogKeys.products(), 'list'] as const,
+  productsList: (filters?: any) => [...adminCatalogKeys.products(), 'list', filters] as const,
   productDetail: (id: string) => [...adminCatalogKeys.products(), 'detail', id] as const,
   categories: () => [...adminCatalogKeys.all, 'categories'] as const,
-  categoriesList: () => [...adminCatalogKeys.categories(), 'list'] as const,
+  categoriesList: (filters?: any) => [...adminCatalogKeys.categories(), 'list', filters] as const,
   categoryDetail: (id: string) => [...adminCatalogKeys.categories(), 'detail', id] as const,
 };
 
 // Services
-export const useAdminServiceList = () => {
+export const useAdminServiceList = (filters?: { 
+  search?: string; 
+  status?: string; 
+  category?: string;
+  page?: number;
+  pageSize?: number;
+}) => {
   return useQuery({
-    queryKey: adminCatalogKeys.servicesList(),
-    queryFn: adminCatalogFetchers.getServiceList,
+    queryKey: adminCatalogKeys.servicesList(filters),
+    queryFn: () => adminCatalogFetchers.getServiceList(filters),
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };
@@ -86,10 +92,17 @@ export const useDeleteService = () => {
 };
 
 // Products
-export const useAdminProductList = () => {
+export const useAdminProductList = (filters?: { 
+  search?: string; 
+  status?: string; 
+  category?: string; 
+  stock?: string;
+  page?: number;
+  pageSize?: number;
+}) => {
   return useQuery({
-    queryKey: adminCatalogKeys.productsList(),
-    queryFn: adminCatalogFetchers.getProductList,
+    queryKey: adminCatalogKeys.productsList(filters),
+    queryFn: () => adminCatalogFetchers.getProductList(filters),
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };
@@ -148,10 +161,15 @@ export const useDeleteProduct = () => {
 };
 
 // Categories
-export const useAdminCategoryList = () => {
+export const useAdminCategoryList = (filters?: { 
+  search?: string; 
+  status?: string;
+  page?: number;
+  pageSize?: number;
+}) => {
   return useQuery({
-    queryKey: adminCatalogKeys.categoriesList(),
-    queryFn: adminCatalogFetchers.getCategoryList,
+    queryKey: adminCatalogKeys.categoriesList(filters),
+    queryFn: () => adminCatalogFetchers.getCategoryList(filters),
     staleTime: 10 * 60 * 1000, // 10 minutes
   });
 };

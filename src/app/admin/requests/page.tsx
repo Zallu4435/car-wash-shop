@@ -4,7 +4,6 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
 import { 
   Calendar, 
   Search, 
@@ -18,22 +17,31 @@ import { useAdminBookingList } from '@/api/domains/admin-requests/queries';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
 import { EmptyState } from '@/components/shared/display/EmptyState';
+import { SearchFilter } from '@/components/admin/SearchFilter';
+import { Pagination } from '@/components/admin/Pagination';
 
 export default function RequestsPage() {
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState('');
-  const { data: bookingData, isLoading, error, refetch } = useAdminBookingList();
+  const [search, setSearch] = useState('');
+  const [filterValues, setFilterValues] = useState<Record<string, string>>({});
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  // Combine search and filters for API
+  const filters = useMemo(() => ({
+    search: search || undefined,
+    status: filterValues.status || undefined,
+    dateRange: filterValues.dateRange || undefined,
+    page,
+    limit: pageSize,
+  }), [search, filterValues, page, pageSize]);
+
+  const { data: bookingData, isLoading, error, refetch} = useAdminBookingList(filters);
 
   const bookings = bookingData?.data || [];
-
-  const filteredBookings = useMemo(() => 
-    bookings.filter(b => 
-      b.bookingNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      b.customer.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      b.service.toLowerCase().includes(searchQuery.toLowerCase())
-    ),
-    [bookings, searchQuery]
-  );
+  const totalItems = bookingData?.total || 0;
+  const totalPages = bookingData?.totalPages || 0;
+  const filteredBookings = bookings; // Already filtered by API
 
   const pendingCount = bookings.filter(b => b.status === 'pending').length;
   const inProgressCount = bookings.filter(b => b.status === 'in_progress').length;
@@ -147,23 +155,44 @@ export default function RequestsPage() {
           </div>
         </CardHeader>
         <CardContent>
-          {/* Search Bar */}
-          <div className="relative mb-4 sm:mb-6">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search by booking ID, customer name, or service..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 sm:pl-10 h-10 sm:h-11 text-xs sm:text-sm"
-            />
-          </div>
+          {/* Search and Filter */}
+          <SearchFilter
+            searchPlaceholder="Search by booking ID, customer name, or service..."
+            onSearchChange={setSearch}
+            filterOptions={[
+              {
+                label: 'Status',
+                value: 'status',
+                options: [
+                  { label: 'All Statuses', value: '' },
+                  { label: 'Pending', value: 'pending' },
+                  { label: 'In Progress', value: 'in_progress' },
+                  { label: 'Completed', value: 'completed' },
+                  { label: 'Cancelled', value: 'cancelled' },
+                ],
+              },
+              {
+                label: 'Date Range',
+                value: 'dateRange',
+                type: 'dateRange',
+                options: [
+                  { label: 'All Time', value: '' },
+                  { label: 'Today', value: 'today' },
+                  { label: 'Last 7 Days', value: 'last-7-days' },
+                  { label: 'Last 30 Days', value: 'last-30-days' },
+                ],
+              },
+            ]}
+            onFilterChange={setFilterValues}
+            className="mb-4 sm:mb-6"
+          />
 
           {/* Bookings Grid */}
           {filteredBookings.length === 0 ? (
             <EmptyState
               icon={Calendar}
               title="No bookings found"
-              description={searchQuery ? "Try adjusting your search" : "No service bookings yet"}
+              description={search ? "Try adjusting your search or filters" : "No service bookings yet"}
             />
           ) : (
             <div className="space-y-2.5 sm:space-y-3">
@@ -263,6 +292,22 @@ export default function RequestsPage() {
               );
             })}
             </div>
+          )}
+          
+          {/* Pagination */}
+          {filteredBookings.length > 0 && (
+            <Pagination
+              currentPage={page}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={(newSize) => {
+                setPageSize(newSize);
+                setPage(1); // Reset to first page when changing page size
+              }}
+              className="mt-4 sm:mt-6"
+            />
           )}
         </CardContent>
       </Card>

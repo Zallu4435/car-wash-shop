@@ -40,11 +40,13 @@ export default function SlotManagementPage() {
   const { data: slotsData, isLoading, error, refetch } = useAdminSlots();
   const blockSlotMutation = useBlockSlot();
   const unblockSlotMutation = useUnblockSlot();
-  const [blockedSlots, setBlockedSlots] = useState<string[]>(slotsData?.blockedSlots || ['02:00 PM', '03:00 PM']);
   const [staffLeaves, setStaffLeaves] = useState<string[]>(['staff_002']);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [newSlotTime, setNewSlotTime] = useState('');
   const [newSlotCapacity, setNewSlotCapacity] = useState('5');
+
+  // Use data from API
+  const blockedSlots = slotsData?.blockedSlots || [];
 
   if (isLoading) {
     return <Loading text="Loading slots..." />;
@@ -55,12 +57,20 @@ export default function SlotManagementPage() {
   }
 
   const toggleSlot = (slot: string) => {
-    if (blockedSlots.includes(slot)) {
-      setBlockedSlots(blockedSlots.filter(s => s !== slot));
-      toast.success(`${slot} slot enabled`);
+    const isCurrentlyBlocked = blockedSlots.includes(slot);
+    
+    if (isCurrentlyBlocked) {
+      unblockSlotMutation.mutate(slot, {
+        onSuccess: () => {
+          refetch();
+        },
+      });
     } else {
-      setBlockedSlots([...blockedSlots, slot]);
-      toast.success(`${slot} slot blocked`);
+      blockSlotMutation.mutate(slot, {
+        onSuccess: () => {
+          refetch();
+        },
+      });
     }
   };
 
@@ -75,12 +85,22 @@ export default function SlotManagementPage() {
   };
 
   const blockFullDay = () => {
-    setBlockedSlots(timeSlots);
+    // Block all slots
+    timeSlots.forEach(slot => {
+      if (!blockedSlots.includes(slot)) {
+        blockSlotMutation.mutate(slot);
+      }
+    });
+    setTimeout(() => refetch(), 500);
     toast.success('Full day blocked');
   };
 
   const unblockFullDay = () => {
-    setBlockedSlots([]);
+    // Unblock all slots
+    blockedSlots.forEach(slot => {
+      unblockSlotMutation.mutate(slot);
+    });
+    setTimeout(() => refetch(), 500);
     toast.success('All slots enabled');
   };
 
@@ -195,11 +215,11 @@ export default function SlotManagementPage() {
                 <CardTitle className="text-base sm:text-lg">Time Slots</CardTitle>
               </div>
               <div className="flex items-center gap-2">
-                <Badge variant="outline" className="bg-primary/10 text-xs">
+                <Badge variant="outline" className="bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300 border-green-200 dark:border-green-800 text-xs">
                   <CheckCircle className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-1" />
                   Available
                 </Badge>
-                <Badge variant="outline" className="bg-destructive/10 text-xs">
+                <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/20 text-xs">
                   <Ban className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-1" />
                   Blocked
                 </Badge>
@@ -210,28 +230,36 @@ export default function SlotManagementPage() {
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
               {timeSlots.map((slot) => {
                 const isBlocked = blockedSlots.includes(slot);
+                const isProcessing = blockSlotMutation.isPending || unblockSlotMutation.isPending;
+                
                 return (
                   <button
                     key={slot}
                     onClick={() => toggleSlot(slot)}
-                    className={`p-3 sm:p-4 rounded-lg sm:rounded-xl border-2 transition-all hover:shadow-md ${
+                    disabled={isProcessing}
+                    className={`p-3 sm:p-4 rounded-lg sm:rounded-xl border-2 transition-all duration-300 hover:shadow-md active:scale-95 ${
                       isBlocked
-                        ? 'border-destructive/20 bg-destructive/5'
-                        : 'border-primary/20 bg-primary/5 hover:border-primary/40'
-                    }`}
+                        ? 'border-destructive bg-destructive/10 hover:bg-destructive/15'
+                        : 'border-border bg-muted hover:bg-muted/80'
+                    } ${isProcessing ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                   >
                     <div className="flex items-center justify-between mb-1.5 sm:mb-2">
-                      <Clock className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${isBlocked ? 'text-destructive' : 'text-primary'}`} />
+                      <Clock className={`h-3.5 w-3.5 sm:h-4 sm:w-4 transition-colors ${isBlocked ? 'text-destructive' : 'text-foreground'}`} />
                       {isBlocked ? (
-                        <Ban className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-destructive" />
+                        <Ban className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-destructive animate-in fade-in duration-300" />
                       ) : (
-                        <CheckCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
+                        <CheckCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-600 dark:text-green-400 animate-in fade-in duration-300" />
                       )}
                     </div>
-                    <p className="font-bold text-sm sm:text-base text-foreground mb-1.5 sm:mb-2">{slot}</p>
+                    <p className={`font-bold text-sm sm:text-base mb-1.5 sm:mb-2 transition-colors ${
+                      isBlocked ? 'text-destructive' : 'text-foreground'
+                    }`}>{slot}</p>
                     <Badge 
-                      variant={isBlocked ? 'error' : 'default'}
-                      className="text-xs"
+                      className={`text-xs transition-all ${
+                        isBlocked 
+                          ? 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300 border-red-200 dark:border-red-800' 
+                          : 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300 border-green-200 dark:border-green-800'
+                      }`}
                     >
                       {isBlocked ? 'Blocked' : 'Available'}
                     </Badge>
@@ -270,7 +298,7 @@ export default function SlotManagementPage() {
                     <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center font-bold text-base sm:text-lg flex-shrink-0 ${
                       isOnLeave 
                         ? 'bg-destructive/10 text-destructive' 
-                        : 'bg-primary/10 text-primary'
+                        : 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
                     }`}>
                       {member.name.charAt(0)}
                     </div>
@@ -280,7 +308,13 @@ export default function SlotManagementPage() {
                     </div>
                   </div>
                   <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
-                    <Badge variant={isOnLeave ? 'error' : 'default'} className="text-xs">
+                    <Badge 
+                      className={`text-xs ${
+                        isOnLeave 
+                          ? 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300 border-red-200 dark:border-red-800' 
+                          : 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300 border-green-200 dark:border-green-800'
+                      }`}
+                    >
                       {isOnLeave ? 'On Leave' : 'Available'}
                     </Badge>
                     <div className="flex items-center gap-2">

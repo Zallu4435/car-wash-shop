@@ -88,6 +88,7 @@ export interface StaffDashboardSummary {
     totalJobs: number;
     avgRating: number;
     earnings: number;
+    totalReviews?: number;
     avatar?: string;
     joinedDate?: string;
     achievements: Array<{

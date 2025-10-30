@@ -4,22 +4,38 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Megaphone, Plus, Search, Edit, Trash2, Calendar, TrendingUp } from 'lucide-react';
+import { Megaphone, Plus, Edit, Trash2, Calendar, TrendingUp } from 'lucide-react';
+import { AdminRoutes } from '@/lib/constants/routes';
 import { useState, useMemo } from 'react';
 import { useAdminCampaignList, useDeleteCampaign } from '@/api/domains/admin-marketing/queries';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
 import { EmptyState } from '@/components/shared/display/EmptyState';
+import { SearchFilter } from '@/components/admin/SearchFilter';
+import { Pagination } from '@/components/admin/Pagination';
 
 export default function CampaignsPage() {
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState('');
-  const { data: campaignsData, isLoading, error, refetch } = useAdminCampaignList();
+  const [search, setSearch] = useState('');
+  const [filterValues, setFilterValues] = useState<Record<string, string>>({});
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  // Combine search and filters for API
+  const filters = useMemo(() => ({
+    search: search || undefined,
+    status: filterValues.status || undefined,
+    page,
+    pageSize,
+  }), [search, filterValues, page, pageSize]);
+
+  const { data: campaignsData, isLoading, error, refetch } = useAdminCampaignList(filters);
   const deleteCampaignMutation = useDeleteCampaign();
 
-  const campaigns = campaignsData || [];
+  const campaigns = campaignsData?.data || [];
+  const totalItems = campaignsData?.total || 0;
+  const totalPages = campaignsData?.totalPages || 0;
+  const filteredCampaigns = campaigns; // Already filtered by API
 
   const handleDelete = async (campaignId: string) => {
     if (confirm('Are you sure you want to delete this campaign?')) {
@@ -40,17 +56,10 @@ export default function CampaignsPage() {
       />
     );
   }
-  const [statusFilter, setStatusFilter] = useState('all');
-
-  const filteredCampaigns = campaigns.filter(campaign => {
-    const matchesSearch = campaign.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || campaign.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
 
   const activeCampaigns = campaigns.filter(c => c.status === 'active').length;
-  const totalBudget = campaigns.reduce((sum, c) => sum + c.budget, 0);
-  const totalConversions = campaigns.reduce((sum, c) => sum + c.conversions, 0);
+  const totalBudget = campaigns.reduce((sum: number, c: any) => sum + (c.budget || 0), 0);
+  const totalConversions = campaigns.reduce((sum: number, c: any) => sum + (c.conversions || 0), 0);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -77,7 +86,7 @@ export default function CampaignsPage() {
             Create and manage marketing campaigns
           </p>
         </div>
-        <Button onClick={() => router.push('/admin/marketing/campaigns/new')} className="w-full md:w-auto h-9 sm:h-10 text-xs sm:text-sm">
+        <Button onClick={() => router.push(AdminRoutes.CAMPAIGN_NEW)} className="w-full md:w-auto h-9 sm:h-10 text-xs sm:text-sm">
           <Plus className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Create Campaign
         </Button>
@@ -86,7 +95,7 @@ export default function CampaignsPage() {
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {[
-          { icon: Megaphone, color: 'blue', label: 'Total Campaigns', value: campaigns.length },
+          { icon: Megaphone, color: 'blue', label: 'Total Campaigns', value: totalItems },
           { icon: TrendingUp, color: 'green', label: 'Active', value: activeCampaigns, isHighlight: true },
           { icon: Calendar, color: 'purple', label: 'Total Budget', value: `₹${(totalBudget / 1000).toFixed(0)}K` },
           { icon: TrendingUp, color: 'orange', label: 'Conversions', value: totalConversions },
@@ -121,33 +130,42 @@ export default function CampaignsPage() {
         </CardHeader>
         <CardContent>
           {/* Search & Filter */}
-          <div className="flex flex-col md:flex-row gap-3 sm:gap-4 mb-4 sm:mb-6">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search campaigns..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 sm:pl-10 h-10 sm:h-11 text-xs sm:text-sm"
-              />
-            </div>
-            
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full md:w-48 h-10 sm:h-11 text-xs sm:text-sm">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="scheduled">Scheduled</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <SearchFilter
+            searchPlaceholder="Search campaigns by name..."
+            onSearchChange={setSearch}
+            filterOptions={[
+              {
+                label: 'Status',
+                value: 'status',
+                options: [
+                  { label: 'All Statuses', value: '' },
+                  { label: 'Active', value: 'active' },
+                  { label: 'Inactive', value: 'inactive' },
+                ],
+              },
+            ]}
+            onFilterChange={setFilterValues}
+            className="mb-4 sm:mb-6"
+          />
 
           {/* Campaigns Grid */}
-          <div className="space-y-2.5 sm:space-y-3">
-            {filteredCampaigns.map((campaign) => (
+          {filteredCampaigns.length === 0 ? (
+            <EmptyState
+              icon={Megaphone}
+              title="No campaigns found"
+              description={search ? "Try adjusting your search or filters" : "No campaigns created yet"}
+              action={
+                !search && (
+                  <Button onClick={() => router.push(AdminRoutes.CAMPAIGN_NEW)}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Create Campaign
+                  </Button>
+                )
+              }
+            />
+          ) : (
+            <div className="space-y-2.5 sm:space-y-3">
+              {filteredCampaigns.map((campaign) => (
               <Card key={campaign.id} className="border-2 hover:shadow-lg transition-all">
                 <CardContent className="p-4 sm:p-5">
                   <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4 mb-3 sm:mb-4">
@@ -182,7 +200,7 @@ export default function CampaignsPage() {
                     <div className="p-2.5 sm:p-3 bg-muted rounded-lg">
                       <p className="text-[10px] sm:text-xs text-muted-foreground mb-0.5 sm:mb-1">Reach</p>
                       <p className="text-base sm:text-lg font-bold text-foreground">
-                        {campaign.reach.toLocaleString()}
+                        {(campaign.impressions || 0).toLocaleString()}
                       </p>
                     </div>
                     <div className="p-2.5 sm:p-3 bg-green-50 dark:bg-green-950/20 rounded-lg">
@@ -200,7 +218,7 @@ export default function CampaignsPage() {
                       variant="outline" 
                       size="sm" 
                       className="flex-1 h-9 text-xs sm:text-sm"
-                      onClick={() => router.push(`/admin/marketing/campaigns/${campaign.id}/edit`)}
+                      onClick={() => router.push(`${AdminRoutes.CAMPAIGNS}/${campaign.id}/edit`)}
                     >
                       <Edit className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                       <span className="hidden xs:inline">Edit</span>
@@ -215,8 +233,25 @@ export default function CampaignsPage() {
                   </div>
                 </CardContent>
               </Card>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
+          
+          {/* Pagination */}
+          {filteredCampaigns.length > 0 && (
+            <Pagination
+              currentPage={page}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={(newSize) => {
+                setPageSize(newSize);
+                setPage(1); // Reset to first page when changing page size
+              }}
+              className="mt-4 sm:mt-6"
+            />
+          )}
         </CardContent>
       </Card>
     </div>
