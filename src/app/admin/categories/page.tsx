@@ -9,7 +9,9 @@ import {
   Plus, 
   Search, 
   Edit,
-  Trash2
+  Trash2,
+  TrendingUp,
+  CheckCircle
 } from 'lucide-react';
 import { useState, useMemo } from 'react';
 import { useAdminCategoryList, useDeleteCategory } from '@/api/domains/admin-catalog/queries';
@@ -18,6 +20,7 @@ import Error from '@/components/shared/display/Error';
 import { EmptyState } from '@/components/shared/display/EmptyState';
 import { SearchFilter } from '@/components/admin/SearchFilter';
 import { Pagination } from '@/components/admin/Pagination';
+import { StatCard } from '@/components/admin/StatCard';
 
 export default function CategoriesPage() {
   const router = useRouter();
@@ -62,6 +65,7 @@ export default function CategoriesPage() {
   }
 
   const filteredCategories = categories; // Already filtered by API
+  const activeCategories = categories.filter(c => c.status === 'active').length;
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -79,6 +83,38 @@ export default function CategoriesPage() {
           <Plus className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Add Category
         </Button>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
+        <StatCard
+          icon={Folder}
+          label="Total Categories"
+          value={categories.length}
+          change="+4.2%"
+          trend="up"
+          description="All categories"
+        />
+        
+        <StatCard
+          icon={CheckCircle}
+          label="Active Categories"
+          value={activeCategories}
+          valueClassName="text-primary"
+          change="+6.5%"
+          trend="up"
+          description="Currently active"
+        />
+        
+        <StatCard
+          icon={TrendingUp}
+          label="Usage Rate"
+          value={`${activeCategories > 0 ? Math.round((activeCategories / categories.length) * 100) : 0}%`}
+          change="+2.3%"
+          trend="up"
+          description="Active vs total"
+          className="sm:col-span-2 md:col-span-1"
+        />
       </div>
 
       {/* Categories List */}

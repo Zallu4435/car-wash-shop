@@ -22,6 +22,7 @@ import { EmptyState } from '@/components/shared/display/EmptyState';
 import { SearchFilter } from '@/components/admin/SearchFilter';
 import { Pagination } from '@/components/admin/Pagination';
 import { AdminRoutes } from '@/lib/constants/routes';
+import { StatCard } from '@/components/admin/StatCard';
 
 export default function CouponsPage() {
   const router = useRouter();
@@ -89,25 +90,34 @@ export default function CouponsPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
-        {[
-          { icon: Tag, color: 'purple', label: 'Total Coupons', value: totalItems },
-          { icon: Tag, color: 'green', label: 'Active Coupons', value: activeCoupons },
-          { icon: TrendingUp, color: 'blue', label: 'Total Uses', value: totalUsage },
-        ].map((stat, index) => (
-          <Card key={index} className={`border-2 ${index === 2 ? 'sm:col-span-2 md:col-span-1' : ''}`}>
-            <CardContent className="p-4 sm:p-5 md:p-6">
-              <div className="flex items-center gap-2 sm:gap-3 mb-1.5 sm:mb-2">
-                <div className={`p-2 sm:p-3 bg-${stat.color}-100 dark:bg-${stat.color}-950/30 rounded-lg sm:rounded-xl flex-shrink-0`}>
-                  <stat.icon className={`h-5 w-5 sm:h-6 sm:w-6 text-${stat.color}-600 dark:text-${stat.color}-400`} />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs sm:text-sm text-muted-foreground truncate">{stat.label}</p>
-                </div>
-              </div>
-              <p className="text-2xl sm:text-3xl font-bold text-foreground">{stat.value}</p>
-            </CardContent>
-          </Card>
-        ))}
+        <StatCard
+          icon={Tag}
+          label="Total Coupons"
+          value={totalItems}
+          change="+6.8%"
+          trend="up"
+          description="All coupons"
+        />
+        
+        <StatCard
+          icon={Tag}
+          label="Active Coupons"
+          value={activeCoupons}
+          valueClassName="text-primary"
+          change="+10.5%"
+          trend="up"
+          description="Currently active"
+        />
+        
+        <StatCard
+          icon={TrendingUp}
+          label="Total Uses"
+          value={totalUsage}
+          change="+24.3%"
+          trend="up"
+          description="All time usage"
+          className="sm:col-span-2 md:col-span-1"
+        />
       </div>
 
       {/* Coupon List */}

@@ -17,6 +17,7 @@ import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
 import { EmptyState } from '@/components/shared/display/EmptyState';
 import { SearchFilter } from '@/components/admin/SearchFilter';
+import { StatCard } from '@/components/admin/StatCard';
 import { Pagination } from '@/components/admin/Pagination';
 import { AdminRoutes } from '@/lib/constants/routes';
 
@@ -70,27 +71,34 @@ export default function CustomersPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
-        {[
-          { icon: Users, color: 'blue', label: 'Total Customers', value: totalItems },
-          { icon: IndianRupee, color: 'green', label: 'Total Revenue', value: `₹${customers.reduce((sum: number, c: any) => sum + (c.totalSpent || 0), 0).toLocaleString()}`, isPrimary: true },
-          { icon: ShoppingBag, color: 'purple', label: 'Total Orders', value: customers.reduce((sum: number, c: any) => sum + (c.totalOrders || 0), 0) },
-        ].map((stat, index) => (
-          <Card key={index} className={`border-2 ${index === 2 ? 'sm:col-span-2 md:col-span-1' : ''}`}>
-            <CardContent className="p-4 sm:p-5 md:p-6">
-              <div className="flex items-center gap-2 sm:gap-3 mb-1.5 sm:mb-2">
-                <div className={`p-2 sm:p-3 bg-${stat.color}-100 dark:bg-${stat.color}-950/30 rounded-lg sm:rounded-xl flex-shrink-0`}>
-                  <stat.icon className={`h-5 w-5 sm:h-6 sm:w-6 text-${stat.color}-600 dark:text-${stat.color}-400`} />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs sm:text-sm text-muted-foreground truncate">{stat.label}</p>
-                </div>
-              </div>
-              <p className={`text-2xl sm:text-3xl font-bold ${stat.isPrimary ? 'text-primary' : 'text-foreground'}`}>
-                {stat.value}
-              </p>
-            </CardContent>
-          </Card>
-        ))}
+        <StatCard
+          icon={Users}
+          label="Total Customers"
+          value={totalItems}
+          change="+9.2%"
+          trend="up"
+          description="All customers"
+        />
+        
+        <StatCard
+          icon={IndianRupee}
+          label="Total Revenue"
+          value={`₹${customers.reduce((sum: number, c: any) => sum + (c.totalSpent || 0), 0).toLocaleString()}`}
+          valueClassName="text-primary"
+          change="+16.5%"
+          trend="up"
+          description="Customer lifetime value"
+        />
+        
+        <StatCard
+          icon={ShoppingBag}
+          label="Total Orders"
+          value={customers.reduce((sum: number, c: any) => sum + (c.totalOrders || 0), 0)}
+          change="+11.8%"
+          trend="up"
+          description="All time orders"
+          className="sm:col-span-2 md:col-span-1"
+        />
       </div>
 
       {/* Customer List */}

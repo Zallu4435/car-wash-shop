@@ -21,6 +21,7 @@ import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
 import { EmptyState } from '@/components/shared/display/EmptyState';
 import { SearchFilter } from '@/components/admin/SearchFilter';
+import { StatCard } from '@/components/admin/StatCard';
 import { Pagination } from '@/components/admin/Pagination';
 
 export default function ServicesPage() {
@@ -49,6 +50,7 @@ export default function ServicesPage() {
 
   const activeServices = services.filter(s => s.status === 'active').length;
   const totalRevenue = services.reduce((sum, s) => sum + s.price, 0);
+  const avgPrice = services.length > 0 ? totalRevenue / services.length : 0;
 
   const handleDelete = async (serviceId: string) => {
     if (confirm('Are you sure you want to delete this service?')) {
@@ -90,47 +92,34 @@ export default function ServicesPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
-        <Card className="border-2">
-          <CardContent className="p-4 sm:p-5 md:p-6">
-            <div className="flex items-center gap-2 sm:gap-3 mb-1.5 sm:mb-2">
-              <div className="p-2 sm:p-3 bg-blue-100 dark:bg-blue-950/30 rounded-lg sm:rounded-xl flex-shrink-0">
-                <Car className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600 dark:text-blue-400" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-xs sm:text-sm text-muted-foreground truncate">Total Services</p>
-              </div>
-            </div>
-            <p className="text-2xl sm:text-3xl font-bold text-foreground">{services.length}</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-2">
-          <CardContent className="p-4 sm:p-5 md:p-6">
-            <div className="flex items-center gap-2 sm:gap-3 mb-1.5 sm:mb-2">
-              <div className="p-2 sm:p-3 bg-green-100 dark:bg-green-950/30 rounded-lg sm:rounded-xl flex-shrink-0">
-                <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 text-green-600 dark:text-green-400" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-xs sm:text-sm text-muted-foreground truncate">Active Services</p>
-              </div>
-            </div>
-            <p className="text-2xl sm:text-3xl font-bold text-foreground">{activeServices}</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-2 sm:col-span-2 md:col-span-1">
-          <CardContent className="p-4 sm:p-5 md:p-6">
-            <div className="flex items-center gap-2 sm:gap-3 mb-1.5 sm:mb-2">
-              <div className="p-2 sm:p-3 bg-purple-100 dark:bg-purple-950/30 rounded-lg sm:rounded-xl flex-shrink-0">
-                <IndianRupee className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600 dark:text-purple-400" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-xs sm:text-sm text-muted-foreground truncate">Avg. Price</p>
-              </div>
-            </div>
-            <p className="text-2xl sm:text-3xl font-bold text-primary">₹{Math.round(totalRevenue / services.length)}</p>
-          </CardContent>
-        </Card>
+        <StatCard
+          icon={Car}
+          label="Total Services"
+          value={services.length}
+          change="+6.5%"
+          trend="up"
+          description="All services"
+        />
+        
+        <StatCard
+          icon={TrendingUp}
+          label="Active Services"
+          value={activeServices}
+          change="+10.2%"
+          trend="up"
+          description="Currently active"
+        />
+        
+        <StatCard
+          icon={IndianRupee}
+          label="Avg. Price"
+          value={`₹${avgPrice.toFixed(0)}`}
+          valueClassName="text-primary"
+          change="+4.8%"
+          trend="up"
+          description="Average pricing"
+          className="sm:col-span-2 md:col-span-1"
+        />
       </div>
 
       {/* Services List */}

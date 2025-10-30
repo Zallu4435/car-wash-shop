@@ -1,6 +1,5 @@
 'use client';
 
-import { DashboardKPI } from '@/components/admin/DashboardKPI';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -9,6 +8,7 @@ import { useAdminDashboard } from '@/api/domains/admin-dashboard/queries';
 import { useRouter } from 'next/navigation';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
+import { StatCard } from '@/components/admin/StatCard';
 
 export default function AdminDashboardPage() {
   const router = useRouter();
@@ -28,48 +28,6 @@ export default function AdminDashboardPage() {
     );
   }
 
-  const kpis = [
-    {
-      name: 'Total Revenue',
-      value: `₹${dashboardData?.totalRevenue.toLocaleString() || '0'}`,
-      change: dashboardData?.revenueGrowth || '+0%',
-      trend: 'up' as const,
-      icon: IndianRupee,
-      color: 'text-primary',
-      bgColor: 'bg-primary/10',
-      description: 'This month'
-    },
-    {
-      name: 'Total Orders',
-      value: dashboardData?.totalOrders.toString() || '0',
-      change: dashboardData?.ordersGrowth || '+0%',
-      trend: 'up' as const,
-      icon: ShoppingBag,
-      color: 'text-primary',
-      bgColor: 'bg-primary/10',
-      description: 'This month'
-    },
-    {
-      name: 'Active Customers',
-      value: dashboardData?.totalCustomers.toString() || '0',
-      change: dashboardData?.customersGrowth || '+0%',
-      trend: 'up' as const,
-      icon: Users,
-      color: 'text-primary',
-      bgColor: 'bg-primary/10',
-      description: 'Total users'
-    },
-    {
-      name: 'Staff Members',
-      value: dashboardData?.totalStaff.toString() || '0',
-      change: dashboardData?.staffGrowth || '+0%',
-      trend: 'up' as const,
-      icon: Calendar,
-      color: 'text-primary',
-      bgColor: 'bg-primary/10',
-      description: 'Active staff'
-    },
-  ];
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Header */}
@@ -92,7 +50,44 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* KPIs */}
-      <DashboardKPI kpis={kpis} />
+      <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <StatCard
+          icon={IndianRupee}
+          label="Total Revenue"
+          value={`₹${dashboardData?.totalRevenue.toLocaleString() || '0'}`}
+          change={dashboardData?.revenueGrowth || '+0%'}
+          trend="up"
+          description="This month"
+          valueClassName="text-primary"
+        />
+        
+        <StatCard
+          icon={ShoppingBag}
+          label="Total Orders"
+          value={dashboardData?.totalOrders.toString() || '0'}
+          change={dashboardData?.ordersGrowth || '+0%'}
+          trend="up"
+          description="This month"
+        />
+        
+        <StatCard
+          icon={Users}
+          label="Active Customers"
+          value={dashboardData?.totalCustomers.toString() || '0'}
+          change={dashboardData?.customersGrowth || '+0%'}
+          trend="up"
+          description="Total users"
+        />
+        
+        <StatCard
+          icon={Calendar}
+          label="Staff Members"
+          value={dashboardData?.totalStaff.toString() || '0'}
+          change={dashboardData?.staffGrowth || '+0%'}
+          trend="up"
+          description="Active staff"
+        />
+      </div>
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">

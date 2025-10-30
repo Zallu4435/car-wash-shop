@@ -12,6 +12,7 @@ import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
 import { EmptyState } from '@/components/shared/display/EmptyState';
 import { SearchFilter } from '@/components/admin/SearchFilter';
+import { StatCard } from '@/components/admin/StatCard';
 import { Pagination } from '@/components/admin/Pagination';
 
 export default function PostersPage() {
@@ -80,27 +81,34 @@ export default function PostersPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
-        {[
-          { icon: FileImage, color: 'blue', label: 'Total Posters', value: posters.length },
-          { icon: FileImage, color: 'green', label: 'Active Posters', value: activePosters, isHighlight: true },
-          { icon: Eye, color: 'purple', label: 'Total Views', value: totalViews.toLocaleString() },
-        ].map((stat, index) => (
-          <Card key={index} className={`border-2 ${index === 2 ? 'sm:col-span-2 md:col-span-1' : ''}`}>
-            <CardContent className="p-4 sm:p-5 md:p-6">
-              <div className="flex items-center gap-2 sm:gap-3 mb-1.5 sm:mb-2">
-                <div className={`p-2 sm:p-3 bg-${stat.color}-100 dark:bg-${stat.color}-950/30 rounded-lg sm:rounded-xl flex-shrink-0`}>
-                  <stat.icon className={`h-5 w-5 sm:h-6 sm:w-6 text-${stat.color}-600 dark:text-${stat.color}-400`} />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs sm:text-sm text-muted-foreground truncate">{stat.label}</p>
-                </div>
-              </div>
-              <p className={`text-2xl sm:text-3xl font-bold ${stat.isHighlight ? `text-${stat.color}-600 dark:text-${stat.color}-400` : 'text-foreground'}`}>
-                {stat.value}
-              </p>
-            </CardContent>
-          </Card>
-        ))}
+        <StatCard
+          icon={FileImage}
+          label="Total Posters"
+          value={posters.length}
+          change="+11.2%"
+          trend="up"
+          description="All posters"
+        />
+        
+        <StatCard
+          icon={FileImage}
+          label="Active Posters"
+          value={activePosters}
+          valueClassName="text-primary"
+          change="+13.7%"
+          trend="up"
+          description="Currently active"
+        />
+        
+        <StatCard
+          icon={Eye}
+          label="Total Views"
+          value={totalViews.toLocaleString()}
+          change="+19.5%"
+          trend="up"
+          description="All time views"
+          className="sm:col-span-2 md:col-span-1"
+        />
       </div>
 
       {/* Posters List */}

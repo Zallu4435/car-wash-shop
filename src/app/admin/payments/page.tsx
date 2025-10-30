@@ -10,11 +10,16 @@ import Error from '@/components/shared/display/Error';
 import { SearchFilter } from '@/components/admin/SearchFilter';
 import { useState, useMemo } from 'react';
 import { EmptyState } from '@/components/shared/display/EmptyState';
+import { StatCard } from '@/components/admin/StatCard';
 import { ExportButton } from '@/components/admin/ExportButton';
+import { ProgressBar } from '@/components/admin/ProgressBar';
+import { Pagination } from '@/components/admin/Pagination';
 
 export default function PaymentReportsPage() {
   const [search, setSearch] = useState('');
   const [filterValues, setFilterValues] = useState<Record<string, string>>({});
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   // Combine search and filters for API
   const filters = useMemo(() => ({
@@ -28,8 +33,29 @@ export default function PaymentReportsPage() {
   const { data: paymentReport, isLoading: reportLoading, error: reportError, refetch: refetchReport } = usePaymentReport();
 
   // Use API data - the hooks already return the data directly
-  const transactions = paymentTransactions || [];
+  const allTransactions = paymentTransactions || [];
   const report = paymentReport || {};
+
+  // Pagination logic
+  const totalItems = allTransactions.length;
+  const totalPages = Math.ceil(totalItems / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const transactions = allTransactions.slice(startIndex, endIndex);
+
+  // Reset to page 1 when filters change
+  useMemo(() => {
+    setCurrentPage(1);
+  }, [search, filterValues]);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize);
+    setCurrentPage(1);
+  };
 
   if (transactionsLoading || reportLoading) {
     return <Loading text="Loading payment data..." />;
@@ -107,71 +133,34 @@ export default function PaymentReportsPage() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
-        <Card className="border-2 border-border">
-          <CardContent className="p-4 sm:p-5 md:p-6">
-            <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-              <div 
-                className="p-2 sm:p-3 rounded-lg sm:rounded-xl flex-shrink-0"
-                style={{ backgroundColor: 'hsl(160 60% 45% / 0.1)' }}
-              >
-                <IndianRupee className="h-5 w-5 sm:h-6 sm:w-6" style={{ color: 'hsl(160 60% 45%)' }} />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-xs sm:text-sm text-muted-foreground truncate">Total Revenue</p>
-                <p className="text-[10px] sm:text-xs text-muted-foreground">This Month</p>
-              </div>
-            </div>
-            <p className="text-2xl sm:text-3xl font-bold" style={{ color: 'hsl(var(--primary))' }}>
-              ₹1,81,770
-            </p>
-            <p className="text-xs sm:text-sm mt-1.5 sm:mt-2 flex items-center gap-1" style={{ color: 'hsl(160 60% 45%)' }}>
-              <TrendingUp className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-              +12.5% from last month
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-2 border-border">
-          <CardContent className="p-4 sm:p-5 md:p-6">
-            <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-              <div 
-                className="p-2 sm:p-3 rounded-lg sm:rounded-xl flex-shrink-0"
-                style={{ backgroundColor: 'hsl(221 83% 53% / 0.1)' }}
-              >
-                <CreditCard className="h-5 w-5 sm:h-6 sm:w-6" style={{ color: 'hsl(221 83% 53%)' }} />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-xs sm:text-sm text-muted-foreground truncate">Online Payments</p>
-                <p className="text-[10px] sm:text-xs text-muted-foreground">This Month</p>
-              </div>
-            </div>
-            <p className="text-2xl sm:text-3xl font-bold text-foreground">₹{((report as any).onlineTotal || 0).toLocaleString('en-IN')}</p>
-            <p className="text-xs sm:text-sm text-muted-foreground mt-1.5 sm:mt-2">
-              {(report as any).onlinePercentage || 0}% of total revenue
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-2 border-border sm:col-span-2 md:col-span-1">
-          <CardContent className="p-4 sm:p-5 md:p-6">
-            <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-              <div 
-                className="p-2 sm:p-3 rounded-lg sm:rounded-xl flex-shrink-0"
-                style={{ backgroundColor: 'hsl(30 80% 55% / 0.1)' }}
-              >
-                <Wallet className="h-5 w-5 sm:h-6 sm:w-6" style={{ color: 'hsl(30 80% 55%)' }} />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-xs sm:text-sm text-muted-foreground truncate">COD Payments</p>
-                <p className="text-[10px] sm:text-xs text-muted-foreground">This Month</p>
-              </div>
-            </div>
-            <p className="text-2xl sm:text-3xl font-bold text-foreground">₹46,230</p>
-            <p className="text-xs sm:text-sm text-muted-foreground mt-1.5 sm:mt-2">
-              25.4% of total revenue
-            </p>
-          </CardContent>
-        </Card>
+        <StatCard
+          icon={IndianRupee}
+          label="Total Revenue"
+          value="₹1,81,770"
+          valueClassName="text-primary"
+          change="+12.5%"
+          trend="up"
+          description="This month"
+        />
+        
+        <StatCard
+          icon={CreditCard}
+          label="Online Payments"
+          value={`₹${((report as any).onlineTotal || 0).toLocaleString('en-IN')}`}
+          change="+15.3%"
+          trend="up"
+          description={`${(report as any).onlinePercentage || 0}% of total`}
+        />
+        
+        <StatCard
+          icon={Wallet}
+          label="COD Payments"
+          value={`₹${((report as any).codTotal || 0).toLocaleString('en-IN')}`}
+          change="-5.2%"
+          trend="down"
+          description={`${(report as any).codPercentage || 0}% of total`}
+          className="sm:col-span-2 md:col-span-1"
+        />
       </div>
 
       {/* Payment Methods Breakdown */}
@@ -189,35 +178,18 @@ export default function PaymentReportsPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-3 sm:space-y-4">
-            {paymentMethods.map((payment) => {
+            {paymentMethods.map((payment, index) => {
               const Icon = payment.icon;
               return (
-                <div key={payment.method} className="space-y-1.5 sm:space-y-2">
-                  <div className="flex items-center justify-between text-xs sm:text-sm">
-                    <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-                      <div 
-                        className="p-1.5 sm:p-2 rounded-lg flex-shrink-0"
-                        style={{ backgroundColor: `${payment.color} / 0.1` }}
-                      >
-                        <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" style={{ color: payment.color }} />
-                      </div>
-                      <span className="font-medium text-foreground truncate">{payment.method}</span>
-                    </div>
-                    <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
-                      <span className="text-muted-foreground">₹{payment.amount.toLocaleString()}</span>
-                      <span className="font-bold text-foreground w-10 sm:w-12 text-right">{payment.percentage}%</span>
-                    </div>
-                  </div>
-                  <div className="h-2 sm:h-3 bg-muted rounded-full overflow-hidden">
-                    <div 
-                      className="h-full rounded-full transition-all duration-1000 ease-out"
-                      style={{ 
-                        width: `${payment.percentage}%`,
-                        backgroundColor: payment.color
-                      }}
-                    />
-                  </div>
-                </div>
+                <ProgressBar
+                  key={payment.method}
+                  percentage={payment.percentage}
+                  color={payment.color}
+                  height="sm"
+                  label={payment.method}
+                  value={`₹${payment.amount.toLocaleString()}`}
+                  icon={Icon}
+                />
               );
             })}
           </div>
@@ -281,13 +253,14 @@ export default function PaymentReportsPage() {
             className="mb-4 sm:mb-6"
           />
 
-          {transactions.length === 0 ? (
+          {allTransactions.length === 0 ? (
             <EmptyState
               icon={IndianRupee}
               title="No transactions found"
               description={search ? "Try adjusting your search or filters" : "No transactions yet"}
             />
           ) : (
+          <>
           <div className="space-y-2.5 sm:space-y-3">
             {transactions.map((txn: any) => {
               const statusStyle = txn.status === 'Success' 
@@ -339,6 +312,18 @@ export default function PaymentReportsPage() {
               );
             })}
           </div>
+          
+          {/* Pagination */}
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            pageSize={pageSize}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+            className="mt-4 sm:mt-6"
+          />
+          </>
           )}
         </CardContent>
       </Card>

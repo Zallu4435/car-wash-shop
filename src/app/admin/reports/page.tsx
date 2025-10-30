@@ -23,6 +23,8 @@ import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
 import { EmptyState } from '@/components/shared/display/EmptyState';
 import { ExportButton } from '@/components/admin/ExportButton';
+import { ProgressBar } from '@/components/admin/ProgressBar';
+import { StatCard } from '@/components/admin/StatCard';
 
 export default function ReportsPage() {
   const [timeRange, setTimeRange] = useState('last-12-months');
@@ -188,43 +190,51 @@ export default function ReportsPage() {
         <>
           {/* KPI Cards */}
           <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        {[
-          { icon: IndianRupee, color: 'hsl(221 83% 53%)', label: 'Total Revenue', value: `₹${revenueReport?.totalRevenue?.toLocaleString('en-IN') || '0'}`, change: '+12.5%' },
-          { icon: ShoppingBag, color: 'hsl(160 60% 45%)', label: 'Total Orders', value: String(revenueReport?.revenueByService?.reduce((sum, s) => sum + s.bookings, 0) || 0), change: '+8.3%' },
-          { icon: Users, color: 'hsl(280 65% 60%)', label: 'Top Services', value: String(serviceReport?.length || 0), change: '+15.2%' },
-          { icon: Star, color: 'hsl(43 74% 66%)', label: 'Avg. Rating', value: serviceReport && serviceReport.length > 0 ? ((serviceReport.reduce((sum, s) => sum + s.avgRating, 0) / serviceReport.length).toFixed(1)) : '0', change: '+0.3' },
-        ].map((kpi, index) => (
-          <Card key={index} className="border-2 border-border">
-            <CardContent className="p-4 sm:p-5 md:p-6">
-              <div className="flex items-center justify-between mb-3 sm:mb-4">
-                <div 
-                  className="p-2 sm:p-3 rounded-lg sm:rounded-xl"
-                  style={{ backgroundColor: `${kpi.color} / 0.1` }}
-                >
-                  <kpi.icon className="h-5 w-5 sm:h-6 sm:w-6" style={{ color: kpi.color }} />
-                </div>
-                <Badge variant="outline" className="gap-0.5 sm:gap-1 text-[10px] sm:text-xs">
-                  <TrendingUp className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                  {kpi.change}
-                </Badge>
-              </div>
-              <p className="text-xs sm:text-sm text-muted-foreground truncate">{kpi.label}</p>
-              <p className="text-2xl sm:text-3xl font-bold text-foreground mt-0.5 sm:mt-1">{kpi.value}</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+            <StatCard
+              icon={IndianRupee}
+              label="Total Revenue"
+              value={`₹${revenueReport?.totalRevenue?.toLocaleString('en-IN') || '0'}`}
+              change="+12.5%"
+              trend="up"
+              description="This period"
+              valueClassName="text-primary"
+            />
+            
+            <StatCard
+              icon={ShoppingBag}
+              label="Total Orders"
+              value={String(revenueReport?.revenueByService?.reduce((sum, s) => sum + s.bookings, 0) || 0)}
+              change="+8.3%"
+              trend="up"
+              description="Total bookings"
+            />
+            
+            <StatCard
+              icon={Users}
+              label="Top Services"
+              value={String(serviceReport?.length || 0)}
+              change="+15.2%"
+              trend="up"
+              description="Active services"
+            />
+            
+            <StatCard
+              icon={Star}
+              label="Avg. Rating"
+              value={serviceReport && serviceReport.length > 0 ? ((serviceReport.reduce((sum, s) => sum + s.avgRating, 0) / serviceReport.length).toFixed(1)) : '0'}
+              change="+0.3"
+              trend="up"
+              description="Customer satisfaction"
+            />
+          </div>
 
       {/* Revenue Trend Chart */}
       <Card className="border-2 border-border">
         <CardHeader className="pb-3 sm:pb-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
             <div className="flex items-center gap-2">
-              <div 
-                className="p-1.5 sm:p-2 rounded-lg"
-                style={{ backgroundColor: 'hsl(var(--primary) / 0.1)' }}
-              >
-                <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5" style={{ color: 'hsl(var(--primary))' }} />
+              <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
+                <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               </div>
               <CardTitle className="text-base sm:text-lg">Revenue Trend</CardTitle>
             </div>
@@ -239,16 +249,14 @@ export default function ReportsPage() {
               {revenueReport.revenueByMonth.map((data, index) => {
                 const revenue = data.revenue || 0;
                 const maxRev = Math.max(...revenueReport.revenueByMonth.map(d => d.revenue || 0));
-                const percentage = maxRev > 0 ? (revenue / maxRev) * 100 : 0;
+                const percentage = maxRev > 0 ? Math.round((revenue / maxRev) * 100) : 0;
                 return (
-                  <div key={`${data.month}-${index}`} className="space-y-1.5 sm:space-y-2">
-                    <div className="flex items-center justify-between text-xs sm:text-sm">
+                  <div key={`${data.month}-${index}`}>
+                    <div className="flex items-center justify-between text-xs sm:text-sm mb-1.5 sm:mb-2">
                       <span className="font-medium text-foreground w-8 sm:w-12">{data.month}</span>
-                      <div className="flex items-center gap-2 sm:gap-4 text-[10px] sm:text-xs text-muted-foreground">
-                        <span className="font-bold text-foreground w-20 sm:w-24 text-right">
-                          ₹{(revenue / 1000).toFixed(0)}K
-                        </span>
-                      </div>
+                      <span className="font-bold text-foreground w-20 sm:w-24 text-right">
+                        ₹{(revenue / 1000).toFixed(0)}K
+                      </span>
                     </div>
                     <div className="h-2 sm:h-3 bg-muted rounded-full overflow-hidden">
                       <div 
@@ -279,11 +287,8 @@ export default function ReportsPage() {
         <Card className="border-2 border-border">
           <CardHeader className="pb-3 sm:pb-4">
             <div className="flex items-center gap-2">
-              <div 
-                className="p-1.5 sm:p-2 rounded-lg"
-                style={{ backgroundColor: 'hsl(var(--primary) / 0.1)' }}
-              >
-                <PieChart className="h-4 w-4 sm:h-5 sm:w-5" style={{ color: 'hsl(var(--primary))' }} />
+              <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
+                <PieChart className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               </div>
               <CardTitle className="text-base sm:text-lg">Service Distribution</CardTitle>
             </div>
@@ -297,38 +302,18 @@ export default function ReportsPage() {
                 const totalBookings = serviceReport.reduce((sum, s) => sum + (s.totalBookings || 0), 0);
                 const servicePercentage = totalBookings > 0 ? Math.round((serviceValue / totalBookings) * 100) : 0;
                 const colors = ['hsl(221 83% 53%)', 'hsl(160 60% 45%)', 'hsl(30 80% 55%)', 'hsl(280 65% 60%)', 'hsl(340 75% 55%)'];
+                const opacity = 1 - (index * 0.1);
                 
                 return (
-                <div key={serviceName} className="space-y-1.5 sm:space-y-2">
-                  <div className="flex items-center justify-between text-xs sm:text-sm">
-                    <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1">
-                      <div 
-                        className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full flex-shrink-0" 
-                        style={{ 
-                          backgroundColor: colors[index],
-                          opacity: 1 - (index * 0.1)
-                        }}
-                      />
-                      <span className="font-medium text-foreground truncate">{serviceName}</span>
-                    </div>
-                    <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-                      <span className="text-muted-foreground">{serviceValue}</span>
-                      <span className="font-bold text-foreground w-10 sm:w-12 text-right">
-                        {servicePercentage}%
-                      </span>
-                    </div>
-                  </div>
-                  <div className="h-1.5 sm:h-2 bg-muted rounded-full overflow-hidden">
-                    <div 
-                      className="h-full rounded-full transition-all duration-1000 ease-out"
-                      style={{ 
-                        width: `${servicePercentage}%`,
-                        backgroundColor: colors[index],
-                        opacity: 1 - (index * 0.1)
-                      }}
-                    />
-                  </div>
-                </div>
+                  <ProgressBar
+                    key={serviceName}
+                    percentage={servicePercentage}
+                    color={colors[index]}
+                    opacity={opacity}
+                    height="sm"
+                    label={serviceName}
+                    value={serviceValue}
+                  />
                 );
                 })}
               </div>
@@ -346,11 +331,8 @@ export default function ReportsPage() {
         <Card className="border-2 border-border">
           <CardHeader className="pb-3 sm:pb-4">
             <div className="flex items-center gap-2">
-              <div 
-                className="p-1.5 sm:p-2 rounded-lg"
-                style={{ backgroundColor: 'hsl(var(--primary) / 0.1)' }}
-              >
-                <Activity className="h-4 w-4 sm:h-5 sm:w-5" style={{ color: 'hsl(var(--primary))' }} />
+              <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
+                <Activity className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               </div>
               <CardTitle className="text-base sm:text-lg">Top Selling Products</CardTitle>
             </div>
@@ -400,11 +382,8 @@ export default function ReportsPage() {
       <Card className="border-2 border-border">
         <CardHeader className="pb-3 sm:pb-4">
           <div className="flex items-center gap-2">
-            <div 
-              className="p-1.5 sm:p-2 rounded-lg"
-              style={{ backgroundColor: 'hsl(var(--primary) / 0.1)' }}
-            >
-              <Users className="h-4 w-4 sm:h-5 sm:w-5" style={{ color: 'hsl(var(--primary))' }} />
+            <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
+              <Users className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
             </div>
             <CardTitle className="text-base sm:text-lg">Staff Performance</CardTitle>
           </div>
@@ -412,14 +391,7 @@ export default function ReportsPage() {
         <CardContent>
           {staffReport && staffReport.length > 0 ? (
             <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-              {staffReport.slice(0, 4).map((staff, index) => {
-              const colors = [
-                'hsl(221 83% 53%)',
-                'hsl(160 60% 45%)',
-                'hsl(280 65% 60%)',
-                'hsl(43 74% 66%)'
-              ];
-              return (
+              {staffReport.slice(0, 4).map((staff) => (
                 <div 
                   key={staff.staffId}
                   className="p-4 sm:p-5 rounded-lg sm:rounded-xl border border-border bg-muted/50"
@@ -430,23 +402,19 @@ export default function ReportsPage() {
                     </p>
                     <Badge 
                       variant="outline"
-                      className="gap-0.5 sm:gap-1 text-[10px] sm:text-xs flex-shrink-0 bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
+                      className="gap-0.5 sm:gap-1 text-[10px] sm:text-xs flex-shrink-0"
                     >
                       ⭐ {staff.avgRating.toFixed(1)}
                     </Badge>
                   </div>
-                  <p 
-                    className="text-2xl sm:text-3xl font-bold"
-                    style={{ color: colors[index] }}
-                  >
+                  <p className="text-2xl sm:text-3xl font-bold text-primary">
                     {staff.completedJobs}
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
                     {staff.completionRate.toFixed(1)}% completion
                   </p>
                 </div>
-              );
-              })}
+              ))}
             </div>
           ) : (
             <EmptyState
@@ -471,19 +439,19 @@ export default function ReportsPage() {
             <CardContent>
               <div className="space-y-6">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div className="p-4 bg-primary/5 rounded-lg border border-primary/20">
+                  <div className="p-4 bg-primary/10 rounded-lg border border-primary/20">
                     <p className="text-sm text-muted-foreground">Total Revenue</p>
                     <p className="text-2xl font-bold text-primary">₹{revenueReport?.totalRevenue?.toLocaleString('en-IN') || '0'}</p>
                   </div>
-                  <div className="p-4 bg-green-50 dark:bg-green-950 rounded-lg border border-green-200 dark:border-green-800">
+                  <div className="p-4 bg-primary/10 rounded-lg border border-primary/20">
                     <p className="text-sm text-muted-foreground">By Services</p>
-                    <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                    <p className="text-2xl font-bold text-primary">
                       ₹{revenueReport?.revenueByService?.reduce((sum, s) => sum + s.revenue, 0)?.toLocaleString('en-IN') || '0'}
                     </p>
                   </div>
-                  <div className="p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
+                  <div className="p-4 bg-primary/10 rounded-lg border border-primary/20">
                     <p className="text-sm text-muted-foreground">By Products</p>
-                    <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                    <p className="text-2xl font-bold text-primary">
                       ₹{revenueReport?.revenueByProduct?.reduce((sum, p) => sum + p.revenue, 0)?.toLocaleString('en-IN') || '0'}
                     </p>
                   </div>
@@ -542,7 +510,7 @@ export default function ReportsPage() {
                         <h3 className="font-semibold text-lg">{service.serviceName}</h3>
                         <p className="text-sm text-muted-foreground">ID: {service.serviceId}</p>
                       </div>
-                      <Badge className="bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">
+                      <Badge variant="outline" className="gap-1">
                         ⭐ {service.avgRating.toFixed(1)}
                       </Badge>
                     </div>
@@ -553,15 +521,15 @@ export default function ReportsPage() {
                       </div>
                       <div>
                         <p className="text-xs text-muted-foreground">Completed</p>
-                        <p className="text-xl font-bold text-green-600">{service.completedBookings}</p>
+                        <p className="text-xl font-bold text-primary">{service.completedBookings}</p>
                       </div>
                       <div>
                         <p className="text-xs text-muted-foreground">Cancelled</p>
-                        <p className="text-xl font-bold text-red-600">{service.cancelledBookings}</p>
+                        <p className="text-xl font-bold text-muted-foreground">{service.cancelledBookings}</p>
                       </div>
                       <div>
                         <p className="text-xs text-muted-foreground">Revenue</p>
-                        <p className="text-xl font-bold">₹{service.totalRevenue.toLocaleString('en-IN')}</p>
+                        <p className="text-xl font-bold text-primary">₹{service.totalRevenue.toLocaleString('en-IN')}</p>
                       </div>
                     </div>
                     <div className="mt-3">
@@ -602,7 +570,7 @@ export default function ReportsPage() {
                         <h3 className="font-semibold text-lg">{staff.staffName}</h3>
                         <p className="text-sm text-muted-foreground">ID: {staff.staffId}</p>
                       </div>
-                      <Badge className="bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">
+                      <Badge variant="outline">
                         ⭐ {staff.avgRating.toFixed(1)}
                       </Badge>
                     </div>
@@ -613,7 +581,7 @@ export default function ReportsPage() {
                       </div>
                       <div>
                         <p className="text-xs text-muted-foreground">Completed</p>
-                        <p className="text-xl font-bold text-green-600">{staff.completedJobs}</p>
+                        <p className="text-xl font-bold text-primary">{staff.completedJobs}</p>
                       </div>
                       <div>
                         <p className="text-xs text-muted-foreground">Completion Rate</p>

@@ -22,6 +22,7 @@ import { Clock, Ban, CheckCircle, AlertTriangle, Plus, Users, Calendar as Calend
 import { useAdminSlots, useBlockSlot, useUnblockSlot } from '@/api/domains/admin-requests/queries';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
+import { StatCard } from '@/components/admin/StatCard';
 
 const timeSlots = [
   '09:00 AM', '10:00 AM', '11:00 AM', '12:00 PM',
@@ -147,28 +148,44 @@ export default function SlotManagementPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        {[
-          { icon: Clock, label: 'Total Slots', value: timeSlots.length, color: 'primary' },
-          { icon: CheckCircle, label: 'Available', value: timeSlots.length - blockedSlots.length, color: 'primary' },
-          { icon: Ban, label: 'Blocked', value: blockedSlots.length, color: 'destructive' },
-          { icon: AlertTriangle, label: 'Staff on Leave', value: staffLeaves.length, color: 'primary' },
-        ].map((stat, index) => (
-          <Card key={index} className={`border-2 border-border ${index === 3 ? 'col-span-2 lg:col-span-1' : ''}`}>
-            <CardContent className="p-4 sm:p-5 md:p-6">
-              <div className="flex items-center gap-2 sm:gap-3 mb-1.5 sm:mb-2">
-                <div className={`p-2 sm:p-3 ${stat.color === 'destructive' ? 'bg-destructive/10' : 'bg-primary/10'} rounded-lg sm:rounded-xl flex-shrink-0`}>
-                  <stat.icon className={`h-5 w-5 sm:h-6 sm:w-6 ${stat.color === 'destructive' ? 'text-destructive' : 'text-primary'}`} />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs sm:text-sm text-muted-foreground truncate">{stat.label}</p>
-                </div>
-              </div>
-              <p className={`text-2xl sm:text-3xl font-bold ${stat.color === 'destructive' ? 'text-destructive' : stat.label === 'Available' || stat.label === 'Staff on Leave' ? 'text-primary' : 'text-foreground'}`}>
-                {stat.value}
-              </p>
-            </CardContent>
-          </Card>
-        ))}
+        <StatCard
+          icon={Clock}
+          label="Total Slots"
+          value={timeSlots.length}
+          change="+0%"
+          trend="up"
+          description="Daily slots"
+        />
+        
+        <StatCard
+          icon={CheckCircle}
+          label="Available"
+          value={timeSlots.length - blockedSlots.length}
+          valueClassName="text-primary"
+          change="+5.2%"
+          trend="up"
+          description="Ready to book"
+        />
+        
+        <StatCard
+          icon={Ban}
+          label="Blocked"
+          value={blockedSlots.length}
+          change="-2.1%"
+          trend="down"
+          description="Unavailable slots"
+        />
+        
+        <StatCard
+          icon={AlertTriangle}
+          label="Staff on Leave"
+          value={staffLeaves.length}
+          valueClassName="text-primary"
+          change="+1"
+          trend="up"
+          description="Today"
+          className="col-span-2 lg:col-span-1"
+        />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">

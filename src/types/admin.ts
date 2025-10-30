@@ -587,6 +587,8 @@ export interface AdminFeedback {
   rating: number;
   comment: string;
   status: 'pending' | 'reviewed' | 'resolved';
+  feedbackType?: 'service' | 'product';
+  type?: string; // For categorization like 'Compliment', 'Suggestion', 'Bug'
   createdAt: string;
 }
 

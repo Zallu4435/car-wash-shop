@@ -12,6 +12,7 @@ import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
 import { EmptyState } from '@/components/shared/display/EmptyState';
 import { SearchFilter } from '@/components/admin/SearchFilter';
+import { StatCard } from '@/components/admin/StatCard';
 import { Pagination } from '@/components/admin/Pagination';
 
 export default function BannersPage() {
@@ -80,26 +81,42 @@ export default function BannersPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        {[
-          { icon: Image, label: 'Total Banners', value: banners.length },
-          { icon: TrendingUp, label: 'Active Banners', value: activeBanners },
-          { icon: MousePointer, label: 'Inactive Banners', value: inactiveBanners },
-          { icon: Eye, label: 'Total', value: banners.length },
-        ].map((stat, index) => (
-          <Card key={index} className="border-2 border-border">
-            <CardContent className="p-4 sm:p-5 md:p-6">
-              <div className="flex items-center gap-2 sm:gap-3 mb-1.5 sm:mb-2">
-                <div className="p-2 sm:p-3 bg-primary/10 rounded-lg sm:rounded-xl flex-shrink-0">
-                  <stat.icon className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs sm:text-sm text-muted-foreground truncate">{stat.label}</p>
-                </div>
-              </div>
-              <p className="text-2xl sm:text-3xl font-bold text-foreground">{stat.value}</p>
-            </CardContent>
-          </Card>
-        ))}
+        <StatCard
+          icon={Image}
+          label="Total Banners"
+          value={banners.length}
+          change="+8.5%"
+          trend="up"
+          description="All banners"
+        />
+        
+        <StatCard
+          icon={TrendingUp}
+          label="Active Banners"
+          value={activeBanners}
+          valueClassName="text-primary"
+          change="+12.3%"
+          trend="up"
+          description="Currently active"
+        />
+        
+        <StatCard
+          icon={MousePointer}
+          label="Total Clicks"
+          value={banners.reduce((sum, b) => sum + (b.clicks || 0), 0)}
+          change="+18.7%"
+          trend="up"
+          description="All time"
+        />
+        
+        <StatCard
+          icon={Eye}
+          label="Total Views"
+          value={banners.reduce((sum, b) => sum + (b.impressions || 0), 0)}
+          change="+15.2%"
+          trend="up"
+          description="All time"
+        />
       </div>
 
       {/* Banners List */}

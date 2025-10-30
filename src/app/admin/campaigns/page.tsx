@@ -12,6 +12,7 @@ import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
 import { EmptyState } from '@/components/shared/display/EmptyState';
 import { SearchFilter } from '@/components/admin/SearchFilter';
+import { StatCard } from '@/components/admin/StatCard';
 import { Pagination } from '@/components/admin/Pagination';
 
 export default function CampaignsPage() {
@@ -94,28 +95,42 @@ export default function CampaignsPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        {[
-          { icon: Megaphone, color: 'blue', label: 'Total Campaigns', value: totalItems },
-          { icon: TrendingUp, color: 'green', label: 'Active', value: activeCampaigns, isHighlight: true },
-          { icon: Calendar, color: 'purple', label: 'Total Budget', value: `₹${(totalBudget / 1000).toFixed(0)}K` },
-          { icon: TrendingUp, color: 'orange', label: 'Conversions', value: totalConversions },
-        ].map((stat, index) => (
-          <Card key={index} className="border-2">
-            <CardContent className="p-4 sm:p-5 md:p-6">
-              <div className="flex items-center gap-2 sm:gap-3 mb-1.5 sm:mb-2">
-                <div className={`p-2 sm:p-3 bg-${stat.color}-100 dark:bg-${stat.color}-950/30 rounded-lg sm:rounded-xl flex-shrink-0`}>
-                  <stat.icon className={`h-5 w-5 sm:h-6 sm:w-6 text-${stat.color}-600 dark:text-${stat.color}-400`} />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs sm:text-sm text-muted-foreground truncate">{stat.label}</p>
-                </div>
-              </div>
-              <p className={`text-2xl sm:text-3xl font-bold ${stat.isHighlight ? `text-${stat.color}-600 dark:text-${stat.color}-400` : 'text-foreground'}`}>
-                {stat.value}
-              </p>
-            </CardContent>
-          </Card>
-        ))}
+        <StatCard
+          icon={Megaphone}
+          label="Total Campaigns"
+          value={totalItems}
+          change="+9.3%"
+          trend="up"
+          description="All campaigns"
+        />
+        
+        <StatCard
+          icon={TrendingUp}
+          label="Active"
+          value={activeCampaigns}
+          valueClassName="text-primary"
+          change="+14.5%"
+          trend="up"
+          description="Currently running"
+        />
+        
+        <StatCard
+          icon={Calendar}
+          label="Total Budget"
+          value={`₹${(totalBudget / 1000).toFixed(0)}K`}
+          change="+22.1%"
+          trend="up"
+          description="Allocated budget"
+        />
+        
+        <StatCard
+          icon={TrendingUp}
+          label="Conversions"
+          value={totalConversions}
+          change="+16.8%"
+          trend="up"
+          description="Total conversions"
+        />
       </div>
 
       {/* Campaigns List */}

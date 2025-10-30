@@ -248,4 +248,21 @@ export const adminStaffFetchers = {
     );
     return data.data!;
   },
+
+  async updateStaffStatus(staffId: string, status: 'active' | 'inactive' | 'suspended'): Promise<AdminStaffDetail> {
+    if (USE_MOCK_DATA) {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      const existingStaff = mockStaffDetails[staffId];
+      if (!existingStaff) {
+        throw new Error('Staff member not found');
+      }
+      return { ...existingStaff, status };
+    }
+
+    const { data } = await apiClient.patch<ApiResponse<AdminStaffDetail>>(
+      `${AdminRoutes.STAFF_DETAIL(staffId)}/status`,
+      { status }
+    );
+    return data.data!;
+  },
 };

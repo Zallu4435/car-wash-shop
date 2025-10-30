@@ -21,6 +21,8 @@ const mockFeedback: AdminFeedback[] = [
     rating: 5,
     comment: 'Excellent service! Very professional staff.',
     status: 'reviewed',
+    feedbackType: 'service',
+    type: 'Compliment',
     createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
   },
   {
@@ -31,6 +33,8 @@ const mockFeedback: AdminFeedback[] = [
     rating: 4,
     comment: 'Good service but took longer than expected.',
     status: 'pending',
+    feedbackType: 'service',
+    type: 'Suggestion',
     createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
   },
   {
@@ -41,7 +45,45 @@ const mockFeedback: AdminFeedback[] = [
     rating: 5,
     comment: 'Outstanding work! Will definitely book again.',
     status: 'resolved',
+    feedbackType: 'service',
+    type: 'Compliment',
     createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    id: 'FB004',
+    customerId: 'CUST004',
+    customerName: 'Sneha Reddy',
+    bookingId: 'BK004',
+    rating: 5,
+    comment: 'Great quality car shampoo! Highly recommend.',
+    status: 'reviewed',
+    feedbackType: 'product',
+    type: 'Compliment',
+    createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    id: 'FB005',
+    customerId: 'CUST005',
+    customerName: 'Vikram Singh',
+    bookingId: 'BK005',
+    rating: 4,
+    comment: 'Good product but packaging could be better.',
+    status: 'pending',
+    feedbackType: 'product',
+    type: 'Suggestion',
+    createdAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    id: 'FB006',
+    customerId: 'CUST006',
+    customerName: 'Ananya Iyer',
+    bookingId: 'BK006',
+    rating: 5,
+    comment: 'Excellent microfiber cloths! Very soft and effective.',
+    status: 'resolved',
+    feedbackType: 'product',
+    type: 'Compliment',
+    createdAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
   },
 ];
 
@@ -114,6 +156,9 @@ export const adminSupportFetchers = {
           f.customerName.toLowerCase().includes(searchLower) ||
           f.comment?.toLowerCase().includes(searchLower)
         );
+      }
+      if (filters?.type) {
+        filteredFeedback = filteredFeedback.filter(f => f.feedbackType === filters.type);
       }
       if (filters?.rating) {
         if (filters.rating === '5') {

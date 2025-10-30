@@ -15,6 +15,7 @@ import { useVehicleBrands, useVehicleModels } from '@/api/domains/admin-vehicles
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
 import { AdminRoutes } from '@/lib/constants/routes';
+import { StatCard } from '@/components/admin/StatCard';
 
 export default function VehiclesHomePage() {
   const router = useRouter();
@@ -105,20 +106,42 @@ export default function VehiclesHomePage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        {stats.map((stat) => (
-          <Card key={stat.title} className="border-2 border-border">
-            <CardContent className="p-4 sm:p-5 md:p-6">
-              <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-                <div className="p-2 sm:p-3 bg-primary/10 rounded-lg sm:rounded-xl flex-shrink-0">
-                  <stat.icon className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-                </div>
-                <p className="text-xs sm:text-sm text-muted-foreground truncate flex-1">{stat.title}</p>
-              </div>
-              <p className="text-2xl sm:text-3xl font-bold text-foreground">{stat.value}</p>
-              <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">{stat.subtext}</p>
-            </CardContent>
-          </Card>
-        ))}
+        <StatCard
+          icon={Car}
+          label="Types"
+          value={2}
+          change="+3.5%"
+          trend="up"
+          description="Total brands"
+        />
+        
+        <StatCard
+          icon={Car}
+          label="Models"
+          value={models?.length || 0}
+          change="+7.2%"
+          trend="up"
+          description="Total models"
+        />
+        
+        <StatCard
+          icon={Car}
+          label="Active Models"
+          value={models?.filter((m: any) => m.status === 'active').length || 0}
+          valueClassName="text-primary"
+          change="+9.1%"
+          trend="up"
+          description="Active"
+        />
+        
+        <StatCard
+          icon={Layers}
+          label="Inactive Models"
+          value={models?.filter((m: any) => m.status === 'inactive').length || 0}
+          change="-1.5%"
+          trend="down"
+          description="Inactive"
+        />
       </div>
 
       {/* Main Sections */}

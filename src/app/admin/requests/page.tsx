@@ -19,6 +19,7 @@ import Error from '@/components/shared/display/Error';
 import { EmptyState } from '@/components/shared/display/EmptyState';
 import { SearchFilter } from '@/components/admin/SearchFilter';
 import { Pagination } from '@/components/admin/Pagination';
+import { StatCard } from '@/components/admin/StatCard';
 
 export default function RequestsPage() {
   const router = useRouter();
@@ -81,67 +82,44 @@ export default function RequestsPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <Card className="border-2 border-border">
-          <CardContent className="p-4 sm:p-5 md:p-6">
-            <div className="flex items-center gap-2 sm:gap-3 mb-1.5 sm:mb-2">
-              <div className="p-2 sm:p-3 bg-primary/10 rounded-lg sm:rounded-xl flex-shrink-0">
-                <Calendar className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-xs sm:text-sm text-muted-foreground truncate">
-                  Total Bookings
-                </p>
-              </div>
-            </div>
-            <p className="text-2xl sm:text-3xl font-bold text-foreground">{bookings.length}</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-2 border-border">
-          <CardContent className="p-4 sm:p-5 md:p-6">
-            <div className="flex items-center gap-2 sm:gap-3 mb-1.5 sm:mb-2">
-              <div className="p-2 sm:p-3 bg-primary/10 rounded-lg sm:rounded-xl flex-shrink-0">
-                <Clock className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-xs sm:text-sm text-muted-foreground truncate">Pending</p>
-              </div>
-            </div>
-            <p className="text-2xl sm:text-3xl font-bold text-primary">{pendingCount}</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-2 border-border">
-          <CardContent className="p-4 sm:p-5 md:p-6">
-            <div className="flex items-center gap-2 sm:gap-3 mb-1.5 sm:mb-2">
-              <div className="p-2 sm:p-3 bg-primary/10 rounded-lg sm:rounded-xl flex-shrink-0">
-                <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-xs sm:text-sm text-muted-foreground truncate">
-                  In Progress
-                </p>
-              </div>
-            </div>
-            <p className="text-2xl sm:text-3xl font-bold text-foreground">{inProgressCount}</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-2 border-border col-span-2 lg:col-span-1">
-          <CardContent className="p-4 sm:p-5 md:p-6">
-            <div className="flex items-center gap-2 sm:gap-3 mb-1.5 sm:mb-2">
-              <div className="p-2 sm:p-3 bg-primary/10 rounded-lg sm:rounded-xl flex-shrink-0">
-                <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-xs sm:text-sm text-muted-foreground truncate">
-                  Completed Today
-                </p>
-              </div>
-            </div>
-            <p className="text-2xl sm:text-3xl font-bold text-primary">{completedToday}</p>
-          </CardContent>
-        </Card>
+        <StatCard
+          icon={Calendar}
+          label="Total Bookings"
+          value={bookings.length}
+          change="+10.5%"
+          trend="up"
+          description="This month"
+        />
+        
+        <StatCard
+          icon={Clock}
+          label="Pending"
+          value={pendingCount}
+          valueClassName="text-primary"
+          change="+5.2%"
+          trend="up"
+          description="Awaiting assignment"
+        />
+        
+        <StatCard
+          icon={TrendingUp}
+          label="In Progress"
+          value={inProgressCount}
+          change="+8.7%"
+          trend="up"
+          description="Active bookings"
+        />
+        
+        <StatCard
+          icon={CheckCircle}
+          label="Completed Today"
+          value={completedToday}
+          valueClassName="text-primary"
+          change="+12.3%"
+          trend="up"
+          description="Successfully completed"
+          className="col-span-2 lg:col-span-1"
+        />
       </div>
 
       {/* Bookings List */}

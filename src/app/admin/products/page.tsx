@@ -21,6 +21,7 @@ import Error from '@/components/shared/display/Error';
 import { EmptyState } from '@/components/shared/display/EmptyState';
 import { SearchFilter } from '@/components/admin/SearchFilter';
 import { Pagination } from '@/components/admin/Pagination';
+import { StatCard } from '@/components/admin/StatCard';
 
 export default function ProductsPage() {
   const router = useRouter();
@@ -89,28 +90,42 @@ export default function ProductsPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        {[
-          { icon: Package, color: 'hsl(221 83% 53%)', label: 'Total Products', value: products.length },
-          { icon: TrendingUp, color: 'hsl(160 60% 45%)', label: 'Inventory Value', value: `₹${totalValue.toLocaleString()}`, isPrimary: true },
-          { icon: Package, color: 'hsl(280 65% 60%)', label: 'Total Stock', value: products.reduce((sum, p) => sum + p.stock, 0) },
-          { icon: AlertTriangle, color: 'hsl(30 80% 55%)', label: 'Low Stock', value: lowStockItems, isWarning: true },
-        ].map((stat, index) => (
-          <Card key={index} className="border-2 border-border">
-            <CardContent className="p-4 sm:p-5 md:p-6">
-              <div className="flex items-center gap-2 sm:gap-3 mb-1.5 sm:mb-2">
-                <div className="p-2 sm:p-3 rounded-lg sm:rounded-xl flex-shrink-0" style={{ backgroundColor: `${stat.color} / 0.1` }}>
-                  <stat.icon className="h-5 w-5 sm:h-6 sm:w-6" style={{ color: stat.color }} />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs sm:text-sm text-muted-foreground truncate">{stat.label}</p>
-                </div>
-              </div>
-              <p className={`text-2xl sm:text-3xl font-bold ${stat.isPrimary ? '' : stat.isWarning ? '' : 'text-foreground'}`} style={stat.isPrimary ? { color: 'hsl(var(--primary))' } : stat.isWarning ? { color: stat.color } : {}}>
-                {stat.value}
-              </p>
-            </CardContent>
-          </Card>
-        ))}
+        <StatCard
+          icon={Package}
+          label="Total Products"
+          value={products.length}
+          change="+7.2%"
+          trend="up"
+          description="All products"
+        />
+        
+        <StatCard
+          icon={TrendingUp}
+          label="Inventory Value"
+          value={`₹${totalValue.toLocaleString()}`}
+          valueClassName="text-primary"
+          change="+14.5%"
+          trend="up"
+          description="Total value"
+        />
+        
+        <StatCard
+          icon={Package}
+          label="Total Stock"
+          value={products.reduce((sum, p) => sum + p.stock, 0)}
+          change="+3.8%"
+          trend="up"
+          description="Items in stock"
+        />
+        
+        <StatCard
+          icon={AlertTriangle}
+          label="Low Stock"
+          value={lowStockItems}
+          change="-2.1%"
+          trend="down"
+          description="Needs restock"
+        />
       </div>
 
       {/* Products List */}

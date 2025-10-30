@@ -11,7 +11,6 @@ import { Switch } from '@/components/ui/switch';
 import { 
   User,
   Lock,
-  Bell,
   Mail,
   Phone,
   Camera,
@@ -26,14 +25,12 @@ import {
   useAdminProfile,
   useUpdateAdminProfile,
   useChangePassword,
-  useNotificationPreferences,
-  useUpdateNotificationPreferences,
   useUploadAvatar,
 } from '@/api/domains/admin-profile/queries';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
 
-type SettingsTab = 'profile' | 'security' | 'notifications';
+type SettingsTab = 'profile' | 'security';
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -41,10 +38,8 @@ export default function SettingsPage() {
 
   // API hooks
   const { data: profile, isLoading: profileLoading, error: profileError, refetch: refetchProfile } = useAdminProfile();
-  const { data: notificationPrefsData, isLoading: notifLoading, error: notifError } = useNotificationPreferences();
   const updateProfileMutation = useUpdateAdminProfile();
   const changePasswordMutation = useChangePassword();
-  const updateNotificationPrefsMutation = useUpdateNotificationPreferences();
   const uploadAvatarMutation = useUploadAvatar();
 
   // Profile state
@@ -62,13 +57,6 @@ export default function SettingsPage() {
     confirmPassword: '',
   });
 
-  // Notification preferences
-  const [notificationPrefs, setNotificationPrefs] = useState({
-    emailNotifications: true,
-    pushNotifications: true,
-    smsNotifications: false,
-  });
-
   // Update profile data when loaded from API
   useEffect(() => {
     if (profile) {
@@ -81,27 +69,16 @@ export default function SettingsPage() {
     }
   }, [profile]);
 
-  // Update notification preferences when loaded from API
-  useEffect(() => {
-    if (notificationPrefsData) {
-      setNotificationPrefs(notificationPrefsData);
-    }
-  }, [notificationPrefsData]);
-
   // Log any errors for debugging
   useEffect(() => {
     if (profileError) {
       console.error('Profile error:', profileError);
     }
-    if (notifError) {
-      console.error('Notification preferences error:', notifError);
-    }
-  }, [profileError, notifError]);
+  }, [profileError]);
 
   const tabs = [
     { id: 'profile' as SettingsTab, label: 'Profile', icon: User, description: 'Manage your profile information' },
     { id: 'security' as SettingsTab, label: 'Security', icon: Lock, description: 'Update your password and security settings' },
-    { id: 'notifications' as SettingsTab, label: 'Notifications', icon: Bell, description: 'Configure notification preferences' },
   ];
 
   const handleProfileUpdate = async () => {
@@ -135,15 +112,6 @@ export default function SettingsPage() {
       setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
     } catch (error) {
       toast.error('Failed to change password');
-    }
-  };
-
-  const handleNotificationSave = async () => {
-    try {
-      await updateNotificationPrefsMutation.mutateAsync(notificationPrefs);
-      toast.success('Preferences saved successfully!');
-    } catch (error) {
-      toast.error('Failed to save preferences');
     }
   };
 
@@ -456,86 +424,6 @@ export default function SettingsPage() {
             </div>
           )}
 
-          {/* Notifications Tab */}
-          {activeTab === 'notifications' && (
-            <div className="space-y-6">
-              <Card className="border-2">
-                <CardHeader className="space-y-1">
-                  <CardTitle>Notification Preferences</CardTitle>
-                  <CardDescription>
-                    Manage how you receive notifications and updates
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors">
-                      <div className="space-y-0.5 flex-1">
-                        <div className="flex items-center gap-2">
-                          <Mail className="h-4 w-4 text-muted-foreground" />
-                          <Label className="font-medium text-sm cursor-pointer">Email Notifications</Label>
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                          Receive email updates about your account activity
-                        </p>
-                      </div>
-                      <Switch
-                        checked={notificationPrefs.emailNotifications}
-                        onCheckedChange={(checked) => 
-                          setNotificationPrefs({ ...notificationPrefs, emailNotifications: checked })
-                        }
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors">
-                      <div className="space-y-0.5 flex-1">
-                        <div className="flex items-center gap-2">
-                          <Bell className="h-4 w-4 text-muted-foreground" />
-                          <Label className="font-medium text-sm cursor-pointer">Push Notifications</Label>
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                          Receive push notifications in your browser
-                        </p>
-                      </div>
-                      <Switch
-                        checked={notificationPrefs.pushNotifications}
-                        onCheckedChange={(checked) => 
-                          setNotificationPrefs({ ...notificationPrefs, pushNotifications: checked })
-                        }
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors">
-                      <div className="space-y-0.5 flex-1">
-                        <div className="flex items-center gap-2">
-                          <Phone className="h-4 w-4 text-muted-foreground" />
-                          <Label className="font-medium text-sm cursor-pointer">SMS Notifications</Label>
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                          Receive text messages for important updates
-                        </p>
-                      </div>
-                      <Switch
-                        checked={notificationPrefs.smsNotifications}
-                        onCheckedChange={(checked) => 
-                          setNotificationPrefs({ ...notificationPrefs, smsNotifications: checked })
-                        }
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <div className="flex justify-end gap-3">
-                <Button variant="outline" onClick={() => setActiveTab('profile')}>
-                  Cancel
-                </Button>
-                <Button onClick={handleNotificationSave} disabled={updateNotificationPrefsMutation.isPending}>
-                  <Save className="mr-2 h-4 w-4" />
-                  {updateNotificationPrefsMutation.isPending ? 'Saving...' : 'Save Preferences'}
-                </Button>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>

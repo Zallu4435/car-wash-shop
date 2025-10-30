@@ -17,6 +17,7 @@ import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
 import { EmptyState } from '@/components/shared/display/EmptyState';
 import { SearchFilter } from '@/components/admin/SearchFilter';
+import { StatCard } from '@/components/admin/StatCard';
 import { Pagination } from '@/components/admin/Pagination';
 import { AdminRoutes } from '@/lib/constants/routes';
 
@@ -133,28 +134,43 @@ export default function TicketsPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        {[
-          { icon: Ticket, color: 'hsl(221 83% 53%)', label: 'Total Tickets', value: totalItems },
-          { icon: AlertCircle, color: 'hsl(30 80% 55%)', label: 'Open', value: openTickets, isHighlight: true },
-          { icon: Clock, color: 'hsl(221 83% 53%)', label: 'In Progress', value: inProgressTickets },
-          { icon: CheckCircle, color: 'hsl(160 60% 45%)', label: 'Resolved', value: resolvedTickets, isHighlight: true },
-        ].map((stat, index) => (
-          <Card key={index} className="border-2 border-border">
-            <CardContent className="p-4 sm:p-5 md:p-6">
-              <div className="flex items-center gap-2 sm:gap-3 mb-1.5 sm:mb-2">
-                <div className="p-2 sm:p-3 rounded-lg sm:rounded-xl flex-shrink-0" style={{ backgroundColor: `${stat.color} / 0.1` }}>
-                  <stat.icon className="h-5 w-5 sm:h-6 sm:w-6" style={{ color: stat.color }} />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs sm:text-sm text-muted-foreground truncate">{stat.label}</p>
-                </div>
-              </div>
-              <p className={`text-2xl sm:text-3xl font-bold ${stat.isHighlight ? '' : 'text-foreground'}`} style={stat.isHighlight ? { color: stat.color } : {}}>
-                {stat.value}
-              </p>
-            </CardContent>
-          </Card>
-        ))}
+        <StatCard
+          icon={Ticket}
+          label="Total Tickets"
+          value={totalItems}
+          change="+7.5%"
+          trend="up"
+          description="All tickets"
+        />
+        
+        <StatCard
+          icon={AlertCircle}
+          label="Open"
+          value={openTickets}
+          valueClassName="text-primary"
+          change="+4.2%"
+          trend="up"
+          description="Needs attention"
+        />
+        
+        <StatCard
+          icon={Clock}
+          label="In Progress"
+          value={inProgressTickets}
+          change="+2.8%"
+          trend="up"
+          description="Being handled"
+        />
+        
+        <StatCard
+          icon={CheckCircle}
+          label="Resolved"
+          value={resolvedTickets}
+          valueClassName="text-primary"
+          change="+18.3%"
+          trend="up"
+          description="Completed"
+        />
       </div>
 
       {/* Tickets List */}

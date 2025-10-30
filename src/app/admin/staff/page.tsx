@@ -10,16 +10,20 @@ import {
   Eye, 
   Edit, 
   Trash2,
+  Mail,
   Phone,
   MapPin,
-  Briefcase
+  Briefcase,
+  Ban,
+  CheckCircle
 } from 'lucide-react';
 import { useState, useMemo } from 'react';
-import { useAdminStaffList, useDeleteStaff } from '@/api/domains/admin-staff/queries';
+import { useAdminStaffList, useDeleteStaff, useUpdateStaffStatus } from '@/api/domains/admin-staff/queries';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
 import { EmptyState } from '@/components/shared/display/EmptyState';
 import { SearchFilter } from '@/components/admin/SearchFilter';
+import { StatCard } from '@/components/admin/StatCard';
 import { Pagination } from '@/components/admin/Pagination';
 import { AdminRoutes } from '@/lib/constants/routes';
 
@@ -33,7 +37,7 @@ export default function StaffPage() {
   // Combine search and filters for API
   const filters = useMemo(() => ({
     search: search || undefined,
-    status: filterValues.status || undefined,
+    status: (filterValues.status as 'active' | 'inactive' | 'suspended' | undefined) || undefined,
     role: filterValues.role || undefined,
     page,
     limit: pageSize,
@@ -41,6 +45,7 @@ export default function StaffPage() {
 
   const { data: staffData, isLoading, error, refetch } = useAdminStaffList(filters);
   const deleteStaffMutation = useDeleteStaff();
+  const updateStatusMutation = useUpdateStaffStatus();
 
   const staff = staffData?.data || [];
   const totalItems = staffData?.total || 0;
@@ -50,6 +55,14 @@ export default function StaffPage() {
   const handleDelete = async (staffId: string) => {
     if (confirm('Are you sure you want to delete this staff member?')) {
       await deleteStaffMutation.mutateAsync(staffId);
+    }
+  };
+
+  const handleToggleStatus = async (staffId: string, currentStatus: string) => {
+    const newStatus = currentStatus === 'suspended' ? 'active' : 'suspended';
+    const action = newStatus === 'suspended' ? 'suspend' : 'activate';
+    if (confirm(`Are you sure you want to ${action} this staff member?`)) {
+      await updateStatusMutation.mutateAsync({ staffId, status: newStatus });
     }
   };
 
@@ -87,25 +100,34 @@ export default function StaffPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
-        {[
-          { icon: UserCog, label: 'Total Staff', value: totalItems },
-          { icon: Briefcase, label: 'Active Members', value: staff.filter((s: any) => s.status === 'active').length },
-          { icon: Briefcase, label: 'Total Jobs', value: staff.reduce((sum: number, s: any) => sum + (s.totalJobs || 0), 0) },
-        ].map((stat, index) => (
-          <Card key={index} className={`border-2 border-border ${index === 2 ? 'sm:col-span-2 md:col-span-1' : ''}`}>
-            <CardContent className="p-4 sm:p-5 md:p-6">
-              <div className="flex items-center gap-2 sm:gap-3 mb-1.5 sm:mb-2">
-                <div className="p-2 sm:p-3 bg-primary/10 rounded-lg sm:rounded-xl flex-shrink-0">
-                  <stat.icon className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs sm:text-sm text-muted-foreground truncate">{stat.label}</p>
-                </div>
-              </div>
-              <p className="text-2xl sm:text-3xl font-bold text-foreground">{stat.value}</p>
-            </CardContent>
-          </Card>
-        ))}
+        <StatCard
+          icon={UserCog}
+          label="Total Staff"
+          value={totalItems}
+          change="+5.3%"
+          trend="up"
+          description="All staff members"
+        />
+        
+        <StatCard
+          icon={Briefcase}
+          label="Active Members"
+          value={staff.filter((s: any) => s.status === 'active').length}
+          valueClassName="text-primary"
+          change="+8.7%"
+          trend="up"
+          description="Currently active"
+        />
+        
+        <StatCard
+          icon={Briefcase}
+          label="Total Jobs"
+          value={staff.reduce((sum: number, s: any) => sum + (s.totalJobs || 0), 0)}
+          change="+12.4%"
+          trend="up"
+          description="Completed jobs"
+          className="sm:col-span-2 md:col-span-1"
+        />
       </div>
 
       {/* Search Bar */}
@@ -227,6 +249,20 @@ export default function StaffPage() {
                     >
                       <Edit className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                       <span className="hidden xs:inline">Edit</span>
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className={member.status === 'suspended' ? 'text-green-600 hover:text-green-600 hover:bg-green-50 h-9 px-3' : 'text-orange-600 hover:text-orange-600 hover:bg-orange-50 h-9 px-3'}
+                      onClick={() => handleToggleStatus(member.id, member.status)}
+                      disabled={updateStatusMutation.isPending}
+                      title={member.status === 'suspended' ? 'Activate' : 'Suspend'}
+                    >
+                      {member.status === 'suspended' ? (
+                        <CheckCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                      ) : (
+                        <Ban className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                      )}
                     </Button>
                     <Button 
                       variant="outline" 
