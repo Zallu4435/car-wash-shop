@@ -96,7 +96,7 @@ export default function EnhancedHeader() {
       input: { isPrimary: true }
     }, {
       onSuccess: () => {
-        toast.success(`${vehicle.make} ${vehicle.model} is now your primary vehicle`);
+        toast.success(`${vehicle.brand} ${vehicle.model} is now your primary vehicle`);
       },
       onError: () => {
         toast.error('Failed to set as primary vehicle');
@@ -204,8 +204,8 @@ export default function EnhancedHeader() {
                   {/* Vehicle Tooltip */}
                   {selectedVehicle && (
                     <div className="absolute top-full right-0 mt-2 px-3 py-2 bg-card border border-border rounded-lg shadow-lg opacity-0 invisible group-hover/vehicle:opacity-100 group-hover/vehicle:visible transition-all duration-200 whitespace-nowrap z-50">
-                      <p className="text-xs font-medium text-foreground">{selectedVehicle.make} {selectedVehicle.model}</p>
-                      <p className="text-[10px] text-muted-foreground">{selectedVehicle.registrationNumber}</p>
+                      <p className="text-xs font-medium text-foreground">{selectedVehicle.brand} {selectedVehicle.model}</p>
+                      <p className="text-[10px] text-muted-foreground">{selectedVehicle.plateNumber}</p>
                     </div>
                   )}
                   
@@ -338,7 +338,7 @@ export default function EnhancedHeader() {
                             className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-muted cursor-pointer"
                           >
                             <Package className="h-4 w-4 text-muted-foreground" />
-                            <span>My Orders</span>
+                            <span>Orders & Bookings</span>
                           </button>
 
                           <div className="h-px bg-border my-2"></div>
@@ -425,9 +425,9 @@ export default function EnhancedHeader() {
                     <div className="mt-2 pt-2 border-t border-border">
                       <p className="text-[10px] sm:text-xs text-muted-foreground">Selected Vehicle</p>
                       <p className="text-xs sm:text-sm font-medium text-foreground truncate">
-                        {selectedVehicle.make} {selectedVehicle.model}
+                        {selectedVehicle.brand} {selectedVehicle.model}
                       </p>
-                      <p className="text-[10px] text-muted-foreground">{selectedVehicle.registrationNumber}</p>
+                      <p className="text-[10px] text-muted-foreground">{selectedVehicle.plateNumber}</p>
                     </div>
                   )}
                 </div>
@@ -496,7 +496,7 @@ export default function EnhancedHeader() {
                     className="w-full flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl text-xs sm:text-sm hover:bg-muted cursor-pointer"
                   >
                     <Package className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
-                    <span>My Orders</span>
+                    <span>Orders & Bookings</span>
                   </button>
 
                   <button

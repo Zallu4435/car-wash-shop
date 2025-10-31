@@ -11,6 +11,7 @@ import { useAdminCustomerDetail, useUpdateCustomerStatus } from '@/api/domains/a
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
 import { toast } from 'sonner';
+import { DangerZone } from '@/components/admin/DangerZone';
 
 export default function CustomerDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -263,48 +264,27 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
           </Card>
 
           {/* Action Buttons */}
-          <Card className="border-2 border-red-200 dark:border-red-900 bg-red-50/50 dark:bg-red-950/20">
-            <CardHeader>
-              <CardTitle className="text-lg">Danger Zone</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Irreversible actions that affect this customer
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center justify-between p-4 bg-background rounded-lg border border-border">
-                <div>
-                  <p className="font-semibold text-foreground">Block Customer</p>
-                  <p className="text-sm text-muted-foreground">
-                    Prevent customer from placing new orders
-                  </p>
-                </div>
-                <Button
-                  variant="outline"
-                  onClick={handleBlockClick}
-                  className="border-orange-300 dark:border-orange-800 text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950/30"
-                >
-                  <Ban className="mr-2 h-4 w-4" />
-                  Block
-                </Button>
-              </div>
-
-              <div className="flex items-center justify-between p-4 bg-background rounded-lg border border-border">
-                <div>
-                  <p className="font-semibold text-foreground">Delete Customer</p>
-                  <p className="text-sm text-muted-foreground">
-                    Permanently remove customer and all data
-                  </p>
-                </div>
-                <Button
-                  variant="destructive"
-                  onClick={handleDeleteClick}
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Delete
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <DangerZone
+            description="Irreversible actions that affect this customer"
+            actions={[
+              {
+                title: 'Block Customer',
+                description: 'Prevent customer from making new bookings',
+                buttonText: 'Block',
+                buttonIcon: Ban,
+                onClick: handleBlockClick,
+                variant: 'outline',
+                buttonClassName: 'border-orange-300 dark:border-orange-800 text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950/30',
+              },
+              {
+                title: 'Delete Customer',
+                description: 'Permanently remove customer from system',
+                buttonText: 'Delete',
+                buttonIcon: Trash2,
+                onClick: handleDeleteClick,
+              },
+            ]}
+          />
         </div>
       </div>
 

@@ -6,23 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import {
   Shield,
   Key,
-  Lock,
-  Smartphone,
   AlertTriangle,
-  CheckCircle2,
   Eye,
   EyeOff,
   Trash2,
@@ -34,15 +22,28 @@ import {
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { changePasswordSchema, ChangePasswordInput } from '@/schemas/profile';
+import { useConfirmation } from '@/hooks/useConfirmation';
 
 export default function SecurityPage() {
   const router = useRouter();
+  const { confirm, ConfirmDialog } = useConfirmation();
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
   const [loginAlertsEnabled, setLoginAlertsEnabled] = useState(true);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
+  // Password change form
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<ChangePasswordInput>({
+    resolver: zodResolver(changePasswordSchema),
+  });
 
   const [activeSessions] = useState([
     {
@@ -71,31 +72,56 @@ export default function SecurityPage() {
     },
   ]);
 
-  const handlePasswordChange = (e: React.FormEvent) => {
-    e.preventDefault();
+  const onPasswordChange = (data: ChangePasswordInput) => {
+    // TODO: Call API to change password
+    console.log('Password change data:', data);
     toast.success('Password changed successfully!');
+    reset();
   };
 
-  const handleEnable2FA = () => {
-    setTwoFactorEnabled(!twoFactorEnabled);
-    toast.success(
-      twoFactorEnabled
-        ? 'Two-factor authentication disabled'
-        : 'Two-factor authentication enabled'
-    );
+  const handleLogoutSession = async (sessionId: string) => {
+    const confirmed = await confirm({
+      title: 'Logout Session?',
+      description: "This will end the session on this device. You'll need to log in again to access your account from that device.",
+      confirmText: 'Yes, Logout',
+      cancelText: 'Cancel',
+      type: 'warning',
+    });
+
+    if (confirmed) {
+      // TODO: Call API to logout session
+      toast.success('Session terminated successfully');
+    }
   };
 
-  const handleLogoutSession = (sessionId: string) => {
-    toast.success('Session terminated successfully');
+  const handleLogoutAllSessions = async () => {
+    const confirmed = await confirm({
+      title: 'Logout All Other Sessions?',
+      description: "This will end all active sessions except your current one. You'll need to log in again on those devices.",
+      confirmText: 'Yes, Logout All',
+      cancelText: 'Cancel',
+      type: 'warning',
+    });
+
+    if (confirmed) {
+      // TODO: Call API to logout all sessions
+      toast.success('All other sessions terminated successfully');
+    }
   };
 
-  const handleLogoutAllSessions = () => {
-    toast.success('All other sessions terminated successfully');
-  };
+  const handleDeleteAccount = async () => {
+    const confirmed = await confirm({
+      title: 'Delete Account?',
+      description: 'This action cannot be undone. This will permanently delete your account and remove all your data from our servers.',
+      confirmText: 'Yes, Delete My Account',
+      cancelText: 'Cancel',
+      type: 'danger',
+    });
 
-  const handleDeleteAccount = () => {
-    setShowDeleteDialog(false);
-    toast.error('Account deletion initiated. Please check your email.');
+    if (confirmed) {
+      // TODO: Call API to delete account
+      toast.error('Account deletion initiated. Please check your email.');
+    }
   };
 
   return (
@@ -145,14 +171,14 @@ export default function SecurityPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handlePasswordChange} className="space-y-4">
+                <form onSubmit={handleSubmit(onPasswordChange)} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="currentPassword" className="text-xs sm:text-sm">Current Password</Label>
                     <div className="relative">
                       <Input
                         id="currentPassword"
                         type={showCurrentPassword ? 'text' : 'password'}
-                        required
+                        {...register('currentPassword')}
                         placeholder="Enter current password"
                         className="h-10 sm:h-11 pr-10"
                       />
@@ -164,6 +190,9 @@ export default function SecurityPage() {
                         {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
                     </div>
+                    {errors.currentPassword && (
+                      <p className="text-xs text-red-600 dark:text-red-400">{errors.currentPassword.message}</p>
+                    )}
                   </div>
 
                   <div className="space-y-2">
@@ -172,7 +201,7 @@ export default function SecurityPage() {
                       <Input
                         id="newPassword"
                         type={showNewPassword ? 'text' : 'password'}
-                        required
+                        {...register('newPassword')}
                         placeholder="Enter new password"
                         className="h-10 sm:h-11 pr-10"
                       />
@@ -184,9 +213,14 @@ export default function SecurityPage() {
                         {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
                     </div>
-                    <p className="text-[10px] sm:text-xs text-muted-foreground">
-                      Password must be at least 8 characters with uppercase, lowercase, and numbers
-                    </p>
+                    {errors.newPassword && (
+                      <p className="text-xs text-red-600 dark:text-red-400">{errors.newPassword.message}</p>
+                    )}
+                    {!errors.newPassword && (
+                      <p className="text-[10px] sm:text-xs text-muted-foreground">
+                        Password must be at least 8 characters with uppercase, lowercase, number, and special character
+                      </p>
+                    )}
                   </div>
 
                   <div className="space-y-2">
@@ -195,7 +229,7 @@ export default function SecurityPage() {
                       <Input
                         id="confirmPassword"
                         type={showConfirmPassword ? 'text' : 'password'}
-                        required
+                        {...register('confirmPassword')}
                         placeholder="Confirm new password"
                         className="h-10 sm:h-11 pr-10"
                       />
@@ -207,6 +241,9 @@ export default function SecurityPage() {
                         {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
                     </div>
+                    {errors.confirmPassword && (
+                      <p className="text-xs text-red-600 dark:text-red-400">{errors.confirmPassword.message}</p>
+                    )}
                   </div>
 
                   <Button type="submit" className="w-full h-10 sm:h-11 text-xs sm:text-sm">
@@ -214,65 +251,6 @@ export default function SecurityPage() {
                     Change Password
                   </Button>
                 </form>
-              </CardContent>
-            </Card>
-
-            {/* Two-Factor Authentication */}
-            <Card className="border-2">
-              <CardHeader className="pb-3 sm:pb-4">
-                <div className="flex items-start gap-2">
-                  <div className="p-1.5 sm:p-2 bg-blue-100 dark:bg-blue-950/30 rounded-lg flex-shrink-0">
-                    <Smartphone className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 dark:text-blue-400" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0 flex-1">
-                        <CardTitle className="text-base sm:text-lg">Two-Factor Authentication</CardTitle>
-                        <CardDescription className="text-xs sm:text-sm mt-0.5 sm:mt-1">
-                          Add an extra layer of security to your account
-                        </CardDescription>
-                      </div>
-                      <Badge variant={twoFactorEnabled ? 'success' : 'outline'} className="text-xs flex-shrink-0">
-                        {twoFactorEnabled ? (
-                          <>
-                            <CheckCircle2 className="mr-1 h-3 w-3" />
-                            Enabled
-                          </>
-                        ) : (
-                          'Disabled'
-                        )}
-                      </Badge>
-                    </div>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 bg-muted rounded-lg">
-                  <Lock className="h-4 w-4 sm:h-5 sm:w-5 text-primary mt-0.5 flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs sm:text-sm font-medium text-foreground mb-1">
-                      Enhanced Account Security
-                    </p>
-                    <p className="text-[10px] sm:text-xs text-muted-foreground">
-                      When enabled, you'll need to enter a code from your phone in addition to your password
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start sm:items-center justify-between gap-3">
-                  <div className="min-w-0 flex-1">
-                    <p className="font-medium text-sm sm:text-base text-foreground">Enable 2FA</p>
-                    <p className="text-xs sm:text-sm text-muted-foreground">Protect your account with 2FA</p>
-                  </div>
-                  <Switch checked={twoFactorEnabled} onCheckedChange={handleEnable2FA} className="flex-shrink-0" />
-                </div>
-
-                {twoFactorEnabled && (
-                  <Button variant="outline" className="w-full h-10 sm:h-11 text-xs sm:text-sm">
-                    <Smartphone className="mr-2 h-4 w-4" />
-                    Manage 2FA Settings
-                  </Button>
-                )}
               </CardContent>
             </Card>
 
@@ -422,45 +400,24 @@ export default function SecurityPage() {
                     permanently removed.
                   </p>
                   
-                  <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-                    <DialogTrigger asChild>
-                      <Button variant="destructive" size="sm" className="h-9 sm:h-10 text-xs sm:text-sm">
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Delete Account
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-md">
-                      <DialogHeader>
-                        <DialogTitle className="text-base sm:text-lg">Are you absolutely sure?</DialogTitle>
-                        <DialogDescription className="text-xs sm:text-sm">
-                          This action cannot be undone. This will permanently delete your account and
-                          remove all your data from our servers.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <DialogFooter className="gap-2 sm:gap-0">
-                        <Button
-                          variant="outline"
-                          onClick={() => setShowDeleteDialog(false)}
-                          className="h-10 sm:h-11 text-xs sm:text-sm"
-                        >
-                          Cancel
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          onClick={handleDeleteAccount}
-                          className="h-10 sm:h-11 text-xs sm:text-sm"
-                        >
-                          Yes, Delete My Account
-                        </Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
+                  <Button 
+                    variant="destructive" 
+                    size="sm" 
+                    className="h-9 sm:h-10 text-xs sm:text-sm"
+                    onClick={handleDeleteAccount}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete Account
+                  </Button>
                 </div>
               </CardContent>
             </Card>
           </div>
         </div>
       </section>
+
+      {/* Confirmation Dialog */}
+      <ConfirmDialog />
     </div>
   );
 }

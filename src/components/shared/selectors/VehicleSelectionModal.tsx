@@ -138,10 +138,10 @@ export function VehicleSelectionModal({
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="font-semibold text-sm text-foreground truncate">
-                            {vehicle.make} {vehicle.model}
+                            {vehicle.brand} {vehicle.model}
                           </p>
                           <p className="text-xs text-muted-foreground truncate mt-0.5">
-                            {vehicle.registrationNumber} • {vehicle.year}
+                            {vehicle.plateNumber} • {vehicle.year}
                           </p>
                         </div>
                         {isSelected && (

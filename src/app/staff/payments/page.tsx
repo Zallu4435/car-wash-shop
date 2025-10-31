@@ -1,12 +1,18 @@
 'use client';
 
+import { useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { IndianRupee, Calendar, Briefcase, TrendingUp, Clock } from 'lucide-react';
 import { useStaffPaymentSummary } from '@/api/domains/staff';
+import { StaffRoutes } from '@/lib/constants/routes';
+import { SearchFilter } from '@/components/admin/SearchFilter';
+import { Pagination } from '@/components/shared/crud/Pagination';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
+import { EmptyState } from '@/components/shared/display/EmptyState';
 
 const statusConfig = {
   paid: {
@@ -20,10 +26,53 @@ const statusConfig = {
 };
 
 export default function StaffPaymentsPage() {
+  const router = useRouter();
+  const [search, setSearch] = useState('');
+  const [status, setStatus] = useState<string>('all');
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  
   const { data, isLoading, error } = useStaffPaymentSummary();
   const totalEarnings = data?.totalEarnings ?? 0;
   const pendingAmount = data?.pendingPayments ?? 0;
   const totalJobs = data?.history?.length ?? 0;
+
+  // Filter payments based on search and filters
+  const filteredPayments = useMemo(() => {
+    let payments = data?.history ?? [];
+
+    // Search filter
+    if (search) {
+      payments = payments.filter((payment) =>
+        payment.service?.toLowerCase().includes(search.toLowerCase()) ||
+        payment.jobId?.toLowerCase().includes(search.toLowerCase())
+      );
+    }
+
+    // Status filter - payments don't have status field in current data structure
+    // Keeping filter state for future use
+
+    // Date range filter
+    if (fromDate) {
+      payments = payments.filter((payment) => payment.date >= fromDate);
+    }
+    if (toDate) {
+      payments = payments.filter((payment) => payment.date <= toDate);
+    }
+
+    return payments;
+  }, [data?.history, search, status, fromDate, toDate]);
+
+  // Paginate payments client-side
+  const paginatedPayments = useMemo(() => {
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    return filteredPayments.slice(startIndex, endIndex);
+  }, [filteredPayments, page, limit]);
+
+  const totalPages = Math.ceil(filteredPayments.length / limit);
 
   if (isLoading) {
     return <Loading text="Loading payments..." />;
@@ -111,6 +160,53 @@ export default function StaffPaymentsPage() {
         </Card>
       </div>
 
+      {/* Filters */}
+      <SearchFilter
+        searchPlaceholder="Search by service or job ID"
+        onSearchChange={(value) => { setSearch(value); setPage(1); }}
+        filterOptions={[
+          {
+            label: 'Status',
+            value: 'status',
+            options: [
+              { label: 'All Status', value: 'all' },
+              { label: 'Paid', value: 'paid' },
+              { label: 'Pending', value: 'pending' },
+            ],
+          },
+          {
+            label: 'Date Range',
+            value: 'dateRange',
+            type: 'dateRange',
+            options: [
+              { label: 'All Time', value: 'all' },
+              { label: 'Today', value: 'today' },
+              { label: 'This Week', value: 'week' },
+              { label: 'This Month', value: 'month' },
+            ],
+          },
+        ]}
+        onFilterChange={(filters) => {
+          if (filters.status) {
+            setStatus(filters.status);
+          } else {
+            setStatus('all');
+          }
+          
+          // Handle date range
+          if (filters.dateRange && filters.dateRange.includes('_')) {
+            const [from, to] = filters.dateRange.split('_');
+            setFromDate(from);
+            setToDate(to);
+          } else {
+            setFromDate('');
+            setToDate('');
+          }
+          
+          setPage(1);
+        }}
+      />
+
       {/* Payment History */}
       <Card className="border-2 border-border">
         <CardHeader className="pb-3 sm:pb-4">
@@ -122,13 +218,14 @@ export default function StaffPaymentsPage() {
               <CardTitle className="text-base sm:text-lg">Payment History</CardTitle>
             </div>
             <Badge variant="outline" className="text-xs w-fit">
-              {data?.history?.length ?? 0} records
+              {filteredPayments.length} records
             </Badge>
           </div>
         </CardHeader>
         <CardContent>
+          {paginatedPayments.length > 0 ? (
           <div className="space-y-3">
-            {(data?.history ?? []).map((payment) => {
+            {paginatedPayments.map((payment) => {
               const status = statusConfig['paid'];
               return (
                 <Card key={`${payment.date}-${payment.amount}`} className="hover:shadow-md transition-shadow border-2 border-border">
@@ -162,7 +259,12 @@ export default function StaffPaymentsPage() {
                             {payment.amount.toLocaleString()}
                           </p>
                         </div>
-                        <Button variant="ghost" size="sm" className="h-8 text-xs sm:text-sm cursor-pointer">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-8 text-xs sm:text-sm cursor-pointer"
+                          onClick={() => router.push(StaffRoutes.PAYMENT_DETAIL(payment.date))}
+                        >
                           View Details
                         </Button>
                       </div>
@@ -196,7 +298,12 @@ export default function StaffPaymentsPage() {
                           <span>{payment.service ? 1 : 0} jobs</span>
                         </div>
                       </div>
-                      <Button variant="ghost" size="sm" className="w-full h-8 text-xs cursor-pointer">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="w-full h-8 text-xs cursor-pointer"
+                        onClick={() => router.push(StaffRoutes.PAYMENT_DETAIL(payment.date))}
+                      >
                         View Details
                       </Button>
                     </div>
@@ -205,8 +312,26 @@ export default function StaffPaymentsPage() {
               );
             })}
           </div>
+          ) : (
+            <EmptyState
+              icon={IndianRupee}
+              title={search || status !== 'all' || fromDate || toDate ? 'No payments match your filters' : 'No payment history yet'}
+              description={search || status !== 'all' || fromDate || toDate ? 'Try adjusting your search or filters' : 'Payment records will appear here'}
+            />
+          )}
         </CardContent>
       </Card>
+
+      {/* Pagination */}
+      {filteredPayments.length > 0 && (
+        <Pagination
+          currentPage={page}
+          totalPages={totalPages}
+          onPageChange={(p) => setPage(p)}
+          itemsPerPage={limit}
+          totalItems={filteredPayments.length}
+        />
+      )}
     </div>
   );
 }

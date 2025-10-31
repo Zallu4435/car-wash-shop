@@ -11,7 +11,7 @@ import { Phone, Lock, ArrowLeft, KeyRound, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { loginSchema, registerSchema } from '@/schemas/auth';
+import { phoneOnlySchema, otpOnlySchema, resetPasswordSchema } from '@/schemas/auth';
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
@@ -27,7 +27,7 @@ export default function ForgotPasswordPage() {
     getValues: getPhone,
     reset: resetPhone,
   } = useForm<{ phone: string }>({
-    resolver: zodResolver(loginSchema.pick({ phone: true })),
+    resolver: zodResolver(phoneOnlySchema),
     defaultValues: { phone: '' },
   });
 
@@ -38,7 +38,7 @@ export default function ForgotPasswordPage() {
     getValues: getOtp,
     reset: resetOtp,
   } = useForm<{ otp: string }>({
-    resolver: zodResolver(loginSchema.pick({ otp: true })),
+    resolver: zodResolver(otpOnlySchema),
     defaultValues: { otp: '' },
   });
 
@@ -47,7 +47,7 @@ export default function ForgotPasswordPage() {
     handleSubmit: handleResetSubmit,
     formState: { errors: resetErrors },
   } = useForm<{ password: string; confirmPassword: string }>({
-    resolver: zodResolver(registerSchema.pick({ password: true, confirmPassword: true })),
+    resolver: zodResolver(resetPasswordSchema),
     defaultValues: { password: '', confirmPassword: '' },
   });
 

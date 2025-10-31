@@ -21,6 +21,7 @@ import type { Vehicle } from '@/types/vehicle';
 import type { Address } from '@/types/address';
 import Loading from '@/components/shared/display/Loading';
 import { mockServiceTypes, mockAddOns } from '@/mocks/data/customer-mock-data';
+import { createBookingSchema, CreateBookingInput } from '@/schemas/booking';
 
 export default function BookingPage() {
   const router = useRouter();
@@ -118,42 +119,104 @@ export default function BookingPage() {
       toast.error('Please select a service type');
       return;
     }
+    
     if (currentStep === 2 && !selectedService) {
       toast.error('Please select a service');
       return;
     }
+    
     if (currentStep === 3 && serviceType !== 'home' && !selectedVehicle) {
       toast.error(`Please select a ${serviceType}`);
       return;
     }
+    
     if (currentStep === 4 && !selectedAddress) {
       toast.error('Please select a service address');
       return;
     }
-    if (currentStep === 5 && (!selectedDate || !selectedTime)) {
-      toast.error('Please select date and time');
-      return;
-    }
-
-    if (currentStep === 7) {
-      // Final step - complete booking
-      if (!selectedDate || !selectedTime || !selectedVehicle) {
-        toast.error('Please fill in all required fields');
+    
+    // Step 5: Date and Time validation with schema
+    if (currentStep === 5) {
+      if (!selectedDate) {
+        toast.error('Please select a date');
+        return;
+      }
+      if (!selectedTime) {
+        toast.error('Please select a time');
         return;
       }
       
-      const scheduledAt = new Date(`${selectedDate.toDateString()} ${selectedTime}`).toISOString();
+      // Validate date is not in the past
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      if (selectedDate < today) {
+        toast.error('Date cannot be in the past');
+        return;
+      }
       
-      const bookingData = {
-        serviceId: selectedService,
-        vehicleId: selectedVehicle,
-        addressId: selectedAddress,
-        scheduledAt,
-        addOns: selectedAddOns,
-        paymentType: paymentOption === 'online' ? 'full' as const : 'advance' as const,
-      };
+      // Validate date is not more than 90 days ahead
+      const maxDate = new Date();
+      maxDate.setDate(maxDate.getDate() + 90);
+      if (selectedDate > maxDate) {
+        toast.error('Cannot book more than 90 days in advance');
+        return;
+      }
       
-      createBookingMutation.mutate(bookingData);
+      // Validate time format and business hours
+      const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+      if (!timeRegex.test(selectedTime)) {
+        toast.error('Invalid time format');
+        return;
+      }
+      
+      const [hours, minutes] = selectedTime.split(':').map(Number);
+      const totalMinutes = hours * 60 + minutes;
+      const minTime = 8 * 60; // 8:00 AM
+      const maxTime = 20 * 60; // 8:00 PM
+      
+      if (totalMinutes < minTime || totalMinutes > maxTime) {
+        toast.error('Service hours are 8:00 AM to 8:00 PM');
+        return;
+      }
+    }
+
+    if (currentStep === 7) {
+      // Final step - complete booking with full validation
+      try {
+        const bookingData: CreateBookingInput = {
+          serviceId: selectedService,
+          vehicleId: selectedVehicle,
+          addressId: selectedAddress,
+          scheduledDate: selectedDate!,
+          scheduledTime: selectedTime!,
+          addOns: selectedAddOns,
+          paymentType: paymentOption === 'online' ? 'full' : 'advance',
+          notes: '',
+        };
+        
+        // Validate with Zod schema
+        const validatedData = createBookingSchema.parse(bookingData);
+        
+        // If validation passes, create booking
+        const scheduledAt = new Date(`${selectedDate!.toDateString()} ${selectedTime}`).toISOString();
+        
+        createBookingMutation.mutate({
+          serviceId: validatedData.serviceId,
+          vehicleId: validatedData.vehicleId,
+          addressId: validatedData.addressId,
+          scheduledAt,
+          addOns: validatedData.addOns,
+          paymentType: validatedData.paymentType as 'full' | 'advance',
+        });
+      } catch (error: any) {
+        // Handle Zod validation errors
+        if (error.errors && error.errors.length > 0) {
+          toast.error(error.errors[0].message);
+        } else {
+          toast.error('Please fill in all required fields correctly');
+        }
+        return;
+      }
     } else {
       // Skip vehicle step for home service
       if (currentStep === 2 && serviceType === 'home') {

@@ -1,26 +1,26 @@
 export interface Vehicle {
   id: string;
   userId: string;
-  type: 'car' | 'bike';
-  make: string;
+  type: 'car' | 'bike' | 'suv' | 'sedan' | 'hatchback';
+  brand: string;
   model: string;
   year: number;
-  registrationNumber: string;
+  plateNumber: string;
   color?: string;
-  fuelType?: 'petrol' | 'diesel' | 'electric' | 'hybrid';
+  fuelType?: 'petrol' | 'diesel' | 'electric' | 'hybrid' | 'cng';
   isPrimary: boolean;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface VehicleInput {
-  type: 'car' | 'bike';
-  make: string;
+  type: 'car' | 'bike' | 'suv' | 'sedan' | 'hatchback';
+  brand: string;
   model: string;
   year: number;
-  registrationNumber: string;
+  plateNumber: string;
   color?: string;
-  fuelType?: 'petrol' | 'diesel' | 'electric' | 'hybrid';
+  fuelType?: 'petrol' | 'diesel' | 'electric' | 'hybrid' | 'cng';
 }
 
 export interface VehicleBrand {

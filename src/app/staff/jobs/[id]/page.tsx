@@ -2,7 +2,7 @@
 
 import { use } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, CheckCircle, User, Calendar, Clock, Car, DollarSign, Phone } from 'lucide-react';
+import { ArrowLeft, CheckCircle, User, Calendar, Clock, Car, DollarSign, Phone, Briefcase } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -11,6 +11,7 @@ import { useStaffJobDetail } from '@/api/domains/staff';
 import { StaffRoutes } from '@/lib/constants/routes';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
+import { EmptyState } from '@/components/shared/display/EmptyState';
 
 export default function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -21,27 +22,19 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
     return <Loading text="Loading job details..." />;
   }
 
-  if (error) {
-    return <Error message="Failed to load job details" details={error?.message} />;
-  }
-
-  if (!job) {
+  if (error || !job) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="max-w-md w-full border-2">
-          <CardContent className="pt-10 sm:pt-12 pb-6 sm:pb-8 text-center px-4 sm:px-6">
-            <p className="text-lg sm:text-xl font-semibold text-foreground mb-3 sm:mb-4">
-              Job not found
-            </p>
-            <Button 
-              onClick={() => router.push(StaffRoutes.JOBS)}
-              className="h-10 sm:h-11 text-sm sm:text-base"
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <EmptyState
+          icon={Briefcase}
+          title="Job Not Found"
+          description="The job you're looking for doesn't exist or has been removed"
+          action={
+            <Button onClick={() => router.push(StaffRoutes.JOBS)}>
               Back to Jobs
             </Button>
-          </CardContent>
-        </Card>
+          }
+        />
       </div>
     );
   }
@@ -169,14 +162,12 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
           {/* Complete Button */}
           <Button 
-            asChild 
+            onClick={() => router.push(StaffRoutes.JOB_COMPLETE(id))}
             className="w-full shadow-lg h-11 sm:h-12 text-sm sm:text-base" 
             size="lg"
           >
-            <a href={`${StaffRoutes.JOBS}/${id}/complete`}>
-              <CheckCircle className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-              Mark as Completed
-            </a>
+            <CheckCircle className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+            Mark as Completed
           </Button>
         </div>
 

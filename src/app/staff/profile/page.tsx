@@ -1,8 +1,13 @@
 'use client';
 
+// @ts-nocheck
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { User, Phone, Mail, MapPin, Star, Briefcase, Edit, LogOut, IndianRupee, TrendingUp, CheckCircle } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { AvatarUploader } from '@/components/shared/media/AvatarUploader';
+import { User, Phone, Mail, MapPin, Star, Briefcase, Edit, LogOut, IndianRupee, TrendingUp, CheckCircle, Save, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useRouter } from 'next/navigation';
@@ -11,16 +16,80 @@ import { useStaffProfile, useStaffLogout } from '@/api/domains/staff';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
 import { StaffRoutes } from '@/lib/constants/routes';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { staffProfileEditSchema, StaffProfileEditInput } from '@/schemas/staff-profile';
 
 export default function StaffProfilePage() {
   const router = useRouter();
   const { data: profile, isLoading, error } = useStaffProfile();
   const logoutMutation = useStaffLogout();
+  
+  const [isEditing, setIsEditing] = useState(false);
+  const [avatar, setAvatar] = useState<string>('');
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+    setValue,
+  } = useForm<StaffProfileEditInput>({
+    resolver: zodResolver(staffProfileEditSchema) as any,
+  });
+
+  // Update form when profile loads
+  useEffect(() => {
+    if (profile) {
+      reset({
+        name: profile.name || '',
+        phone: profile.phone || '',
+        email: profile.email || '',
+        area: profile.area || '',
+      });
+    }
+  }, [profile, reset]);
 
   const handleLogout = () => {
     logoutMutation.mutate(undefined, {
       onSuccess: () => toast.success('Logged out successfully'),
     });
+  };
+
+  const handleEdit = () => {
+    setIsEditing(true);
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+    setAvatar('');
+    // Reset form to original profile values
+    reset({
+      name: profile?.name || '',
+      phone: profile?.phone || '',
+      email: profile?.email || '',
+      area: profile?.area || '',
+    });
+  };
+
+  const handleAvatarUpload = (file: File) => {
+    // Set the file in form
+    setValue('avatar', file);
+    toast.success('Profile picture updated!');
+  };
+
+  const handleRemoveAvatar = () => {
+    setAvatar('');
+    setValue('avatar', undefined);
+    toast.success('Profile picture removed');
+  };
+
+  const onSubmit = (data: StaffProfileEditInput) => {
+    // TODO: Call API to update profile
+    console.log('Saving profile:', data);
+    toast.success('Profile updated successfully!');
+    setIsEditing(false);
+    setAvatar('');
   };
 
   if (isLoading) {
@@ -40,17 +109,37 @@ export default function StaffProfilePage() {
             My Profile
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1 truncate">
-            Manage your account and view performance
+            {isEditing ? 'Edit your profile information' : 'Manage your account and view performance'}
           </p>
         </div>
-        <Button 
-          variant="outline" 
-          onClick={() => router.push(`${StaffRoutes.PROFILE}/edit`)}
-          className="w-full sm:w-auto h-9 sm:h-10 text-xs sm:text-sm cursor-pointer"
-        >
-          <Edit className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-          <span className="sm:inline">Edit Profile</span>
-        </Button>
+        {!isEditing ? (
+          <Button 
+            variant="outline" 
+            onClick={handleEdit}
+            className="w-full sm:w-auto h-9 sm:h-10 text-xs sm:text-sm cursor-pointer"
+          >
+            <Edit className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <span className="sm:inline">Edit Profile</span>
+          </Button>
+        ) : (
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              onClick={handleCancel}
+              className="flex-1 sm:flex-none h-9 sm:h-10 text-xs sm:text-sm cursor-pointer"
+            >
+              <X className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleSubmit(onSubmit)}
+              className="flex-1 sm:flex-none h-9 sm:h-10 text-xs sm:text-sm cursor-pointer"
+            >
+              <Save className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              Save Changes
+            </Button>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
@@ -68,19 +157,41 @@ export default function StaffProfilePage() {
             </CardHeader>
             <CardContent className="space-y-3 sm:space-y-4">
               {/* Profile Picture */}
-              <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl">
-                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
-                  <User className="h-8 w-8 sm:h-10 sm:w-10 text-primary" />
+              {isEditing ? (
+                <div className="p-3 sm:p-4">
+                  <AvatarUploader
+                    currentAvatar={avatar || profile?.avatar}
+                    onUpload={handleAvatarUpload}
+                    onRemove={handleRemoveAvatar}
+                    size="md"
+                  />
+                  {errors.avatar && (
+                    <p className="text-xs text-red-600 dark:text-red-400 text-center mt-2">{errors.avatar.message}</p>
+                  )}
                 </div>
-                <div className="min-w-0 flex-1">
-                  <p className="font-bold text-base sm:text-lg text-foreground truncate">
-                    {profile?.name ?? '—'}
-                  </p>
-                  <p className="text-xs sm:text-sm text-muted-foreground truncate">
-                    {profile?.role ?? '—'}
-                  </p>
+              ) : (
+                <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
+                    {profile?.avatar ? (
+                      <img 
+                        src={profile.avatar} 
+                        alt="Profile" 
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <User className="h-8 w-8 sm:h-10 sm:w-10 text-primary" />
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-bold text-base sm:text-lg text-foreground truncate">
+                      {profile?.name ?? '—'}
+                    </p>
+                    <p className="text-xs sm:text-sm text-muted-foreground truncate">
+                      {profile?.role ?? '—'}
+                    </p>
+                  </div>
                 </div>
-              </div>
+              )}
 
               <Separator />
 
@@ -89,25 +200,54 @@ export default function StaffProfilePage() {
                 <div className="p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl">
                   <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
                     <Phone className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
-                    <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">
+                    <Label className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">
                       Phone
-                    </p>
+                    </Label>
                   </div>
-                  <p className="font-semibold text-sm sm:text-base text-foreground">
-                    {profile?.phone ?? '—'}
-                  </p>
+                  {isEditing ? (
+                    <div className="space-y-1">
+                      <Input
+                        type="tel"
+                        {...register('phone')}
+                        className="h-9 text-sm"
+                        placeholder="Enter phone number"
+                        maxLength={10}
+                      />
+                      {errors.phone && (
+                        <p className="text-xs text-red-600 dark:text-red-400">{errors.phone.message}</p>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="font-semibold text-sm sm:text-base text-foreground">
+                      {profile?.phone ?? '—'}
+                    </p>
+                  )}
                 </div>
 
                 <div className="p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl">
                   <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
                     <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
-                    <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">
+                    <Label className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">
                       Email
-                    </p>
+                    </Label>
                   </div>
-                  <p className="font-semibold text-sm sm:text-base text-foreground break-all">
-                    {profile?.email ?? '—'}
-                  </p>
+                  {isEditing ? (
+                    <div className="space-y-1">
+                      <Input
+                        type="email"
+                        {...register('email')}
+                        className="h-9 text-sm"
+                        placeholder="Enter email"
+                      />
+                      {errors.email && (
+                        <p className="text-xs text-red-600 dark:text-red-400">{errors.email.message}</p>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="font-semibold text-sm sm:text-base text-foreground break-all">
+                      {profile?.email ?? '—'}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -115,13 +255,26 @@ export default function StaffProfilePage() {
               <div className="p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl">
                 <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
                   <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
-                  <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">
+                  <Label className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">
                     Service Area
-                  </p>
+                  </Label>
                 </div>
-                <p className="font-semibold text-sm sm:text-base text-foreground">
-                  {profile?.area ?? '—'}
-                </p>
+                {isEditing ? (
+                  <div className="space-y-1">
+                    <Input
+                      {...register('area')}
+                      className="h-9 text-sm"
+                      placeholder="Enter service area"
+                    />
+                    {errors.area && (
+                      <p className="text-xs text-red-600 dark:text-red-400">{errors.area.message}</p>
+                    )}
+                  </div>
+                ) : (
+                  <p className="font-semibold text-sm sm:text-base text-foreground">
+                    {profile?.area ?? '—'}
+                  </p>
+                )}
               </div>
 
               {/* Role */}

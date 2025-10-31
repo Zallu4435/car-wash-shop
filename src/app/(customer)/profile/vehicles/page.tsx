@@ -91,7 +91,7 @@ export default function VehiclesPage() {
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-2 mb-1.5 sm:mb-2">
                 <h3 className="font-bold text-base sm:text-lg md:text-xl text-foreground truncate">
-                  {vehicle.make} {vehicle.model}
+                  {vehicle.brand} {vehicle.model}
                 </h3>
                 {vehicle.isPrimary && (
                   <Badge className="text-xs flex-shrink-0 bg-primary/10 text-primary border-primary/20">
@@ -101,7 +101,7 @@ export default function VehiclesPage() {
                 )}
               </div>
               <p className="text-muted-foreground font-mono text-sm sm:text-base md:text-lg mb-0.5 sm:mb-1 truncate">
-                {vehicle.registrationNumber}
+                {vehicle.plateNumber}
               </p>
               <div className="flex items-center gap-3 text-xs sm:text-sm text-muted-foreground">
                 <span>Year: {vehicle.year}</span>
@@ -157,7 +157,7 @@ export default function VehiclesPage() {
               </div>
               <div className="flex-1 min-w-0">
                 <h3 className="font-bold text-base text-foreground line-clamp-2 mb-1">
-                  {vehicle.make} {vehicle.model}
+                  {vehicle.brand} {vehicle.model}
                 </h3>
                 {vehicle.isPrimary && (
                   <Badge className="text-xs bg-primary/10 text-primary border-primary/20">
@@ -169,7 +169,7 @@ export default function VehiclesPage() {
             </div>
             <div className="mb-3">
               <p className="text-muted-foreground font-mono text-sm mb-1">
-                {vehicle.registrationNumber}
+                {vehicle.plateNumber}
               </p>
               <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
                 <span>Year: {vehicle.year}</span>

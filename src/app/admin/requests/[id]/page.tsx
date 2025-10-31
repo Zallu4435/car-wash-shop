@@ -2,7 +2,7 @@
 
 import { use, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, UserCheck, Phone, MapPin, Calendar, Car, Mail, IndianRupee, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, UserCheck, Phone, MapPin, Calendar, Car, Mail, IndianRupee, AlertTriangle, XCircle, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -18,6 +18,8 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import { useConfirmation } from '@/hooks/useConfirmation';
+import { DangerZone } from '@/components/admin/DangerZone';
 
 const booking = {
   id: 'BK001',
@@ -44,6 +46,8 @@ const availableStaff = [
 export default function RequestDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
+  const cancelConfirmation = useConfirmation();
+  const deleteConfirmation = useConfirmation();
   const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
   const [selectedStaff, setSelectedStaff] = useState('');
 
@@ -54,6 +58,40 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
     }
     toast.success('Staff assigned successfully!');
     setIsAssignDialogOpen(false);
+  };
+
+  const handleCancelRequest = async () => {
+    const confirmed = await cancelConfirmation.confirm({
+      type: 'warning',
+      title: 'Cancel Request?',
+      description: 'This will cancel the service request and notify the customer. The customer will be refunded if advance payment was made.',
+      confirmText: 'Yes, Cancel Request',
+      cancelText: 'Keep Request',
+      itemName: `Request #${booking.id}`,
+    });
+
+    if (confirmed) {
+      // TODO: Call API to cancel request
+      toast.success('Request has been cancelled and customer notified');
+      router.push('/admin/requests');
+    }
+  };
+
+  const handleDeleteRequest = async () => {
+    const confirmed = await deleteConfirmation.confirm({
+      type: 'delete',
+      title: 'Delete Request?',
+      description: 'This will permanently delete this service request from the system. This action cannot be undone.',
+      confirmText: 'Yes, Delete Request',
+      cancelText: 'Cancel',
+      itemName: `Request #${booking.id}`,
+    });
+
+    if (confirmed) {
+      // TODO: Call API to delete request
+      toast.success('Request has been deleted');
+      router.push('/admin/requests');
+    }
   };
 
   return (
@@ -211,6 +249,29 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
               )}
             </CardContent>
           </Card>
+
+          {/* Danger Zone */}
+          <DangerZone
+            description="Irreversible actions that affect this service request"
+            actions={[
+              {
+                title: 'Cancel Request',
+                description: 'Cancel the service request and notify customer with refund',
+                buttonText: 'Cancel Request',
+                buttonIcon: XCircle,
+                onClick: handleCancelRequest,
+                variant: 'outline',
+                buttonClassName: 'border-orange-300 dark:border-orange-800 text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950/30',
+              },
+              {
+                title: 'Delete Request',
+                description: 'Permanently remove this request from the system',
+                buttonText: 'Delete',
+                buttonIcon: Trash2,
+                onClick: handleDeleteRequest,
+              },
+            ]}
+          />
         </div>
       </div>
 
@@ -263,6 +324,10 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Confirmation Dialogs */}
+      <cancelConfirmation.ConfirmDialog />
+      <deleteConfirmation.ConfirmDialog />
     </div>
   );
 }

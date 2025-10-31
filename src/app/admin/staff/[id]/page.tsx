@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useConfirmation } from '@/hooks/useConfirmation';
 import { toast } from 'sonner';
+import { DangerZone } from '@/components/admin/DangerZone';
 
 const staffMember = {
   id: 'staff_001',
@@ -222,48 +223,27 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
           </Card>
 
           {/* Danger Zone */}
-          <Card className="border-2 border-red-200 dark:border-red-900 bg-red-50/50 dark:bg-red-950/20">
-            <CardHeader>
-              <CardTitle className="text-lg">Danger Zone</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Irreversible actions that affect this staff member
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center justify-between p-4 bg-background rounded-lg border border-border">
-                <div>
-                  <p className="font-semibold text-foreground">Block Staff Member</p>
-                  <p className="text-sm text-muted-foreground">
-                    Prevent staff from accepting new jobs
-                  </p>
-                </div>
-                <Button
-                  variant="outline"
-                  onClick={handleBlockClick}
-                  className="border-orange-300 dark:border-orange-800 text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950/30"
-                >
-                  <Ban className="mr-2 h-4 w-4" />
-                  Block
-                </Button>
-              </div>
-
-              <div className="flex items-center justify-between p-4 bg-background rounded-lg border border-border">
-                <div>
-                  <p className="font-semibold text-foreground">Delete Staff Member</p>
-                  <p className="text-sm text-muted-foreground">
-                    Permanently remove staff member from system
-                  </p>
-                </div>
-                <Button
-                  variant="destructive"
-                  onClick={handleDeleteClick}
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Delete
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <DangerZone
+            description="Irreversible actions that affect this staff member"
+            actions={[
+              {
+                title: 'Block Staff Member',
+                description: 'Prevent staff from accepting new jobs',
+                buttonText: 'Block',
+                buttonIcon: Ban,
+                onClick: handleBlockClick,
+                variant: 'outline',
+                buttonClassName: 'border-orange-300 dark:border-orange-800 text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950/30',
+              },
+              {
+                title: 'Delete Staff Member',
+                description: 'Permanently remove staff member from system',
+                buttonText: 'Delete',
+                buttonIcon: Trash2,
+                onClick: handleDeleteClick,
+              },
+            ]}
+          />
         </div>
       </div>
 

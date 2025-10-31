@@ -8,6 +8,7 @@ export interface Address {
     state: string;
     pincode: string;
     landmark?: string;
+    phone?: string;
     isPrimary: boolean;
     createdAt: string;
     updatedAt: string;
@@ -31,6 +32,7 @@ export interface Address {
     state: string;
     pincode: string;
     landmark?: string;
+    phone?: string;
   }
 
   // Extended address type for delivery/order purposes with phone field

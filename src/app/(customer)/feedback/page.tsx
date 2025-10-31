@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,36 +9,53 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { MessageSquare, Send, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useCreateTicket } from '@/api/domains/support/queries';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { feedbackSchema, FeedbackInput } from '@/schemas/support';
 
 export default function FeedbackPage() {
-  const [selectedType, setSelectedType] = useState('');
-  const [subject, setSubject] = useState('');
-  const [feedback, setFeedback] = useState('');
-
   // API call
   const createTicketMutation = useCreateTicket();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!selectedType || !subject || !feedback) {
-      toast.error('Please fill in all required fields');
-      return;
-    }
+  // Form with validation
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors },
+    reset,
+  } = useForm<FeedbackInput>({
+    resolver: zodResolver(feedbackSchema) as any,
+    defaultValues: {
+      category: 'suggestion',
+    },
+  });
 
-    createTicketMutation.mutate({
-      topic: 'feedback',
-      subject,
-      description: feedback,
-      priority: selectedType === 'bug' ? 'high' : 'medium',
-    });
+  const onSubmit = (data: FeedbackInput) => {
+    createTicketMutation.mutate(
+      {
+        topic: 'feedback',
+        subject: data.subject,
+        description: data.description,
+        priority: data.category === 'bug_report' ? 'high' : 'medium',
+      },
+      {
+        onSuccess: () => {
+          toast.success('Feedback submitted successfully!');
+          reset();
+        },
+        onError: (error: any) => {
+          toast.error(error?.message || 'Failed to submit feedback');
+        },
+      }
+    );
   };
 
   const feedbackTypes = [
     { value: 'suggestion', label: 'Suggestion', icon: '💡' },
-    { value: 'bug', label: 'Report a Bug', icon: '🐛' },
-    { value: 'compliment', label: 'Compliment', icon: '⭐' },
-    { value: 'other', label: 'Other', icon: '💬' },
+    { value: 'bug_report', label: 'Report a Bug', icon: '🐛' },
+    { value: 'feature_request', label: 'Feature Request', icon: '✨' },
+    { value: 'general', label: 'General Feedback', icon: '💬' },
   ];
 
   return (
@@ -80,27 +96,36 @@ export default function FeedbackPage() {
                 </p>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6">
                   {/* Feedback Type */}
                   <div className="space-y-1.5 sm:space-y-2">
-                    <Label htmlFor="type" className="text-xs sm:text-sm">
+                    <Label htmlFor="category" className="text-xs sm:text-sm">
                       Feedback Type <span className="text-red-500">*</span>
                     </Label>
-                    <Select required value={selectedType} onValueChange={setSelectedType}>
-                      <SelectTrigger id="type" className="h-10 sm:h-11">
-                        <SelectValue placeholder="Select feedback type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {feedbackTypes.map((type) => (
-                          <SelectItem key={type.value} value={type.value}>
-                            <div className="flex items-center gap-2">
-                              <span className="text-base">{type.icon}</span>
-                              <span className="text-sm">{type.label}</span>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Controller
+                      name="category"
+                      control={control}
+                      render={({ field }) => (
+                        <Select value={field.value} onValueChange={field.onChange}>
+                          <SelectTrigger id="category" className="h-10 sm:h-11">
+                            <SelectValue placeholder="Select feedback type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {feedbackTypes.map((type) => (
+                              <SelectItem key={type.value} value={type.value}>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-base">{type.icon}</span>
+                                  <span className="text-sm">{type.label}</span>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                    {errors.category && (
+                      <p className="text-xs text-red-600 dark:text-red-400">{String(errors.category.message)}</p>
+                    )}
                   </div>
 
                   {/* Subject */}
@@ -111,30 +136,34 @@ export default function FeedbackPage() {
                     <Input 
                       id="subject"
                       placeholder="Brief description of your feedback" 
-                      required
-                      value={subject}
-                      onChange={(e) => setSubject(e.target.value)}
+                      {...register('subject')}
                       className="h-10 sm:h-11 text-xs sm:text-sm"
                     />
+                    {errors.subject && (
+                      <p className="text-xs text-red-600 dark:text-red-400">{errors.subject.message}</p>
+                    )}
                   </div>
 
                   {/* Feedback */}
                   <div className="space-y-1.5 sm:space-y-2">
-                    <Label htmlFor="feedback" className="text-xs sm:text-sm">
+                    <Label htmlFor="description" className="text-xs sm:text-sm">
                       Your Feedback <span className="text-red-500">*</span>
                     </Label>
                     <Textarea 
-                      id="feedback"
+                      id="description"
                       placeholder="Tell us more about your experience..." 
                       rows={6} 
-                      required
-                      value={feedback}
-                      onChange={(e) => setFeedback(e.target.value)}
+                      {...register('description')}
                       className="text-xs sm:text-sm resize-none"
                     />
-                    <p className="text-[10px] sm:text-xs text-muted-foreground">
-                      Please be as detailed as possible
-                    </p>
+                    {errors.description && (
+                      <p className="text-xs text-red-600 dark:text-red-400">{errors.description.message}</p>
+                    )}
+                    {!errors.description && (
+                      <p className="text-[10px] sm:text-xs text-muted-foreground">
+                        Please provide at least 20 characters (maximum 2000)
+                      </p>
+                    )}
                   </div>
 
                   {/* Submit Button */}

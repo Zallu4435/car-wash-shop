@@ -10,6 +10,7 @@ import { Separator } from '@/components/ui/separator';
 import { Progress } from '@/components/ui/progress';
 import { useConfirmation } from '@/hooks/useConfirmation';
 import { toast } from 'sonner';
+import { DangerZone } from '@/components/admin/DangerZone';
 
 const coupon = {
   id: 'coupon_001',
@@ -155,31 +156,18 @@ export default function CouponDetailPage({ params }: { params: Promise<{ id: str
           </Card>
 
           {/* Danger Zone */}
-          <Card className="border-2 border-red-200 dark:border-red-900 bg-red-50/50 dark:bg-red-950/20">
-            <CardHeader>
-              <CardTitle className="text-lg">Danger Zone</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Irreversible actions that affect this coupon
-              </p>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between p-4 bg-background rounded-lg border border-border">
-                <div>
-                  <p className="font-semibold text-foreground">Delete Coupon</p>
-                  <p className="text-sm text-muted-foreground">
-                    Permanently remove this coupon from the system
-                  </p>
-                </div>
-                <Button
-                  variant="destructive"
-                  onClick={handleDeleteClick}
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Delete
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <DangerZone
+            description="Irreversible actions that affect this coupon"
+            actions={[
+              {
+                title: 'Delete Coupon',
+                description: 'Permanently remove this coupon from the system',
+                buttonText: 'Delete',
+                buttonIcon: Trash2,
+                onClick: handleDeleteClick,
+              },
+            ]}
+          />
         </div>
       </div>
 

@@ -9,10 +9,8 @@ import { useStaffJobs } from '@/api/domains/staff';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
 import { EmptyState } from '@/components/shared/display/EmptyState';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { SearchFilter } from '@/components/admin/SearchFilter';
 import { Pagination } from '@/components/shared/crud/Pagination';
-import { debounce } from '@/lib/utils/formatters';
 
 export default function JobsPage() {
   const [activeTab, setActiveTab] = useState('all');
@@ -22,14 +20,12 @@ export default function JobsPage() {
   const [toDate, setToDate] = useState('');
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
-  const [debouncedSearch, setDebouncedSearch] = useState('');
-  const updateDebouncedSearch = useMemo(() => debounce((val: string) => setDebouncedSearch(val), 300), []);
 
   // Build filters based on active tab and user selections
   const filters = useMemo(() => {
     const baseFilters: any = {
       status: status as any,
-      search: debouncedSearch || undefined,
+      search: search || undefined,
       page,
       limit,
     };
@@ -51,7 +47,7 @@ export default function JobsPage() {
     }
 
     return baseFilters;
-  }, [status, debouncedSearch, fromDate, toDate, page, limit, activeTab]);
+  }, [status, search, fromDate, toDate, page, limit, activeTab]);
 
   // Get counts for all tabs with search/status filters applied
   const todayDate = new Date().toISOString().split('T')[0];
@@ -59,7 +55,7 @@ export default function JobsPage() {
   
   // Build count filters with search and status
   const countBaseFilters = {
-    search: debouncedSearch || undefined,
+    search: search || undefined,
     status: status as any,
     limit: 1000,
   };
@@ -157,30 +153,54 @@ export default function JobsPage() {
         {/* All - Filters and List */}
         <TabsContent value="all" className="space-y-4 sm:space-y-6">
           {/* Filters - Only show on All tab */}
-          <div className="grid grid-cols-1 sm:grid-cols-5 gap-2 sm:gap-3">
-            <div className="sm:col-span-2">
-              <Input
-                placeholder="Search by customer or service"
-                value={search}
-                onChange={(e) => { setSearch(e.target.value); updateDebouncedSearch(e.target.value); setPage(1); }}
-              />
-            </div>
-            <Select value={status || 'all'} onValueChange={(v) => { setStatus(v === 'all' ? undefined : v); setPage(1); }}>
-              <SelectTrigger>
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="confirmed">Confirmed</SelectItem>
-                <SelectItem value="in_progress">In Progress</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="cancelled">Cancelled</SelectItem>
-              </SelectContent>
-            </Select>
-            <Input type="date" value={fromDate} onChange={(e) => { setFromDate(e.target.value); setPage(1); }} />
-            <Input type="date" value={toDate} onChange={(e) => { setToDate(e.target.value); setPage(1); }} />
-          </div>
+          <SearchFilter
+            searchPlaceholder="Search by customer or service"
+            onSearchChange={(value) => { setSearch(value); setPage(1); }}
+            filterOptions={[
+              {
+                label: 'Status',
+                value: 'status',
+                options: [
+                  { label: 'All Status', value: 'all' },
+                  { label: 'Pending', value: 'pending' },
+                  { label: 'Confirmed', value: 'confirmed' },
+                  { label: 'In Progress', value: 'in_progress' },
+                  { label: 'Completed', value: 'completed' },
+                  { label: 'Cancelled', value: 'cancelled' },
+                ],
+              },
+              {
+                label: 'Date Range',
+                value: 'dateRange',
+                type: 'dateRange',
+                options: [
+                  { label: 'All Time', value: 'all' },
+                  { label: 'Today', value: 'today' },
+                  { label: 'This Week', value: 'week' },
+                  { label: 'This Month', value: 'month' },
+                ],
+              },
+            ]}
+            onFilterChange={(filters) => {
+              if (filters.status) {
+                setStatus(filters.status === 'all' ? undefined : filters.status);
+              } else {
+                setStatus(undefined);
+              }
+              
+              // Handle date range
+              if (filters.dateRange && filters.dateRange.includes('_')) {
+                const [from, to] = filters.dateRange.split('_');
+                setFromDate(from);
+                setToDate(to);
+              } else {
+                setFromDate('');
+                setToDate('');
+              }
+              
+              setPage(1);
+            }}
+          />
 
           {/* List */}
           <div className="min-h-[400px]">
@@ -211,8 +231,8 @@ export default function JobsPage() {
           ) : (
             <EmptyState
               icon={Briefcase}
-              title={debouncedSearch || status || fromDate || toDate ? 'No jobs match your filters' : 'No jobs found'}
-              description={debouncedSearch || status || fromDate || toDate ? 'Try adjusting your search or filters to find jobs' : 'You have no assigned jobs at the moment'}
+              title={search || status || fromDate || toDate ? 'No jobs match your filters' : 'No jobs found'}
+              description={search || status || fromDate || toDate ? 'Try adjusting your search or filters to find jobs' : 'You have no assigned jobs at the moment'}
             />
           )}
           </div>
@@ -232,28 +252,32 @@ export default function JobsPage() {
         {/* Today Jobs */}
         <TabsContent value="today" className="space-y-4 sm:space-y-6">
           {/* Search on Today tab */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
-            <div className="sm:col-span-2">
-              <Input
-                placeholder="Search by customer or service"
-                value={search}
-                onChange={(e) => { setSearch(e.target.value); updateDebouncedSearch(e.target.value); setPage(1); }}
-              />
-            </div>
-            <Select value={status || 'all'} onValueChange={(v) => { setStatus(v === 'all' ? undefined : v); setPage(1); }}>
-              <SelectTrigger>
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="confirmed">Confirmed</SelectItem>
-                <SelectItem value="in_progress">In Progress</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="cancelled">Cancelled</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <SearchFilter
+            searchPlaceholder="Search by customer or service"
+            onSearchChange={(value) => { setSearch(value); setPage(1); }}
+            filterOptions={[
+              {
+                label: 'Status',
+                value: 'status',
+                options: [
+                  { label: 'All Status', value: 'all' },
+                  { label: 'Pending', value: 'pending' },
+                  { label: 'Confirmed', value: 'confirmed' },
+                  { label: 'In Progress', value: 'in_progress' },
+                  { label: 'Completed', value: 'completed' },
+                  { label: 'Cancelled', value: 'cancelled' },
+                ],
+              },
+            ]}
+            onFilterChange={(filters) => {
+              if (filters.status) {
+                setStatus(filters.status === 'all' ? undefined : filters.status);
+              } else {
+                setStatus(undefined);
+              }
+              setPage(1);
+            }}
+          />
 
           <div className="min-h-[400px]">
             {loading ? (
@@ -293,28 +317,32 @@ export default function JobsPage() {
         {/* Upcoming Jobs */}
         <TabsContent value="upcoming" className="space-y-4 sm:space-y-6">
           {/* Search on Upcoming tab */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
-            <div className="sm:col-span-2">
-              <Input
-                placeholder="Search by customer or service"
-                value={search}
-                onChange={(e) => { setSearch(e.target.value); updateDebouncedSearch(e.target.value); setPage(1); }}
-              />
-            </div>
-            <Select value={status || 'all'} onValueChange={(v) => { setStatus(v === 'all' ? undefined : v); setPage(1); }}>
-              <SelectTrigger>
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="confirmed">Confirmed</SelectItem>
-                <SelectItem value="in_progress">In Progress</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="cancelled">Cancelled</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <SearchFilter
+            searchPlaceholder="Search by customer or service"
+            onSearchChange={(value) => { setSearch(value); setPage(1); }}
+            filterOptions={[
+              {
+                label: 'Status',
+                value: 'status',
+                options: [
+                  { label: 'All Status', value: 'all' },
+                  { label: 'Pending', value: 'pending' },
+                  { label: 'Confirmed', value: 'confirmed' },
+                  { label: 'In Progress', value: 'in_progress' },
+                  { label: 'Completed', value: 'completed' },
+                  { label: 'Cancelled', value: 'cancelled' },
+                ],
+              },
+            ]}
+            onFilterChange={(filters) => {
+              if (filters.status) {
+                setStatus(filters.status === 'all' ? undefined : filters.status);
+              } else {
+                setStatus(undefined);
+              }
+              setPage(1);
+            }}
+          />
 
           <div className="min-h-[400px]">
             {loading ? (

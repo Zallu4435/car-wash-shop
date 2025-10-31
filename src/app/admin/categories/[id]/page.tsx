@@ -15,6 +15,7 @@ import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
 import { toast } from 'sonner';
 import Link from 'next/link';
+import { DangerZone } from '@/components/admin/DangerZone';
 
 export default function CategoryDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -144,7 +145,7 @@ export default function CategoryDetailPage({ params }: { params: Promise<{ id: s
               <div className="flex items-center gap-2">
                 <div className="p-2 bg-primary/10 rounded-lg">
                   <ShoppingBag className="h-5 w-5 text-primary" />
-                </div>use my 
+                </div>
                 <CardTitle>Products ({totalItems})</CardTitle>
               </div>
             </CardHeader>
@@ -292,31 +293,18 @@ export default function CategoryDetailPage({ params }: { params: Promise<{ id: s
           </Card>
 
           {/* Danger Zone */}
-          <Card className="border-2 border-red-200 dark:border-red-900 bg-red-50/50 dark:bg-red-950/20">
-            <CardHeader>
-              <CardTitle className="text-lg">Danger Zone</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Irreversible actions that affect this category
-              </p>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between p-4 bg-background rounded-lg border border-border">
-                <div>
-                  <p className="font-semibold text-foreground">Delete Category</p>
-                  <p className="text-sm text-muted-foreground">
-                    Permanently remove this category
-                  </p>
-                </div>
-                <Button
-                  variant="destructive"
-                  onClick={handleDeleteClick}
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Delete
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <DangerZone
+            description="Irreversible actions that affect this category"
+            actions={[
+              {
+                title: 'Delete Category',
+                description: 'Permanently remove this category from the system',
+                buttonText: 'Delete',
+                buttonIcon: Trash2,
+                onClick: handleDeleteClick,
+              },
+            ]}
+          />
         </div>
       </div>
 

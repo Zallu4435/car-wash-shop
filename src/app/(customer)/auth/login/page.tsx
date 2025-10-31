@@ -13,7 +13,7 @@ import { toast } from 'sonner';
 import { VehicleSelectionModal } from '@/components/shared/selectors/VehicleSelectionModal';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { loginSchema } from '@/schemas/auth';
+import { phoneOnlySchema, otpOnlySchema } from '@/schemas/auth';
 import { useSendOtp, useLogin } from '@/api/domains/auth/queries';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
@@ -33,7 +33,7 @@ export default function LoginPage() {
     getValues: getPhoneValue,
     reset: resetPhoneForm,
   } = useForm<{ phone: string }>({
-    resolver: zodResolver(loginSchema.pick({ phone: true })),
+    resolver: zodResolver(phoneOnlySchema),
     defaultValues: { phone: '' },
   });
   // OTP Form
@@ -44,7 +44,7 @@ export default function LoginPage() {
     getValues: getOtpValue,
     reset: resetOtpForm,
   } = useForm<{ otp: string }>({
-    resolver: zodResolver(loginSchema.pick({ otp: true })),
+    resolver: zodResolver(otpOnlySchema),
     defaultValues: { otp: '' },
   });
 

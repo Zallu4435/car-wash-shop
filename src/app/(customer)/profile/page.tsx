@@ -12,31 +12,44 @@ import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { useCurrentUser } from '@/api/domains/auth/queries';
 import { useUpdateProfile } from '@/api/domains/profile/queries';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { profileEditSchema, ProfileEditInput } from '@/schemas/profile';
 
 export default function ProfilePage() {
   const router = useRouter();
   const [avatar, setAvatar] = useState<string>('');
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-  });
 
   // API calls
   const { data: user, isLoading: userLoading } = useCurrentUser();
   const updateProfileMutation = useUpdateProfile();
 
+  // Form with validation
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<ProfileEditInput>({
+    resolver: zodResolver(profileEditSchema),
+    defaultValues: {
+      name: '',
+      email: '',
+      phone: '',
+    },
+  });
+
   // Update form data when user data loads
   useEffect(() => {
     if (user) {
-      setFormData({
+      reset({
         name: user.name || '',
         email: user.email || '',
         phone: user.phone || '',
       });
       setAvatar('');
     }
-  }, [user]);
+  }, [user, reset]);
 
   const handleAvatarUpload = (file: File) => {
     // In production, upload to server
@@ -48,16 +61,15 @@ export default function ProfilePage() {
     toast.success('Profile picture removed');
   };
 
-  const handleSave = (e: React.FormEvent) => {
-    e.preventDefault();
-    updateProfileMutation.mutate({
-      name: formData.name,
-      email: formData.email,
+  const onSubmit = (data: ProfileEditInput) => {
+    updateProfileMutation.mutate(data, {
+      onSuccess: () => {
+        toast.success('Profile updated successfully!');
+      },
+      onError: (error: any) => {
+        toast.error(error?.message || 'Failed to update profile');
+      },
     });
-  };
-
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   // Loading state
@@ -156,39 +168,45 @@ export default function ProfilePage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleSave} className="space-y-4 sm:space-y-5">
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 sm:space-y-5">
                   <div className="space-y-2">
                     <Label htmlFor="name" className="text-xs sm:text-sm">Full Name</Label>
                     <Input
                       id="name"
-                      value={formData.name}
-                      onChange={(e) => handleInputChange('name', e.target.value)}
-                      required
+                      {...register('name')}
                       placeholder="Enter your full name"
                       className="h-10 sm:h-11"
                     />
+                    {errors.name && (
+                      <p className="text-xs text-red-600 dark:text-red-400">{errors.name.message}</p>
+                    )}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="email" className="text-xs sm:text-sm">Email</Label>
+                    <Label htmlFor="email" className="text-xs sm:text-sm">Email (Optional)</Label>
                     <Input
                       id="email"
                       type="email"
-                      value={formData.email}
-                      disabled
+                      {...register('email')}
                       placeholder="Enter your email"
                       className="h-10 sm:h-11"
                     />
+                    {errors.email && (
+                      <p className="text-xs text-red-600 dark:text-red-400">{errors.email.message}</p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="phone" className="text-xs sm:text-sm">Phone</Label>
                     <Input
                       id="phone"
-                      value={formData.phone}
-                      onChange={(e) => handleInputChange('phone', e.target.value)}
-                      required
+                      {...register('phone')}
                       placeholder="Enter your phone number"
                       className="h-10 sm:h-11"
+                      disabled
                     />
+                    {errors.phone && (
+                      <p className="text-xs text-red-600 dark:text-red-400">{errors.phone.message}</p>
+                    )}
+                    <p className="text-xs text-muted-foreground">Contact support to change phone number</p>
                   </div>
 
                   <Separator />

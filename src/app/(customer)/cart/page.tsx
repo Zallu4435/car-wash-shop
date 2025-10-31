@@ -6,10 +6,12 @@ import { Trash2, Minus, Plus, ShoppingCart, ShoppingBag, Tag } from 'lucide-reac
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { CartSummary } from '@/components/customer/CartSummary';
-import { CouponInput } from '@/components/shared/pricing/CouponInput';
+import { CouponInput } from '@/components/shared/forms/CouponInput';
 import { useCart, useUpdateCartItem, useRemoveFromCart } from '@/api/domains/cart/queries';
+import { useValidateCoupon } from '@/api/domains/orders/queries';
 import Loading from '@/components/shared/display/Loading';
 import { EmptyState } from '@/components/shared/display/EmptyState';
+import { toast } from 'sonner';
 
 export default function CartPage() {
   const router = useRouter();
@@ -20,6 +22,7 @@ export default function CartPage() {
   const { data: cart, isLoading: cartLoading } = useCart();
   const updateCartItemMutation = useUpdateCartItem();
   const removeFromCartMutation = useRemoveFromCart();
+  const validateCouponMutation = useValidateCoupon();
 
   const items = cart?.items || [];
   const subtotal = cart?.subtotal || 0;
@@ -40,14 +43,29 @@ export default function CartPage() {
     removeFromCartMutation.mutate(id);
   };
 
-  const handleApplyCoupon = (code: string) => {
-    setAppliedCoupon(code);
-    setDiscount(100);
+  const handleApplyCoupon = async (code: string) => {
+    try {
+      const result = await validateCouponMutation.mutateAsync({
+        code: code,
+        amount: subtotal,
+      });
+      
+      if (result.isValid) {
+        setAppliedCoupon(code);
+        setDiscount(result.discount);
+        toast.success(`Coupon applied! You saved ₹${result.discount}`);
+      } else {
+        toast.error('Invalid or expired coupon code');
+      }
+    } catch (error: any) {
+      toast.error(error?.message || 'Failed to validate coupon');
+    }
   };
 
   const handleRemoveCoupon = () => {
     setAppliedCoupon('');
     setDiscount(0);
+    toast.info('Coupon removed');
   };
 
   // Loading state
@@ -173,7 +191,13 @@ export default function CartPage() {
                     <CouponInput
                       onApply={handleApplyCoupon}
                       onRemove={handleRemoveCoupon}
-                      appliedCode={appliedCoupon}
+                      appliedCoupon={appliedCoupon}
+                      discount={discount}
+                      isLoading={validateCouponMutation.isPending}
+                      subtotal={subtotal}
+                      minOrderAmount={100}
+                      showLabel={false}
+                      size="sm"
                     />
                   </CardContent>
                 </Card>

@@ -215,10 +215,10 @@ export function DynamicVehicleSelector({
                             </div>
                             <div className="min-w-0 flex-1">
                               <p className="font-semibold text-foreground text-xs sm:text-sm md:text-base truncate">
-                                {vehicle.make} {vehicle.model}
+                                {vehicle.brand} {vehicle.model}
                               </p>
                               <p className="text-[10px] sm:text-xs md:text-sm text-muted-foreground truncate">
-                                {vehicle.registrationNumber}
+                                {vehicle.plateNumber}
                               </p>
                             </div>
                           </div>

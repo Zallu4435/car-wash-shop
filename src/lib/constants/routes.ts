@@ -96,8 +96,7 @@ export const ROUTES = {
     
     // Payments
     PAYMENTS: '/staff/payments',
-    COLLECT_PAYMENT: '/staff/payments/collect',
-    RECORD_PAYMENT: '/staff/payments/record',
+    PAYMENT_DETAIL: (id: string) => `/staff/payments/${id}`,
     
     // Other
     HISTORY: '/staff/history',
