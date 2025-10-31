@@ -1,7 +1,9 @@
 'use client';
 
-import { use, useState } from 'react';
+import { use, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -11,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { ArrowLeft, Save, Folder } from 'lucide-react';
 import { toast } from 'sonner';
+import { categorySchema, CategoryFormInput } from '@/schemas/admin/category';
 
 // Mock data - replace with actual data fetching
 const mockCategory = {
@@ -24,15 +27,44 @@ export default function EditCategoryPage({ params }: { params: Promise<{ id: str
   const { id } = use(params);
   const router = useRouter();
   
-  const [name, setName] = useState(mockCategory.name);
-  const [type, setType] = useState(mockCategory.type);
-  const [description, setDescription] = useState(mockCategory.description);
-  const [active, setActive] = useState(mockCategory.active);
+  const {
+    register,
+    handleSubmit,
+    control,
+    reset,
+    watch,
+    formState: { errors, isSubmitting },
+  } = useForm<CategoryFormInput>({
+    resolver: zodResolver(categorySchema) as any,
+    defaultValues: {
+      name: '',
+      type: 'service',
+      description: '',
+      active: true,
+    },
+  });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    toast.success('Category updated successfully!');
-    router.push('/admin/categories');
+  const name = watch('name') || '';
+  const type = watch('type') || 'service';
+
+  useEffect(() => {
+    // TODO: Fetch category data from API
+    reset({
+      name: mockCategory.name,
+      type: mockCategory.type as 'service' | 'product',
+      description: mockCategory.description,
+      active: mockCategory.active,
+    });
+  }, [id, reset]);
+
+  const onSubmit = async (data: CategoryFormInput) => {
+    try {
+      console.log('Updating category:', id, data);
+      toast.success('Category updated successfully!');
+      router.push('/admin/categories');
+    } catch (error) {
+      toast.error('Failed to update category');
+    }
   };
 
   return (
@@ -59,31 +91,42 @@ export default function EditCategoryPage({ params }: { params: Promise<{ id: str
           </div>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             {/* Category Name */}
             <div className="space-y-2">
               <Label htmlFor="name">Category Name</Label>
               <Input
                 id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
+                placeholder="e.g., Exterior Wash"
+                {...register('name')}
               />
+              {errors.name && (
+                <p className="text-xs text-red-600 dark:text-red-400">{errors.name.message}</p>
+              )}
               <p className="text-xs text-muted-foreground">Enter a descriptive name for the category</p>
             </div>
 
             {/* Type */}
             <div className="space-y-2">
               <Label htmlFor="type">Type</Label>
-              <Select value={type} onValueChange={setType} required>
-                <SelectTrigger id="type">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="service">Service</SelectItem>
-                  <SelectItem value="product">Product</SelectItem>
-                </SelectContent>
-              </Select>
+              <Controller
+                name="type"
+                control={control}
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger id="type">
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="service">Service</SelectItem>
+                      <SelectItem value="product">Product</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              {errors.type && (
+                <p className="text-xs text-red-600 dark:text-red-400">{errors.type.message}</p>
+              )}
               <p className="text-xs text-muted-foreground">Choose whether this category is for services or products</p>
             </div>
 
@@ -94,10 +137,13 @@ export default function EditCategoryPage({ params }: { params: Promise<{ id: str
               </Label>
               <Textarea
                 id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Describe the category..."
                 rows={4}
+                {...register('description')}
               />
+              {errors.description && (
+                <p className="text-xs text-red-600 dark:text-red-400">{errors.description.message}</p>
+              )}
               <p className="text-xs text-muted-foreground">Add a detailed description of what this category includes</p>
             </div>
 
@@ -106,10 +152,20 @@ export default function EditCategoryPage({ params }: { params: Promise<{ id: str
               <div>
                 <Label htmlFor="active" className="cursor-pointer">Active Status</Label>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {active ? 'Category is visible and can be used' : 'Category is hidden'}
+                  Category is visible and can be used
                 </p>
               </div>
-              <Switch id="active" checked={active} onCheckedChange={setActive} />
+              <Controller
+                name="active"
+                control={control}
+                render={({ field }) => (
+                  <Switch
+                    id="active"
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                )}
+              />
             </div>
 
             {/* Preview */}
@@ -143,9 +199,9 @@ export default function EditCategoryPage({ params }: { params: Promise<{ id: str
               >
                 Cancel
               </Button>
-              <Button type="submit" className="flex-1 shadow-lg cursor-pointer">
+              <Button type="submit" className="flex-1 shadow-lg cursor-pointer" disabled={isSubmitting}>
                 <Save className="mr-2 h-5 w-5" />
-                Update Category
+                {isSubmitting ? 'Updating...' : 'Update Category'}
               </Button>
             </div>
           </form>

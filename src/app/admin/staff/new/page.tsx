@@ -1,6 +1,8 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -9,16 +11,31 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { ArrowLeft, UserPlus } from 'lucide-react';
 import { toast } from 'sonner';
-import { useState } from 'react';
+import { staffSchema, StaffFormInput } from '@/schemas/admin/staff';
 
 export default function NewStaffPage() {
   const router = useRouter();
-  const [active, setActive] = useState(true);
+  
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors, isSubmitting },
+  } = useForm<StaffFormInput>({
+    resolver: zodResolver(staffSchema) as any,
+    defaultValues: {
+      active: true,
+    },
+  });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    toast.success('Staff member added successfully!');
-    router.push('/admin/staff');
+  const onSubmit = async (data: StaffFormInput) => {
+    try {
+      console.log('Staff data:', data);
+      toast.success('Staff member added successfully!');
+      router.push('/admin/staff');
+    } catch (error) {
+      toast.error('Failed to add staff member');
+    }
   };
 
   return (
@@ -45,15 +62,18 @@ export default function NewStaffPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             {/* Full Name */}
             <div className="space-y-2">
               <Label htmlFor="name">Full Name</Label>
               <Input
                 id="name"
                 placeholder="e.g., Rahul Kumar"
-                required
+                {...register('name')}
               />
+              {errors.name && (
+                <p className="text-xs text-red-600 dark:text-red-400">{errors.name.message}</p>
+              )}
             </div>
 
             {/* Phone */}
@@ -62,45 +82,83 @@ export default function NewStaffPage() {
               <Input
                 id="phone"
                 placeholder="9876543210"
-                required
+                maxLength={10}
+                {...register('phone')}
               />
-              <p className="text-xs text-muted-foreground">Enter 10-digit mobile number</p>
+              {errors.phone && (
+                <p className="text-xs text-red-600 dark:text-red-400">{errors.phone.message}</p>
+              )}
+              {!errors.phone && (
+                <p className="text-xs text-muted-foreground">Enter 10-digit mobile number</p>
+              )}
             </div>
 
             {/* Email */}
             <div className="space-y-2">
-              <Label htmlFor="email">Email <span className="text-xs text-muted-foreground">(Optional)</span></Label>
+              <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 type="email"
                 placeholder="rahul@example.com"
+                {...register('email')}
               />
+              {errors.email && (
+                <p className="text-xs text-red-600 dark:text-red-400">{errors.email.message}</p>
+              )}
+            </div>
+
+            {/* Password */}
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="Enter password"
+                {...register('password')}
+              />
+              {errors.password && (
+                <p className="text-xs text-red-600 dark:text-red-400">{errors.password.message}</p>
+              )}
+              {!errors.password && (
+                <p className="text-xs text-muted-foreground">Min 8 characters with uppercase, lowercase & number</p>
+              )}
             </div>
 
             {/* Role */}
             <div className="space-y-2">
               <Label htmlFor="role">Role</Label>
-              <Select required>
-                <SelectTrigger id="role">
-                  <SelectValue placeholder="Select role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="senior">Senior Detailer</SelectItem>
-                  <SelectItem value="detailer">Detailer</SelectItem>
-                  <SelectItem value="delivery">Delivery Staff</SelectItem>
-                </SelectContent>
-              </Select>
+              <Controller
+                name="role"
+                control={control}
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger id="role">
+                      <SelectValue placeholder="Select role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="technician">Technician</SelectItem>
+                      <SelectItem value="manager">Manager</SelectItem>
+                      <SelectItem value="supervisor">Supervisor</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              {errors.role && (
+                <p className="text-xs text-red-600 dark:text-red-400">{errors.role.message}</p>
+              )}
             </div>
 
             {/* Service Area */}
             <div className="space-y-2">
-              <Label htmlFor="area">Service Area</Label>
+              <Label htmlFor="serviceArea">Service Area</Label>
               <Input
-                id="area"
+                id="serviceArea"
                 placeholder="e.g., Bandra, Khar"
-                required
+                {...register('serviceArea')}
               />
-              <p className="text-xs text-muted-foreground">Comma-separated locations</p>
+              {errors.serviceArea && (
+                <p className="text-xs text-red-600 dark:text-red-400">{errors.serviceArea.message}</p>
+              )}
             </div>
 
             {/* Active Status */}
@@ -109,13 +167,23 @@ export default function NewStaffPage() {
                 <Label htmlFor="active" className="cursor-pointer">Active Status</Label>
                 <p className="text-xs text-muted-foreground mt-1">Staff member can receive jobs</p>
               </div>
-              <Switch id="active" checked={active} onCheckedChange={setActive} />
+              <Controller
+                name="active"
+                control={control}
+                render={({ field }) => (
+                  <Switch
+                    id="active"
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                )}
+              />
             </div>
 
             {/* Submit Button */}
-            <Button type="submit" className="w-full shadow-lg" size="lg">
+            <Button type="submit" className="w-full shadow-lg" size="lg" disabled={isSubmitting}>
               <UserPlus className="mr-2 h-5 w-5" />
-              Add Staff Member
+              {isSubmitting ? 'Adding...' : 'Add Staff Member'}
             </Button>
           </form>
         </CardContent>

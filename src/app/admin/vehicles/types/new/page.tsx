@@ -8,37 +8,33 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { ArrowLeft, Plus, Folder } from 'lucide-react';
+import { ArrowLeft, Plus, Layers } from 'lucide-react';
 import { toast } from 'sonner';
-import { categorySchema, CategoryFormInput } from '@/schemas/admin/category';
+import { vehicleTypeSchema, VehicleTypeFormInput } from '@/schemas/admin/vehicle-type';
 
-export default function NewCategoryPage() {
+export default function NewVehicleTypePage() {
   const router = useRouter();
   
   const {
     register,
     handleSubmit,
     control,
-    watch,
     formState: { errors, isSubmitting },
-  } = useForm<CategoryFormInput>({
-    resolver: zodResolver(categorySchema) as any,
+  } = useForm<VehicleTypeFormInput>({
+    resolver: zodResolver(vehicleTypeSchema) as any,
     defaultValues: {
       active: true,
     },
   });
 
-  const icon = watch('icon');
-
-  const onSubmit = async (data: CategoryFormInput) => {
+  const onSubmit = async (data: VehicleTypeFormInput) => {
     try {
-      console.log('Category data:', data);
-      toast.success('Category added successfully!');
-      router.push('/admin/categories');
+      console.log('Vehicle type data:', data);
+      toast.success('Vehicle type created successfully!');
+      router.push('/admin/vehicles/types');
     } catch (error) {
-      toast.error('Failed to add category');
+      toast.error('Failed to create vehicle type');
     }
   };
 
@@ -46,9 +42,9 @@ export default function NewCategoryPage() {
     <div className="max-w-2xl space-y-6">
       {/* Header */}
       <div>
-        <Button variant="ghost" onClick={() => router.push('/admin/categories')} className="cursor-pointer">
+        <Button variant="ghost" onClick={() => router.push('/admin/vehicles/types')} className="cursor-pointer">
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Categories
+          Back to Vehicle Types
         </Button>
       </div>
 
@@ -60,19 +56,19 @@ export default function NewCategoryPage() {
               <Plus className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <CardTitle>Add New Category</CardTitle>
-              <p className="text-sm text-muted-foreground mt-1">Create a new category for services or products</p>
+              <CardTitle>Add New Vehicle Type</CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">Add a new vehicle type category</p>
             </div>
           </div>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            {/* Category Name */}
+            {/* Vehicle Type Name */}
             <div className="space-y-2">
-              <Label htmlFor="name">Category Name</Label>
-              <Input
-                id="name"
-                placeholder="e.g., Exterior Wash"
+              <Label htmlFor="name">Vehicle Type Name</Label>
+              <Input 
+                id="name" 
+                placeholder="e.g., 4-Wheeler, 2-Wheeler" 
                 {...register('name')}
               />
               {errors.name && (
@@ -80,31 +76,43 @@ export default function NewCategoryPage() {
               )}
             </div>
 
-            {/* Icon */}
-            <div className="space-y-2">
-              <Label htmlFor="icon">Icon Name</Label>
-              <Input
-                id="icon"
-                placeholder="e.g., car, sparkles, droplet"
-                {...register('icon')}
-              />
-              {errors.icon && (
-                <p className="text-xs text-red-600 dark:text-red-400">{errors.icon.message}</p>
-              )}
-              {!errors.icon && (
-                <p className="text-xs text-muted-foreground">Enter a Lucide icon name</p>
-              )}
+            {/* Icon & Display Order */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="icon">Icon Name</Label>
+                <Input 
+                  id="icon" 
+                  placeholder="e.g., Car, Bike" 
+                  {...register('icon')}
+                />
+                {errors.icon && (
+                  <p className="text-xs text-red-600 dark:text-red-400">{errors.icon.message}</p>
+                )}
+                {!errors.icon && (
+                  <p className="text-xs text-muted-foreground">Enter a Lucide icon name</p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="displayOrder">Display Order <span className="text-xs text-muted-foreground">(Optional)</span></Label>
+                <Input 
+                  id="displayOrder" 
+                  type="number" 
+                  placeholder="1" 
+                  {...register('displayOrder', { valueAsNumber: true })}
+                />
+                {errors.displayOrder && (
+                  <p className="text-xs text-red-600 dark:text-red-400">{errors.displayOrder.message}</p>
+                )}
+              </div>
             </div>
 
             {/* Description */}
             <div className="space-y-2">
-              <Label htmlFor="description">
-                Description <span className="text-xs text-muted-foreground">(Optional)</span>
-              </Label>
+              <Label htmlFor="description">Description <span className="text-xs text-muted-foreground">(Optional)</span></Label>
               <Textarea
                 id="description"
-                placeholder="Describe this category..."
-                rows={4}
+                placeholder="Describe this vehicle type..."
+                rows={3}
                 {...register('description')}
               />
               {errors.description && (
@@ -116,7 +124,7 @@ export default function NewCategoryPage() {
             <div className="flex items-center justify-between p-4 bg-muted rounded-xl">
               <div>
                 <Label htmlFor="active" className="cursor-pointer">Active Status</Label>
-                <p className="text-xs text-muted-foreground mt-1">Category is visible and can be used</p>
+                <p className="text-xs text-muted-foreground mt-1">Vehicle type is available for selection</p>
               </div>
               <Controller
                 name="active"
@@ -131,25 +139,10 @@ export default function NewCategoryPage() {
               />
             </div>
 
-            {/* Preview */}
-            {icon && (
-              <div className="p-4 bg-primary/10 rounded-xl border-2 border-primary/20">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-primary rounded-lg">
-                    <Folder className="h-5 w-5 text-primary-foreground" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">Icon Preview</p>
-                    <p className="font-semibold text-foreground">{icon}</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
             {/* Submit Button */}
             <Button type="submit" className="w-full shadow-lg" size="lg" disabled={isSubmitting}>
               <Plus className="mr-2 h-5 w-5" />
-              {isSubmitting ? 'Adding...' : 'Add Category'}
+              {isSubmitting ? 'Creating...' : 'Create Vehicle Type'}
             </Button>
           </form>
         </CardContent>

@@ -1,7 +1,9 @@
 'use client';
 
-import { use, useState } from 'react';
+import { use, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -11,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { ArrowLeft, Save, Package, Image as ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
+import { productSchema, ProductFormInput } from '@/schemas/admin/product';
 
 // Mock data
 const mockProduct = {
@@ -26,31 +29,65 @@ const mockProduct = {
 export default function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
+  const [uploadedImage, setUploadedImage] = useState('');
   
-  const [name, setName] = useState(mockProduct.name);
-  const [category, setCategory] = useState(mockProduct.categoryId);
-  const [description, setDescription] = useState(mockProduct.description);
-  const [price, setPrice] = useState(mockProduct.price.toString());
-  const [stock, setStock] = useState(mockProduct.stock.toString());
-  const [active, setActive] = useState(mockProduct.active);
-  const [uploadedImage, setUploadedImage] = useState(mockProduct.image);
+  const {
+    register,
+    handleSubmit,
+    control,
+    reset,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = useForm<ProductFormInput>({
+    resolver: zodResolver(productSchema) as any,
+    defaultValues: {
+      active: true,
+      featured: false,
+    },
+  });
+
+  useEffect(() => {
+    // TODO: Fetch product data from API
+    const data = {
+      name: mockProduct.name,
+      category: mockProduct.categoryId,
+      description: mockProduct.description,
+      price: mockProduct.price,
+      stock: mockProduct.stock,
+      sku: 'SKU001',
+      comparePrice: 0,
+      active: mockProduct.active,
+      featured: false,
+      images: [],
+    };
+    reset(data);
+    if (mockProduct.image) {
+      setUploadedImage(mockProduct.image);
+    }
+  }, [id, reset]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setUploadedImage(reader.result as string);
+        const imageUrl = reader.result as string;
+        setUploadedImage(imageUrl);
+        setValue('images', [imageUrl]);
         toast.success('Image updated successfully');
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    toast.success('Product updated successfully!');
-    router.push('/admin/products');
+  const onSubmit = async (data: ProductFormInput) => {
+    try {
+      console.log('Updating product:', id, data);
+      toast.success('Product updated successfully!');
+      router.push('/admin/products');
+    } catch (error) {
+      toast.error('Failed to update product');
+    }
   };
 
   return (
@@ -77,7 +114,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
           </div>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             {/* Product Image */}
             <div className="space-y-2">
               <Label htmlFor="image">Product Image</Label>
@@ -113,25 +150,36 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
               <Label htmlFor="name">Product Name</Label>
               <Input
                 id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
+                placeholder="e.g., Car Shampoo"
+                {...register('name')}
               />
+              {errors.name && (
+                <p className="text-xs text-red-600 dark:text-red-400">{errors.name.message}</p>
+              )}
             </div>
 
             {/* Category */}
             <div className="space-y-2">
               <Label htmlFor="category">Category</Label>
-              <Select value={category} onValueChange={setCategory} required>
-                <SelectTrigger id="category">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="cat_clean">Cleaning Products</SelectItem>
-                  <SelectItem value="cat_care">Car Care</SelectItem>
-                  <SelectItem value="cat_accessories">Accessories</SelectItem>
-                </SelectContent>
-              </Select>
+              <Controller
+                name="category"
+                control={control}
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger id="category">
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="cat_clean">Cleaning Products</SelectItem>
+                      <SelectItem value="cat_care">Car Care</SelectItem>
+                      <SelectItem value="cat_accessories">Accessories</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              {errors.category && (
+                <p className="text-xs text-red-600 dark:text-red-400">{errors.category.message}</p>
+              )}
             </div>
 
             {/* Description */}
@@ -139,11 +187,13 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
               <Label htmlFor="description">Description</Label>
               <Textarea
                 id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Describe the product..."
                 rows={4}
-                required
+                {...register('description')}
               />
+              {errors.description && (
+                <p className="text-xs text-red-600 dark:text-red-400">{errors.description.message}</p>
+              )}
             </div>
 
             {/* Price & Stock */}
@@ -153,20 +203,24 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                 <Input
                   id="price"
                   type="number"
-                  value={price}
-                  onChange={(e) => setPrice(e.target.value)}
-                  required
+                  placeholder="299"
+                  {...register('price', { valueAsNumber: true })}
                 />
+                {errors.price && (
+                  <p className="text-xs text-red-600 dark:text-red-400">{errors.price.message}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="stock">Stock Quantity</Label>
                 <Input
                   id="stock"
                   type="number"
-                  value={stock}
-                  onChange={(e) => setStock(e.target.value)}
-                  required
+                  placeholder="50"
+                  {...register('stock', { valueAsNumber: true })}
                 />
+                {errors.stock && (
+                  <p className="text-xs text-red-600 dark:text-red-400">{errors.stock.message}</p>
+                )}
               </div>
             </div>
 
@@ -175,10 +229,20 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
               <div>
                 <Label htmlFor="active" className="cursor-pointer">Active Status</Label>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {active ? 'Product is visible in the store' : 'Product is hidden'}
+                  Product is visible in the store
                 </p>
               </div>
-              <Switch id="active" checked={active} onCheckedChange={setActive} />
+              <Controller
+                name="active"
+                control={control}
+                render={({ field }) => (
+                  <Switch
+                    id="active"
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                )}
+              />
             </div>
 
             {/* Action Buttons */}
@@ -191,9 +255,9 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
               >
                 Cancel
               </Button>
-              <Button type="submit" className="flex-1 shadow-lg">
+              <Button type="submit" className="flex-1 shadow-lg" disabled={isSubmitting}>
                 <Save className="mr-2 h-5 w-5" />
-                Update Product
+                {isSubmitting ? 'Updating...' : 'Update Product'}
               </Button>
             </div>
           </form>

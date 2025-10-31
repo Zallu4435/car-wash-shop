@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -12,28 +14,47 @@ import { Switch } from '@/components/ui/switch';
 import { ArrowLeft, Plus, Image as ImageIcon } from 'lucide-react';
 import { AdminRoutes } from '@/lib/constants/routes';
 import { toast } from 'sonner';
+import { bannerSchema, BannerFormInput } from '@/schemas/admin/banner';
 
 export default function NewBannerPage() {
   const router = useRouter();
-  const [active, setActive] = useState(true);
   const [uploadedImage, setUploadedImage] = useState<string>('');
+  
+  const {
+    register,
+    handleSubmit,
+    control,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = useForm<BannerFormInput>({
+    resolver: zodResolver(bannerSchema) as any,
+    defaultValues: {
+      active: true,
+    },
+  });
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setUploadedImage(reader.result as string);
+        const imageUrl = reader.result as string;
+        setUploadedImage(imageUrl);
+        setValue('image', imageUrl);
         toast.success('Image uploaded');
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    toast.success('Banner created successfully!');
-    router.push(AdminRoutes.BANNERS);
+  const onSubmit = async (data: BannerFormInput) => {
+    try {
+      console.log('Banner data:', data);
+      toast.success('Banner created successfully!');
+      router.push(AdminRoutes.BANNERS);
+    } catch (error) {
+      toast.error('Failed to create banner');
+    }
   };
 
   return (
@@ -60,7 +81,7 @@ export default function NewBannerPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             {/* Banner Image */}
             <div className="space-y-2">
               <Label htmlFor="image">Banner Image</Label>
@@ -89,60 +110,83 @@ export default function NewBannerPage() {
               </Label>
             </div>
 
-            {/* Title & Subtitle */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="title">Banner Title</Label>
-                <Input id="title" placeholder="Premium Wash - 20% Off" required />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="subtitle">Subtitle (Optional)</Label>
-                <Input id="subtitle" placeholder="Limited time offer" />
-              </div>
+            {/* Title */}
+            <div className="space-y-2">
+              <Label htmlFor="title">Banner Title</Label>
+              <Input 
+                id="title" 
+                placeholder="Premium Wash - 20% Off" 
+                {...register('title')}
+              />
+              {errors.title && (
+                <p className="text-xs text-red-600 dark:text-red-400">{errors.title.message}</p>
+              )}
             </div>
 
-            {/* Position & Pages */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="position">Position</Label>
-                <Select required>
-                  <SelectTrigger id="position">
-                    <SelectValue placeholder="Select position" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="hero">Hero (Top of page)</SelectItem>
-                    <SelectItem value="middle">Middle Section</SelectItem>
-                    <SelectItem value="sidebar">Sidebar</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="pages">Display On Pages</Label>
-                <Input id="pages" placeholder="Home, Services" required />
-              </div>
+            {/* Description */}
+            <div className="space-y-2">
+              <Label htmlFor="description">Description <span className="text-xs text-muted-foreground">(Optional)</span></Label>
+              <Textarea
+                id="description"
+                placeholder="Describe the banner offer..."
+                rows={3}
+                {...register('description')}
+              />
+              {errors.description && (
+                <p className="text-xs text-red-600 dark:text-red-400">{errors.description.message}</p>
+              )}
             </div>
 
-            {/* CTA Button */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Link & Display Order */}
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="ctaText">Button Text (Optional)</Label>
-                <Input id="ctaText" placeholder="Book Now" />
+                <Label htmlFor="link">Link URL <span className="text-xs text-muted-foreground">(Optional)</span></Label>
+                <Input 
+                  id="link" 
+                  placeholder="https://example.com" 
+                  {...register('link')}
+                />
+                {errors.link && (
+                  <p className="text-xs text-red-600 dark:text-red-400">{errors.link.message}</p>
+                )}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="ctaLink">Button Link (Optional)</Label>
-                <Input id="ctaLink" placeholder="/services" />
+                <Label htmlFor="displayOrder">Display Order <span className="text-xs text-muted-foreground">(Optional)</span></Label>
+                <Input 
+                  id="displayOrder" 
+                  type="number" 
+                  placeholder="1" 
+                  {...register('displayOrder', { valueAsNumber: true })}
+                />
+                {errors.displayOrder && (
+                  <p className="text-xs text-red-600 dark:text-red-400">{errors.displayOrder.message}</p>
+                )}
               </div>
             </div>
 
             {/* Date Range */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="startDate">Start Date</Label>
-                <Input id="startDate" type="date" required />
+                <Label htmlFor="startDate">Start Date <span className="text-xs text-muted-foreground">(Optional)</span></Label>
+                <Input 
+                  id="startDate" 
+                  type="date" 
+                  {...register('startDate')}
+                />
+                {errors.startDate && (
+                  <p className="text-xs text-red-600 dark:text-red-400">{errors.startDate.message}</p>
+                )}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="endDate">End Date</Label>
-                <Input id="endDate" type="date" required />
+                <Label htmlFor="endDate">End Date <span className="text-xs text-muted-foreground">(Optional)</span></Label>
+                <Input 
+                  id="endDate" 
+                  type="date" 
+                  {...register('endDate')}
+                />
+                {errors.endDate && (
+                  <p className="text-xs text-red-600 dark:text-red-400">{errors.endDate.message}</p>
+                )}
               </div>
             </div>
 
@@ -152,13 +196,27 @@ export default function NewBannerPage() {
                 <Label htmlFor="active" className="cursor-pointer">Active Status</Label>
                 <p className="text-xs text-muted-foreground mt-1">Banner is visible on the website</p>
               </div>
-              <Switch id="active" checked={active} onCheckedChange={setActive} />
+              <Controller
+                name="active"
+                control={control}
+                render={({ field }) => (
+                  <Switch
+                    id="active"
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                )}
+              />
             </div>
 
+            {errors.image && (
+              <p className="text-xs text-red-600 dark:text-red-400">{errors.image.message}</p>
+            )}
+
             {/* Submit Button */}
-            <Button type="submit" className="w-full shadow-lg" size="lg">
+            <Button type="submit" className="w-full shadow-lg" size="lg" disabled={isSubmitting}>
               <Plus className="mr-2 h-5 w-5" />
-              Create Banner
+              {isSubmitting ? 'Creating...' : 'Create Banner'}
             </Button>
           </form>
         </CardContent>

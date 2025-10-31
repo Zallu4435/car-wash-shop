@@ -1,7 +1,9 @@
 'use client';
 
-import { use, useState } from 'react';
+import { use, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -11,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { ArrowLeft, Save, Car, Clock, IndianRupee } from 'lucide-react';
 import { toast } from 'sonner';
+import { serviceSchema, ServiceFormInput } from '@/schemas/admin/service';
 
 // Mock data
 const mockService = {
@@ -26,17 +29,39 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
   const { id } = use(params);
   const router = useRouter();
   
-  const [name, setName] = useState(mockService.name);
-  const [category, setCategory] = useState(mockService.categoryId);
-  const [description, setDescription] = useState(mockService.description);
-  const [price, setPrice] = useState(mockService.price.toString());
-  const [duration, setDuration] = useState(mockService.duration.toString());
-  const [active, setActive] = useState(mockService.active);
+  const {
+    register,
+    handleSubmit,
+    control,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<ServiceFormInput>({
+    resolver: zodResolver(serviceSchema) as any,
+    defaultValues: {
+      active: true,
+    },
+  });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    toast.success('Service updated successfully!');
-    router.push('/admin/services');
+  useEffect(() => {
+    // TODO: Fetch service data from API
+    reset({
+      name: mockService.name,
+      category: mockService.categoryId,
+      description: mockService.description,
+      price: mockService.price,
+      duration: mockService.duration,
+      active: mockService.active,
+    });
+  }, [id, reset]);
+
+  const onSubmit = async (data: ServiceFormInput) => {
+    try {
+      console.log('Updating service:', id, data);
+      toast.success('Service updated successfully!');
+      router.push('/admin/services');
+    } catch (error) {
+      toast.error('Failed to update service');
+    }
   };
 
   return (
@@ -63,31 +88,42 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
           </div>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             {/* Service Name */}
             <div className="space-y-2">
               <Label htmlFor="name">Service Name</Label>
               <Input
                 id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
+                placeholder="e.g., Premium Wash"
+                {...register('name')}
               />
+              {errors.name && (
+                <p className="text-xs text-red-600 dark:text-red-400">{errors.name.message}</p>
+              )}
             </div>
 
             {/* Category */}
             <div className="space-y-2">
               <Label htmlFor="category">Category</Label>
-              <Select value={category} onValueChange={setCategory} required>
-                <SelectTrigger id="category">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="cat_ext">Exterior Wash</SelectItem>
-                  <SelectItem value="cat_int">Interior Detailing</SelectItem>
-                  <SelectItem value="cat_full">Complete Detailing</SelectItem>
-                </SelectContent>
-              </Select>
+              <Controller
+                name="category"
+                control={control}
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger id="category">
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="cat_ext">Exterior Wash</SelectItem>
+                      <SelectItem value="cat_int">Interior Detailing</SelectItem>
+                      <SelectItem value="cat_full">Complete Detailing</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              {errors.category && (
+                <p className="text-xs text-red-600 dark:text-red-400">{errors.category.message}</p>
+              )}
             </div>
 
             {/* Description */}
@@ -95,11 +131,13 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
               <Label htmlFor="description">Description</Label>
               <Textarea
                 id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Describe the service..."
                 rows={4}
-                required
+                {...register('description')}
               />
+              {errors.description && (
+                <p className="text-xs text-red-600 dark:text-red-400">{errors.description.message}</p>
+              )}
             </div>
 
             {/* Price & Duration */}
@@ -111,12 +149,14 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
                   <Input
                     id="price"
                     type="number"
-                    value={price}
-                    onChange={(e) => setPrice(e.target.value)}
+                    placeholder="299"
                     className="pl-10"
-                    required
+                    {...register('price', { valueAsNumber: true })}
                   />
                 </div>
+                {errors.price && (
+                  <p className="text-xs text-red-600 dark:text-red-400">{errors.price.message}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="duration">Duration (minutes)</Label>
@@ -125,12 +165,14 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
                   <Input
                     id="duration"
                     type="number"
-                    value={duration}
-                    onChange={(e) => setDuration(e.target.value)}
+                    placeholder="30"
                     className="pl-10"
-                    required
+                    {...register('duration', { valueAsNumber: true })}
                   />
                 </div>
+                {errors.duration && (
+                  <p className="text-xs text-red-600 dark:text-red-400">{errors.duration.message}</p>
+                )}
               </div>
             </div>
 
@@ -139,10 +181,20 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
               <div>
                 <Label htmlFor="active" className="cursor-pointer">Active Status</Label>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {active ? 'Service is available for booking' : 'Service is hidden'}
+                  Service is available for booking
                 </p>
               </div>
-              <Switch id="active" checked={active} onCheckedChange={setActive} />
+              <Controller
+                name="active"
+                control={control}
+                render={({ field }) => (
+                  <Switch
+                    id="active"
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                )}
+              />
             </div>
 
             {/* Action Buttons */}
@@ -155,9 +207,9 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
               >
                 Cancel
               </Button>
-              <Button type="submit" className="flex-1 shadow-lg">
+              <Button type="submit" className="flex-1 shadow-lg" disabled={isSubmitting}>
                 <Save className="mr-2 h-5 w-5" />
-                Update Service
+                {isSubmitting ? 'Updating...' : 'Update Service'}
               </Button>
             </div>
           </form>

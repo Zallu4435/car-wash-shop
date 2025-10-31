@@ -1,7 +1,9 @@
 'use client';
 
-import { use, useState } from 'react';
+import { use, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -10,14 +12,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { ArrowLeft, Save, Tag } from 'lucide-react';
 import { toast } from 'sonner';
+import { adminCouponSchema, AdminCouponFormInput } from '@/schemas/admin/coupon';
 
 // Mock data - replace with actual data fetching
 const mockCoupon = {
   code: 'FIRST20',
-  type: 'percentage',
-  value: 20,
-  minOrderValue: 500,
+  description: 'First time user discount',
+  discountType: 'percentage' as const,
+  discountValue: 20,
+  minOrderAmount: 500,
   usageLimit: 1000,
+  validFrom: '2025-01-01',
   validUntil: '2025-12-31',
   active: true,
 };
@@ -26,18 +31,51 @@ export default function EditCouponPage({ params }: { params: Promise<{ id: strin
   const { id } = use(params);
   const router = useRouter();
   
-  const [code, setCode] = useState(mockCoupon.code);
-  const [type, setType] = useState(mockCoupon.type);
-  const [value, setValue] = useState(mockCoupon.value.toString());
-  const [minOrder, setMinOrder] = useState(mockCoupon.minOrderValue.toString());
-  const [usageLimit, setUsageLimit] = useState(mockCoupon.usageLimit.toString());
-  const [validUntil, setValidUntil] = useState(mockCoupon.validUntil);
-  const [active, setActive] = useState(mockCoupon.active);
+  const {
+    register,
+    handleSubmit,
+    control,
+    reset,
+    watch,
+    formState: { errors, isSubmitting },
+  } = useForm<AdminCouponFormInput>({
+    resolver: zodResolver(adminCouponSchema) as any,
+    defaultValues: {
+      active: true,
+    },
+  });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    toast.success('Coupon updated successfully!');
-    router.push('/admin/coupons');
+  const code = watch('code') || '';
+  const discountType = watch('discountType') || 'percentage';
+  const discountValue = watch('discountValue') || 0;
+  const minOrderAmount = watch('minOrderAmount') || 0;
+  const usageLimit = watch('usageLimit') || 0;
+  const validUntil = watch('validUntil') || '';
+  const active = watch('active') || false;
+
+  useEffect(() => {
+    // TODO: Fetch coupon data from API
+    reset({
+      code: mockCoupon.code,
+      description: mockCoupon.description,
+      discountType: mockCoupon.discountType,
+      discountValue: mockCoupon.discountValue,
+      minOrderAmount: mockCoupon.minOrderAmount,
+      usageLimit: mockCoupon.usageLimit,
+      validFrom: mockCoupon.validFrom,
+      validUntil: mockCoupon.validUntil,
+      active: mockCoupon.active,
+    });
+  }, [id, reset]);
+
+  const onSubmit = async (data: AdminCouponFormInput) => {
+    try {
+      console.log('Updating coupon:', id, data);
+      toast.success('Coupon updated successfully!');
+      router.push('/admin/coupons');
+    } catch (error) {
+      toast.error('Failed to update coupon');
+    }
   };
 
   return (
@@ -64,63 +102,95 @@ export default function EditCouponPage({ params }: { params: Promise<{ id: strin
           </div>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             {/* Coupon Code */}
             <div className="space-y-2">
               <Label htmlFor="code">Coupon Code</Label>
               <Input
                 id="code"
-                value={code}
-                onChange={(e) => setCode(e.target.value.toUpperCase())}
+                placeholder="e.g., FIRST20"
                 className="font-mono uppercase"
-                required
+                {...register('code', {
+                  onChange: (e) => {
+                    e.target.value = e.target.value.toUpperCase();
+                  }
+                })}
               />
+              {errors.code && (
+                <p className="text-xs text-red-600 dark:text-red-400">{errors.code.message}</p>
+              )}
               <p className="text-xs text-muted-foreground">Use uppercase letters and numbers only</p>
+            </div>
+
+            {/* Description */}
+            <div className="space-y-2">
+              <Label htmlFor="description">Description</Label>
+              <Input
+                id="description"
+                placeholder="e.g., First time user discount"
+                {...register('description')}
+              />
+              {errors.description && (
+                <p className="text-xs text-red-600 dark:text-red-400">{errors.description.message}</p>
+              )}
             </div>
 
             {/* Discount Type */}
             <div className="space-y-2">
-              <Label htmlFor="type">Discount Type</Label>
-              <Select value={type} onValueChange={setType} required>
-                <SelectTrigger id="type">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="flat">Flat Amount (₹)</SelectItem>
-                  <SelectItem value="percentage">Percentage (%)</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label htmlFor="discountType">Discount Type</Label>
+              <Controller
+                name="discountType"
+                control={control}
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger id="discountType">
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="fixed">Flat Amount (₹)</SelectItem>
+                      <SelectItem value="percentage">Percentage (%)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              {errors.discountType && (
+                <p className="text-xs text-red-600 dark:text-red-400">{errors.discountType.message}</p>
+              )}
             </div>
 
             {/* Discount Value */}
             <div className="space-y-2">
-              <Label htmlFor="value">
-                Discount Value {type === 'percentage' ? '(%)' : '(₹)'}
+              <Label htmlFor="discountValue">
+                Discount Value {discountType === 'percentage' ? '(%)' : '(₹)'}
               </Label>
               <Input
-                id="value"
+                id="discountValue"
                 type="number"
-                value={value}
-                onChange={(e) => setValue(e.target.value)}
-                required
+                placeholder="20"
+                {...register('discountValue', { valueAsNumber: true })}
               />
+              {errors.discountValue && (
+                <p className="text-xs text-red-600 dark:text-red-400">{errors.discountValue.message}</p>
+              )}
               <p className="text-xs text-muted-foreground">
-                {type === 'percentage' 
+                {discountType === 'percentage' 
                   ? 'Enter percentage value (e.g., 20 for 20% off)' 
                   : 'Enter amount in rupees'}
               </p>
             </div>
 
-            {/* Min Order Value */}
+            {/* Min Order Amount */}
             <div className="space-y-2">
-              <Label htmlFor="minOrder">Minimum Order Value (₹)</Label>
+              <Label htmlFor="minOrderAmount">Minimum Order Amount (₹) <span className="text-xs text-muted-foreground">(Optional)</span></Label>
               <Input
-                id="minOrder"
+                id="minOrderAmount"
                 type="number"
-                value={minOrder}
-                onChange={(e) => setMinOrder(e.target.value)}
-                required
+                placeholder="500"
+                {...register('minOrderAmount', { valueAsNumber: true })}
               />
+              {errors.minOrderAmount && (
+                <p className="text-xs text-red-600 dark:text-red-400">{errors.minOrderAmount.message}</p>
+              )}
               <p className="text-xs text-muted-foreground">
                 Minimum cart value required to use this coupon
               </p>
@@ -128,17 +198,32 @@ export default function EditCouponPage({ params }: { params: Promise<{ id: strin
 
             {/* Usage Limit */}
             <div className="space-y-2">
-              <Label htmlFor="limit">Usage Limit</Label>
+              <Label htmlFor="usageLimit">Usage Limit <span className="text-xs text-muted-foreground">(Optional)</span></Label>
               <Input
-                id="limit"
+                id="usageLimit"
                 type="number"
-                value={usageLimit}
-                onChange={(e) => setUsageLimit(e.target.value)}
-                required
+                placeholder="1000"
+                {...register('usageLimit', { valueAsNumber: true })}
               />
+              {errors.usageLimit && (
+                <p className="text-xs text-red-600 dark:text-red-400">{errors.usageLimit.message}</p>
+              )}
               <p className="text-xs text-muted-foreground">
                 Total number of times this coupon can be used
               </p>
+            </div>
+
+            {/* Valid From */}
+            <div className="space-y-2">
+              <Label htmlFor="validFrom">Valid From</Label>
+              <Input
+                id="validFrom"
+                type="date"
+                {...register('validFrom')}
+              />
+              {errors.validFrom && (
+                <p className="text-xs text-red-600 dark:text-red-400">{errors.validFrom.message}</p>
+              )}
             </div>
 
             {/* Valid Until */}
@@ -147,10 +232,11 @@ export default function EditCouponPage({ params }: { params: Promise<{ id: strin
               <Input
                 id="validUntil"
                 type="date"
-                value={validUntil}
-                onChange={(e) => setValidUntil(e.target.value)}
-                required
+                {...register('validUntil')}
               />
+              {errors.validUntil && (
+                <p className="text-xs text-red-600 dark:text-red-400">{errors.validUntil.message}</p>
+              )}
               <p className="text-xs text-muted-foreground">
                 Coupon expiration date
               </p>
@@ -161,10 +247,20 @@ export default function EditCouponPage({ params }: { params: Promise<{ id: strin
               <div>
                 <Label htmlFor="active" className="cursor-pointer">Active Status</Label>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {active ? 'Coupon is available for use' : 'Coupon is disabled'}
+                  Coupon is available for use
                 </p>
               </div>
-              <Switch id="active" checked={active} onCheckedChange={setActive} />
+              <Controller
+                name="active"
+                control={control}
+                render={({ field }) => (
+                  <Switch
+                    id="active"
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                )}
+              />
             </div>
 
             {/* Info Box */}
@@ -184,9 +280,9 @@ export default function EditCouponPage({ params }: { params: Promise<{ id: strin
               >
                 Cancel
               </Button>
-              <Button type="submit" className="flex-1 shadow-lg">
+              <Button type="submit" className="flex-1 shadow-lg" disabled={isSubmitting}>
                 <Save className="mr-2 h-5 w-5" />
-                Update Coupon
+                {isSubmitting ? 'Updating...' : 'Update Coupon'}
               </Button>
             </div>
           </form>
@@ -222,13 +318,17 @@ export default function EditCouponPage({ params }: { params: Promise<{ id: strin
               <p className="text-sm text-muted-foreground">
                 Get{' '}
                 <span className="font-bold text-primary">
-                  {type === 'percentage' ? `${value}% OFF` : `₹${value} OFF`}
+                  {discountType === 'percentage' ? `${discountValue}% OFF` : `₹${discountValue} OFF`}
                 </span>
-                {' '}on orders above{' '}
-                <span className="font-semibold">₹{minOrder}</span>
+                {minOrderAmount ? (
+                  <>
+                    {' '}on orders above{' '}
+                    <span className="font-semibold">₹{minOrderAmount}</span>
+                  </>
+                ) : null}
               </p>
               <p className="text-xs text-muted-foreground">
-                Valid until {validUntil} • {usageLimit} uses available
+                Valid until {validUntil} {usageLimit ? `• ${usageLimit} uses available` : ''}
               </p>
             </div>
           </div>

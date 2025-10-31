@@ -171,16 +171,16 @@ export default function StaffProfilePage() {
                 </div>
               ) : (
                 <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl">
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
-                    {profile?.avatar ? (
-                      <img 
-                        src={profile.avatar} 
-                        alt="Profile" 
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <User className="h-8 w-8 sm:h-10 sm:w-10 text-primary" />
-                    )}
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
+                    <img 
+                      src={profile?.avatar || '/images/avatars/default-avatar.svg'} 
+                      alt="Profile" 
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = '/images/avatars/default-avatar.svg';
+                      }}
+                    />
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="font-bold text-base sm:text-lg text-foreground truncate">

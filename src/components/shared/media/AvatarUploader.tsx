@@ -1,9 +1,8 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { Upload, X, User, Camera } from 'lucide-react';
+import { Upload, X, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import Image from 'next/image';
 import { toast } from 'sonner';
 
 interface AvatarUploaderProps {
@@ -127,19 +126,15 @@ export function AvatarUploader({
         <div
           className={`${sizeClasses[size]} rounded-full overflow-hidden border-4 border-border bg-muted transition-all group-hover:border-primary`}
         >
-          {preview ? (
-            <Image
-              src={preview}
-              alt="Avatar"
-              width={160}
-              height={160}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <User className="h-1/2 w-1/2 text-muted-foreground" />
-            </div>
-          )}
+          <img
+            src={preview || '/images/avatars/default-avatar.svg'}
+            alt="Avatar"
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src = '/images/avatars/default-avatar.svg';
+            }}
+          />
         </div>
 
         {/* Camera Overlay */}

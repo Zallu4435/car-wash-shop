@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -11,15 +12,31 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { ArrowLeft, Plus, Car, Clock, IndianRupee } from 'lucide-react';
 import { toast } from 'sonner';
+import { serviceSchema, ServiceFormInput } from '@/schemas/admin/service';
 
 export default function NewServicePage() {
   const router = useRouter();
-  const [active, setActive] = useState(true);
+  
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors, isSubmitting },
+  } = useForm<ServiceFormInput>({
+    resolver: zodResolver(serviceSchema) as any,
+    defaultValues: {
+      active: true,
+    },
+  });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    toast.success('Service created successfully!');
-    router.push('/admin/services');
+  const onSubmit = async (data: ServiceFormInput) => {
+    try {
+      console.log('Service data:', data);
+      toast.success('Service created successfully!');
+      router.push('/admin/services');
+    } catch (error) {
+      toast.error('Failed to create service');
+    }
   };
 
   return (
@@ -46,30 +63,42 @@ export default function NewServicePage() {
           </div>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             {/* Service Name */}
             <div className="space-y-2">
               <Label htmlFor="name">Service Name</Label>
               <Input
                 id="name"
                 placeholder="e.g., Premium Wash"
-                required
+                {...register('name')}
               />
+              {errors.name && (
+                <p className="text-xs text-red-600 dark:text-red-400">{errors.name.message}</p>
+              )}
             </div>
 
             {/* Category */}
             <div className="space-y-2">
               <Label htmlFor="category">Category</Label>
-              <Select required>
-                <SelectTrigger id="category">
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="cat_ext">Exterior Wash</SelectItem>
-                  <SelectItem value="cat_int">Interior Detailing</SelectItem>
-                  <SelectItem value="cat_full">Complete Detailing</SelectItem>
-                </SelectContent>
-              </Select>
+              <Controller
+                name="category"
+                control={control}
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger id="category">
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="cat_ext">Exterior Wash</SelectItem>
+                      <SelectItem value="cat_int">Interior Detailing</SelectItem>
+                      <SelectItem value="cat_full">Complete Detailing</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              {errors.category && (
+                <p className="text-xs text-red-600 dark:text-red-400">{errors.category.message}</p>
+              )}
             </div>
 
             {/* Description */}
@@ -79,8 +108,11 @@ export default function NewServicePage() {
                 id="description"
                 placeholder="Describe the service in detail..."
                 rows={4}
-                required
+                {...register('description')}
               />
+              {errors.description && (
+                <p className="text-xs text-red-600 dark:text-red-400">{errors.description.message}</p>
+              )}
             </div>
 
             {/* Price & Duration */}
@@ -94,9 +126,12 @@ export default function NewServicePage() {
                     type="number"
                     placeholder="499"
                     className="pl-10"
-                    required
+                    {...register('price', { valueAsNumber: true })}
                   />
                 </div>
+                {errors.price && (
+                  <p className="text-xs text-red-600 dark:text-red-400">{errors.price.message}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="duration">Duration (minutes)</Label>
@@ -107,10 +142,38 @@ export default function NewServicePage() {
                     type="number"
                     placeholder="30"
                     className="pl-10"
-                    required
+                    {...register('duration', { valueAsNumber: true })}
                   />
                 </div>
+                {errors.duration && (
+                  <p className="text-xs text-red-600 dark:text-red-400">{errors.duration.message}</p>
+                )}
               </div>
+            </div>
+
+            {/* Vehicle Type */}
+            <div className="space-y-2">
+              <Label htmlFor="vehicleType">Vehicle Type</Label>
+              <Controller
+                name="vehicleType"
+                control={control}
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger id="vehicleType">
+                      <SelectValue placeholder="Select vehicle type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="sedan">Sedan</SelectItem>
+                      <SelectItem value="suv">SUV</SelectItem>
+                      <SelectItem value="hatchback">Hatchback</SelectItem>
+                      <SelectItem value="luxury">Luxury</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              {errors.vehicleType && (
+                <p className="text-xs text-red-600 dark:text-red-400">{errors.vehicleType.message}</p>
+              )}
             </div>
 
             {/* Active Status */}
@@ -119,13 +182,23 @@ export default function NewServicePage() {
                 <Label htmlFor="active" className="cursor-pointer">Active Status</Label>
                 <p className="text-xs text-muted-foreground mt-1">Service is available for booking</p>
               </div>
-              <Switch id="active" checked={active} onCheckedChange={setActive} />
+              <Controller
+                name="active"
+                control={control}
+                render={({ field }) => (
+                  <Switch
+                    id="active"
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                )}
+              />
             </div>
 
             {/* Submit Button */}
-            <Button type="submit" className="w-full shadow-lg" size="lg">
+            <Button type="submit" className="w-full shadow-lg" size="lg" disabled={isSubmitting}>
               <Plus className="mr-2 h-5 w-5" />
-              Create Service
+              {isSubmitting ? 'Creating...' : 'Create Service'}
             </Button>
           </form>
         </CardContent>

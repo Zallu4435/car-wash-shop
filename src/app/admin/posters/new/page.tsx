@@ -2,37 +2,59 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { ArrowLeft, Plus, FileImage, Image as ImageIcon } from 'lucide-react';
 import { AdminRoutes } from '@/lib/constants/routes';
 import { toast } from 'sonner';
+import { posterSchema, PosterFormInput } from '@/schemas/admin/poster';
 
 export default function NewPosterPage() {
   const router = useRouter();
-  const [active, setActive] = useState(true);
   const [uploadedImage, setUploadedImage] = useState<string>('');
+  
+  const {
+    register,
+    handleSubmit,
+    control,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = useForm<PosterFormInput>({
+    resolver: zodResolver(posterSchema) as any,
+    defaultValues: {
+      active: true,
+    },
+  });
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setUploadedImage(reader.result as string);
+        const imageUrl = reader.result as string;
+        setUploadedImage(imageUrl);
+        setValue('image', imageUrl);
         toast.success('Image uploaded');
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    toast.success('Poster created successfully!');
-    router.push(AdminRoutes.POSTERS);
+  const onSubmit = async (data: PosterFormInput) => {
+    try {
+      console.log('Poster data:', data);
+      toast.success('Poster created successfully!');
+      router.push(AdminRoutes.POSTERS);
+    } catch (error) {
+      toast.error('Failed to create poster');
+    }
   };
 
   return (
@@ -59,7 +81,7 @@ export default function NewPosterPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             {/* Poster Image */}
             <div className="space-y-2">
               <Label htmlFor="image">Poster Image</Label>
@@ -92,34 +114,80 @@ export default function NewPosterPage() {
             {/* Title */}
             <div className="space-y-2">
               <Label htmlFor="title">Poster Title</Label>
-              <Input id="title" placeholder="Summer Special" required />
+              <Input 
+                id="title" 
+                placeholder="Summer Special" 
+                {...register('title')}
+              />
+              {errors.title && (
+                <p className="text-xs text-red-600 dark:text-red-400">{errors.title.message}</p>
+              )}
             </div>
 
-            {/* Location */}
+            {/* Description */}
             <div className="space-y-2">
-              <Label htmlFor="location">Display Location</Label>
-              <Select required>
-                <SelectTrigger id="location">
-                  <SelectValue placeholder="Select location" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="home">Home Page</SelectItem>
-                  <SelectItem value="services">Services Page</SelectItem>
-                  <SelectItem value="products">Products Page</SelectItem>
-                  <SelectItem value="about">About Page</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label htmlFor="description">Description <span className="text-xs text-muted-foreground">(Optional)</span></Label>
+              <Textarea
+                id="description"
+                placeholder="Describe the poster..."
+                rows={3}
+                {...register('description')}
+              />
+              {errors.description && (
+                <p className="text-xs text-red-600 dark:text-red-400">{errors.description.message}</p>
+              )}
+            </div>
+
+            {/* Link & Display Order */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="link">Link URL <span className="text-xs text-muted-foreground">(Optional)</span></Label>
+                <Input 
+                  id="link" 
+                  placeholder="https://example.com" 
+                  {...register('link')}
+                />
+                {errors.link && (
+                  <p className="text-xs text-red-600 dark:text-red-400">{errors.link.message}</p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="displayOrder">Display Order <span className="text-xs text-muted-foreground">(Optional)</span></Label>
+                <Input 
+                  id="displayOrder" 
+                  type="number" 
+                  placeholder="1" 
+                  {...register('displayOrder', { valueAsNumber: true })}
+                />
+                {errors.displayOrder && (
+                  <p className="text-xs text-red-600 dark:text-red-400">{errors.displayOrder.message}</p>
+                )}
+              </div>
             </div>
 
             {/* Date Range */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="startDate">Start Date</Label>
-                <Input id="startDate" type="date" required />
+                <Label htmlFor="startDate">Start Date <span className="text-xs text-muted-foreground">(Optional)</span></Label>
+                <Input 
+                  id="startDate" 
+                  type="date" 
+                  {...register('startDate')}
+                />
+                {errors.startDate && (
+                  <p className="text-xs text-red-600 dark:text-red-400">{errors.startDate.message}</p>
+                )}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="endDate">End Date</Label>
-                <Input id="endDate" type="date" required />
+                <Label htmlFor="endDate">End Date <span className="text-xs text-muted-foreground">(Optional)</span></Label>
+                <Input 
+                  id="endDate" 
+                  type="date" 
+                  {...register('endDate')}
+                />
+                {errors.endDate && (
+                  <p className="text-xs text-red-600 dark:text-red-400">{errors.endDate.message}</p>
+                )}
               </div>
             </div>
 
@@ -129,13 +197,27 @@ export default function NewPosterPage() {
                 <Label htmlFor="active" className="cursor-pointer">Active Status</Label>
                 <p className="text-xs text-muted-foreground mt-1">Poster is visible on the website</p>
               </div>
-              <Switch id="active" checked={active} onCheckedChange={setActive} />
+              <Controller
+                name="active"
+                control={control}
+                render={({ field }) => (
+                  <Switch
+                    id="active"
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                )}
+              />
             </div>
 
+            {errors.image && (
+              <p className="text-xs text-red-600 dark:text-red-400">{errors.image.message}</p>
+            )}
+
             {/* Submit Button */}
-            <Button type="submit" className="w-full shadow-lg" size="lg">
+            <Button type="submit" className="w-full shadow-lg" size="lg" disabled={isSubmitting}>
               <Plus className="mr-2 h-5 w-5" />
-              Create Poster
+              {isSubmitting ? 'Creating...' : 'Create Poster'}
             </Button>
           </form>
         </CardContent>

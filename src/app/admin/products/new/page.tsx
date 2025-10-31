@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -11,28 +13,49 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { ArrowLeft, Plus, Package, Image as ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
+import { productSchema, ProductFormInput } from '@/schemas/admin/product';
 
 export default function NewProductPage() {
   const router = useRouter();
-  const [active, setActive] = useState(true);
   const [uploadedImage, setUploadedImage] = useState<string>('');
+  
+  const {
+    register,
+    handleSubmit,
+    control,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = useForm<ProductFormInput>({
+    resolver: zodResolver(productSchema) as any,
+    defaultValues: {
+      active: true,
+      featured: false,
+      images: [],
+    },
+  });
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setUploadedImage(reader.result as string);
+        const imageUrl = reader.result as string;
+        setUploadedImage(imageUrl);
+        setValue('images', [imageUrl]);
         toast.success('Image uploaded successfully');
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    toast.success('Product added successfully!');
-    router.push('/admin/products');
+  const onSubmit = async (data: ProductFormInput) => {
+    try {
+      console.log('Product data:', data);
+      toast.success('Product added successfully!');
+      router.push('/admin/products');
+    } catch (error) {
+      toast.error('Failed to add product');
+    }
   };
 
   return (
@@ -59,7 +82,7 @@ export default function NewProductPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             {/* Product Image */}
             <div className="space-y-2">
               <Label htmlFor="image">Product Image</Label>
@@ -99,23 +122,35 @@ export default function NewProductPage() {
               <Input
                 id="name"
                 placeholder="e.g., Premium Car Shampoo"
-                required
+                {...register('name')}
               />
+              {errors.name && (
+                <p className="text-xs text-red-600 dark:text-red-400">{errors.name.message}</p>
+              )}
             </div>
 
             {/* Category */}
             <div className="space-y-2">
               <Label htmlFor="category">Category</Label>
-              <Select required>
-                <SelectTrigger id="category">
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="cat_clean">Cleaning Products</SelectItem>
-                  <SelectItem value="cat_care">Car Care</SelectItem>
-                  <SelectItem value="cat_accessories">Accessories</SelectItem>
-                </SelectContent>
-              </Select>
+              <Controller
+                name="category"
+                control={control}
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger id="category">
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="cat_clean">Cleaning Products</SelectItem>
+                      <SelectItem value="cat_care">Car Care</SelectItem>
+                      <SelectItem value="cat_accessories">Accessories</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              {errors.category && (
+                <p className="text-xs text-red-600 dark:text-red-400">{errors.category.message}</p>
+              )}
             </div>
 
             {/* Description */}
@@ -125,8 +160,11 @@ export default function NewProductPage() {
                 id="description"
                 placeholder="Describe the product features and benefits..."
                 rows={4}
-                required
+                {...register('description')}
               />
+              {errors.description && (
+                <p className="text-xs text-red-600 dark:text-red-400">{errors.description.message}</p>
+              )}
             </div>
 
             {/* Price & Stock */}
@@ -137,8 +175,11 @@ export default function NewProductPage() {
                   id="price"
                   type="number"
                   placeholder="299"
-                  required
+                  {...register('price', { valueAsNumber: true })}
                 />
+                {errors.price && (
+                  <p className="text-xs text-red-600 dark:text-red-400">{errors.price.message}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="stock">Stock Quantity</Label>
@@ -146,24 +187,88 @@ export default function NewProductPage() {
                   id="stock"
                   type="number"
                   placeholder="50"
-                  required
+                  {...register('stock', { valueAsNumber: true })}
+                />
+                {errors.stock && (
+                  <p className="text-xs text-red-600 dark:text-red-400">{errors.stock.message}</p>
+                )}
+              </div>
+            </div>
+
+            {/* SKU & Compare Price */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="sku">SKU <span className="text-xs text-muted-foreground">(Optional)</span></Label>
+                <Input
+                  id="sku"
+                  placeholder="PROD-001"
+                  {...register('sku')}
+                />
+                {errors.sku && (
+                  <p className="text-xs text-red-600 dark:text-red-400">{errors.sku.message}</p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="comparePrice">Compare Price (₹) <span className="text-xs text-muted-foreground">(Optional)</span></Label>
+                <Input
+                  id="comparePrice"
+                  type="number"
+                  placeholder="399"
+                  {...register('comparePrice', { valueAsNumber: true })}
+                />
+                {errors.comparePrice && (
+                  <p className="text-xs text-red-600 dark:text-red-400">{errors.comparePrice.message}</p>
+                )}
+              </div>
+            </div>
+
+            {/* Active & Featured Status */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-4 bg-muted rounded-xl">
+                <div>
+                  <Label htmlFor="active" className="cursor-pointer">Active Status</Label>
+                  <p className="text-xs text-muted-foreground mt-1">Product is visible in the store</p>
+                </div>
+                <Controller
+                  name="active"
+                  control={control}
+                  render={({ field }) => (
+                    <Switch
+                      id="active"
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  )}
+                />
+              </div>
+              
+              <div className="flex items-center justify-between p-4 bg-muted rounded-xl">
+                <div>
+                  <Label htmlFor="featured" className="cursor-pointer">Featured Product</Label>
+                  <p className="text-xs text-muted-foreground mt-1">Show in featured section</p>
+                </div>
+                <Controller
+                  name="featured"
+                  control={control}
+                  render={({ field }) => (
+                    <Switch
+                      id="featured"
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  )}
                 />
               </div>
             </div>
 
-            {/* Active Status */}
-            <div className="flex items-center justify-between p-4 bg-muted rounded-xl">
-              <div>
-                <Label htmlFor="active" className="cursor-pointer">Active Status</Label>
-                <p className="text-xs text-muted-foreground mt-1">Product is visible in the store</p>
-              </div>
-              <Switch id="active" checked={active} onCheckedChange={setActive} />
-            </div>
+            {errors.images && (
+              <p className="text-xs text-red-600 dark:text-red-400">{errors.images.message}</p>
+            )}
 
             {/* Submit Button */}
-            <Button type="submit" className="w-full shadow-lg" size="lg">
+            <Button type="submit" className="w-full shadow-lg" size="lg" disabled={isSubmitting}>
               <Plus className="mr-2 h-5 w-5" />
-              Add Product
+              {isSubmitting ? 'Adding...' : 'Add Product'}
             </Button>
           </form>
         </CardContent>

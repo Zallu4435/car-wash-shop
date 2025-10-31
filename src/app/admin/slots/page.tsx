@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -24,6 +26,7 @@ import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
 import { useConfirmation } from '@/hooks/useConfirmation';
 import { StatCard } from '@/components/admin/StatCard';
+import { slotSchema, SlotFormInput } from '@/schemas/admin/slot';
 
 const timeSlots = [
   '09:00 AM', '10:00 AM', '11:00 AM', '12:00 PM',
@@ -46,8 +49,20 @@ export default function SlotManagementPage() {
   const unblockSlotMutation = useUnblockSlot();
   const [staffLeaves, setStaffLeaves] = useState<string[]>(['staff_002']);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [newSlotTime, setNewSlotTime] = useState('');
-  const [newSlotCapacity, setNewSlotCapacity] = useState('5');
+  
+  const {
+    register,
+    handleSubmit: handleFormSubmit,
+    control,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<SlotFormInput>({
+    resolver: zodResolver(slotSchema) as any,
+    defaultValues: {
+      capacity: 5,
+      active: true,
+    },
+  });
 
   // Use data from API
   const blockedSlots = slotsData?.blockedSlots || [];
@@ -140,15 +155,15 @@ export default function SlotManagementPage() {
     }
   };
 
-  const handleCreateSlot = () => {
-    if (!newSlotTime) {
-      toast.error('Please enter a time');
-      return;
+  const handleCreateSlot = (data: SlotFormInput) => {
+    try {
+      console.log('Creating slot:', data);
+      toast.success(`Slot created: ${data.time} (Capacity: ${data.capacity})`);
+      setShowCreateDialog(false);
+      reset();
+    } catch (error) {
+      toast.error('Failed to create slot');
     }
-    toast.success(`Slot created: ${newSlotTime} (Capacity: ${newSlotCapacity})`);
-    setShowCreateDialog(false);
-    setNewSlotTime('');
-    setNewSlotCapacity('5');
   };
 
   return (
@@ -396,42 +411,61 @@ export default function SlotManagementPage() {
               Add a new time slot for service bookings
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-3 sm:space-y-4 py-3 sm:py-4">
+          <form onSubmit={handleFormSubmit(handleCreateSlot)} className="space-y-3 sm:space-y-4 py-3 sm:py-4">
             <div className="space-y-1.5 sm:space-y-2">
               <Label htmlFor="slot-time" className="text-xs sm:text-sm">Time Slot</Label>
               <Input
                 id="slot-time"
                 type="time"
-                value={newSlotTime}
-                onChange={(e) => setNewSlotTime(e.target.value)}
+                {...register('time')}
                 placeholder="Select time"
                 className="h-10 sm:h-11 text-xs sm:text-sm"
               />
+              {errors.time && (
+                <p className="text-xs text-red-600 dark:text-red-400">{errors.time.message}</p>
+              )}
             </div>
             <div className="space-y-1.5 sm:space-y-2">
               <Label htmlFor="slot-capacity" className="text-xs sm:text-sm">Capacity</Label>
-              <Select value={newSlotCapacity} onValueChange={setNewSlotCapacity}>
-                <SelectTrigger id="slot-capacity" className="h-10 sm:h-11 text-xs sm:text-sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="1">1 booking</SelectItem>
-                  <SelectItem value="3">3 bookings</SelectItem>
-                  <SelectItem value="5">5 bookings</SelectItem>
-                  <SelectItem value="10">10 bookings</SelectItem>
-                </SelectContent>
-              </Select>
+              <Controller
+                name="capacity"
+                control={control}
+                render={({ field }) => (
+                  <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
+                    <SelectTrigger id="slot-capacity" className="h-10 sm:h-11 text-xs sm:text-sm">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">1 booking</SelectItem>
+                      <SelectItem value="3">3 bookings</SelectItem>
+                      <SelectItem value="5">5 bookings</SelectItem>
+                      <SelectItem value="10">10 bookings</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              {errors.capacity && (
+                <p className="text-xs text-red-600 dark:text-red-400">{errors.capacity.message}</p>
+              )}
             </div>
-          </div>
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button variant="outline" onClick={() => setShowCreateDialog(false)} className="h-9 sm:h-10 text-xs sm:text-sm">
-              Cancel
-            </Button>
-            <Button onClick={handleCreateSlot} className="h-9 sm:h-10 text-xs sm:text-sm">
-              <Plus className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              Create Slot
-            </Button>
-          </DialogFooter>
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => {
+                  setShowCreateDialog(false);
+                  reset();
+                }} 
+                className="h-9 sm:h-10 text-xs sm:text-sm"
+              >
+                Cancel
+              </Button>
+              <Button type="submit" className="h-9 sm:h-10 text-xs sm:text-sm" disabled={isSubmitting}>
+                <Plus className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                {isSubmitting ? 'Creating...' : 'Create Slot'}
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
 
