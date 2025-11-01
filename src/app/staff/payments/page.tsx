@@ -9,7 +9,7 @@ import { IndianRupee, Calendar, Briefcase, TrendingUp, Clock } from 'lucide-reac
 import { useStaffPaymentSummary } from '@/api/domains/staff';
 import { StaffRoutes } from '@/lib/constants/routes';
 import { SearchFilter } from '@/components/admin/SearchFilter';
-import { Pagination } from '@/components/shared/crud/Pagination';
+import { Pagination } from '@/components/admin/Pagination';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
 import { EmptyState } from '@/components/shared/display/EmptyState';
@@ -72,7 +72,8 @@ export default function StaffPaymentsPage() {
     return filteredPayments.slice(startIndex, endIndex);
   }, [filteredPayments, page, limit]);
 
-  const totalPages = Math.ceil(filteredPayments.length / limit);
+  const totalItems = filteredPayments.length;
+  const totalPages = Math.ceil(totalItems / limit);
 
   if (isLoading) {
     return <Loading text="Loading payments..." />;
@@ -327,9 +328,13 @@ export default function StaffPaymentsPage() {
         <Pagination
           currentPage={page}
           totalPages={totalPages}
-          onPageChange={(p) => setPage(p)}
-          itemsPerPage={limit}
-          totalItems={filteredPayments.length}
+          totalItems={totalItems}
+          pageSize={limit}
+          onPageChange={setPage}
+          onPageSizeChange={(newSize) => {
+            setLimit(newSize);
+            setPage(1);
+          }}
         />
       )}
     </div>

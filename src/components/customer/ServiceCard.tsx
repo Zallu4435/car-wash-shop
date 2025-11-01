@@ -126,7 +126,7 @@ export function ServiceCard({
                 </>
               )}
             </div>
-            <Button size="sm" className="group/btn shrink-0 h-8 sm:h-9 px-3 sm:px-4 text-xs sm:text-sm">
+            <Button size="sm" className="group/btn shrink-0 h-8 sm:h-9 px-3 sm:px-4 text-xs sm:text-sm border-2 border-primary/20">
               <span className="hidden xs:inline">Book Now</span>
               <span className="xs:hidden">Book</span>
               <ArrowRight className="ml-1 sm:ml-1.5 md:ml-2 h-3 w-3 sm:h-3.5 sm:w-3.5 group-hover/btn:translate-x-1 transition-transform" />

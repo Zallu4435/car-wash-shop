@@ -66,27 +66,8 @@ export function NotificationPanel({ isOpen, onClose, isAuthenticated = false, is
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'unread' | 'all'>('unread');
   const [mounted, setMounted] = useState(false);
-  const [isDark, setIsDark] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const observerTarget = useRef<HTMLDivElement>(null);
-  
-  // Check if dark mode is active
-  useEffect(() => {
-    const checkDarkMode = () => {
-      setIsDark(document.documentElement.classList.contains('dark'));
-    };
-    
-    checkDarkMode();
-    
-    // Watch for theme changes
-    const observer = new MutationObserver(checkDarkMode);
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['class']
-    });
-    
-    return () => observer.disconnect();
-  }, []);
   
   // Fetch notifications with infinite scrolling - only if authenticated
   const { 
@@ -156,7 +137,7 @@ export function NotificationPanel({ isOpen, onClose, isAuthenticated = false, is
     };
   }, [hasNextPage, isFetchingNextPage, fetchNextPage, isAuthenticated, isOpen]);
 
-  if (!isOpen || !mounted) return null;
+  if (!mounted) return null;
 
   // Flatten all pages of notifications
   const notifications = data?.pages.flatMap(page => page.data) || [];
@@ -171,8 +152,8 @@ export function NotificationPanel({ isOpen, onClose, isAuthenticated = false, is
     }
     if (notification.actionUrl) {
       router.push(notification.actionUrl);
+      onClose();
     }
-    onClose();
   };
 
   const handleMarkAllAsRead = () => {
@@ -183,20 +164,28 @@ export function NotificationPanel({ isOpen, onClose, isAuthenticated = false, is
     <>
       {/* Backdrop - Higher z-index */}
       <div 
-        className="fixed inset-0 z-[1000] bg-black/60 backdrop-blur-sm lg:hidden" 
+        className={`fixed inset-0 z-[1000] bg-black/60 backdrop-blur-sm lg:hidden transition-opacity duration-500 ${
+          isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
         onClick={onClose}
       />
       
       {/* Desktop backdrop (subtle) */}
       <div 
-        className="hidden lg:block fixed inset-0 z-[1000]" 
+        className={`hidden lg:block fixed inset-0 z-[1000] transition-opacity duration-500 ${
+          isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
         onClick={onClose}
       />
 
       {/* Notification Panel */}
-      <Card className={`fixed right-0 top-0 lg:top-16 lg:right-4 w-full lg:w-96 h-full lg:h-auto lg:min-h-[400px] lg:max-h-[85vh] rounded-none lg:rounded-lg shadow-2xl border-0 lg:border-2 lg:border-border z-[1001] overflow-hidden flex flex-col ${isDark ? '!bg-gray-900' : '!bg-white'}`}>
+      <Card className={`fixed right-0 top-0 lg:top-16 lg:right-4 w-full lg:w-96 h-full lg:h-auto lg:min-h-[400px] lg:max-h-[85vh] rounded-none lg:rounded-lg shadow-2xl border-0 lg:border-2 lg:border-border z-[1001] overflow-hidden flex flex-col force-sheet-bg transition-all duration-500 ease-in-out ${
+        isOpen 
+          ? 'translate-x-0 opacity-100' 
+          : 'translate-x-full lg:translate-x-0 lg:translate-y-[-20px] opacity-0 pointer-events-none'
+      }`}>
         {/* Header */}
-        <div className={`p-4 border-b border-border flex-shrink-0 ${isDark ? 'bg-gray-800' : 'bg-gray-50'}`}>
+        <div className="p-4 border-b border-border flex-shrink-0 bg-muted/30">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <div className="p-1.5 bg-primary/10 rounded-lg">
@@ -281,7 +270,7 @@ export function NotificationPanel({ isOpen, onClose, isAuthenticated = false, is
         </div>
 
         {/* Notifications List */}
-        <div ref={scrollContainerRef} className={`overflow-y-auto flex-1 scrollbar-thin ${isDark ? '!bg-gray-900' : '!bg-white'}`}>
+        <div ref={scrollContainerRef} className="overflow-y-auto flex-1 scrollbar-thin">
           {!isAuthenticated ? (
             <div className="flex flex-col items-center justify-center py-16 px-4">
               <div className="p-4 bg-muted rounded-full mb-4">
@@ -394,7 +383,7 @@ export function NotificationPanel({ isOpen, onClose, isAuthenticated = false, is
         </div>
 
         {/* Footer */}
-        <div className={`p-3 border-t border-border flex-shrink-0 ${isDark ? 'bg-gray-800' : 'bg-gray-50'}`}>
+        <div className="p-3 border-t border-border flex-shrink-0 bg-muted/30">
           <Button
             variant="ghost"
             size="sm"

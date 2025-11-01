@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { useAddresses, useDeleteAddress, useSetPrimaryAddress } from '@/api/domains/addresses/queries';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
+import { ROUTES } from '@/lib/constants/routes';
 
 export default function AddressesPage() {
   const router = useRouter();
@@ -57,13 +58,13 @@ export default function AddressesPage() {
   if (error) return <Error message="Failed to load addresses" onRetry={refetch} />;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-32 lg:pb-8">
       {/* Header - Responsive */}
       <section className="bg-gradient-to-br from-primary/5 to-background border-b border-border">
         <div className="container-custom py-6 sm:py-8 lg:py-12">
           <Button
             variant="ghost"
-            onClick={() => router.push('/profile')}
+            onClick={() => router.push(ROUTES.CUSTOMER.PROFILE)}
             className="mb-3 sm:mb-4 hover:bg-muted h-9 sm:h-10"
           >
             <ArrowLeft className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -85,7 +86,7 @@ export default function AddressesPage() {
             </div>
             <Button 
               onClick={() => setIsAddDialogOpen(true)} 
-              className="shadow-lg h-9 sm:h-10 flex-shrink-0"
+              className="shadow-lg border-2 h-9 sm:h-10 flex-shrink-0"
               size="sm"
             >
               <Plus className="h-4 w-4 sm:mr-2" />
@@ -141,7 +142,7 @@ export default function AddressesPage() {
                       <Button 
                         variant="default" 
                         size="sm" 
-                        className="w-full h-9 sm:h-10 text-xs sm:text-sm"
+                        className="w-full border-2 h-9 sm:h-10 text-xs sm:text-sm"
                         onClick={() => handleSetPrimary(addr.id)}
                         disabled={setPrimaryMutation.isPending}
                       >
@@ -176,7 +177,7 @@ export default function AddressesPage() {
                 <p className="text-sm text-muted-foreground mb-4">
                   Add your first address to get started
                 </p>
-                <Button onClick={() => setIsAddDialogOpen(true)}>
+                <Button onClick={() => setIsAddDialogOpen(true)} className="shadow-lg border-2 h-10 sm:h-11" size="lg">
                   <Plus className="mr-2 h-4 w-4" />
                   Add Address
                 </Button>

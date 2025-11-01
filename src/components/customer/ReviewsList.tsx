@@ -118,8 +118,8 @@ export function ReviewsList({
             {ratingDistribution.map(({ rating, count, percentage }) => (
               <div key={rating} className="flex items-center gap-3">
                 <div className="flex items-center justify-end gap-1 w-12 flex-shrink-0">
-                  <span className="text-sm font-medium text-foreground">{rating}</span>
-                  <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
+                  <span className="text-xs sm:text-sm font-medium text-foreground">{rating}</span>
+                  <Star className="h-3 w-3 sm:h-3.5 sm:w-3.5 fill-yellow-400 text-yellow-400" />
                 </div>
                 <div className="flex-1 h-2.5 bg-muted rounded-full overflow-hidden min-w-0">
                   <div
@@ -127,7 +127,7 @@ export function ReviewsList({
                     style={{ width: `${percentage}%` }}
                   />
                 </div>
-                <span className="text-sm text-muted-foreground w-10 text-right font-medium flex-shrink-0">
+                <span className="text-xs sm:text-sm text-muted-foreground w-10 text-right font-medium flex-shrink-0">
                   {count}
                 </span>
               </div>
@@ -189,7 +189,7 @@ export function ReviewsList({
                               />
                             ))}
                           </div>
-                          <span className="text-xs text-muted-foreground">
+                          <span className="text-[10px] sm:text-xs text-muted-foreground">
                             {formatDate(review.createdAt)}
                           </span>
                         </div>
@@ -197,7 +197,7 @@ export function ReviewsList({
                     </div>
                     
                     {/* Verified Badge (optional) */}
-                    <Badge variant="outline" className="text-xs flex-shrink-0">
+                    <Badge variant="outline" className="text-[10px] sm:text-xs flex-shrink-0">
                       Verified
                     </Badge>
                   </div>
@@ -225,12 +225,12 @@ export function ReviewsList({
 
                   {/* Helpful Actions */}
                   <div className="flex items-center gap-3 pl-0 sm:pl-[60px]">
-                    <span className="text-xs text-muted-foreground">Was this helpful?</span>
-                    <Button variant="outline" size="sm" className="h-7 text-xs gap-1.5">
+                    <span className="text-[10px] sm:text-xs text-muted-foreground">Was this helpful?</span>
+                    <Button variant="outline" size="sm" className="border-2 h-7 text-xs gap-1.5">
                       <ThumbsUp className="h-3 w-3" />
                       Yes
                     </Button>
-                    <Button variant="outline" size="sm" className="h-7 text-xs gap-1.5">
+                    <Button variant="outline" size="sm" className="border-2 h-7 text-xs gap-1.5">
                       <ThumbsDown className="h-3 w-3" />
                       No
                     </Button>
@@ -249,7 +249,7 @@ export function ReviewsList({
                   variant="outline"
                   onClick={loadMoreReviews}
                   disabled={isLoadingMore}
-                  className="min-w-[200px] h-11 text-sm font-medium"
+                  className="border-2 min-w-[200px] h-11 text-sm font-medium"
                 >
                   {isLoadingMore ? (
                     <>

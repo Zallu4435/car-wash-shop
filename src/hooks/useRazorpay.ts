@@ -182,7 +182,6 @@ export function useRazorpay(options?: UseRazorpayOptions) {
             );
 
             if (isVerified) {
-              toast.success('Payment successful!');
               if (options?.onSuccess) {
                 await options.onSuccess(response);
               }

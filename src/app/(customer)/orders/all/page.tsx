@@ -7,15 +7,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Pagination } from '@/components/shared/crud/Pagination';
+import { Pagination } from '@/components/admin/Pagination';
+import { FilterSheet } from '@/components/shared/filters/FilterSheet';
 import { useOrders } from '@/api/domains/orders/queries';
 import { useBookings } from '@/api/domains/bookings/queries';
 import { Package, Calendar, ChevronRight, ShoppingBag, ArrowLeft, Search, Filter, X, Car, SlidersHorizontal, Wrench } from 'lucide-react';
 import { useState, useEffect, useMemo } from 'react';
 import Loading from '@/components/shared/display/Loading';
 import { EmptyState } from '@/components/shared/display/EmptyState';
-
-const ITEMS_PER_PAGE = 6;
 
 export default function AllOrdersPage() {
   // Fetch both orders and bookings
@@ -27,6 +26,7 @@ export default function AllOrdersPage() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(6);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   // Merge orders and bookings
@@ -81,9 +81,10 @@ export default function AllOrdersPage() {
     return matchesSearch && matchesStatus && matchesType;
   });
 
-  const totalPages = Math.ceil(filteredOrders.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const totalItems = filteredOrders.length;
+  const totalPages = Math.ceil(totalItems / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
   const paginatedOrders = filteredOrders.slice(startIndex, endIndex);
 
   const handleFilterChange = (filterSetter: (value: string) => void, value: string) => {
@@ -92,6 +93,13 @@ export default function AllOrdersPage() {
   };
 
   const clearFilters = () => {
+    setSearchQuery('');
+    setStatusFilter('all');
+    setTypeFilter('all');
+    setCurrentPage(1);
+  };
+
+  const handleClearAllFilters = () => {
     setSearchQuery('');
     setStatusFilter('all');
     setTypeFilter('all');
@@ -123,7 +131,7 @@ export default function AllOrdersPage() {
   return (
     <div className="min-h-screen bg-background pb-32 lg:pb-8">
       {/* Header - Responsive */}
-      <section className="bg-gradient-to-br from-teal-500/5 to-background border-b border-border">
+      <section className="border-b border-border">
         <div className="container-custom py-6 sm:py-8 lg:py-12">
           <Button asChild variant="ghost" className="mb-3 sm:mb-4 h-9 sm:h-10">
             <Link href="/orders">
@@ -132,9 +140,7 @@ export default function AllOrdersPage() {
             </Link>
           </Button>
           <div className="flex items-center gap-2 sm:gap-3">
-            <div className="p-2 sm:p-3 bg-teal-50 dark:bg-teal-950/20 rounded-lg sm:rounded-xl flex-shrink-0">
-              <Package className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-teal-600 dark:text-teal-400" />
-            </div>
+            <Package className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-teal-600 dark:text-teal-400 flex-shrink-0" />
             <div className="min-w-0 flex-1">
               <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-foreground truncate">
                 All Orders
@@ -216,16 +222,11 @@ export default function AllOrdersPage() {
                       <CardContent className="p-4 sm:p-5 md:p-6">
                         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-3 sm:mb-4 pb-3 sm:pb-4 border-b border-border">
                           <div className="flex items-start gap-2 sm:gap-3 min-w-0 flex-1">
-                            <div className={`p-1.5 sm:p-2 rounded-lg flex-shrink-0 ${isBooking
-                                ? 'bg-blue-50 dark:bg-blue-950/20'
-                                : 'bg-purple-50 dark:bg-purple-950/20'
-                              }`}>
-                              {isBooking ? (
-                                <Wrench className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 dark:text-blue-400" />
-                              ) : (
-                                <ShoppingBag className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600 dark:text-purple-400" />
-                              )}
-                            </div>
+                            {isBooking ? (
+                              <Wrench className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                            ) : (
+                              <ShoppingBag className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600 dark:text-purple-400 flex-shrink-0" />
+                            )}
                             <div className="min-w-0 flex-1">
                               <p className="font-mono font-bold text-sm sm:text-base text-foreground truncate">
                                 {order.id}
@@ -275,15 +276,19 @@ export default function AllOrdersPage() {
               </div>
 
               {/* Pagination */}
-              {totalPages > 1 && (
+              <div className="mt-6 sm:mt-8">
                 <Pagination
                   currentPage={currentPage}
                   totalPages={totalPages}
+                  totalItems={totalItems}
+                  pageSize={pageSize}
                   onPageChange={setCurrentPage}
-                  itemsPerPage={ITEMS_PER_PAGE}
-                  totalItems={filteredOrders.length}
+                  onPageSizeChange={(newSize) => {
+                    setPageSize(newSize);
+                    setCurrentPage(1);
+                  }}
                 />
-              )}
+              </div>
             </>
           ) : (
             <EmptyState
@@ -335,111 +340,58 @@ export default function AllOrdersPage() {
       </div>
 
       {/* Mobile Filter Modal */}
-      {showMobileFilters && (
-        <>
-          <div 
-            className="lg:hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
-            onClick={() => setShowMobileFilters(false)}
-          />
-          
-          <div className="lg:hidden fixed inset-x-0 bottom-0 z-50 bg-card rounded-t-2xl shadow-2xl border-t-2 border-border max-h-[88vh] flex flex-col">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-border flex-shrink-0">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-primary/10 rounded-lg">
-                  <Filter className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <h2 className="text-base sm:text-lg font-bold text-foreground">Filters</h2>
-                  <p className="text-xs text-muted-foreground">
-                    {filteredOrders.length} result{filteredOrders.length !== 1 ? 's' : ''}
-                  </p>
-                </div>
-              </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setShowMobileFilters(false)}
-                className="rounded-full h-9 w-9"
-              >
-                <X className="h-5 w-5" />
-              </Button>
-            </div>
-
-            {/* Modal Content */}
-            <div className="overflow-y-auto flex-1 px-5 py-5 space-y-6">
-              {/* Search */}
-              <div>
-                <Label className="text-sm font-medium mb-3 block">Search</Label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search orders..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-              </div>
-
-              {/* Order Type */}
-              <div>
-                <Label className="text-sm font-medium mb-3 block">Order Type</Label>
-                <Select value={typeFilter} onValueChange={setTypeFilter}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Order type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Types</SelectItem>
-                    <SelectItem value="services">Services</SelectItem>
-                    <SelectItem value="products">Products</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Status Filter */}
-              <div>
-                <Label className="text-sm font-medium mb-3 block">Status</Label>
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Status</SelectItem>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
-                    <SelectItem value="delivered">Delivered</SelectItem>
-                    <SelectItem value="cancelled">Cancelled</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* Modal Footer */}
-            <div className="px-5 py-4 border-t border-border bg-muted/30 flex-shrink-0">
-              <div className="flex gap-3">
-                <Button
-                  variant="outline"
-                  className="flex-1 h-11 font-semibold text-sm"
-                  onClick={clearFilters}
-                  disabled={!hasActiveFilters}
-                >
-                  Clear All
-                </Button>
-                <Button
-                  className="flex-1 h-11 font-semibold text-sm shadow-md"
-                  onClick={() => {
-                    setShowMobileFilters(false);
-                    setCurrentPage(1);
-                  }}
-                >
-                  Show {filteredOrders.length} Result{filteredOrders.length !== 1 ? 's' : ''}
-                </Button>
-              </div>
-            </div>
+      <FilterSheet
+        isOpen={showMobileFilters}
+        onClose={() => setShowMobileFilters(false)}
+        onClearAll={handleClearAllFilters}
+        resultCount={filteredOrders.length}
+      >
+        {/* Search */}
+        <div>
+          <h3 className="font-semibold text-sm mb-3 text-foreground">Search</h3>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search orders..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
           </div>
-        </>
-      )}
+        </div>
+
+        {/* Order Type */}
+        <div>
+          <h3 className="font-semibold text-sm mb-3 text-foreground">Order Type</h3>
+          <Select value={typeFilter} onValueChange={setTypeFilter}>
+            <SelectTrigger>
+              <SelectValue placeholder="Order type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Types</SelectItem>
+              <SelectItem value="services">Services</SelectItem>
+              <SelectItem value="products">Products</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Status Filter */}
+        <div>
+          <h3 className="font-semibold text-sm mb-3 text-foreground">Status</h3>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger>
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="completed">Completed</SelectItem>
+              <SelectItem value="delivered">Delivered</SelectItem>
+              <SelectItem value="cancelled">Cancelled</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </FilterSheet>
     </div>
   );
 }

@@ -19,7 +19,7 @@ import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
 import { EmptyState } from '@/components/shared/display/EmptyState';
 import { SearchFilter } from '@/components/admin/SearchFilter';
-import { Pagination } from '@/components/shared/crud/Pagination';
+import { Pagination } from '@/components/admin/Pagination';
 import React, { useMemo } from 'react';
 
 export default function StaffHistoryPage() {
@@ -248,9 +248,13 @@ export default function StaffHistoryPage() {
           <Pagination
             currentPage={page}
             totalPages={totalPages}
-            onPageChange={(p) => setPage(p)}
-            itemsPerPage={limit}
             totalItems={jobs.length}
+            pageSize={limit}
+            onPageChange={setPage}
+            onPageSizeChange={(newSize) => {
+              setLimit(newSize);
+              setPage(1);
+            }}
           />
         )}
       </div>

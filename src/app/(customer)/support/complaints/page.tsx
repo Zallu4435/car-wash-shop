@@ -15,6 +15,7 @@ import { useCreateTicket } from '@/api/domains/support/queries';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { complaintSchema, ComplaintInput } from '@/schemas/customer/support';
+import { ROUTES } from '@/lib/constants/routes';
 
 export default function ComplaintsPage() {
   const router = useRouter();
@@ -61,7 +62,7 @@ export default function ComplaintsPage() {
       {
         onSuccess: () => {
           toast.success('Complaint submitted successfully! We will get back to you soon.');
-          router.push('/support/complaints/list');
+          router.push(ROUTES.CUSTOMER.SUPPORT_TICKETS);
         },
         onError: (error: any) => {
           toast.error(error?.message || 'Failed to submit complaint');
@@ -71,20 +72,18 @@ export default function ComplaintsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-32 lg:pb-8">
       {/* Header - Responsive */}
       <section className="bg-gradient-to-br from-primary/5 to-background border-b border-border">
         <div className="container-custom py-6 sm:py-8">
-          <Link href="/support">
+          <Link href={ROUTES.CUSTOMER.SUPPORT}>
             <Button variant="ghost" className="mb-3 sm:mb-4 hover:bg-muted h-9 sm:h-10">
               <ArrowLeft className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
               <span className="text-xs sm:text-sm">Back to Support</span>
             </Button>
           </Link>
           <div className="flex items-center gap-2 sm:gap-3">
-            <div className="p-2 sm:p-3 bg-red-50 dark:bg-red-950/30 rounded-lg sm:rounded-xl flex-shrink-0">
-              <AlertCircle className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-red-600 dark:text-red-400" />
-            </div>
+            <AlertCircle className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-red-600 dark:text-red-400 flex-shrink-0" />
             <div className="min-w-0 flex-1">
               <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-foreground truncate">
                 Submit a Complaint
@@ -272,7 +271,7 @@ export default function ComplaintsPage() {
                   <div className="pt-3 sm:pt-4">
                     <Button 
                       type="submit" 
-                      className="w-full shadow-lg h-11 sm:h-12 text-sm sm:text-base"
+                      className="w-full shadow-lg border-2 h-11 sm:h-12 text-sm sm:text-base"
                       size="lg"
                       disabled={createTicketMutation.isPending}
                     >

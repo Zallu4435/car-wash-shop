@@ -173,9 +173,9 @@ export default function CheckoutPage() {
         };
 
         createCheckoutSessionMutation.mutate(checkoutData, {
-          onSuccess: () => {
+          onSuccess: (data) => {
             toast.success('Order placed successfully!');
-            router.push(`/orders`);
+            router.push(`/payment/receipt?orderId=${data.bookingId || tempBookingId}&paymentMethod=cod`);
           },
           onError: (error: any) => {
             toast.error(error?.message || 'Failed to place order. Please try again.');
@@ -258,12 +258,10 @@ export default function CheckoutPage() {
   return (
     <div className="min-h-screen bg-background pb-32 lg:pb-8">
       {/* Header - Responsive */}
-      <section className="bg-gradient-to-br from-primary/5 to-background border-b border-border">
+      <section className="border-b border-border">
         <div className="container-custom py-6 sm:py-8 lg:py-12">
           <div className="flex items-center gap-2 sm:gap-3">
-            <div className="p-2 sm:p-3 bg-primary/10 rounded-lg sm:rounded-xl flex-shrink-0">
-              <ShoppingBag className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary" />
-            </div>
+            <ShoppingBag className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary flex-shrink-0" />
             <div className="min-w-0 flex-1">
               <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-foreground truncate">
                 Checkout
@@ -286,10 +284,8 @@ export default function CheckoutPage() {
               <Card className="border-2 border-border">
                 <CardHeader className="pb-3 sm:pb-4">
                   <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
-                      <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-                    </div>
-                    <CardTitle className="text-base sm:text-lg">Delivery Address</CardTitle>
+                    <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+                    <CardTitle className="text-xs sm:text-sm lg:text-base">Delivery Address</CardTitle>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-3 sm:space-y-4">
@@ -316,16 +312,16 @@ export default function CheckoutPage() {
                     <Button 
                       variant="outline" 
                       onClick={() => setShowAddressModal(true)}
-                      className="flex-1 sm:flex-none h-9 sm:h-10 text-xs sm:text-sm"
+                      className="flex-1 sm:flex-none h-9 sm:h-10 text-xs sm:text-sm border-2"
                     >
-                      <MapPin className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                      <MapPin className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                       Change Address
                     </Button>
                     
                     <Button 
                       variant="outline" 
                       onClick={() => setShowMapPicker(!showMapPicker)}
-                      className="flex-1 sm:flex-none h-9 sm:h-10 text-xs sm:text-sm"
+                      className="flex-1 sm:flex-none h-9 sm:h-10 text-xs sm:text-sm border-2"
                     >
                       <MapPin className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                       {showMapPicker ? 'Hide Map' : 'Pick on Map'}
@@ -350,10 +346,8 @@ export default function CheckoutPage() {
               <Card className="border-2 border-border">
                 <CardHeader className="pb-3 sm:pb-4">
                   <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
-                      <CreditCard className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-                    </div>
-                    <CardTitle className="text-base sm:text-lg">Payment Method</CardTitle>
+                    <CreditCard className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+                    <CardTitle className="text-xs sm:text-sm lg:text-base">Payment Method</CardTitle>
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -409,10 +403,8 @@ export default function CheckoutPage() {
               <Card className="hidden lg:block sticky top-24 border-2 border-border">
                 <CardHeader className="pb-3 sm:pb-4">
                   <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
-                      <ShoppingBag className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-                    </div>
-                    <CardTitle className="text-base sm:text-lg">Order Summary</CardTitle>
+                    <ShoppingBag className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+                    <CardTitle className="text-xs sm:text-sm lg:text-base">Order Summary</CardTitle>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4 sm:space-y-6">
@@ -436,7 +428,7 @@ export default function CheckoutPage() {
                   />
                   <Button 
                     onClick={handlePlaceOrder} 
-                    className="w-full shadow-lg h-11 sm:h-12 text-sm sm:text-base" 
+                    className="w-full shadow-lg h-11 sm:h-12 text-sm sm:text-base border-2" 
                     size="lg"
                     disabled={isProcessingPayment || isRazorpayLoading || !canPlaceOrder}
                   >
@@ -489,7 +481,7 @@ export default function CheckoutPage() {
                   </div>
                   <Button 
                     onClick={handlePlaceOrder} 
-                    className="w-full shadow-lg h-12 text-sm font-semibold" 
+                    className="w-full shadow-lg h-12 text-sm font-semibold border-2" 
                     size="lg"
                     disabled={isProcessingPayment || isRazorpayLoading || !canPlaceOrder}
                   >

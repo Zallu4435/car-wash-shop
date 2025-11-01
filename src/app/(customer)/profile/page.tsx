@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { AvatarUploader } from '@/components/shared/media/AvatarUploader';
 import { Separator } from '@/components/ui/separator';
+import Loading from '@/components/shared/display/Loading';
 import { User, Mail, Phone, MapPin, Car, LogOut, Shield } from 'lucide-react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
@@ -15,6 +16,7 @@ import { useUpdateProfile } from '@/api/domains/profile/queries';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { profileEditSchema, ProfileEditInput } from '@/schemas/customer/profile';
+import { ROUTES } from '@/lib/constants/routes';
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -74,18 +76,11 @@ export default function ProfilePage() {
 
   // Loading state
   if (userLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground text-sm sm:text-base">Loading profile...</p>
-        </div>
-      </div>
-    );
+    return <Loading text="Loading profile..." fullScreen={true} size="lg" />;
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-32 lg:pb-8">
       {/* Header - Responsive */}
       <section className="bg-gradient-to-br from-primary/5 to-background border-b border-border">
         <div className="container-custom py-6 sm:py-8 lg:py-12">
@@ -113,24 +108,24 @@ export default function ProfilePage() {
             <div className="grid grid-cols-3 gap-2 sm:gap-4">
               <Button
                 variant="outline"
-                className="h-auto py-3 sm:py-4 flex flex-col items-center justify-center gap-1.5 sm:gap-2"
-                onClick={() => router.push('/profile/addresses')}
+                className="h-auto py-3 sm:py-4 w-full flex flex-col items-center justify-center gap-1.5 sm:gap-2"
+                onClick={() => router.push(ROUTES.CUSTOMER.ADDRESSES)}
               >
                 <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                 <span className="text-[10px] sm:text-xs md:text-sm">Addresses</span>
               </Button>
               <Button
                 variant="outline"
-                className="h-auto py-3 sm:py-4 flex flex-col items-center justify-center gap-1.5 sm:gap-2"
-                onClick={() => router.push('/profile/vehicles')}
+                className="h-auto py-3 sm:py-4 w-full flex flex-col items-center justify-center gap-1.5 sm:gap-2"
+                onClick={() => router.push(ROUTES.CUSTOMER.VEHICLES)}
               >
                 <Car className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                 <span className="text-[10px] sm:text-xs md:text-sm">Vehicles</span>
               </Button>
               <Button
                 variant="outline"
-                className="h-auto py-3 sm:py-4 flex flex-col items-center justify-center gap-1.5 sm:gap-2"
-                onClick={() => router.push('/profile/security')}
+                className="h-auto py-3 sm:py-4 w-full flex flex-col items-center justify-center gap-1.5 sm:gap-2"
+                onClick={() => router.push(ROUTES.CUSTOMER.PROFILE_SECURITY)}
               >
                 <Shield className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                 <span className="text-[10px] sm:text-xs md:text-sm">Security</span>
@@ -213,7 +208,7 @@ export default function ProfilePage() {
 
                   <Button 
                     type="submit" 
-                    className="w-full shadow-lg h-11 sm:h-12 text-sm sm:text-base" 
+                    className="w-full shadow-lg border-2 h-11 sm:h-12 text-sm sm:text-base" 
                     size="lg"
                     disabled={updateProfileMutation.isPending}
                   >
@@ -229,7 +224,7 @@ export default function ProfilePage() {
               className="w-full text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20 border-2 h-11 sm:h-12 text-sm sm:text-base"
               onClick={() => {
                 toast.success('Logged out successfully');
-                router.push('/auth/login');
+                router.push(ROUTES.CUSTOMER.LOGIN);
               }}
             >
               <LogOut className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />

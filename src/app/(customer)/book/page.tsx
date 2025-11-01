@@ -247,28 +247,40 @@ export default function BookingPage() {
           return;
         }
         
-        // Handle Online payment with Razorpay
-        if (paymentOption === 'online') {
+        // Handle Online and Advance payment with Razorpay
+        if (paymentOption === 'online' || paymentOption === 'advance') {
           // Get user details (in real app, fetch from auth context)
           const userEmail = 'customer@example.com'; // TODO: Get from auth
           const userName = 'Customer'; // TODO: Get from auth
           const userPhone = '+919876543210'; // TODO: Get from auth
           
+          // Calculate amount: 30% for advance, full for online
+          const paymentAmount = paymentOption === 'advance' ? Math.round(totalAmount * 0.3) : totalAmount;
+          
+          // Build notes object
+          const paymentNotes: Record<string, string> = {
+            serviceId: selectedService,
+            vehicleId: selectedVehicle,
+            addressId: selectedAddress,
+            scheduledDate: selectedDate!.toISOString(),
+            scheduledTime: selectedTime!,
+            addOns: selectedAddOns.join(','),
+            paymentType: paymentOption,
+            totalAmount: totalAmount.toString(),
+          };
+          
+          if (paymentOption === 'advance') {
+            paymentNotes.advanceAmount = paymentAmount.toString();
+          }
+          
           await processPayment({
-            amount: totalAmount,
-            description: `${selectedServiceData?.name || 'Service'} Booking`,
+            amount: paymentAmount,
+            description: `${selectedServiceData?.name || 'Service'} Booking${paymentOption === 'advance' ? ' (30% Advance)' : ''}`,
             bookingId: `BOOKING_${Date.now()}`,
             userEmail,
             userName,
             userPhone,
-            notes: {
-              serviceId: selectedService,
-              vehicleId: selectedVehicle,
-              addressId: selectedAddress,
-              scheduledDate: selectedDate!.toISOString(),
-              scheduledTime: selectedTime!,
-              addOns: selectedAddOns.join(','),
-            },
+            notes: paymentNotes,
           });
         }
       } catch (error: any) {
@@ -460,6 +472,7 @@ export default function BookingPage() {
                 value={paymentOption}
                 onChange={setPaymentOption}
                 codFee={40}
+                isService={true}
               />
             </div>
           )}

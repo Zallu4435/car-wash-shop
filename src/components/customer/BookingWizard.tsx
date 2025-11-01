@@ -99,14 +99,14 @@ export function BookingWizard({ currentStep, totalSteps, onNext, onPrev, childre
           onClick={onPrev}
           disabled={currentStep === 1}
           size="lg"
-          className="w-full sm:w-auto h-11 sm:h-12 text-sm sm:text-base"
+          className="border-2 w-full sm:w-auto h-11 sm:h-12 text-sm sm:text-base"
         >
           Previous
         </Button>
         <Button 
           onClick={onNext}
           size="lg"
-          className="w-full sm:w-auto shadow-lg h-11 sm:h-12 text-sm sm:text-base"
+          className="border-2 w-full sm:w-auto shadow-lg h-11 sm:h-12 text-sm sm:text-base"
           disabled={isBooking}
         >
           {currentStep === totalSteps ? (isBooking ? 'Completing...' : 'Complete Booking') : 'Continue'}

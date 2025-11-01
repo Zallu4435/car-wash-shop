@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { ProductCard } from '@/components/customer/ProductCard';
 import { CategoryFilter } from '@/components/shared/selectors/CategoryFilter';
-import { Pagination } from '@/components/shared/crud/Pagination';
+import { Pagination } from '@/components/admin/Pagination';
 import { useProducts, useProductCategories } from '@/api/domains/products/queries';
 import { Search, SlidersHorizontal, X, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -11,12 +11,13 @@ import { Badge } from '@/components/ui/badge';
 import type { ProductFilters } from '@/types/product';
 import Loading from '@/components/shared/display/Loading';
 
-const ITEMS_PER_PAGE = 8;
-
 export default function ProductsPage() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
+  const [isOpening, setIsOpening] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(8);
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
 
@@ -34,7 +35,7 @@ export default function ProductsPage() {
     category: selectedCategories.length > 0 ? selectedCategories[0] : undefined,
     search: debouncedSearch || undefined,
     page: currentPage,
-    limit: ITEMS_PER_PAGE,
+    limit: pageSize,
   };
 
   // API calls
@@ -42,7 +43,24 @@ export default function ProductsPage() {
   const { data: categories = [], isLoading: categoriesLoading } = useProductCategories();
 
   const products = productsResponse?.data || [];
-  const totalPages = productsResponse?.totalPages || 1;
+  const totalItems = productsResponse?.total || products.length;
+  const totalPages = productsResponse?.totalPages || Math.ceil(totalItems / pageSize);
+
+  const handleOpenFilters = () => {
+    setShowFilters(true);
+    setIsOpening(true);
+    setTimeout(() => {
+      setIsOpening(false);
+    }, 50);
+  };
+
+  const handleCloseFilters = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setShowFilters(false);
+      setIsClosing(false);
+    }, 500);
+  };
 
   useEffect(() => {
     if (showFilters) {
@@ -74,8 +92,8 @@ export default function ProductsPage() {
     count: products.filter(p => p.category === cat.id).length,
   }));
 
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
 
   // Loading state
   if (productsLoading || categoriesLoading) {
@@ -178,17 +196,19 @@ export default function ProductsPage() {
                   </div>
 
                   {/* Pagination */}
-                  {totalPages > 1 && (
-                    <div className="mt-6 sm:mt-8">
-                      <Pagination
-                        currentPage={currentPage}
-                        totalPages={totalPages}
-                        onPageChange={setCurrentPage}
-                        itemsPerPage={ITEMS_PER_PAGE}
-                        totalItems={products.length}
-                      />
-                    </div>
-                  )}
+                  <div className="mt-6 sm:mt-8">
+                    <Pagination
+                      currentPage={currentPage}
+                      totalPages={totalPages}
+                      totalItems={totalItems}
+                      pageSize={pageSize}
+                      onPageChange={setCurrentPage}
+                      onPageSizeChange={(newSize) => {
+                        setPageSize(newSize);
+                        setCurrentPage(1);
+                      }}
+                    />
+                  </div>
                 </>
               ) : (
                 <div className="text-center py-12 sm:py-16">
@@ -224,7 +244,7 @@ export default function ProductsPage() {
             variant="default"
             size="lg"
             className="w-full shadow-md h-12 text-sm sm:text-base font-semibold"
-            onClick={() => setShowFilters(true)}
+            onClick={handleOpenFilters}
           >
             <SlidersHorizontal className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
             <span>Filters</span>
@@ -244,11 +264,15 @@ export default function ProductsPage() {
       {showFilters && (
         <>
           <div 
-            className="lg:hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
-            onClick={() => setShowFilters(false)}
+            className={`lg:hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm transition-opacity duration-500 ${
+              isClosing ? 'opacity-0 pointer-events-none' : 'opacity-100'
+            }`}
+            onClick={handleCloseFilters}
           />
           
-          <div className="lg:hidden fixed inset-x-0 bottom-0 z-50 rounded-t-2xl shadow-2xl border-t-2 border-border max-h-[88vh] flex flex-col force-sheet-bg">
+          <div className={`lg:hidden fixed inset-x-0 bottom-0 z-50 rounded-t-2xl shadow-2xl border-t-2 border-border max-h-[88vh] flex flex-col force-sheet-bg transition-all duration-500 ease-in-out ${
+              isOpening ? 'translate-y-full' : isClosing ? 'translate-y-full opacity-0 pointer-events-none' : 'translate-y-0 opacity-100'
+            }`}>
             {/* Modal Header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-border flex-shrink-0">
               <div className="flex items-center gap-3">
@@ -265,7 +289,7 @@ export default function ProductsPage() {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => setShowFilters(false)}
+                onClick={handleCloseFilters}
                 className="rounded-full h-9 w-9"
               >
                 <X className="h-5 w-5" />
@@ -300,7 +324,7 @@ export default function ProductsPage() {
                 </Button>
                 <Button
                   className="flex-1 h-11 font-semibold text-sm shadow-md"
-                  onClick={() => setShowFilters(false)}
+                  onClick={handleCloseFilters}
                 >
                   Show {products.length}
                 </Button>

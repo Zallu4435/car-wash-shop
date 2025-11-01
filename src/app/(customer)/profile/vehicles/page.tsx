@@ -15,6 +15,7 @@ import { AddVehicleModal } from '@/components/shared/forms/AddVehicleModal';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
 import type { Vehicle } from '@/types/vehicle';
+import { ROUTES } from '@/lib/constants/routes';
 
 export default function VehiclesPage() {
   const router = useRouter();
@@ -215,13 +216,13 @@ export default function VehiclesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-32 lg:pb-8">
       {/* Header - Responsive */}
       <section className="bg-gradient-to-br from-primary/5 to-background border-b border-border">
         <div className="container-custom py-6 sm:py-8 lg:py-12">
           <Button
             variant="ghost"
-            onClick={() => router.push('/profile')}
+            onClick={() => router.push(ROUTES.CUSTOMER.PROFILE)}
             className="mb-3 sm:mb-4 hover:bg-muted h-9 sm:h-10"
           >
             <ArrowLeft className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -229,11 +230,8 @@ export default function VehiclesPage() {
           </Button>
           <div className="flex items-start sm:items-center justify-between gap-3 sm:gap-4 flex-wrap">
             <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-              <div 
-                className="p-2 sm:p-3 rounded-lg sm:rounded-xl flex-shrink-0"
-                style={{ backgroundColor: 'hsl(var(--primary) / 0.1)' }}
-              >
-                <Car className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8" style={{ color: 'hsl(var(--primary))' }} />
+              <div className="p-2 sm:p-3 bg-primary/10 rounded-lg sm:rounded-xl flex-shrink-0">
+                <Car className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary" />
               </div>
               <div className="min-w-0 flex-1">
                 <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-foreground truncate">
@@ -245,7 +243,7 @@ export default function VehiclesPage() {
               </div>
             </div>
             <Button 
-              className="shadow-lg h-9 sm:h-10 flex-shrink-0"
+              className="shadow-lg border-2 h-9 sm:h-10 flex-shrink-0"
               size="sm"
               onClick={handleAddVehicle}
             >
@@ -268,7 +266,7 @@ export default function VehiclesPage() {
                 <Button 
                   size="lg" 
                   onClick={handleAddVehicle}
-                  className="h-10 sm:h-11"
+                  className="shadow-lg border-2 h-10 sm:h-11"
                 >
                   <Plus className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                   <span className="text-sm sm:text-base">Add Your First Vehicle</span>
@@ -281,7 +279,9 @@ export default function VehiclesPage() {
               {carVehicles.length > 0 && (
                 <div>
                   <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-                    <Car className="h-5 w-5 sm:h-6 sm:w-6" style={{ color: 'hsl(var(--primary))' }} />
+                    <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
+                      <Car className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                    </div>
                     <h2 className="text-xl sm:text-2xl font-bold">Cars</h2>
                     <Badge variant="secondary" className="text-xs sm:text-sm">{carVehicles.length}</Badge>
                   </div>
@@ -297,7 +297,9 @@ export default function VehiclesPage() {
               {bikeVehicles.length > 0 && (
                 <div>
                   <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-                    <Bike className="h-5 w-5 sm:h-6 sm:w-6" style={{ color: 'hsl(var(--primary))' }} />
+                    <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
+                      <Bike className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                    </div>
                     <h2 className="text-xl sm:text-2xl font-bold">Bikes</h2>
                     <Badge variant="secondary" className="text-xs sm:text-sm">{bikeVehicles.length}</Badge>
                   </div>

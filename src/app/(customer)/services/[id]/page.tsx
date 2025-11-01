@@ -17,6 +17,7 @@ import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
 import { useRouter } from 'next/navigation';
 import { mockAddOns } from '@/mocks/data/customer-mock-data';
+import { ROUTES } from '@/lib/constants/routes';
 
 export default function ServiceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -74,7 +75,7 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
     <div className="min-h-screen bg-background pb-32 lg:pb-8">
       <div className="container-custom py-6 sm:py-8">
         {/* Back Button */}
-        <Link href="/services">
+        <Link href={ROUTES.CUSTOMER.SERVICES}>
           <Button variant="ghost" className="mb-4 sm:mb-6 hover:bg-muted h-9 sm:h-10">
             <ArrowLeft className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
             <span className="text-xs sm:text-sm">Back to Services</span>
@@ -271,7 +272,7 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
                 </div>
 
                 {/* Book Button */}
-                <Button asChild className="w-full shadow-lg h-11 sm:h-12 text-sm sm:text-base" size="lg">
+                <Button asChild className="w-full shadow-lg border-2 h-11 sm:h-12 text-sm sm:text-base" size="lg">
                   <Link href={`/book?serviceId=${service.id}&addOns=${selectedAddOns.join(',')}`}>
                     Book Now - ₹{calculateTotal()}
                   </Link>
@@ -314,7 +315,7 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
                     <p className="text-sm font-semibold text-foreground">{calculateDuration()} mins</p>
                   </div>
                 </div>
-                <Button asChild className="w-full shadow-lg h-12 text-sm font-semibold" size="lg">
+                <Button asChild className="w-full shadow-lg border-2 h-12 text-sm font-semibold" size="lg">
                   <Link href={`/book?serviceId=${service.id}&addOns=${selectedAddOns.join(',')}`}>
                     Book Now - ₹{calculateTotal()}
                   </Link>

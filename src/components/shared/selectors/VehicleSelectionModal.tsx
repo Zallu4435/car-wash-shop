@@ -21,24 +21,8 @@ export function VehicleSelectionModal({
 }: VehicleSelectionModalProps) {
   const { vehicles } = useVehicleContext();
   const router = useRouter();
-  const [isDark, setIsDark] = useState(false);
-
-  useEffect(() => {
-    const checkTheme = () => {
-      setIsDark(document.documentElement.classList.contains('dark'));
-    };
-    
-    checkTheme();
-    
-    // Watch for theme changes
-    const observer = new MutationObserver(checkTheme);
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['class'],
-    });
-    
-    return () => observer.disconnect();
-  }, []);
+  const [mounted, setMounted] = useState(false);
+  const [showContent, setShowContent] = useState(false);
 
   const handleVehicleSelect = (vehicle: Vehicle) => {
     onSelect(vehicle);
@@ -50,31 +34,62 @@ export function VehicleSelectionModal({
     router.push('/profile/vehicles');
   };
 
-  if (!isOpen) return null;
+  // Handle mounting for animation
+  useEffect(() => {
+    if (isOpen) {
+      setMounted(true);
+      // Small delay to trigger animation
+      setTimeout(() => {
+        setShowContent(true);
+      }, 10);
+    } else {
+      setShowContent(false);
+    }
+  }, [isOpen]);
+
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
+  // Handle unmounting after animation
+  const handleTransitionEnd = () => {
+    if (!isOpen) {
+      setMounted(false);
+    }
+  };
+
+  if (!mounted && !isOpen) return null;
 
   return (
     <>
       {/* Backdrop with Blur */}
       <div 
-        className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md dark:bg-black/70"
+        className={`fixed inset-0 z-50 bg-black/60 backdrop-blur-md dark:bg-black/70 transition-opacity duration-500 ${
+          showContent ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
         onClick={onClose}
       />
 
       {/* Modal */}
-      <div className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-full max-w-md">
-        <div 
-          className="border-2 border-border rounded-2xl shadow-2xl max-h-[85vh] overflow-hidden flex flex-col mx-4"
-          style={{
-            backgroundColor: isDark ? 'rgb(17, 24, 39)' : 'rgb(255, 255, 255)',
-          }}
-        >
+      <div 
+        className={`fixed left-1/2 top-1/2 z-50 w-full max-w-md transition-all duration-500 ease-in-out ${
+          showContent 
+            ? '-translate-x-1/2 -translate-y-1/2 opacity-100 scale-100' 
+            : '-translate-x-1/2 -translate-y-1/2 opacity-0 scale-95 pointer-events-none'
+        }`}
+        onTransitionEnd={handleTransitionEnd}
+      >
+        <div className="border-2 border-border rounded-2xl shadow-2xl max-h-[85vh] overflow-hidden flex flex-col mx-4 force-sheet-bg">
           {/* Header */}
-          <div 
-            className="flex items-center justify-between px-5 py-4 border-b border-border"
-            style={{
-              backgroundColor: isDark ? 'rgb(31, 41, 55)' : 'rgb(249, 250, 251)',
-            }}
-          >
+          <div className="flex items-center justify-between px-5 py-4 border-b border-border bg-muted/30">
             <div>
               <h2 className="text-lg font-bold text-foreground">My Vehicles</h2>
               <p className="text-xs text-muted-foreground mt-0.5">Select or add a vehicle</p>
@@ -88,12 +103,7 @@ export function VehicleSelectionModal({
           </div>
 
           {/* Content */}
-          <div 
-            className="flex-1 overflow-y-auto p-4"
-            style={{
-              backgroundColor: isDark ? 'rgb(31, 41, 55)' : 'rgb(249, 250, 251)',
-            }}
-          >
+          <div className="flex-1 overflow-y-auto p-4">
             {vehicles.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center mb-4">
@@ -182,12 +192,7 @@ export function VehicleSelectionModal({
 
           {/* Footer */}
           {vehicles.length > 0 && (
-            <div 
-              className="px-5 py-3 border-t border-border"
-              style={{
-                backgroundColor: isDark ? 'rgb(31, 41, 55)' : 'rgb(249, 250, 251)',
-              }}
-            >
+            <div className="px-5 py-3 border-t border-border bg-muted/30">
               <p className="text-xs text-muted-foreground text-center">
                 {selectedVehicleId ? 'Tap a vehicle to switch' : 'Select a vehicle to continue'}
               </p>

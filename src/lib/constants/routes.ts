@@ -28,6 +28,9 @@ export const ROUTES = {
     
     // Orders
     ORDERS: '/orders',
+    ORDERS_ALL: '/orders/all',
+    ORDERS_SERVICES: '/orders/services',
+    ORDERS_PRODUCTS: '/orders/products',
     ORDER_DETAIL: (id: string) => `/orders/${id}`,
     ORDER_CANCEL: (id: string) => `/orders/${id}/cancel`,
     ORDER_INVOICE: (id: string) => `/orders/${id}/invoice`,

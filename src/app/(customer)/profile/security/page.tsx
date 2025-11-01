@@ -26,6 +26,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { changePasswordSchema, ChangePasswordInput } from '@/schemas/customer/profile';
 import { useConfirmation } from '@/hooks/useConfirmation';
+import { ROUTES } from '@/lib/constants/routes';
+import { DangerZone } from '@/components/admin/DangerZone';
 
 export default function SecurityPage() {
   const router = useRouter();
@@ -125,19 +127,19 @@ export default function SecurityPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-32 lg:pb-8">
       {/* Header - Responsive */}
-      <section className="bg-gradient-to-br from-red-500/5 to-background border-b border-border">
+      <section className="bg-gradient-to-br from-primary/5 to-background border-b border-border">
         <div className="container-custom py-6 sm:py-8 lg:py-12">
           <Button asChild variant="ghost" className="mb-3 sm:mb-4 h-9 sm:h-10">
-            <Link href="/profile">
+            <Link href={ROUTES.CUSTOMER.PROFILE}>
               <ArrowLeft className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
               <span className="text-xs sm:text-sm">Back to Profile</span>
             </Link>
           </Button>
           <div className="flex items-center gap-2 sm:gap-3">
-            <div className="p-2 sm:p-3 bg-red-100 dark:bg-red-950/30 rounded-lg sm:rounded-xl flex-shrink-0">
-              <Shield className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-red-600 dark:text-red-400" />
+            <div className="p-2 sm:p-3 bg-primary/10 rounded-lg sm:rounded-xl flex-shrink-0">
+              <Shield className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary" />
             </div>
             <div className="min-w-0 flex-1">
               <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-foreground truncate">
@@ -246,7 +248,7 @@ export default function SecurityPage() {
                     )}
                   </div>
 
-                  <Button type="submit" className="w-full h-10 sm:h-11 text-xs sm:text-sm">
+                  <Button type="submit" className="w-full shadow-lg border-2 h-10 sm:h-11 text-xs sm:text-sm">
                     <Key className="mr-2 h-4 w-4" />
                     Change Password
                   </Button>
@@ -306,7 +308,7 @@ export default function SecurityPage() {
                     size="sm"
                     onClick={handleLogoutAllSessions}
                     disabled={activeSessions.filter((s) => !s.current).length === 0}
-                    className="w-full sm:w-auto h-9 text-xs sm:text-sm flex-shrink-0"
+                    className="w-full sm:w-auto border-2 h-9 text-xs sm:text-sm flex-shrink-0"
                   >
                     Logout All Others
                   </Button>
@@ -323,17 +325,11 @@ export default function SecurityPage() {
                     }`}
                   >
                     <div className="flex gap-2 sm:gap-3 min-w-0 flex-1">
-                      <div
-                        className={`p-1.5 sm:p-2 rounded-lg flex-shrink-0 ${
-                          session.current ? 'bg-primary/10' : 'bg-background'
+                      <Monitor
+                        className={`h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 ${
+                          session.current ? 'text-primary' : 'text-muted-foreground'
                         }`}
-                      >
-                        <Monitor
-                          className={`h-4 w-4 sm:h-5 sm:w-5 ${
-                            session.current ? 'text-primary' : 'text-muted-foreground'
-                          }`}
-                        />
-                      </div>
+                      />
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2 flex-wrap">
                           <p className="font-medium text-sm sm:text-base text-foreground">{session.device}</p>
@@ -363,7 +359,7 @@ export default function SecurityPage() {
                         variant="ghost"
                         size="sm"
                         onClick={() => handleLogoutSession(session.id)}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20 w-full sm:w-auto h-9 text-xs sm:text-sm flex-shrink-0"
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20 border-2 w-full sm:w-auto h-9 text-xs sm:text-sm flex-shrink-0"
                       >
                         Logout
                       </Button>
@@ -374,44 +370,21 @@ export default function SecurityPage() {
             </Card>
 
             {/* Danger Zone */}
-            <Card className="border-2 border-red-200 dark:border-red-900/50">
-              <CardHeader className="pb-3 sm:pb-4">
-                <div className="flex items-start gap-2">
-                  <div className="p-1.5 sm:p-2 bg-red-100 dark:bg-red-950/30 rounded-lg flex-shrink-0">
-                    <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5 text-red-600 dark:text-red-400" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <CardTitle className="text-base sm:text-lg text-red-600 dark:text-red-400">
-                      Danger Zone
-                    </CardTitle>
-                    <CardDescription className="text-xs sm:text-sm mt-0.5 sm:mt-1">
-                      Irreversible actions for your account
-                    </CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="p-3 sm:p-4 bg-red-50 dark:bg-red-950/20 rounded-lg border border-red-200 dark:border-red-900/50">
-                  <p className="text-xs sm:text-sm font-medium text-red-900 dark:text-red-200 mb-1">
-                    Delete Account
-                  </p>
-                  <p className="text-[10px] sm:text-xs text-red-700 dark:text-red-300 mb-3 sm:mb-4">
-                    Once you delete your account, there is no going back. All your data will be
-                    permanently removed.
-                  </p>
-                  
-                  <Button 
-                    variant="destructive" 
-                    size="sm" 
-                    className="h-9 sm:h-10 text-xs sm:text-sm"
-                    onClick={handleDeleteAccount}
-                  >
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Delete Account
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            <DangerZone
+              title="Danger Zone"
+              description="Irreversible actions for your account"
+              actions={[
+                {
+                  title: 'Delete Account',
+                  description: 'Once you delete your account, there is no going back. All your data will be permanently removed.',
+                  buttonText: 'Delete Account',
+                  buttonIcon: Trash2,
+                  onClick: handleDeleteAccount,
+                  variant: 'destructive',
+                  buttonClassName: 'h-9 sm:h-10 text-xs sm:text-sm',
+                },
+              ]}
+            />
           </div>
         </div>
       </section>

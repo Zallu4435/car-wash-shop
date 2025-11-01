@@ -11,6 +11,7 @@ import { EmptyState } from '@/components/shared/display/EmptyState';
 import { useFAQCategories, useFAQs } from '@/api/domains/faq/queries';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
+import { ROUTES } from '@/lib/constants/routes';
 
 export default function FAQPage() {
   const [searchInput, setSearchInput] = useState('');
@@ -78,11 +79,11 @@ export default function FAQPage() {
   })).filter(category => category.questions.length > 0);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-32 lg:pb-8">
       {/* Header */}
       <section className="bg-gradient-to-br from-primary/5 to-background border-b border-border">
         <div className="container-custom py-6 sm:py-8">
-          <Link href="/support">
+          <Link href={ROUTES.CUSTOMER.SUPPORT}>
             <Button variant="ghost" className="mb-3 sm:mb-4 hover:bg-muted h-9 sm:h-10">
               <ArrowLeft className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
               <span className="text-xs sm:text-sm">Back to Support</span>
@@ -133,8 +134,8 @@ export default function FAQPage() {
                     title="No Results Found"
                     description="Try different keywords or contact our support team"
                     action={
-                      <Button asChild variant="outline">
-                        <Link href="/support">Contact Support</Link>
+                      <Button asChild variant="outline" className="border-2">
+                        <Link href={ROUTES.CUSTOMER.SUPPORT}>Contact Support</Link>
                       </Button>
                     }
                   />
@@ -145,11 +146,13 @@ export default function FAQPage() {
                 {filteredCategories.map((category) => (
                   <div key={category.id}>
                     <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-                      <span className="text-2xl sm:text-3xl">{category.icon}</span>
-                      <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground">
+                      <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg flex-shrink-0">
+                        <span className="text-xl sm:text-2xl">{category.icon}</span>
+                      </div>
+                      <h2 className="text-base sm:text-lg md:text-xl font-bold text-foreground flex-1 truncate">
                         {category.name}
                       </h2>
-                      <Badge variant="secondary" className="ml-auto">
+                      <Badge variant="secondary" className="text-xs sm:text-sm flex-shrink-0">
                         {category.questions.length}
                       </Badge>
                     </div>
@@ -165,13 +168,13 @@ export default function FAQPage() {
                             className="border-2 hover:border-primary/50 transition-all cursor-pointer"
                             onClick={() => toggleItem(category.id, index)}
                           >
-                            <CardContent className="p-4 sm:p-5">
-                              <div className="flex items-start justify-between gap-3">
-                                <h3 className="text-sm sm:text-base font-semibold text-foreground flex-1">
+                            <CardContent className="p-3 sm:p-4 md:p-5">
+                              <div className="flex items-start justify-between gap-2 sm:gap-3">
+                                <h3 className="text-xs sm:text-sm md:text-base font-semibold text-foreground flex-1">
                                   {faq.question}
                                 </h3>
                                 <button
-                                  className="p-1 hover:bg-muted rounded-lg transition-colors flex-shrink-0"
+                                  className="p-0.5 sm:p-1 hover:bg-muted rounded-lg transition-colors flex-shrink-0"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     toggleItem(category.id, index);
@@ -186,8 +189,8 @@ export default function FAQPage() {
                               </div>
 
                               {isExpanded && (
-                                <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-border">
-                                  <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                                <div className="mt-2 sm:mt-3 md:mt-4 pt-2 sm:pt-3 md:pt-4 border-t border-border">
+                                  <p className="text-[10px] sm:text-xs md:text-sm text-muted-foreground leading-relaxed">
                                     {faq.answer}
                                   </p>
                                 </div>
@@ -213,11 +216,11 @@ export default function FAQPage() {
                     Can't find what you're looking for? Our support team is here to help!
                   </p>
                   <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 justify-center">
-                    <Button asChild className="h-9 sm:h-10">
-                      <Link href="/support">Contact Support</Link>
+                    <Button asChild className="shadow-lg border-2 h-9 sm:h-10">
+                      <Link href={ROUTES.CUSTOMER.SUPPORT}>Contact Support</Link>
                     </Button>
-                    <Button asChild variant="outline" className="h-9 sm:h-10">
-                      <Link href="/support/complaints">Submit Complaint</Link>
+                    <Button asChild variant="outline" className="border-2 h-9 sm:h-10">
+                      <Link href={ROUTES.CUSTOMER.COMPLAINTS}>Submit Complaint</Link>
                     </Button>
                   </div>
                 </div>

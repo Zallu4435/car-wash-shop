@@ -27,9 +27,9 @@ export function AvatarUploader({
   const inputRef = useRef<HTMLInputElement>(null);
 
   const sizeClasses = {
-    sm: 'w-20 h-20',
-    md: 'w-32 h-32',
-    lg: 'w-40 h-40',
+    sm: 'w-16 h-16 sm:w-20 sm:h-20',
+    md: 'w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32',
+    lg: 'w-28 h-28 sm:w-32 sm:h-32 md:w-36 md:h-36 lg:w-40 lg:h-40',
   };
 
   const validateFile = (file: File): Promise<boolean> => {
@@ -143,17 +143,17 @@ export function AvatarUploader({
           onClick={() => inputRef.current?.click()}
           className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
         >
-          <Camera className="h-8 w-8 text-white" />
+          <Camera className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-white" />
         </button>
 
         {preview && onRemove && (
           <Button
             variant="destructive"
             size="icon"
-            className="absolute -top-2 -right-2 h-8 w-8 rounded-full shadow-lg"
+            className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 h-7 w-7 sm:h-8 sm:w-8 rounded-full shadow-lg"
             onClick={handleRemove}
           >
-            <X className="h-4 w-4" />
+            <X className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           </Button>
         )}
       </div>
@@ -164,8 +164,9 @@ export function AvatarUploader({
           size="sm"
           onClick={() => inputRef.current?.click()}
           disabled={isValidating}
+          className="h-8 sm:h-9 text-xs sm:text-sm"
         >
-          <Upload className="mr-2 h-4 w-4" />
+          <Upload className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           {isValidating ? 'Validating...' : preview ? 'Change' : 'Upload'} Photo
         </Button>
       </div>
@@ -178,11 +179,11 @@ export function AvatarUploader({
         className="hidden"
       />
 
-      <div className="text-center space-y-1">
-        <p className="text-xs text-muted-foreground">
+      <div className="text-center space-y-0.5 sm:space-y-1">
+        <p className="text-[10px] sm:text-xs text-muted-foreground">
           JPEG, PNG, or WebP • Max {maxSizeMB}MB
         </p>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-[10px] sm:text-xs text-muted-foreground">
           Minimum 200x200px • Recommended: Square image
         </p>
       </div>

@@ -109,7 +109,7 @@ export function ProductCard({ product }: ProductCardProps) {
             </Badge>
           </div>
           <Button 
-            className="w-full group/btn h-9 sm:h-10" 
+            className="w-full group/btn h-9 sm:h-10 border-2 border-primary/20" 
             size="sm"
             disabled={product.stock === 0 || addToCartMutation.isPending}
             onClick={handleAddToCart}

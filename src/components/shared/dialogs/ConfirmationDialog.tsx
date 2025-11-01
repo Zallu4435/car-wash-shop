@@ -22,38 +22,38 @@ interface ConfirmationDialogProps {
 const typeConfig = {
   delete: {
     icon: Trash2,
-    iconBg: 'bg-red-100 dark:bg-red-950/30',
+    iconBg: 'bg-red-500/10',
     iconColor: 'text-red-600 dark:text-red-400',
-    confirmBg: 'bg-red-600 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700',
-    borderColor: 'border-red-200 dark:border-red-900',
+    confirmBg: 'bg-red-600 hover:bg-red-700',
+    borderColor: 'border-red-500/20',
   },
   block: {
     icon: Ban,
-    iconBg: 'bg-orange-100 dark:bg-orange-950/30',
+    iconBg: 'bg-orange-500/10',
     iconColor: 'text-orange-600 dark:text-orange-400',
-    confirmBg: 'bg-orange-600 hover:bg-orange-700 dark:bg-orange-600 dark:hover:bg-orange-700',
-    borderColor: 'border-orange-200 dark:border-orange-900',
+    confirmBg: 'bg-orange-600 hover:bg-orange-700',
+    borderColor: 'border-orange-500/20',
   },
   warning: {
     icon: AlertTriangle,
-    iconBg: 'bg-yellow-100 dark:bg-yellow-950/30',
+    iconBg: 'bg-yellow-500/10',
     iconColor: 'text-yellow-600 dark:text-yellow-400',
-    confirmBg: 'bg-yellow-600 hover:bg-yellow-700 dark:bg-yellow-600 dark:hover:bg-yellow-700',
-    borderColor: 'border-yellow-200 dark:border-yellow-900',
+    confirmBg: 'bg-yellow-600 hover:bg-yellow-700',
+    borderColor: 'border-yellow-500/20',
   },
   danger: {
     icon: AlertCircle,
-    iconBg: 'bg-red-100 dark:bg-red-950/30',
+    iconBg: 'bg-red-500/10',
     iconColor: 'text-red-600 dark:text-red-400',
-    confirmBg: 'bg-red-600 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700',
-    borderColor: 'border-red-200 dark:border-red-900',
+    confirmBg: 'bg-red-600 hover:bg-red-700',
+    borderColor: 'border-red-500/20',
   },
   info: {
     icon: Info,
-    iconBg: 'bg-blue-100 dark:bg-blue-950/30',
+    iconBg: 'bg-blue-500/10',
     iconColor: 'text-blue-600 dark:text-blue-400',
-    confirmBg: 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700',
-    borderColor: 'border-blue-200 dark:border-blue-900',
+    confirmBg: 'bg-blue-600 hover:bg-blue-700',
+    borderColor: 'border-blue-500/20',
   },
 };
 
@@ -69,28 +69,10 @@ export function ConfirmationDialog({
   isLoading = false,
   itemName,
 }: ConfirmationDialogProps) {
-  const [isDark, setIsDark] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
   const config = typeConfig[type];
   const Icon = config.icon;
-
-  // Check if dark mode is active
-  useEffect(() => {
-    const checkDarkMode = () => {
-      setIsDark(document.documentElement.classList.contains('dark'));
-    };
-    
-    checkDarkMode();
-    
-    const observer = new MutationObserver(checkDarkMode);
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['class']
-    });
-    
-    return () => observer.disconnect();
-  }, []);
 
   // Prevent body scroll when modal is open
   useEffect(() => {
@@ -135,7 +117,7 @@ export function ConfirmationDialog({
       />
 
       {/* Modal */}
-      <div className={`relative w-full max-w-md rounded-xl sm:rounded-2xl shadow-2xl border-2 animate-scale-in ${config.borderColor} ${isDark ? '!bg-gray-900' : '!bg-white'}`}>
+      <div className={`relative w-full max-w-md rounded-xl sm:rounded-2xl shadow-2xl border-2 animate-scale-in force-sheet-bg ${config.borderColor}`}>
         {/* Close Button */}
         <button
           onClick={onClose}
@@ -197,14 +179,14 @@ export function ConfirmationDialog({
               variant="outline"
               onClick={onClose}
               disabled={loading}
-              className="flex-1 h-11 sm:h-12 text-sm sm:text-base font-medium"
+              className="flex-1 border-2 h-11 sm:h-12 text-sm sm:text-base font-medium"
             >
               {cancelText}
             </Button>
             <Button
               onClick={handleConfirm}
               disabled={loading}
-              className={`flex-1 h-11 sm:h-12 text-sm sm:text-base font-semibold text-white shadow-lg ${config.confirmBg}`}
+              className={`flex-1 border-2 h-11 sm:h-12 text-sm sm:text-base font-semibold text-white shadow-lg ${config.confirmBg}`}
             >
               {loading ? (
                 <>

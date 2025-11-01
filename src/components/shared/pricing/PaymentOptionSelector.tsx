@@ -17,20 +17,21 @@ interface PaymentOptionSelectorProps {
   value: string;
   onChange: (value: string) => void;
   codFee?: number;
+  isService?: boolean;
 }
 
-export function PaymentOptionSelector({ value, onChange, codFee = 0 }: PaymentOptionSelectorProps) {
-  const options: PaymentOption[] = [
+export function PaymentOptionSelector({ value, onChange, codFee = 0, isService = false }: PaymentOptionSelectorProps) {
+  const allOptions: PaymentOption[] = [
     {
       id: 'online',
       label: 'Online Payment',
-      description: 'Pay securely using UPI, Card, or Wallet',
+      description: 'Pay securely via Razorpay using UPI, Card, or Wallet',
       icon: <CreditCard className="h-4 w-4 sm:h-5 sm:w-5" />,
     },
     {
       id: 'advance',
       label: 'Pay Advance (30%)',
-      description: 'Pay 30% now, rest after service',
+      description: 'Pay 30% now via Razorpay, rest after service',
       icon: <Wallet className="h-4 w-4 sm:h-5 sm:w-5" />,
     },
     {
@@ -40,6 +41,9 @@ export function PaymentOptionSelector({ value, onChange, codFee = 0 }: PaymentOp
       icon: <Banknote className="h-4 w-4 sm:h-5 sm:w-5" />,
     },
   ];
+
+  // Filter out COD option for services
+  const options = isService ? allOptions.filter(opt => opt.id !== 'cod') : allOptions;
 
   return (
     <RadioGroup value={value} onValueChange={onChange} className="space-y-2.5 sm:space-y-3">

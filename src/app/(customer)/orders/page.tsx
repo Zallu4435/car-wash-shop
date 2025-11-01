@@ -11,6 +11,7 @@ import { EmptyState } from '@/components/shared/display/EmptyState';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
 import { useMemo } from 'react';
+import { ROUTES } from '@/lib/constants/routes';
 
 export default function OrdersLandingPage() {
   // API calls - fetch both orders and bookings
@@ -62,7 +63,7 @@ export default function OrdersLandingPage() {
       count: allServiceOrders.length,
       color: 'bg-blue-50 dark:bg-blue-950/20',
       iconColor: 'text-blue-600 dark:text-blue-400',
-      href: '/orders/services',
+      href: ROUTES.CUSTOMER.ORDERS_SERVICES,
     },
     {
       id: 'products',
@@ -72,7 +73,7 @@ export default function OrdersLandingPage() {
       count: allProductOrders.length,
       color: 'bg-purple-50 dark:bg-purple-950/20',
       iconColor: 'text-purple-600 dark:text-purple-400',
-      href: '/orders/products',
+      href: ROUTES.CUSTOMER.ORDERS_PRODUCTS,
     },
   ];
 
@@ -96,14 +97,12 @@ export default function OrdersLandingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-32 lg:pb-8">
       {/* Header - Responsive */}
       <section className="bg-gradient-to-br from-primary/5 to-background border-b border-border">
         <div className="container-custom py-6 sm:py-8 lg:py-12">
           <div className="flex items-center gap-2 sm:gap-3">
-            <div className="p-2 sm:p-3 bg-primary/10 rounded-lg sm:rounded-xl flex-shrink-0">
-              <Package className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary" />
-            </div>
+            <Package className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary flex-shrink-0" />
             <div className="min-w-0 flex-1">
               <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-foreground truncate">
                 My Orders
@@ -132,9 +131,7 @@ export default function OrdersLandingPage() {
                     <Card className="border-2 border-border hover:shadow-lg transition-all duration-300 cursor-pointer group h-full">
                       <CardContent className="p-5 sm:p-6 md:p-8">
                         <div className="flex items-start justify-between mb-3 sm:mb-4">
-                          <div className={`p-2.5 sm:p-3 md:p-4 ${category.color} rounded-lg sm:rounded-xl group-hover:scale-110 transition-transform`}>
-                            <Icon className={`h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 ${category.iconColor}`} />
-                          </div>
+                          <Icon className={`h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 ${category.iconColor} group-hover:scale-110 transition-transform`} />
                           <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
                         </div>
                         
@@ -155,7 +152,7 @@ export default function OrdersLandingPage() {
                           <Button 
                             variant="outline" 
                             size="sm" 
-                            className="group-hover:bg-primary group-hover:text-primary-foreground transition-colors h-8 sm:h-9 text-xs sm:text-sm"
+                            className="border-2 group-hover:bg-primary group-hover:text-primary-foreground transition-colors h-8 sm:h-9 text-xs sm:text-sm"
                           >
                             View All
                           </Button>
@@ -184,8 +181,8 @@ export default function OrdersLandingPage() {
           <div>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
               <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground">Recent Orders</h2>
-              <Button asChild variant="outline" size="sm" className="w-full sm:w-auto h-9 sm:h-10">
-                <Link href="/orders/all" className="text-xs sm:text-sm">View All Orders</Link>
+              <Button asChild variant="outline" size="sm" className="border-2 w-full sm:w-auto h-9 sm:h-10">
+                <Link href={ROUTES.CUSTOMER.ORDERS_ALL} className="text-xs sm:text-sm">View All Orders</Link>
               </Button>
             </div>
 
@@ -200,15 +197,11 @@ export default function OrdersLandingPage() {
                         {/* Order Header */}
                         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-3 sm:mb-4 pb-3 sm:pb-4 border-b border-border">
                           <div className="flex items-start gap-2 sm:gap-3 min-w-0 flex-1">
-                            <div className={`p-1.5 sm:p-2 rounded-lg flex-shrink-0 ${
-                              isBooking ? 'bg-blue-50 dark:bg-blue-950/20' : 'bg-purple-50 dark:bg-purple-950/20'
-                            }`}>
-                              {isBooking ? (
-                                <Wrench className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 dark:text-blue-400" />
-                              ) : (
-                                <ShoppingBag className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600 dark:text-purple-400" />
-                              )}
-                            </div>
+                            {isBooking ? (
+                              <Wrench className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                            ) : (
+                              <ShoppingBag className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600 dark:text-purple-400 flex-shrink-0" />
+                            )}
                             <div className="min-w-0 flex-1">
                               <p className="font-mono font-bold text-sm sm:text-base text-foreground truncate">
                                 {order.id}
@@ -241,8 +234,8 @@ export default function OrdersLandingPage() {
                             <p className="text-xs sm:text-sm text-muted-foreground mb-0.5 sm:mb-1">Total Amount</p>
                             <p className="text-xl sm:text-2xl font-bold text-primary">₹{(order as any).amount || order.totalAmount || 0}</p>
                           </div>
-                          <Button asChild variant="outline" className="group w-full sm:w-auto h-9 sm:h-10" size="sm">
-                            <Link href={`/orders/${order.id}`} className="text-xs sm:text-sm">
+                          <Button asChild variant="outline" className="border-2 group w-full sm:w-auto h-9 sm:h-10" size="sm">
+                            <Link href={`${ROUTES.CUSTOMER.ORDERS}/${order.id}`} className="text-xs sm:text-sm">
                               View Details
                               <ChevronRight className="ml-1 h-3.5 w-3.5 sm:h-4 sm:w-4 group-hover:translate-x-1 transition-transform" />
                             </Link>
@@ -260,11 +253,11 @@ export default function OrdersLandingPage() {
                 description="Start shopping to see your orders here"
                 action={
                   <div className="flex flex-col sm:flex-row gap-3 justify-center px-4">
-                    <Button asChild className="w-full sm:w-auto h-10 sm:h-11">
-                      <Link href="/services" className="text-sm sm:text-base">Browse Services</Link>
+                    <Button asChild className="border-2 w-full sm:w-auto h-10 sm:h-11">
+                      <Link href={ROUTES.CUSTOMER.SERVICES} className="text-sm sm:text-base">Browse Services</Link>
                     </Button>
-                    <Button asChild variant="outline" className="w-full sm:w-auto h-10 sm:h-11">
-                      <Link href="/products" className="text-sm sm:text-base">Browse Products</Link>
+                    <Button asChild variant="outline" className="border-2 w-full sm:w-auto h-10 sm:h-11">
+                      <Link href={ROUTES.CUSTOMER.PRODUCTS} className="text-sm sm:text-base">Browse Products</Link>
                     </Button>
                   </div>
                 }

@@ -42,7 +42,7 @@ export function CartSummary({
         <Button
           onClick={onCheckout}
           disabled={isLoading}
-          className="w-full shadow-lg h-11 sm:h-12 text-sm sm:text-base"
+          className="w-full shadow-lg h-11 sm:h-12 text-sm sm:text-base border-2"
           size="lg"
         >
           {isLoading ? (

@@ -31,7 +31,7 @@ export function PromoCarousel({ promos }: PromoCarouselProps) {
 
   return (
     <div className="relative">
-      <Card className="overflow-hidden border-0 shadow-2xl">
+      <Card className="overflow-hidden border-0 shadow-none">
         <div className="relative h-96 md:h-[450px] bg-primary overflow-hidden">
           {/* Animated Background Pattern */}
           <div className="absolute inset-0 opacity-10">
@@ -65,7 +65,7 @@ export function PromoCarousel({ promos }: PromoCarouselProps) {
               <Button
                 asChild
                 size="lg"
-                className="bg-primary-foreground text-primary hover:bg-primary-foreground/90 shadow-2xl text-lg px-10 py-7 h-auto group font-semibold rounded-xl transition-colors"
+                className="bg-primary-foreground text-primary hover:bg-primary-foreground/90 text-lg px-10 py-7 h-auto group font-semibold rounded-xl transition-colors border-2 border-primary-foreground/20"
               >
                 <Link href={currentPromo.link} className="flex items-center gap-2">
                   {currentPromo.ctaText}
@@ -87,7 +87,7 @@ export function PromoCarousel({ promos }: PromoCarouselProps) {
           <Button
             variant="secondary"
             size="icon"
-            className="absolute left-4 top-1/2 -translate-y-1/2 bg-card backdrop-blur-md hover:bg-card/80 shadow-xl z-10 h-12 w-12"
+            className="absolute left-4 top-1/2 -translate-y-1/2 bg-card backdrop-blur-md hover:bg-card/80 z-10 h-12 w-12"
             onClick={prev}
           >
             <ChevronLeft className="h-5 w-5" />
@@ -95,7 +95,7 @@ export function PromoCarousel({ promos }: PromoCarouselProps) {
           <Button
             variant="secondary"
             size="icon"
-            className="absolute right-4 top-1/2 -translate-y-1/2 bg-card backdrop-blur-md hover:bg-card/80 shadow-xl z-10 h-12 w-12"
+            className="absolute right-4 top-1/2 -translate-y-1/2 bg-card backdrop-blur-md hover:bg-card/80 z-10 h-12 w-12"
             onClick={next}
           >
             <ChevronRight className="h-5 w-5" />

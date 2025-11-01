@@ -233,7 +233,7 @@ export default function EnhancedHeader() {
                 {showThemeMenu && (
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setShowThemeMenu(false)} />
-                    <div className="absolute right-0 mt-2 w-48 bg-card rounded-lg sm:rounded-xl shadow-lg border border-border py-2 z-50">
+                    <div className="absolute right-0 mt-2 w-48 force-sheet-bg rounded-lg sm:rounded-xl shadow-lg border border-border py-2 z-50">
                       {themeOptions.map((option) => {
                         const Icon = option.icon;
                         const isActive = theme === option.value;
@@ -312,8 +312,8 @@ export default function EnhancedHeader() {
                   {showUserMenu && (
                     <>
                       <div className="fixed inset-0 z-40" onClick={() => setShowUserMenu(false)} />
-                      <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-card rounded-lg sm:rounded-xl shadow-lg border border-border overflow-hidden z-50">
-                        <div className="px-4 py-3 bg-gray-50 dark:bg-muted/50 border-b border-border">
+                      <div className="absolute right-0 mt-2 w-64 force-sheet-bg rounded-lg sm:rounded-xl shadow-lg border border-border overflow-hidden z-50">
+                        <div className="px-4 py-3 bg-muted/30 border-b border-border">
                           <p className="text-sm font-semibold text-foreground truncate">{user?.name}</p>
                           <p className="text-xs text-muted-foreground mt-0.5 truncate">{user?.email || user?.phone}</p>
                         </div>
@@ -388,13 +388,13 @@ export default function EnhancedHeader() {
 
           {/* Mobile Menu */}
           <div
-            className={`md:hidden overflow-hidden transition-all duration-500 ${
+            className={`md:hidden transition-all duration-500 ${
               mobileMenuOpen 
-                ? 'max-h-[700px] opacity-100 pb-6' 
+                ? 'max-h-[calc(100vh-5rem)] opacity-100' 
                 : 'max-h-0 opacity-0'
             }`}
           >
-            <div className="py-3 sm:py-4 space-y-2">
+            <div className="py-3 sm:py-4 space-y-2 overflow-y-auto max-h-[calc(100vh-6rem)] pb-6 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/40">
               {/* User Info */}
               {isAuthenticated && user && (
                 <div className="px-3 sm:px-4 py-2.5 sm:py-3 mb-3 sm:mb-4 bg-muted/50 rounded-lg sm:rounded-xl border border-border">

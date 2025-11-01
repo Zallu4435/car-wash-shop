@@ -76,33 +76,29 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-32 lg:pb-8">
       {/* Header - Responsive */}
-      <section className="bg-gradient-to-br from-primary/5 to-background border-b border-border">
-        <div className="container-custom py-5 sm:py-6 md:py-8">
+      <section className="border-b border-border">
+        <div className="container-custom py-6 sm:py-8 lg:py-12">
           <Link href="/orders">
-            <Button variant="ghost" className="mb-3 sm:mb-4 hover:bg-muted h-9 sm:h-10">
+            <Button variant="ghost" className="mb-3 sm:mb-4 h-9 sm:h-10">
               <ArrowLeft className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
               <span className="text-xs sm:text-sm">Back to Orders</span>
             </Button>
           </Link>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="p-2 sm:p-3 bg-primary/10 rounded-lg sm:rounded-xl flex-shrink-0">
-                {isService ? (
-                  <Wrench className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary" />
-                ) : (
-                  <Package className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary" />
-                )}
-              </div>
-              <div className="min-w-0">
-                <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-foreground">
+          <div className="flex items-center gap-2 sm:gap-3">
+            {isService ? (
+              <Wrench className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+            ) : (
+              <Package className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary flex-shrink-0" />
+            )}
+            <div className="min-w-0 flex-1">
+              <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-foreground truncate">
                   {isService ? 'Service Booking Details' : 'Order Details'}
                 </h1>
-                <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1 truncate">
-                  {isService ? 'Booking' : 'Order'} #{id}
-                </p>
-              </div>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1 truncate">
+                {isService ? 'Booking' : 'Order'} #{id}
+              </p>
             </div>
           </div>
         </div>
@@ -115,18 +111,16 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
             {/* Left Column - Order Details */}
             <div className="lg:col-span-2 space-y-4 sm:space-y-6">
               {/* Order Information */}
-              <Card className="border-2">
+              <Card className="border-2 border-border">
                 <CardHeader className="pb-3 sm:pb-4">
                   <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
-                      <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-                    </div>
+                    <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
                     <CardTitle className="text-base sm:text-lg">Order Information</CardTitle>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-3 sm:space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                    <div className="p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl">
+                    <div className="p-3 sm:p-4 bg-muted/50 rounded-lg sm:rounded-xl">
                       <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
                         <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
                         <p className="text-xs sm:text-sm font-medium text-muted-foreground">Order Date</p>
@@ -150,12 +144,10 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
               </Card>
 
               {/* Items */}
-              <Card className="border-2">
+              <Card className="border-2 border-border">
                 <CardHeader className="pb-3 sm:pb-4">
                   <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
-                      <Package className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-                    </div>
+                    <Package className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
                     <CardTitle className="text-base sm:text-lg">{isService ? 'Service Details' : 'Order Items'}</CardTitle>
                   </div>
                 </CardHeader>
@@ -220,12 +212,10 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
               </Card>
 
               {/* Service Location / Delivery Address */}
-              <Card className="border-2">
+              <Card className="border-2 border-border">
                 <CardHeader className="pb-3 sm:pb-4">
                   <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
-                      <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-                    </div>
+                    <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
                     <CardTitle className="text-base sm:text-lg">
                       {isService ? 'Service Location' : 'Delivery Address'}
                     </CardTitle>
@@ -242,12 +232,10 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
               
               {/* Vehicle Details - Only for Services */}
               {isService && (data as any).vehicleDetails && (
-                <Card className="border-2">
+                <Card className="border-2 border-border">
                   <CardHeader className="pb-3 sm:pb-4">
                     <div className="flex items-center gap-2 sm:gap-3">
-                      <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
-                        <Package className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-                      </div>
+                      <Package className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
                       <CardTitle className="text-base sm:text-lg">Vehicle Details</CardTitle>
                     </div>
                   </CardHeader>
@@ -280,12 +268,10 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
 
               {/* Review Section - Show if completed */}
               {isCompleted && (
-                <Card className="border-2 bg-gradient-to-br from-primary/5 to-background">
+                <Card className="border-2 border-border bg-gradient-to-br from-primary/5 to-background">
                   <CardContent className="p-4 sm:p-6">
                     <div className="flex items-start gap-3 sm:gap-4">
-                      <div className="p-2 sm:p-3 bg-primary/10 rounded-lg sm:rounded-xl flex-shrink-0">
-                        <Star className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-                      </div>
+                      <Star className="h-5 w-5 sm:h-6 sm:w-6 text-primary flex-shrink-0" />
                       <div className="flex-1 min-w-0">
                         <h3 className="font-semibold text-sm sm:text-base text-foreground mb-1 sm:mb-2">
                           {existingReview ? 'Your Review' : 'Rate Your Experience'}
@@ -316,7 +302,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                               onClick={() => setShowReviewModal(true)}
                               variant="outline"
                               size="sm"
-                              className="mt-2 h-9 text-xs sm:text-sm"
+                              className="mt-2 h-9 text-xs sm:text-sm border-2"
                             >
                               <Edit className="mr-2 h-3.5 w-3.5" />
                               Edit Review
@@ -329,7 +315,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                             </p>
                             <Button
                               onClick={() => setShowReviewModal(true)}
-                              className="h-10 sm:h-11 shadow-lg text-xs sm:text-sm"
+                              className="h-10 sm:h-11 shadow-lg text-xs sm:text-sm border-2"
                             >
                               <Star className="mr-2 h-4 w-4" />
                               Write a Review

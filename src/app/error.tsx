@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { ROUTES } from '@/lib/constants/routes';
 
 export default function Error({
   error,
@@ -48,7 +49,7 @@ export default function Error({
           {/* Action Button */}
           <Button 
             onClick={reset}
-            className="w-full shadow-lg h-11 sm:h-12 text-sm sm:text-base" 
+            className="w-full shadow-lg border-2 h-11 sm:h-12 text-sm sm:text-base" 
             size="lg"
           >
             <RefreshCw className="mr-2 h-4 w-4" />
@@ -63,7 +64,7 @@ export default function Error({
               size="sm"
               className="text-xs sm:text-sm text-muted-foreground hover:text-foreground"
             >
-              <a href="/">Go to Homepage</a>
+              <a href={ROUTES.CUSTOMER.HOME}>Go to Homepage</a>
             </Button>
           </div>
         </CardContent>

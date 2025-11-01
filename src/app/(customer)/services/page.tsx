@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { ServiceCard } from '@/components/customer/ServiceCard';
 import { VehicleTypeFilter } from '@/components/shared/selectors/VehicleTypeFilter';
 import { CategoryFilter } from '@/components/shared/selectors/CategoryFilter';
-import { Pagination } from '@/components/shared/crud/Pagination';
+import { Pagination } from '@/components/admin/Pagination';
 import { Search, SlidersHorizontal, X, Car, Bike } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -15,13 +15,14 @@ import Loading from '@/components/shared/display/Loading';
 import { useVehicleContext } from '@/context/VehicleContext';
 import { mockServiceTypes } from '@/mocks/data/customer-mock-data';
 
-const ITEMS_PER_PAGE = 6;
-
 export default function ServicesPage() {
   const [selectedVehicleTypes, setSelectedVehicleTypes] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
+  const [isOpening, setIsOpening] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(6);
   const [showVehicleModal, setShowVehicleModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -76,6 +77,23 @@ export default function ServicesPage() {
 
   const filteredCategories = getFilteredCategories();
 
+  const handleOpenFilters = () => {
+    setShowFilters(true);
+    setIsOpening(true);
+    // Small delay to trigger animation
+    setTimeout(() => {
+      setIsOpening(false);
+    }, 50);
+  };
+
+  const handleCloseFilters = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setShowFilters(false);
+      setIsClosing(false);
+    }, 500); // Match animation duration
+  };
+
   useEffect(() => {
     if (showFilters) {
       document.body.style.overflow = 'hidden';
@@ -122,9 +140,10 @@ export default function ServicesPage() {
     return matchesVehicleType && matchesCategory;
   });
 
-  const totalPages = Math.ceil(filteredServices.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const totalItems = filteredServices.length;
+  const totalPages = Math.ceil(totalItems / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
   const paginatedServices = filteredServices.slice(startIndex, endIndex);
 
   const clearAllFilters = () => {
@@ -171,7 +190,7 @@ export default function ServicesPage() {
     const delta = vehicleType === 'bike' ? -150 : 0; // Default: bikes get discount, cars use base price
     
     const price = Math.max(0, basePrice + delta);
-    const badgeLabel = `${selectedVehicle.make} ${selectedVehicle.model}`;
+    const badgeLabel = `${selectedVehicle.brand} ${selectedVehicle.model}`;
     const bodyTypeBadge = vehicleType.toUpperCase();
     
     return { price, badgeLabel, bodyTypeBadge };
@@ -199,7 +218,7 @@ export default function ServicesPage() {
                 {selectedVehicle ? (
                   <>
                     <p className="text-sm font-semibold text-foreground truncate">
-                      Showing prices for: {selectedVehicle.make} {selectedVehicle.model}
+                      Showing prices for: {selectedVehicle.brand} {selectedVehicle.model}
                     </p>
                     <p className="text-xs text-muted-foreground capitalize truncate">
                       {selectedVehicle.type === 'car' ? 'Car' : 'Bike'} • {selectedVehicle.year}
@@ -364,17 +383,19 @@ export default function ServicesPage() {
                   </div>
 
                   {/* Pagination */}
-                  {totalPages > 1 && (
-                    <div className="mt-6 sm:mt-8">
-                      <Pagination
-                        currentPage={currentPage}
-                        totalPages={totalPages}
-                        onPageChange={setCurrentPage}
-                        itemsPerPage={ITEMS_PER_PAGE}
-                        totalItems={filteredServices.length}
-                      />
-                    </div>
-                  )}
+                  <div className="mt-6 sm:mt-8">
+                    <Pagination
+                      currentPage={currentPage}
+                      totalPages={totalPages}
+                      totalItems={totalItems}
+                      pageSize={pageSize}
+                      onPageChange={setCurrentPage}
+                      onPageSizeChange={(newSize) => {
+                        setPageSize(newSize);
+                        setCurrentPage(1);
+                      }}
+                    />
+                  </div>
                 </>
               ) : (
                 <div className="text-center py-12 sm:py-16">
@@ -404,7 +425,7 @@ export default function ServicesPage() {
             variant="default"
             size="lg"
             className="w-full shadow-md h-12 text-sm sm:text-base font-semibold"
-            onClick={() => setShowFilters(true)}
+            onClick={handleOpenFilters}
           >
             <SlidersHorizontal className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
             <span>Filters</span>
@@ -424,11 +445,16 @@ export default function ServicesPage() {
       {showFilters && (
         <>
           <div 
-            className="lg:hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
-            onClick={() => setShowFilters(false)}
+            className={`lg:hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm transition-opacity duration-500 ${
+              isClosing ? 'opacity-0 pointer-events-none' : 'opacity-100'
+            }`}
+            onClick={handleCloseFilters}
           />
           
-          <div className="lg:hidden fixed inset-x-0 bottom-0 z-50 rounded-t-2xl shadow-2xl border-t-2 border-border max-h-[88vh] flex flex-col force-sheet-bg">
+          <div 
+            className={`lg:hidden fixed inset-x-0 bottom-0 z-50 rounded-t-2xl shadow-2xl border-t-2 border-border max-h-[88vh] flex flex-col force-sheet-bg transition-all duration-500 ease-in-out ${
+              isOpening ? 'translate-y-full' : isClosing ? 'translate-y-full opacity-0 pointer-events-none' : 'translate-y-0 opacity-100'
+            }`}>
             {/* Modal Header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-border flex-shrink-0">
               <div className="flex items-center gap-3">
@@ -445,7 +471,7 @@ export default function ServicesPage() {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => setShowFilters(false)}
+                onClick={handleCloseFilters}
                 className="rounded-full h-9 w-9"
               >
                 <X className="h-5 w-5" />
@@ -511,7 +537,7 @@ export default function ServicesPage() {
                 </Button>
                 <Button
                   className="flex-1 h-11 font-semibold text-sm shadow-md"
-                  onClick={() => setShowFilters(false)}
+                  onClick={handleCloseFilters}
                 >
                   Show {filteredServices.length}
                 </Button>

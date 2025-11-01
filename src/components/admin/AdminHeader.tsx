@@ -140,7 +140,7 @@ export function AdminHeader({ setSidebarOpen }: AdminHeaderProps) {
             {showThemeMenu && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setShowThemeMenu(false)} />
-                <div className={`absolute right-0 mt-2 w-48 rounded-lg sm:rounded-xl shadow-lg border border-border py-2 z-50 ${isDark ? '!bg-gray-900' : '!bg-white'}`}>
+                <div className="absolute right-0 mt-2 w-48 force-sheet-bg rounded-lg sm:rounded-xl shadow-lg border border-border py-2 z-50">
                   {themeOptions.map((option) => {
                     const Icon = option.icon;
                     const isActive = theme === option.value;
@@ -207,9 +207,9 @@ export function AdminHeader({ setSidebarOpen }: AdminHeaderProps) {
             {showUserMenu && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setShowUserMenu(false)} />
-                <div className={`absolute right-0 mt-2 w-64 rounded-lg sm:rounded-xl shadow-lg border border-border overflow-hidden z-50 ${isDark ? '!bg-gray-900' : '!bg-white'}`}>
+                <div className="absolute right-0 mt-2 w-64 force-sheet-bg rounded-lg sm:rounded-xl shadow-lg border border-border overflow-hidden z-50">
                   {/* User Info */}
-                  <div className={`px-4 py-3 border-b border-border ${isDark ? 'bg-gray-800' : 'bg-gray-50'}`}>
+                  <div className="px-4 py-3 bg-muted/30 border-b border-border">
                     <p className="text-sm font-semibold text-foreground truncate">
                       Admin User
                     </p>
@@ -219,7 +219,7 @@ export function AdminHeader({ setSidebarOpen }: AdminHeaderProps) {
                   </div>
 
                   {/* Menu Items */}
-                  <div className={`py-2 ${isDark ? '!bg-gray-900' : '!bg-white'}`}>
+                  <div className="py-2">
                     <button
                       onClick={() => {
                         router.push(AdminRoutes.PROFILE);

@@ -10,7 +10,7 @@ import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
 import { EmptyState } from '@/components/shared/display/EmptyState';
 import { SearchFilter } from '@/components/admin/SearchFilter';
-import { Pagination } from '@/components/shared/crud/Pagination';
+import { Pagination } from '@/components/admin/Pagination';
 
 export default function JobsPage() {
   const [activeTab, setActiveTab] = useState('all');
@@ -242,9 +242,13 @@ export default function JobsPage() {
             <Pagination
               currentPage={data?.page ?? page}
               totalPages={data?.totalPages ?? 1}
-              onPageChange={(p) => setPage(p)}
-              itemsPerPage={data?.limit ?? limit}
               totalItems={data?.total ?? 0}
+              pageSize={data?.limit ?? limit}
+              onPageChange={setPage}
+              onPageSizeChange={(newSize) => {
+                setLimit(newSize);
+                setPage(1);
+              }}
             />
           )}
         </TabsContent>

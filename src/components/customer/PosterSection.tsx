@@ -34,7 +34,7 @@ export function PosterSection({ posters, layout = 'grid' }: PosterSectionProps) 
       {posters.map((poster) => (
         <Card
           key={poster.id}
-          className={`group hover:shadow-lg transition-all duration-300 overflow-hidden border border-border hover:border-primary bg-card ${
+          className={`group shadow-none hover:shadow-none transition-all duration-300 overflow-hidden border border-border hover:border-primary bg-card ${
             layout === 'row' ? 'flex-shrink-0 w-[280px] sm:w-[300px] md:w-80' : ''
           }`}
         >
@@ -59,10 +59,10 @@ export function PosterSection({ posters, layout = 'grid' }: PosterSectionProps) 
             
             {/* Content */}
             <div className="p-4 sm:p-5">
-              <h3 className="font-semibold text-sm sm:text-base md:text-lg mb-1.5 sm:mb-2 text-foreground line-clamp-2 leading-tight">
+              <h3 className="font-semibold text-base sm:text-lg md:text-xl mb-2 sm:mb-2.5 text-foreground line-clamp-2 leading-tight">
                 {poster.title}
               </h3>
-              <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4 leading-relaxed line-clamp-2">
+              <p className="text-sm sm:text-base text-muted-foreground mb-3 sm:mb-4 leading-relaxed line-clamp-2">
                 {poster.description}
               </p>
               
@@ -71,11 +71,11 @@ export function PosterSection({ posters, layout = 'grid' }: PosterSectionProps) 
                   asChild 
                   variant="outline"
                   size="sm"
-                  className="w-full group/btn h-8 sm:h-9"
+                  className="w-full group/btn h-9 sm:h-10"
                 >
                   <Link href={poster.link} className="flex items-center justify-center gap-1.5 sm:gap-2">
-                    <span className="text-xs sm:text-sm">{poster.ctaText}</span>
-                    <ArrowRight className="h-3 w-3 sm:h-3.5 sm:w-3.5 group-hover/btn:translate-x-1 transition-transform" />
+                    <span className="text-sm sm:text-base font-medium">{poster.ctaText}</span>
+                    <ArrowRight className="h-4 w-4 sm:h-4 sm:w-4 group-hover/btn:translate-x-1 transition-transform" />
                   </Link>
                 </Button>
               )}

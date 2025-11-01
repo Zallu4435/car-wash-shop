@@ -17,15 +17,11 @@ export const useCreateCheckoutSession = () => {
     mutationFn: (input: CheckoutSessionInput) =>
       checkoutFetchers.createCheckoutSession(input),
     onSuccess: (data) => {
-      toast.success('Order placed successfully!');
-      
       // Redirect to payment gateway or success page
       if (data.paymentUrl && typeof window !== 'undefined') {
         window.location.href = data.paymentUrl;
-      } else {
-        // For COD or when no payment URL, redirect to success page
-        router.push(`/payment/receipt?orderId=${data.bookingId}`);
       }
+      // Note: Success toast is handled by the calling component
     },
     onError: (error: any) => {
       toast.error(error.message || 'Failed to initiate payment');

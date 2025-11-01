@@ -10,6 +10,7 @@ import { Separator } from '@/components/ui/separator';
 import { useTicket } from '@/api/domains/support/queries';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
+import { ROUTES } from '@/lib/constants/routes';
 
 export default function ComplaintDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -46,22 +47,22 @@ export default function ComplaintDetailPage({ params }: { params: Promise<{ id: 
   const StatusIcon = statusConfig.icon;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-32 lg:pb-8">
       {/* Header */}
       <section className="bg-gradient-to-br from-primary/5 to-background border-b border-border">
-        <div className="container-custom py-8">
-          <Link href="/support/complaints/list">
-            <Button variant="ghost" className="mb-4 hover:bg-muted">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to My Complaints
+        <div className="container-custom py-6 sm:py-8">
+          <Link href={ROUTES.CUSTOMER.SUPPORT_TICKETS}>
+            <Button variant="ghost" className="mb-3 sm:mb-4 hover:bg-muted h-9 sm:h-10">
+              <ArrowLeft className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <span className="text-xs sm:text-sm">Back to My Complaints</span>
             </Button>
           </Link>
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
+          <div className="flex items-start justify-between gap-3 sm:gap-4">
+            <div className="min-w-0 flex-1">
+              <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-1 sm:mb-2 truncate">
                 Complaint #{id}
               </h1>
-              <p className="text-muted-foreground">
+              <p className="text-xs sm:text-sm text-muted-foreground truncate">
                 Submitted on {new Date(complaint.createdAt).toLocaleDateString('en-IN', {
                   day: 'numeric',
                   month: 'long',
@@ -69,7 +70,7 @@ export default function ComplaintDetailPage({ params }: { params: Promise<{ id: 
                 })}
               </p>
             </div>
-            <Badge variant={statusConfig.variant} className="shrink-0">
+            <Badge variant={statusConfig.variant} className="flex-shrink-0 text-xs sm:text-sm">
               <StatusIcon className="h-3 w-3 mr-1" />
               {statusConfig.label}
             </Badge>
@@ -78,33 +79,33 @@ export default function ComplaintDetailPage({ params }: { params: Promise<{ id: 
       </section>
 
       {/* Main Content */}
-      <section className="py-12">
+      <section className="py-6 sm:py-8 lg:py-12">
         <div className="container-custom">
-          <div className="max-w-4xl mx-auto space-y-6">
+          <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6">
             {/* Complaint Details Card */}
             <Card className="border-2">
               <CardHeader>
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-primary/10 rounded-lg">
-                    <FileText className="h-5 w-5 text-primary" />
+                    <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                   </div>
-                  <CardTitle>Complaint Details</CardTitle>
+                  <CardTitle className="text-base sm:text-lg">Complaint Details</CardTitle>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <CardContent className="space-y-4 sm:space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   {/* Topic */}
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium text-muted-foreground">Topic</p>
-                    <Badge variant="outline" className="font-semibold capitalize">
+                  <div className="space-y-1.5 sm:space-y-2">
+                    <p className="text-xs sm:text-sm font-medium text-muted-foreground">Topic</p>
+                    <Badge variant="outline" className="text-xs sm:text-sm font-semibold capitalize">
                       {complaint.topic}
                     </Badge>
                   </div>
 
                   {/* Priority */}
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium text-muted-foreground">Priority</p>
-                    <Badge variant="outline" className="font-semibold capitalize">
+                  <div className="space-y-1.5 sm:space-y-2">
+                    <p className="text-xs sm:text-sm font-medium text-muted-foreground">Priority</p>
+                    <Badge variant="outline" className="text-xs sm:text-sm font-semibold capitalize">
                       {complaint.priority}
                     </Badge>
                   </div>
@@ -113,18 +114,18 @@ export default function ComplaintDetailPage({ params }: { params: Promise<{ id: 
                 <Separator />
 
                 {/* Subject */}
-                <div className="space-y-2">
-                  <p className="text-sm font-medium text-muted-foreground">Subject</p>
-                  <p className="text-lg font-semibold text-foreground">{complaint.subject}</p>
+                <div className="space-y-1.5 sm:space-y-2">
+                  <p className="text-xs sm:text-sm font-medium text-muted-foreground">Subject</p>
+                  <p className="text-sm sm:text-base md:text-lg font-semibold text-foreground">{complaint.subject}</p>
                 </div>
 
                 <Separator />
 
                 {/* Description */}
-                <div className="space-y-2">
-                  <p className="text-sm font-medium text-muted-foreground">Description</p>
-                  <div className="p-4 bg-muted rounded-xl">
-                    <p className="text-foreground leading-relaxed">{complaint.description}</p>
+                <div className="space-y-1.5 sm:space-y-2">
+                  <p className="text-xs sm:text-sm font-medium text-muted-foreground">Description</p>
+                  <div className="p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl">
+                    <p className="text-xs sm:text-sm text-foreground leading-relaxed">{complaint.description}</p>
                   </div>
                 </div>
               </CardContent>
@@ -222,11 +223,11 @@ export default function ComplaintDetailPage({ params }: { params: Promise<{ id: 
                       If you have any questions or need to provide additional information, please contact our support team.
                     </p>
                     <div className="flex flex-wrap gap-3">
-                      <Button variant="outline" size="sm" asChild>
-                        <Link href="/support">Contact Support</Link>
+                      <Button variant="outline" size="sm" className="border-2 h-9 text-xs sm:text-sm" asChild>
+                        <Link href={ROUTES.CUSTOMER.SUPPORT}>Contact Support</Link>
                       </Button>
-                      <Button variant="ghost" size="sm" asChild>
-                        <Link href="/support/complaints/list">View All Complaints</Link>
+                      <Button variant="ghost" size="sm" className="h-9 text-xs sm:text-sm" asChild>
+                        <Link href={ROUTES.CUSTOMER.SUPPORT_TICKETS}>View All Complaints</Link>
                       </Button>
                     </div>
                   </div>

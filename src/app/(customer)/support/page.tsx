@@ -4,10 +4,11 @@ import Link from 'next/link';
 import { MessageSquare, Phone, Mail, FileQuestion, AlertCircle, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ROUTES } from '@/lib/constants/routes';
 
 export default function SupportPage() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-32 lg:pb-8">
       {/* Hero Section - Responsive */}
       <section className="bg-gradient-to-br from-primary/5 to-background border-b border-border">
         <div className="container-custom py-8 sm:py-10 lg:py-16">
@@ -31,8 +32,10 @@ export default function SupportPage() {
               {/* Submit Complaint */}
               <Card className="hover:shadow-lg transition-all duration-300 border-2">
                 <CardHeader>
-                  <div className="p-2.5 sm:p-3 bg-red-50 dark:bg-red-950/30 rounded-lg sm:rounded-xl w-fit mb-3 sm:mb-4">
-                    <AlertCircle className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-red-600 dark:text-red-400" />
+                  <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+                    <div className="p-2 sm:p-3 bg-red-500/10 rounded-lg sm:rounded-xl flex-shrink-0">
+                      <AlertCircle className="h-5 w-5 sm:h-6 sm:w-6 text-red-600 dark:text-red-400" />
+                    </div>
                   </div>
                   <CardTitle className="text-base sm:text-lg md:text-xl">Submit a Complaint</CardTitle>
                 </CardHeader>
@@ -41,10 +44,10 @@ export default function SupportPage() {
                     Had an issue with your service or order? Let us know and we'll resolve it quickly.
                   </p>
                   <div className="flex flex-col gap-2">
-                    <Button asChild className="w-full shadow-md h-9 sm:h-10">
-                      <Link href="/support/complaints" className="text-xs sm:text-sm">Submit Complaint</Link>
+                    <Button asChild className="w-full shadow-lg border-2 h-9 sm:h-10">
+                      <Link href={ROUTES.CUSTOMER.COMPLAINTS} className="text-xs sm:text-sm">Submit Complaint</Link>
                     </Button>
-                    <Button asChild variant="outline" className="w-full h-9 sm:h-10">
+                    <Button asChild variant="outline" className="w-full border-2 h-9 sm:h-10">
                       <Link href="/support/complaints/list" className="text-xs sm:text-sm">View My Complaints</Link>
                     </Button>
                   </div>
@@ -54,8 +57,10 @@ export default function SupportPage() {
               {/* FAQs */}
               <Card className="hover:shadow-lg transition-all duration-300 border-2">
                 <CardHeader>
-                  <div className="p-2.5 sm:p-3 bg-primary/10 rounded-lg sm:rounded-xl w-fit mb-3 sm:mb-4">
-                    <FileQuestion className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary" />
+                  <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+                    <div className="p-2 sm:p-3 bg-primary/10 rounded-lg sm:rounded-xl flex-shrink-0">
+                      <FileQuestion className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+                    </div>
                   </div>
                   <CardTitle className="text-base sm:text-lg md:text-xl">Frequently Asked Questions</CardTitle>
                 </CardHeader>
@@ -63,7 +68,7 @@ export default function SupportPage() {
                   <p className="text-xs sm:text-sm text-muted-foreground mb-4 sm:mb-6 leading-relaxed">
                     Find quick answers to commonly asked questions about our services.
                   </p>
-                  <Button asChild variant="outline" className="w-full h-9 sm:h-10">
+                  <Button asChild variant="outline" className="w-full border-2 h-9 sm:h-10">
                     <Link href="/support/faq" className="text-xs sm:text-sm">View FAQs</Link>
                   </Button>
                 </CardContent>

@@ -74,14 +74,12 @@ export default function CartPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-32 lg:pb-8">
       {/* Header - Responsive */}
-      <section className="bg-gradient-to-br from-primary/5 to-background border-b border-border">
+      <section className="border-b border-border">
         <div className="container-custom py-6 sm:py-8 lg:py-12">
           <div className="flex items-center gap-2 sm:gap-3">
-            <div className="p-2 sm:p-3 bg-primary/10 rounded-lg sm:rounded-xl flex-shrink-0">
-              <ShoppingCart className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary" />
-            </div>
+            <ShoppingCart className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary flex-shrink-0" />
             <div className="min-w-0 flex-1">
               <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-foreground truncate">Shopping Cart</h1>
               <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1">
@@ -100,7 +98,7 @@ export default function CartPage() {
               {/* Cart Items */}
               <div className="lg:col-span-2 space-y-3 sm:space-y-4">
                 {items.map((item) => (
-                  <Card key={item.id} className="hover:shadow-lg transition-shadow border-2">
+                  <Card key={item.id} className="hover:shadow-lg transition-shadow border-2 border-border">
                     <CardContent className="p-4 sm:p-5 md:p-6">
                       {/* Mobile Layout (stacked) */}
                       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
@@ -113,10 +111,10 @@ export default function CartPage() {
                         <div className="flex-1 min-w-0 w-full">
                           <div className="flex items-start justify-between gap-2 mb-3">
                             <div className="flex-1 min-w-0">
-                              <h3 className="font-semibold text-sm sm:text-base md:text-lg text-foreground mb-1 line-clamp-2">
+                              <h3 className="font-semibold text-xs sm:text-sm md:text-base lg:text-lg text-foreground mb-1 line-clamp-2">
                                 {item.product?.name || item.service?.name || 'Item'}
                               </h3>
-                              <p className="text-lg sm:text-xl md:text-2xl font-bold text-primary">₹{item.price}</p>
+                              <p className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-primary">₹{item.price}</p>
                             </div>
 
                             {/* Remove Button - Desktop */}
@@ -136,18 +134,18 @@ export default function CartPage() {
                               <Button
                                 variant="outline"
                                 size="icon"
-                                className="h-8 w-8 sm:h-9 sm:w-9"
+                                className="h-8 w-8 sm:h-9 sm:w-9 border-2"
                                 onClick={() => updateQuantity(item.id, -1)}
                               >
                                 <Minus className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                               </Button>
-                              <span className="w-10 sm:w-12 text-center font-bold text-base sm:text-lg text-foreground">
+                              <span className="w-10 sm:w-12 text-center font-bold text-sm sm:text-base lg:text-lg text-foreground">
                                 {item.quantity}
                               </span>
                               <Button
                                 variant="outline"
                                 size="icon"
-                                className="h-8 w-8 sm:h-9 sm:w-9"
+                                className="h-8 w-8 sm:h-9 sm:w-9 border-2"
                                 onClick={() => updateQuantity(item.id, 1)}
                               >
                                 <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -158,11 +156,11 @@ export default function CartPage() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="sm:hidden text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 h-8"
+                              className="sm:hidden text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 h-8 text-xs"
                               onClick={() => removeItem(item.id)}
                             >
-                              <Trash2 className="h-4 w-4 mr-1.5" />
-                              <span className="text-xs">Remove</span>
+                              <Trash2 className="h-3.5 w-3.5 mr-1" />
+                              Remove
                             </Button>
                           </div>
                         </div>
@@ -170,8 +168,8 @@ export default function CartPage() {
 
                       {/* Item Subtotal */}
                       <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-border flex justify-between items-center">
-                        <span className="text-xs sm:text-sm text-muted-foreground">Item Subtotal</span>
-                        <span className="font-semibold text-sm sm:text-base text-foreground">
+                        <span className="text-[10px] sm:text-xs lg:text-sm text-muted-foreground">Item Subtotal</span>
+                        <span className="font-semibold text-xs sm:text-sm lg:text-base text-foreground">
                           ₹{item.price * item.quantity}
                         </span>
                       </div>
@@ -180,13 +178,11 @@ export default function CartPage() {
                 ))}
 
                 {/* Coupon Section */}
-                <Card className="border-2">
+                <Card className="border-2 border-border">
                   <CardContent className="p-4 sm:p-5 md:p-6">
                     <div className="flex items-center gap-2 mb-3 sm:mb-4">
-                      <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
-                        <Tag className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-                      </div>
-                      <h3 className="font-semibold text-sm sm:text-base text-foreground">Apply Coupon</h3>
+                      <Tag className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+                      <h3 className="font-semibold text-xs sm:text-sm lg:text-base text-foreground">Apply Coupon</h3>
                     </div>
                     <CouponInput
                       onApply={handleApplyCoupon}
@@ -219,8 +215,8 @@ export default function CartPage() {
               title="Your cart is empty"
               description="Add items to your cart to get started"
               action={
-                <Button onClick={() => router.push('/products')} size="lg" className="h-10 sm:h-11">
-                  <span className="text-sm sm:text-base">Browse Products</span>
+                <Button onClick={() => router.push('/products')} size="lg" className="h-10 sm:h-11 border-2">
+                  <span className="text-xs sm:text-sm lg:text-base">Browse Products</span>
                 </Button>
               }
             />
