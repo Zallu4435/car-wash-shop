@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { StatCard } from '@/components/admin/StatCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -75,41 +76,23 @@ export default function StaffHistoryPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
-        <Card className="border-2 border-border">
-          <CardContent className="p-3 sm:p-4">
-            <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
-              <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
-                <CheckCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
-              </div>
-              <p className="text-xs sm:text-sm text-muted-foreground">Completed</p>
-            </div>
-            <p className="text-xl sm:text-2xl font-bold text-foreground">{completedJobs.length}</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-2 border-border">
-          <CardContent className="p-3 sm:p-4">
-            <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
-              <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
-                <DollarSign className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
-              </div>
-              <p className="text-xs sm:text-sm text-muted-foreground">Earned</p>
-            </div>
-            <p className="text-xl sm:text-2xl font-bold text-foreground">₹{totalEarnings}</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-2 border-border col-span-2 md:col-span-1">
-          <CardContent className="p-3 sm:p-4">
-            <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
-              <div className="p-1.5 sm:p-2 bg-amber-100 dark:bg-amber-950/30 rounded-lg">
-                <Star className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-amber-600 dark:text-amber-400" />
-              </div>
-              <p className="text-xs sm:text-sm text-muted-foreground">Avg Rating</p>
-            </div>
-            <p className="text-xl sm:text-2xl font-bold text-foreground">{averageRating} ⭐</p>
-          </CardContent>
-        </Card>
+        <StatCard
+          icon={CheckCircle}
+          label="Completed"
+          value={completedJobs.length}
+        />
+        <StatCard
+          icon={DollarSign}
+          label="Earned"
+          value={`₹${totalEarnings}`}
+        />
+        <StatCard
+          icon={Star}
+          label="Avg Rating"
+          value={`${averageRating} ⭐`}
+          iconClassName="h-5 w-5 sm:h-6 sm:w-6 text-amber-600 dark:text-amber-400"
+          className="col-span-2 md:col-span-1"
+        />
       </div>
 
       {/* Filters */}
@@ -167,10 +150,8 @@ export default function StaffHistoryPage() {
         <Card className="border-2 border-border">
           <CardHeader className="pb-3 sm:pb-4">
             <div className="flex items-center gap-2">
-              <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
-                <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-              </div>
-              <CardTitle className="text-base sm:text-lg">History</CardTitle>
+              <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+              <CardTitle className="text-sm sm:text-base lg:text-lg">History</CardTitle>
             </div>
           </CardHeader>
           <CardContent className="min-h-[400px]">

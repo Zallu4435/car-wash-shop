@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import { StatCard } from '@/components/admin/StatCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -96,69 +97,26 @@ export default function StaffPaymentsPage() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
-        <Card className="border-2 border-border hover:shadow-lg transition-shadow">
-          <CardContent className="p-4 sm:p-5">
-            <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-              <div className="p-2 sm:p-3 bg-primary/10 rounded-lg sm:rounded-xl flex-shrink-0">
-                <IndianRupee className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">
-                  Total Earnings
-                </p>
-                <p className="text-xs sm:text-sm text-muted-foreground truncate">
-                  This Month
-                </p>
-              </div>
-            </div>
-            <p className="text-2xl sm:text-3xl font-bold text-foreground">
-              ₹{totalEarnings.toLocaleString()}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-2 border-border hover:shadow-lg transition-shadow">
-          <CardContent className="p-4 sm:p-5">
-            <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-              <div className="p-2 sm:p-3 bg-primary/10 rounded-lg sm:rounded-xl flex-shrink-0">
-                <Clock className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">
-                  Pending
-                </p>
-                <p className="text-xs sm:text-sm text-muted-foreground truncate">
-                  To Receive
-                </p>
-              </div>
-            </div>
-            <p className="text-2xl sm:text-3xl font-bold text-foreground">
-              ₹{pendingAmount.toLocaleString()}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-2 border-border hover:shadow-lg transition-shadow sm:col-span-2 md:col-span-1">
-          <CardContent className="p-4 sm:p-5">
-            <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-              <div className="p-2 sm:p-3 bg-primary/10 rounded-lg sm:rounded-xl flex-shrink-0">
-                <Briefcase className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">
-                  Jobs
-                </p>
-                <p className="text-xs sm:text-sm text-muted-foreground truncate">
-                  Completed
-                </p>
-              </div>
-            </div>
-            <p className="text-2xl sm:text-3xl font-bold text-foreground">
-              {totalJobs}
-            </p>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
+        <StatCard
+          icon={IndianRupee}
+          label="Total Earnings"
+          value={`₹${totalEarnings.toLocaleString()}`}
+          description="This Month"
+        />
+        <StatCard
+          icon={Clock}
+          label="Pending"
+          value={`₹${pendingAmount.toLocaleString()}`}
+          description="To Receive"
+        />
+        <StatCard
+          icon={Briefcase}
+          label="Jobs"
+          value={totalJobs}
+          description="Completed"
+          className="col-span-2 md:col-span-1"
+        />
       </div>
 
       {/* Filters */}
@@ -213,10 +171,8 @@ export default function StaffPaymentsPage() {
         <CardHeader className="pb-3 sm:pb-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
             <div className="flex items-center gap-2">
-              <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
-                <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-              </div>
-              <CardTitle className="text-base sm:text-lg">Payment History</CardTitle>
+              <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+              <CardTitle className="text-sm sm:text-base lg:text-lg">Payment History</CardTitle>
             </div>
             <Badge variant="outline" className="text-xs w-fit">
               {filteredPayments.length} records
@@ -263,7 +219,7 @@ export default function StaffPaymentsPage() {
                         <Button 
                           variant="ghost" 
                           size="sm" 
-                          className="h-8 text-xs sm:text-sm cursor-pointer"
+                          className="h-8 text-xs sm:text-sm cursor-pointer border-2"
                           onClick={() => router.push(StaffRoutes.PAYMENT_DETAIL(payment.date))}
                         >
                           View Details
@@ -302,7 +258,7 @@ export default function StaffPaymentsPage() {
                       <Button 
                         variant="ghost" 
                         size="sm" 
-                        className="w-full h-8 text-xs cursor-pointer"
+                        className="w-full h-8 text-xs cursor-pointer border-2"
                         onClick={() => router.push(StaffRoutes.PAYMENT_DETAIL(payment.date))}
                       >
                         View Details

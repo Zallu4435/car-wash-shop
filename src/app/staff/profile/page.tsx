@@ -116,7 +116,7 @@ export default function StaffProfilePage() {
           <Button 
             variant="outline" 
             onClick={handleEdit}
-            className="w-full sm:w-auto h-9 sm:h-10 text-xs sm:text-sm cursor-pointer"
+            className="w-full sm:w-auto h-9 sm:h-10 text-xs sm:text-sm cursor-pointer border-2"
           >
             <Edit className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
             <span className="sm:inline">Edit Profile</span>
@@ -126,14 +126,14 @@ export default function StaffProfilePage() {
             <Button 
               variant="outline" 
               onClick={handleCancel}
-              className="flex-1 sm:flex-none h-9 sm:h-10 text-xs sm:text-sm cursor-pointer"
+              className="flex-1 sm:flex-none h-9 sm:h-10 text-xs sm:text-sm cursor-pointer border-2"
             >
               <X className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
               Cancel
             </Button>
             <Button 
               onClick={handleSubmit(onSubmit)}
-              className="flex-1 sm:flex-none h-9 sm:h-10 text-xs sm:text-sm cursor-pointer"
+              className="flex-1 sm:flex-none h-9 sm:h-10 text-xs sm:text-sm cursor-pointer border-2"
             >
               <Save className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
               Save Changes
@@ -149,10 +149,8 @@ export default function StaffProfilePage() {
           <Card className="border-2 border-border">
             <CardHeader className="pb-3 sm:pb-4">
               <div className="flex items-center gap-2">
-                <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
-                  <User className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-                </div>
-                <CardTitle className="text-base sm:text-lg">Personal Information</CardTitle>
+                <User className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+                <CardTitle className="text-sm sm:text-base lg:text-lg">Personal Information</CardTitle>
               </div>
             </CardHeader>
             <CardContent className="space-y-3 sm:space-y-4">
@@ -301,12 +299,12 @@ export default function StaffProfilePage() {
           {/* Quick Actions */}
           <Card className="border-2 border-border">
             <CardHeader className="pb-3 sm:pb-4">
-              <CardTitle className="text-base sm:text-lg">Quick Actions</CardTitle>
+              <CardTitle className="text-sm sm:text-base lg:text-lg">Quick Actions</CardTitle>
             </CardHeader>
             <CardContent className="grid grid-cols-2 gap-2 sm:gap-3">
               <Button 
                 variant="outline" 
-                className="h-auto py-3 sm:py-4 flex-col gap-1.5 sm:gap-2 cursor-pointer"
+                className="h-auto py-3 sm:py-4 flex-col gap-1.5 sm:gap-2 cursor-pointer border-2"
                 onClick={() => router.push(StaffRoutes.JOBS)}
               >
                 <Briefcase className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -314,7 +312,7 @@ export default function StaffProfilePage() {
               </Button>
               <Button 
                 variant="outline" 
-                className="h-auto py-3 sm:py-4 flex-col gap-1.5 sm:gap-2 cursor-pointer"
+                className="h-auto py-3 sm:py-4 flex-col gap-1.5 sm:gap-2 cursor-pointer border-2"
                 onClick={() => router.push(StaffRoutes.PAYMENTS)}
               >
                 <IndianRupee className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -322,7 +320,7 @@ export default function StaffProfilePage() {
               </Button>
               <Button 
                 variant="outline" 
-                className="h-auto py-3 sm:py-4 flex-col gap-1.5 sm:gap-2 cursor-pointer"
+                className="h-auto py-3 sm:py-4 flex-col gap-1.5 sm:gap-2 cursor-pointer border-2"
                 onClick={() => router.push(StaffRoutes.HISTORY)}
               >
                 <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -330,7 +328,7 @@ export default function StaffProfilePage() {
               </Button>
               <Button 
                 variant="outline" 
-                className="h-auto py-3 sm:py-4 flex-col gap-1.5 sm:gap-2 text-destructive hover:text-destructive hover:bg-destructive/10 cursor-pointer"
+                className="h-auto py-3 sm:py-4 flex-col gap-1.5 sm:gap-2 text-destructive hover:text-destructive hover:bg-destructive/10 cursor-pointer border-2"
                 onClick={handleLogout}
               >
                 <LogOut className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -346,10 +344,8 @@ export default function StaffProfilePage() {
           <Card className="border-2 border-border">
             <CardHeader className="pb-3 sm:pb-4">
               <div className="flex items-center gap-2">
-                <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
-                  <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-                </div>
-                <CardTitle className="text-base sm:text-lg">Performance</CardTitle>
+                <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+                <CardTitle className="text-sm sm:text-base lg:text-lg">Performance</CardTitle>
               </div>
             </CardHeader>
             <CardContent className="space-y-4 sm:space-y-5">
@@ -422,7 +418,7 @@ export default function StaffProfilePage() {
           {profile?.achievements && profile.achievements.length > 0 && (
             <Card className="border-2 border-border">
               <CardHeader className="pb-3 sm:pb-4">
-                <CardTitle className="text-base sm:text-lg">Achievements</CardTitle>
+                <CardTitle className="text-sm sm:text-base lg:text-lg">Achievements</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2.5 sm:space-y-3">
                 {profile.achievements.map((achievement, index) => (

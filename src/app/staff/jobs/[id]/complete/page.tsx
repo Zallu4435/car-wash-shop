@@ -116,52 +116,50 @@ export default function CompleteJobPage({ params }: { params: Promise<{ id: stri
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="max-w-2xl mx-auto space-y-4 sm:space-y-6">
       {/* Header */}
       <div>
-        <Button variant="ghost" onClick={() => router.back()}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
+        <Button variant="ghost" onClick={() => router.back()} className="h-9 sm:h-10 text-xs sm:text-sm border-2">
+          <ArrowLeft className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Back
         </Button>
       </div>
 
-      <Card className="border-2">
-        <CardHeader>
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-green-100 dark:bg-green-950/30 rounded-xl">
-              <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
-            </div>
+      <Card className="border-2 border-border">
+        <CardHeader className="pb-3 sm:pb-4">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-green-600 dark:text-green-400 flex-shrink-0" />
             <div>
-              <CardTitle>Complete Job</CardTitle>
-              <p className="text-sm text-muted-foreground mt-1">Job ID: {id}</p>
+              <CardTitle className="text-sm sm:text-base lg:text-lg">Complete Job</CardTitle>
+              <p className="text-[10px] sm:text-xs lg:text-sm text-muted-foreground mt-0.5 sm:mt-1">Job ID: {id}</p>
             </div>
           </div>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6">
             {/* Payment Method */}
-            <div className="space-y-3">
-              <Label>Payment Method <span className="text-red-500">*</span></Label>
+            <div className="space-y-2 sm:space-y-3">
+              <Label className="text-xs sm:text-sm">Payment Method <span className="text-red-500">*</span></Label>
               <Controller
                 name="paymentMethod"
                 control={control}
                 render={({ field }) => (
                   <RadioGroup value={field.value} onValueChange={field.onChange}>
-                    <div className="flex items-center space-x-2 p-3 border-2 border-border rounded-xl hover:bg-muted cursor-pointer">
+                    <div className="flex items-center space-x-2 p-2.5 sm:p-3 border-2 border-border rounded-lg sm:rounded-xl hover:bg-muted cursor-pointer">
                       <RadioGroupItem value="cash" id="cash" />
-                      <Label htmlFor="cash" className="flex-1 cursor-pointer">
+                      <Label htmlFor="cash" className="flex-1 cursor-pointer text-xs sm:text-sm">
                         💵 Cash Payment
                       </Label>
                     </div>
-                    <div className="flex items-center space-x-2 p-3 border-2 border-border rounded-xl hover:bg-muted cursor-pointer">
+                    <div className="flex items-center space-x-2 p-2.5 sm:p-3 border-2 border-border rounded-lg sm:rounded-xl hover:bg-muted cursor-pointer">
                       <RadioGroupItem value="online" id="online" />
-                      <Label htmlFor="online" className="flex-1 cursor-pointer">
+                      <Label htmlFor="online" className="flex-1 cursor-pointer text-xs sm:text-sm">
                         🌐 Online Payment
                       </Label>
                     </div>
-                    <div className="flex items-center space-x-2 p-3 border-2 border-border rounded-xl hover:bg-muted cursor-pointer">
+                    <div className="flex items-center space-x-2 p-2.5 sm:p-3 border-2 border-border rounded-lg sm:rounded-xl hover:bg-muted cursor-pointer">
                       <RadioGroupItem value="prepaid" id="prepaid" />
-                      <Label htmlFor="prepaid" className="flex-1 cursor-pointer">
+                      <Label htmlFor="prepaid" className="flex-1 cursor-pointer text-xs sm:text-sm">
                         ✅ Already Prepaid
                       </Label>
                     </div>
@@ -175,36 +173,37 @@ export default function CompleteJobPage({ params }: { params: Promise<{ id: stri
 
               {/* Service Notes */}
             <div className="space-y-2">
-              <Label htmlFor="notes">Service Notes <span className="text-xs text-muted-foreground">(Optional)</span></Label>
+              <Label htmlFor="notes" className="text-xs sm:text-sm">Service Notes <span className="text-[10px] sm:text-xs text-muted-foreground">(Optional)</span></Label>
               <Textarea
                 id="notes"
                 placeholder="Any observations, issues, or recommendations..."
                 {...register('notes')}
                 rows={4}
+                className="text-xs sm:text-sm border-2"
               />
               {errors.notes && (
                 <p className="text-xs text-red-600 dark:text-red-400">{errors.notes.message}</p>
               )}
-              <p className="text-xs text-muted-foreground">
+              <p className="text-[10px] sm:text-xs text-muted-foreground">
               Add any important details about this service
             </p>
           </div>
 
           {/* Confirmation */}
-          <div className="p-4 bg-green-50 dark:bg-green-950/20 rounded-xl border-2 border-green-200 dark:border-green-800">
-            <p className="text-sm text-green-900 dark:text-green-100">
-              <strong>Note:</strong> Make sure you have collected the balance payment before marking as complete
+          <div className="p-3 sm:p-4 bg-primary/5 rounded-lg sm:rounded-xl border border-primary/20">
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              <strong className="text-foreground">Note:</strong> Make sure you have collected the balance payment before marking as complete
             </p>
           </div>
 
             {/* Submit Button */}
             <Button 
               type="submit"
-              className="w-full shadow-lg" 
+              className="w-full shadow-lg h-10 sm:h-11 lg:h-12 text-xs sm:text-sm lg:text-base border-2" 
               size="lg"
               disabled={isProcessingPayment || isRazorpayLoading || updateJobStatus.isPending}
             >
-              <CheckCircle className="mr-2 h-5 w-5" />
+              <CheckCircle className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
               {isProcessingPayment || isRazorpayLoading ? 'Processing...' : 
                paymentMethod === 'online' ? 'Collect Payment & Complete' : 
                'Mark as Completed'}

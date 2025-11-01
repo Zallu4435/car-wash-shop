@@ -2,7 +2,7 @@
 
 import { use } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, CheckCircle, User, Calendar, Clock, Car, DollarSign, Phone, Briefcase } from 'lucide-react';
+import { ArrowLeft, CheckCircle, User, Calendar, Clock, Car, DollarSign, Briefcase } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -10,7 +10,6 @@ import { NavigationMap } from '@/components/staff/NavigationMap';
 import { useStaffJobDetail } from '@/api/domains/staff';
 import { StaffRoutes } from '@/lib/constants/routes';
 import Loading from '@/components/shared/display/Loading';
-import Error from '@/components/shared/display/Error';
 import { EmptyState } from '@/components/shared/display/EmptyState';
 
 export default function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -46,7 +45,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
         <Button 
           variant="ghost" 
           onClick={() => router.push(StaffRoutes.JOBS)}
-          className="w-full sm:w-auto h-9 sm:h-10 text-xs sm:text-sm"
+          className="w-full sm:w-auto h-9 sm:h-10 text-xs sm:text-sm border-2"
         >
           <ArrowLeft className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Back to Jobs
@@ -60,15 +59,13 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
         {/* Left Column - Details */}
         <div className="lg:col-span-2 space-y-4 sm:space-y-6">
           {/* Job Details */}
-          <Card className="border-2">
+          <Card className="border-2 border-border">
             <CardHeader className="pb-3 sm:pb-4">
               <div className="flex items-center gap-2 mb-2">
-                <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
-                  <User className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-                </div>
-                <CardTitle className="text-base sm:text-lg">Job Details</CardTitle>
+                <User className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+                <CardTitle className="text-sm sm:text-base lg:text-lg">Job Details</CardTitle>
               </div>
-              <Badge variant="outline" className="font-mono text-xs w-fit">
+              <Badge variant="outline" className="font-mono text-[10px] sm:text-xs w-fit">
                 {id}
               </Badge>
             </CardHeader>
@@ -81,7 +78,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                     Customer
                   </p>
                 </div>
-                <p className="font-bold text-base sm:text-lg text-foreground truncate">
+                <p className="font-bold text-sm sm:text-base lg:text-lg text-foreground truncate">
                   {job.customer.name}
                 </p>
                 {/* Phone not available in StaffJobDetail */}
@@ -140,19 +137,17 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
           </Card>
 
           {/* Payment */}
-          <Card className="border-2">
+          <Card className="border-2 border-border">
             <CardHeader className="pb-3 sm:pb-4">
               <div className="flex items-center gap-2">
-                <div className="p-1.5 sm:p-2 bg-purple-100 dark:bg-purple-950/30 rounded-lg">
-                  <DollarSign className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600 dark:text-purple-400" />
-                </div>
-                <CardTitle className="text-base sm:text-lg">Payment Details</CardTitle>
+                <DollarSign className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600 dark:text-purple-400 flex-shrink-0" />
+                <CardTitle className="text-sm sm:text-base lg:text-lg">Payment Details</CardTitle>
               </div>
             </CardHeader>
             <CardContent className="space-y-2.5 sm:space-y-3">
-              <div className="flex justify-between items-center p-2.5 sm:p-3 bg-muted rounded-lg">
-                <span className="text-xs sm:text-sm text-muted-foreground">Total Amount</span>
-                <span className="font-bold text-base sm:text-lg text-foreground">
+              <div className="flex justify-between items-center p-2.5 sm:p-3 bg-muted/50 rounded-lg">
+                <span className="text-[10px] sm:text-xs lg:text-sm text-muted-foreground">Total Amount</span>
+                <span className="font-bold text-sm sm:text-base lg:text-lg text-foreground">
                   ₹{job.amount ?? 0}
                 </span>
               </div>
@@ -163,7 +158,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
           {/* Complete Button */}
           <Button 
             onClick={() => router.push(StaffRoutes.JOB_COMPLETE(id))}
-            className="w-full shadow-lg h-11 sm:h-12 text-sm sm:text-base" 
+            className="w-full shadow-lg h-10 sm:h-11 lg:h-12 text-xs sm:text-sm lg:text-base border-2" 
             size="lg"
           >
             <CheckCircle className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />

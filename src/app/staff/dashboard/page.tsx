@@ -1,6 +1,6 @@
 'use client';
 
-import { DashboardStats } from '@/components/staff/DashboardStats';
+import { StatCard } from '@/components/admin/StatCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -80,16 +80,40 @@ export default function StaffDashboardPage() {
       </div>
 
       {/* Stats Grid */}
-      <DashboardStats stats={stats} />
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <StatCard
+          icon={Briefcase}
+          label="Today's Jobs"
+          value={summary?.todayJobs ?? 0}
+          description={summary?.statsTrends.todayJobs}
+        />
+        <StatCard
+          icon={TrendingUp}
+          label="This Week"
+          value={summary?.weekJobs ?? 0}
+          description={summary?.statsTrends.weekJobs}
+        />
+        <StatCard
+          icon={DollarSign}
+          label="Earnings"
+          value={`₹${summary?.earnings ?? 0}`}
+          description={summary?.statsTrends.earnings}
+        />
+        <StatCard
+          icon={Star}
+          label="Rating"
+          value={summary?.rating ?? '0.0'}
+          description={summary?.statsTrends.rating}
+          iconClassName="h-5 w-5 sm:h-6 sm:w-6 text-amber-600 dark:text-amber-400"
+        />
+      </div>
 
       {/* Upcoming Jobs */}
       <Card className="border-2 border-border">
         <CardHeader className="pb-3 sm:pb-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3">
             <div className="flex items-center gap-2">
-              <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
-                <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-              </div>
+              <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
               <CardTitle className="text-base sm:text-lg">Today's Schedule</CardTitle>
             </div>
             <Button 

@@ -26,15 +26,13 @@ export function StatCard({
   className,
   valueClassName,
   iconClassName = 'h-5 w-5 sm:h-6 sm:w-6 text-primary',
-  iconBgClassName = 'p-2 sm:p-3 bg-primary/10 rounded-lg sm:rounded-xl flex-shrink-0',
+  iconBgClassName = '',
 }: StatCardProps) {
   return (
-    <Card className={cn('border-2', className)}>
-      <CardContent className="p-4 sm:p-5 md:p-6">
-        <div className="flex items-center justify-between mb-3 sm:mb-4">
-          <div className={iconBgClassName}>
-            <Icon className={iconClassName} />
-          </div>
+    <Card className={cn('border-2 border-border', className)}>
+      <CardContent className="p-3 sm:p-4 lg:p-5">
+        <div className="flex items-center justify-between mb-2 sm:mb-3">
+          <Icon className={iconClassName} />
           {change && (
             <Badge 
               variant="outline" 
@@ -50,12 +48,12 @@ export function StatCard({
             </Badge>
           )}
         </div>
-        <p className="text-xs sm:text-sm text-muted-foreground truncate">{label}</p>
-        <p className={cn('text-2xl sm:text-3xl font-bold text-foreground mt-0.5 sm:mt-1', valueClassName)}>
+        <p className="text-[10px] sm:text-xs lg:text-sm text-muted-foreground truncate">{label}</p>
+        <p className={cn('text-xl sm:text-2xl lg:text-3xl font-bold text-foreground mt-0.5 sm:mt-1', valueClassName)}>
           {value}
         </p>
         {description && (
-          <p className="text-xs text-muted-foreground mt-1 truncate">{description}</p>
+          <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1 truncate">{description}</p>
         )}
       </CardContent>
     </Card>

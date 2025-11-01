@@ -99,7 +99,7 @@ export default function StaffLayout({ children }: { children: React.ReactNode })
                 {showThemeMenu && (
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setShowThemeMenu(false)} />
-                    <div className="absolute right-0 mt-2 w-48 bg-card rounded-lg shadow-lg border border-border py-2 z-50">
+                    <div className="absolute right-0 mt-2 w-48 force-sheet-bg rounded-lg sm:rounded-xl shadow-lg border border-border py-2 z-50">
                       {themeOptions.map((option) => {
                         const Icon = option.icon;
                         const isActive = theme === option.value;
