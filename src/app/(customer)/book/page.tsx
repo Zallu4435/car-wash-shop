@@ -22,10 +22,12 @@ import type { Address } from '@/types/address';
 import Loading from '@/components/shared/display/Loading';
 import { mockServiceTypes, mockAddOns } from '@/mocks/data/customer-mock-data';
 import { createBookingSchema, CreateBookingInput } from '@/schemas/customer/booking';
+import { useRazorpay } from '@/hooks/useRazorpay';
 
 export default function BookingPage() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   
   // Data from API
   const [services, setServices] = useState<Service[]>([]);
@@ -52,6 +54,21 @@ export default function BookingPage() {
   const { data: addressesData, isLoading: addressesLoading, error: addressesError } = useAddresses();
   const createBookingMutation = useCreateBooking();
   
+  // Razorpay integration
+  const { processPayment, isLoading: isRazorpayLoading } = useRazorpay({
+    onSuccess: (response) => {
+      toast.success('Payment successful!');
+      router.push(`/payment/receipt?bookingId=${response.razorpay_order_id}&paymentId=${response.razorpay_payment_id}`);
+      setIsProcessingPayment(false);
+    },
+    onFailure: () => {
+      toast.error('Payment failed. Please try again.');
+      setIsProcessingPayment(false);
+    },
+    onDismiss: () => {
+      setIsProcessingPayment(false);
+    },
+  });
 
   // Service types from mock data
   const serviceTypes = mockServiceTypes;
@@ -113,7 +130,7 @@ export default function BookingPage() {
     toast.success('Address added successfully!');
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     // Validation for each step
     if (currentStep === 1 && !serviceType) {
       toast.error('Please select a service type');
@@ -183,6 +200,8 @@ export default function BookingPage() {
     if (currentStep === 7) {
       // Final step - complete booking with full validation
       try {
+        setIsProcessingPayment(true);
+        
         const bookingData: CreateBookingInput = {
           serviceId: selectedService,
           vehicleId: selectedVehicle,
@@ -197,17 +216,61 @@ export default function BookingPage() {
         // Validate with Zod schema
         const validatedData = createBookingSchema.parse(bookingData);
         
-        // If validation passes, create booking
-        const scheduledAt = new Date(`${selectedDate!.toDateString()} ${selectedTime}`).toISOString();
+        // Calculate total amount (you should get this from selected service + addons)
+        const selectedServiceData = services.find(s => s.id === selectedService);
+        const selectedAddOnsData = addOns.filter(a => selectedAddOns.includes(a.id));
+        const totalAmount = (selectedServiceData?.price || 0) + selectedAddOnsData.reduce((sum, addon) => sum + addon.price, 0);
         
-        createBookingMutation.mutate({
-          serviceId: validatedData.serviceId,
-          vehicleId: validatedData.vehicleId,
-          addressId: validatedData.addressId,
-          scheduledAt,
-          addOns: validatedData.addOns,
-          paymentType: validatedData.paymentType as 'full' | 'advance',
-        });
+        // Handle COD payment
+        if (paymentOption === 'cod') {
+          const scheduledAt = new Date(`${selectedDate!.toDateString()} ${selectedTime}`).toISOString();
+          
+          createBookingMutation.mutate({
+            serviceId: validatedData.serviceId,
+            vehicleId: validatedData.vehicleId,
+            addressId: validatedData.addressId,
+            scheduledAt,
+            addOns: validatedData.addOns,
+            paymentType: 'advance' as 'full' | 'advance',
+          }, {
+            onSuccess: () => {
+              toast.success('Booking confirmed!');
+              router.push('/orders/services');
+            },
+            onError: (error: any) => {
+              toast.error(error?.message || 'Failed to create booking');
+            },
+            onSettled: () => {
+              setIsProcessingPayment(false);
+            },
+          });
+          return;
+        }
+        
+        // Handle Online payment with Razorpay
+        if (paymentOption === 'online') {
+          // Get user details (in real app, fetch from auth context)
+          const userEmail = 'customer@example.com'; // TODO: Get from auth
+          const userName = 'Customer'; // TODO: Get from auth
+          const userPhone = '+919876543210'; // TODO: Get from auth
+          
+          await processPayment({
+            amount: totalAmount,
+            description: `${selectedServiceData?.name || 'Service'} Booking`,
+            bookingId: `BOOKING_${Date.now()}`,
+            userEmail,
+            userName,
+            userPhone,
+            notes: {
+              serviceId: selectedService,
+              vehicleId: selectedVehicle,
+              addressId: selectedAddress,
+              scheduledDate: selectedDate!.toISOString(),
+              scheduledTime: selectedTime!,
+              addOns: selectedAddOns.join(','),
+            },
+          });
+        }
       } catch (error: any) {
         // Handle Zod validation errors
         if (error.errors && error.errors.length > 0) {
@@ -215,6 +278,7 @@ export default function BookingPage() {
         } else {
           toast.error('Please fill in all required fields correctly');
         }
+        setIsProcessingPayment(false);
         return;
       }
     } else {
@@ -258,7 +322,7 @@ export default function BookingPage() {
           totalSteps={7}
           onNext={handleNext}
           onPrev={handlePrev}
-          isBooking={createBookingMutation.isPending}
+          isBooking={isProcessingPayment || isRazorpayLoading || createBookingMutation.isPending}
         >
           {/* Step 1: Service Type Selection */}
           {currentStep === 1 && (

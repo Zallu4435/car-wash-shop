@@ -1,7 +1,7 @@
 'use client';
 
 // @ts-nocheck
-import { use } from 'react';
+import { use, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,16 +15,45 @@ import { StaffRoutes } from '@/lib/constants/routes';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { completeJobSchema, CompleteJobInput } from '@/schemas/staff/job';
+import { useRazorpay } from '@/hooks/useRazorpay';
 
 export default function CompleteJobPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
   const updateJobStatus = useUpdateJobStatus();
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+
+  // Razorpay integration
+  const { processPayment, isLoading: isRazorpayLoading } = useRazorpay({
+    onSuccess: (response) => {
+      toast.success('Payment successful!');
+      // Complete the job after successful payment
+      updateJobStatus.mutate(
+        { jobId: id, input: { status: 'completed', notes: 'Payment collected via Razorpay' } },
+        {
+          onSuccess: () => {
+            toast.success('Job completed successfully!');
+            router.push(StaffRoutes.JOBS);
+          },
+          onError: (err: any) => toast.error(err?.message || 'Failed to complete job'),
+        }
+      );
+      setIsProcessingPayment(false);
+    },
+    onFailure: () => {
+      toast.error('Payment failed. Please try again.');
+      setIsProcessingPayment(false);
+    },
+    onDismiss: () => {
+      setIsProcessingPayment(false);
+    },
+  });
 
   const {
     register,
     handleSubmit,
     control,
+    watch,
     formState: { errors },
   } = useForm<CompleteJobInput>({
     resolver: zodResolver(completeJobSchema) as any,
@@ -34,17 +63,56 @@ export default function CompleteJobPage({ params }: { params: Promise<{ id: stri
     },
   });
 
-  const onSubmit = (data: CompleteJobInput) => {
-    updateJobStatus.mutate(
-      { jobId: id, input: { status: 'completed', notes: data.notes } },
-      {
-        onSuccess: () => {
-          toast.success('Job completed successfully!');
-          router.push(StaffRoutes.JOBS);
-        },
-        onError: (err: any) => toast.error(err?.message || 'Failed to complete job'),
+  const paymentMethod = watch('paymentMethod');
+
+  const onSubmit = async (data: CompleteJobInput) => {
+    try {
+      setIsProcessingPayment(true);
+
+      // Handle prepaid or cash payment
+      if (data.paymentMethod === 'prepaid' || data.paymentMethod === 'cash') {
+        updateJobStatus.mutate(
+          { jobId: id, input: { status: 'completed', notes: data.notes } },
+          {
+            onSuccess: () => {
+              toast.success('Job completed successfully!');
+              router.push(StaffRoutes.JOBS);
+            },
+            onError: (err: any) => toast.error(err?.message || 'Failed to complete job'),
+            onSettled: () => {
+              setIsProcessingPayment(false);
+            },
+          }
+        );
+        return;
       }
-    );
+
+      // Handle online payment with Razorpay
+      if (data.paymentMethod === 'online') {
+        // Get customer details (in real app, fetch from job details)
+        const customerEmail = 'customer@example.com'; // TODO: Get from job
+        const customerName = 'Customer'; // TODO: Get from job
+        const customerPhone = '+919876543210'; // TODO: Get from job
+        const jobAmount = 599; // TODO: Get from job details
+
+        await processPayment({
+          amount: jobAmount,
+          description: `Payment for Job #${id}`,
+          bookingId: id,
+          userEmail: customerEmail,
+          userName: customerName,
+          userPhone: customerPhone,
+          notes: {
+            jobId: id,
+            paymentMethod: 'online',
+            collectedBy: 'staff',
+          },
+        });
+      }
+    } catch (error: any) {
+      toast.error(error?.message || 'An error occurred');
+      setIsProcessingPayment(false);
+    }
   };
 
   return (
@@ -134,10 +202,12 @@ export default function CompleteJobPage({ params }: { params: Promise<{ id: stri
               type="submit"
               className="w-full shadow-lg" 
               size="lg"
-              disabled={updateJobStatus.isPending}
+              disabled={isProcessingPayment || isRazorpayLoading || updateJobStatus.isPending}
             >
               <CheckCircle className="mr-2 h-5 w-5" />
-              {updateJobStatus.isPending ? 'Completing...' : 'Mark as Completed'}
+              {isProcessingPayment || isRazorpayLoading ? 'Processing...' : 
+               paymentMethod === 'online' ? 'Collect Payment & Complete' : 
+               'Mark as Completed'}
             </Button>
           </form>
         </CardContent>

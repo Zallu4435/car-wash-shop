@@ -60,9 +60,12 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
       type: 'product',
       itemId: product.id,
       quantity: quantity,
+    }, {
+      onSuccess: () => {
+        toast.success('Redirecting to checkout...');
+        router.push('/checkout');
+      }
     });
-    // In a real app, you'd redirect to checkout
-    toast.success('Redirecting to checkout...');
   };
 
   return (

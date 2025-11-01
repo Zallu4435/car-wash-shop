@@ -72,14 +72,14 @@ export const bookingFetchers = {
     if (USE_MOCK_DATA) {
       await new Promise(resolve => setTimeout(resolve, 300));
       
-      // Return mock available slots
+      // Return mock available slots in 24-hour format (HH:MM)
       const allSlots = [
-        '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM',
-        '12:00 PM', '12:30 PM', '01:00 PM', '01:30 PM', '02:00 PM', '02:30 PM',
-        '03:00 PM', '03:30 PM', '04:00 PM', '04:30 PM', '05:00 PM', '05:30 PM',
+        '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
+        '12:00', '12:30', '13:00', '13:30', '14:00', '14:30',
+        '15:00', '15:30', '16:00', '16:30', '17:00', '17:30',
       ];
       
-      const bookedSlots = ['10:00 AM', '02:00 PM'];
+      const bookedSlots = ['10:00', '14:00'];
       
       return {
         date,

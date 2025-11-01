@@ -19,11 +19,13 @@ import { toast } from 'sonner';
 import { useConfirmation } from '@/hooks/useConfirmation';
 import { AddressSelectionModal } from '@/components/customer/AddressSelectionModal';
 import { CouponInput } from '@/components/shared/forms/CouponInput';
+import { useRazorpay } from '@/hooks/useRazorpay';
 
 export default function CheckoutPage() {
   const router = useRouter();
   const { confirm, ConfirmDialog } = useConfirmation();
   const [paymentMethod, setPaymentMethod] = useState<'cod' | 'online'>('online');
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [showMapPicker, setShowMapPicker] = useState(false);
   const [showAddressModal, setShowAddressModal] = useState(false);
   const [selectedAddressId, setSelectedAddressId] = useState<string>('');
@@ -40,6 +42,29 @@ export default function CheckoutPage() {
   const { data: addresses = [], isLoading: addressesLoading } = useAddresses();
   const createCheckoutSessionMutation = useCreateCheckoutSession();
   const validateCouponMutation = useValidateCoupon();
+
+  // Razorpay integration
+  const { processPayment, isLoading: isRazorpayLoading } = useRazorpay({
+    onSuccess: async (response) => {
+      setIsProcessingPayment(true);
+      try {
+        // TODO: Save payment details to database
+        toast.success('Payment successful!');
+        router.push(`/payment/receipt?orderId=${response.razorpay_order_id}&paymentId=${response.razorpay_payment_id}`);
+      } catch (error) {
+        toast.error('Failed to process order');
+      } finally {
+        setIsProcessingPayment(false);
+      }
+    },
+    onFailure: () => {
+      toast.error('Payment failed. Please try again.');
+      setIsProcessingPayment(false);
+    },
+    onDismiss: () => {
+      setIsProcessingPayment(false);
+    },
+  });
 
   const selectedAddress = addresses.find(addr => addr.id === selectedAddressId);
   const subtotal = cart?.subtotal || 0;
@@ -135,27 +160,60 @@ export default function CheckoutPage() {
     if (!confirmed) return;
 
     try {
-      // For now, we'll create a temporary booking ID
-      // In a real app, you'd create a booking first
-      const tempBookingId = `temp_${Date.now()}`;
-      
-      const checkoutData = {
-        bookingId: tempBookingId,
-        paymentType: paymentMethod === 'cod' ? 'full' : 'advance' as 'full' | 'advance',
-        amount: total,
-      };
+      setIsProcessingPayment(true);
 
-      createCheckoutSessionMutation.mutate(checkoutData, {
-        onSuccess: () => {
-          toast.success('Order placed successfully!');
-        },
-        onError: (error: any) => {
-          toast.error(error?.message || 'Failed to place order. Please try again.');
-        },
-      });
+      // Handle COD payment
+      if (paymentMethod === 'cod') {
+        const tempBookingId = `temp_${Date.now()}`;
+        
+        const checkoutData = {
+          bookingId: tempBookingId,
+          paymentType: 'full' as 'full' | 'advance',
+          amount: total,
+        };
+
+        createCheckoutSessionMutation.mutate(checkoutData, {
+          onSuccess: () => {
+            toast.success('Order placed successfully!');
+            router.push(`/orders`);
+          },
+          onError: (error: any) => {
+            toast.error(error?.message || 'Failed to place order. Please try again.');
+          },
+          onSettled: () => {
+            setIsProcessingPayment(false);
+          },
+        });
+        return;
+      }
+
+      // Handle Online payment with Razorpay
+      if (paymentMethod === 'online') {
+        // Get user details (in real app, fetch from auth context)
+        const userEmail = 'customer@example.com'; // TODO: Get from auth
+        const userName = 'Customer'; // TODO: Get from auth
+        const userPhone = '+919876543210'; // TODO: Get from auth
+
+        await processPayment({
+          amount: total,
+          description: `Order for ${cart.items.length} items`,
+          orderId: `ORDER_${Date.now()}`,
+          userEmail,
+          userName,
+          userPhone,
+          notes: {
+            items: cart.items.length.toString(),
+            subtotal: subtotal.toString(),
+            discount: discount.toString(),
+            deliveryFee: deliveryFee.toString(),
+            addressId: selectedAddressId,
+          },
+        });
+      }
     } catch (error: any) {
       toast.error(error?.message || 'An unexpected error occurred');
       console.error('Checkout error:', error);
+      setIsProcessingPayment(false);
     }
   };
 
@@ -380,10 +438,10 @@ export default function CheckoutPage() {
                     onClick={handlePlaceOrder} 
                     className="w-full shadow-lg h-11 sm:h-12 text-sm sm:text-base" 
                     size="lg"
-                    disabled={createCheckoutSessionMutation.isPending || !canPlaceOrder}
+                    disabled={isProcessingPayment || isRazorpayLoading || !canPlaceOrder}
                   >
                     <Lock className="mr-2 h-4 w-4" />
-                    {createCheckoutSessionMutation.isPending ? 'Processing...' : 'Place Order'}
+                    {isProcessingPayment || isRazorpayLoading ? 'Processing...' : 'Place Order'}
                   </Button>
                   
                   {/* Validation Messages */}
@@ -433,10 +491,10 @@ export default function CheckoutPage() {
                     onClick={handlePlaceOrder} 
                     className="w-full shadow-lg h-12 text-sm font-semibold" 
                     size="lg"
-                    disabled={createCheckoutSessionMutation.isPending || !canPlaceOrder}
+                    disabled={isProcessingPayment || isRazorpayLoading || !canPlaceOrder}
                   >
                     <Lock className="mr-2 h-4 w-4" />
-                    {createCheckoutSessionMutation.isPending ? 'Processing...' : `Place Order - ₹${total}`}
+                    {isProcessingPayment || isRazorpayLoading ? 'Processing...' : `Place Order - ₹${total}`}
                   </Button>
                   
                   {/* Mobile Validation Messages */}

@@ -8,6 +8,28 @@ import { Clock } from 'lucide-react';
 import Loading from '@/components/shared/display/Loading';
 import { EmptyState } from '@/components/shared/display/EmptyState';
 
+// Helper function to format 24-hour time to 12-hour format for display
+const formatTimeDisplay = (time24: string): string => {
+  if (!time24 || typeof time24 !== 'string') return time24;
+  
+  // If already in 12-hour format (contains AM/PM), return as is
+  if (time24.includes('AM') || time24.includes('PM')) {
+    return time24;
+  }
+  
+  const parts = time24.split(':');
+  if (parts.length !== 2) return time24;
+  
+  const hours = parseInt(parts[0], 10);
+  const minutes = parseInt(parts[1], 10);
+  
+  if (isNaN(hours) || isNaN(minutes)) return time24;
+  
+  const period = hours >= 12 ? 'PM' : 'AM';
+  const hours12 = hours % 12 || 12;
+  return `${hours12}:${minutes.toString().padStart(2, '0')} ${period}`;
+};
+
 const getNext7Days = () => {
   const days = [];
   for (let i = 0; i < 7; i++) {
@@ -135,7 +157,7 @@ export function DateTimePicker({ selectedDate, selectedTime, onDateSelect, onTim
                         </span>
                       </span>
                     )}
-                    {slot.startTime}
+                    {formatTimeDisplay(slot.startTime)}
                     {!isAvailable && (
                       <span className="ml-1 text-[10px]">✕</span>
                     )}
