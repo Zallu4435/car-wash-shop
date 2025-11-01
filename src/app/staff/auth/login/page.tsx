@@ -12,7 +12,7 @@ import { useLogin } from '@/api/domains/auth/queries';
 import { StaffRoutes } from '@/lib/constants/routes';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { staffLoginSchema, StaffLoginInput } from '@/schemas/staff-auth';
+import { staffLoginSchema, StaffLoginInput } from '@/schemas/staff/auth';
 
 export default function StaffLoginPage() {
   const router = useRouter();

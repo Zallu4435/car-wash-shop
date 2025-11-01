@@ -14,7 +14,7 @@ import { useCancelOrder } from '@/api/domains/orders/queries';
 import { useCancelBooking } from '@/api/domains/bookings/queries';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { cancelBookingSchema, CancelBookingInput } from '@/schemas/booking';
+import { cancelBookingSchema, CancelBookingInput } from '@/schemas/customer/booking';
 
 export default function CancelOrderPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);

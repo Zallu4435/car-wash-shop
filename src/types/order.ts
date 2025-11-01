@@ -1,14 +1,16 @@
+import { BookingStatus, PaymentStatus } from '@/lib/constants/status';
+
 export interface Order {
     id: string;
     bookingId: string;
     userId: string;
-    status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
+    status: BookingStatus;
     serviceName: string;
     serviceImage?: string;
     scheduledAt: string;
     completedAt?: string;
     totalAmount: number;
-    paymentStatus: 'paid' | 'pending' | 'refunded';
+    paymentStatus: PaymentStatus;
     paymentMethod?: string;
     invoiceUrl?: string;
     feedback?: OrderFeedback;

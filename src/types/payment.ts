@@ -1,11 +1,13 @@
+import { PaymentStatus, PaymentMethod } from '@/lib/constants/status';
+
 export interface Payment {
     id: string;
     userId: string;
     bookingId?: string;
     orderId?: string;
     amount: number;
-    method: 'card' | 'upi' | 'wallet' | 'netbanking' | 'cod';
-    status: 'pending' | 'success' | 'failed' | 'refunded';
+    method: PaymentMethod;
+    status: PaymentStatus;
     transactionId?: string;
     gateway: string;
     refundAmount?: number;

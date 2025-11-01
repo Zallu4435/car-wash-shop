@@ -24,7 +24,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { changePasswordSchema, ChangePasswordInput } from '@/schemas/profile';
+import { changePasswordSchema, ChangePasswordInput } from '@/schemas/customer/profile';
 import { useConfirmation } from '@/hooks/useConfirmation';
 
 export default function SecurityPage() {

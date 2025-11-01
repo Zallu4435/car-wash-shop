@@ -1,7 +1,6 @@
 'use client';
 
 // @ts-nocheck
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Send, AlertCircle } from 'lucide-react';
@@ -15,7 +14,7 @@ import { toast } from 'sonner';
 import { useCreateTicket } from '@/api/domains/support/queries';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { complaintSchema, ComplaintInput } from '@/schemas/support';
+import { complaintSchema, ComplaintInput } from '@/schemas/customer/support';
 
 export default function ComplaintsPage() {
   const router = useRouter();

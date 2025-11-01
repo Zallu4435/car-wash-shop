@@ -9,7 +9,7 @@ import { useCreateVehicle } from '@/api/domains/vehicles/queries';
 import { mockVehicleBrands, mockVehicleModels } from '@/mocks/data/customer-mock-data';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { addVehicleSchema, AddVehicleInput } from '@/schemas/vehicle';
+import { addVehicleSchema, AddVehicleInput } from '@/schemas/customer/vehicle';
 
 interface AddVehicleModalProps {
   isOpen: boolean;

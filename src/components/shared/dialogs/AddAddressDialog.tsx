@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 import { useCreateAddress } from '@/api/domains/addresses/queries';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { addAddressSchema, AddAddressInput } from '@/schemas/address';
+import { addAddressSchema, AddAddressInput } from '@/schemas/customer/address';
 
 interface AddAddressDialogProps {
   open: boolean;

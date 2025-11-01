@@ -11,7 +11,7 @@ import { Phone, Lock, ArrowLeft, KeyRound, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { phoneOnlySchema, otpOnlySchema, resetPasswordSchema } from '@/schemas/auth';
+import { phoneOnlySchema, otpOnlySchema, resetPasswordSchema } from '@/schemas/customer/auth';
 
 export default function ForgotPasswordPage() {
   const router = useRouter();

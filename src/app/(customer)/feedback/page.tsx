@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 import { useCreateTicket } from '@/api/domains/support/queries';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { feedbackSchema, FeedbackInput } from '@/schemas/support';
+import { feedbackSchema, FeedbackInput } from '@/schemas/customer/support';
 
 export default function FeedbackPage() {
   // API call

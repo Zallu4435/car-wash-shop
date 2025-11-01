@@ -1,11 +1,13 @@
+import { TicketStatus, Priority, SenderType } from '@/lib/constants/status';
+
 export interface SupportTicket {
     id: string;
     userId: string;
     subject: string;
     description: string;
     topic: string;
-    priority: 'low' | 'medium' | 'high';
-    status: 'open' | 'in_progress' | 'resolved' | 'closed';
+    priority: Priority;
+    status: TicketStatus;
     assignedTo?: string;
     createdAt: string;
     updatedAt: string;
@@ -15,7 +17,7 @@ export interface SupportTicket {
     id: string;
     ticketId: string;
     senderId: string;
-    senderType: 'user' | 'support';
+    senderType: SenderType;
     message: string;
     attachments?: string[];
     createdAt: string;
@@ -25,7 +27,7 @@ export interface SupportTicket {
     subject: string;
     description: string;
     topic: string;
-    priority?: 'low' | 'medium' | 'high';
+    priority?: Priority;
     attachments?: string[];
   }
   

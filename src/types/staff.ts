@@ -1,3 +1,5 @@
+import { BookingStatus } from '@/lib/constants/status';
+
 export interface StaffDashboardSummary {
     todayJobs: number;
     weekJobs: number;
@@ -18,7 +20,7 @@ export interface StaffDashboardSummary {
     time: string;
     datetime: string;
     location: string;
-    status: 'pending' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled';
+    status: BookingStatus;
     amount?: number;
     rating?: number;
   }
@@ -31,7 +33,7 @@ export interface StaffDashboardSummary {
       phone: string;
     };
     datetime: string;
-    status: 'pending' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled';
+    status: BookingStatus;
     notes: string[];
     location: string;
     amount?: number;
@@ -53,7 +55,7 @@ export interface StaffDashboardSummary {
   }
   
   export interface StaffJobFilters {
-    status?: 'pending' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled';
+    status?: BookingStatus;
     fromDate?: string;
     toDate?: string;
     search?: string;
@@ -62,7 +64,7 @@ export interface StaffDashboardSummary {
   }
   
   export interface UpdateJobStatusInput {
-    status: 'in_progress' | 'completed' | 'cancelled';
+    status: Exclude<BookingStatus, 'pending' | 'confirmed' | 'assigned'>;
     notes?: string;
   }
   

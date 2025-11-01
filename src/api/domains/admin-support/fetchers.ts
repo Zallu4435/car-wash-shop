@@ -1,13 +1,8 @@
 import { apiClient } from '@/api/client';
 import type { ApiResponse, PaginatedResponse } from '@/types/api';
-import type {
-  AdminFeedback,
-  AdminTicket,
-  AdminTicketDetail,
-  UpdateTicketStatusInput,
-  AddTicketMessageInput,
-} from '@/types/admin';
+import type { AdminFeedback, AdminTicket, AdminTicketDetail, UpdateTicketStatusInput, AddTicketMessageInput } from '@/types/admin';
 import { AdminRoutes } from '@/lib/constants/routes';
+import { PRIORITY, TICKET_STATUS, SENDER_TYPE } from '@/lib/constants/status';
 
 const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true';
 
@@ -95,8 +90,8 @@ const mockTickets: AdminTicket[] = [
     customerName: 'Rajesh Kumar',
     subject: 'Payment not reflected',
     description: 'I made a payment but it is not showing in my account.',
-    priority: 'high',
-    status: 'open',
+    priority: PRIORITY.HIGH,
+    status: TICKET_STATUS.OPEN,
     createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
     updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
   },
@@ -107,8 +102,8 @@ const mockTickets: AdminTicket[] = [
     customerName: 'Priya Sharma',
     subject: 'Booking cancellation issue',
     description: 'Unable to cancel my booking from the app.',
-    priority: 'medium',
-    status: 'in_progress',
+    priority: PRIORITY.MEDIUM,
+    status: TICKET_STATUS.IN_PROGRESS,
     createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
     updatedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
   },
@@ -121,14 +116,14 @@ const mockTicketDetails: Record<string, AdminTicketDetail> = {
       {
         id: 'MSG001',
         sender: 'Rajesh Kumar',
-        senderType: 'customer',
+        senderType: SENDER_TYPE.CUSTOMER,
         message: 'I made a payment of ₹599 but it is not showing in my account.',
         timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
       },
       {
         id: 'MSG002',
         sender: 'Support Team',
-        senderType: 'admin',
+        senderType: SENDER_TYPE.ADMIN,
         message: 'We are looking into this issue. Please provide your transaction ID.',
         timestamp: new Date(Date.now() - 20 * 60 * 60 * 1000).toISOString(),
       },

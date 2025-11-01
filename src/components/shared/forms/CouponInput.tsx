@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Tag, X } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { applyCouponSchema, ApplyCouponInput } from '@/schemas/coupon';
+import { applyCouponSchema, ApplyCouponInput } from '@/schemas/customer/coupon';
 
 interface CouponInputProps {
   onApply: (code: string) => Promise<void> | void;

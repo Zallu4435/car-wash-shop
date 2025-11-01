@@ -1,3 +1,5 @@
+import { BookingStatus, PaymentStatus } from '@/lib/constants/status';
+
 export interface BookingInput {
   serviceId: string;
   vehicleId: string;
@@ -21,11 +23,11 @@ export interface Booking {
   scheduledTime: string;
   addressId?: string;
   address: string;
-  status: 'pending' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled';
+  status: BookingStatus;
   totalAmount?: number;
   amount: number;
   advanceAmount?: number;
-  paymentStatus: 'paid' | 'pending' | 'refunded' | 'failed';
+  paymentStatus: PaymentStatus;
   addOns?: AddOn[];
   vehicleDetails: {
     brand: string;

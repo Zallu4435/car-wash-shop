@@ -13,7 +13,7 @@ import { toast } from 'sonner';
 import { VehicleSelectionModal } from '@/components/shared/selectors/VehicleSelectionModal';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { phoneOnlySchema, otpOnlySchema } from '@/schemas/auth';
+import { phoneOnlySchema, otpOnlySchema } from '@/schemas/customer/auth';
 import { useSendOtp, useLogin } from '@/api/domains/auth/queries';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';

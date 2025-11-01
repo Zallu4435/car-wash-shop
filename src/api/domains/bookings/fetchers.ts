@@ -8,6 +8,7 @@ import type {
   BookingFilters,
 } from '@/types/booking';
 import { CustomerRoutes } from '@/lib/constants/routes';
+import { BOOKING_STATUS, PAYMENT_STATUS } from '@/lib/constants/status';
 import { mockBookings } from '@/mocks/data/customer-mock-data';
 
 const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true';
@@ -31,8 +32,8 @@ export const bookingFetchers = {
         scheduledAt: input.scheduledAt,
         scheduledDate: scheduledDate.toLocaleDateString(),
         scheduledTime: scheduledDate.toLocaleTimeString(),
-        status: 'pending',
-        paymentStatus: 'pending',
+        status: BOOKING_STATUS.PENDING,
+        paymentStatus: PAYMENT_STATUS.PENDING,
         amount: 500,
         totalAmount: 500,
         notes: input.notes,

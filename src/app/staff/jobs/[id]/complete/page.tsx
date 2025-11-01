@@ -14,7 +14,7 @@ import { useUpdateJobStatus } from '@/api/domains/staff/queries';
 import { StaffRoutes } from '@/lib/constants/routes';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { completeJobSchema, CompleteJobInput } from '@/schemas/job';
+import { completeJobSchema, CompleteJobInput } from '@/schemas/staff/job';
 
 export default function CompleteJobPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);

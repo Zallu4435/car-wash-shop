@@ -11,7 +11,7 @@ import { useSubmitReview, useUpdateReview } from '@/api/domains/reviews/queries'
 import type { Review } from '@/api/domains/reviews/fetchers';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { submitReviewSchema, SubmitReviewInput } from '@/schemas/review';
+import { submitReviewSchema, SubmitReviewInput } from '@/schemas/customer/review';
 
 interface ReviewModalProps {
   isOpen: boolean;

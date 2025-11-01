@@ -9,7 +9,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import type { ZodSchema } from 'zod';
 
 interface Field {
   name: string;
@@ -24,7 +23,7 @@ interface Field {
 interface FormBuilderProps {
   title: string;
   fields: Field[];
-  schema: ZodSchema;
+  schema: any;
   onSubmit: (data: any) => void;
   defaultValues?: any;
   submitLabel?: string;
@@ -47,7 +46,7 @@ export function FormBuilder({
     setValue,
     watch,
   } = useForm({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema) as any,
     defaultValues,
   });
 
@@ -59,9 +58,10 @@ export function FormBuilder({
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {fields.map((field) => (
-            <div key={field.name}>
-              <Label htmlFor={field.name} required={field.required}>
+            <div key={field.name} className="space-y-2">
+              <Label htmlFor={field.name}>
                 {field.label}
+                {field.required && <span className="text-red-500 ml-1">*</span>}
               </Label>
 
               {field.type === 'text' || field.type === 'email' || field.type === 'number' ? (
@@ -70,14 +70,12 @@ export function FormBuilder({
                   type={field.type}
                   placeholder={field.placeholder}
                   {...register(field.name, { valueAsNumber: field.type === 'number' })}
-                  error={errors[field.name]?.message as string}
                 />
               ) : field.type === 'textarea' ? (
                 <Textarea
                   id={field.name}
                   placeholder={field.placeholder}
                   {...register(field.name)}
-                  error={errors[field.name]?.message as string}
                   rows={4}
                 />
               ) : field.type === 'select' ? (
@@ -112,7 +110,7 @@ export function FormBuilder({
               ) : null}
 
               {errors[field.name] && (
-                <p className="text-sm text-red-600 mt-1">{errors[field.name]?.message as string}</p>
+                <p className="text-xs text-red-600 dark:text-red-400">{errors[field.name]?.message as string}</p>
               )}
             </div>
           ))}

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { PRIORITY } from '@/lib/constants/status';
 
 // ============================================
 // Reusable Field Validations
@@ -77,7 +78,7 @@ export const complaintSchema = z
       ) as any,
     subject: subjectValidation,
     description: descriptionValidation,
-    priority: z.enum(['low', 'medium', 'high']).default('medium'),
+    priority: z.enum([PRIORITY.LOW, PRIORITY.MEDIUM, PRIORITY.HIGH] as const).default(PRIORITY.MEDIUM),
     attachments: z
       .array(
         z.object({

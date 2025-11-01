@@ -1,12 +1,8 @@
 import { apiClient } from '@/api/client';
 import type { ApiResponse, PaginatedResponse } from '@/types/api';
-import type {
-  AdminOrder,
-  AdminOrderDetail,
-  UpdateOrderStatusInput,
-  OrderFilters,
-} from '@/types/admin';
+import type { AdminOrder, AdminOrderDetail, UpdateOrderStatusInput, OrderFilters } from '@/types/admin';
 import { AdminRoutes } from '@/lib/constants/routes';
+import { ORDER_STATUS, PAYMENT_STATUS } from '@/lib/constants/status';
 
 const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true';
 
@@ -22,8 +18,8 @@ const mockOrders: AdminOrder[] = [
       { id: 'PROD002', name: 'Microfiber Cloth', quantity: 3, price: 199 },
     ],
     total: 1195,
-    status: 'delivered',
-    paymentStatus: 'paid',
+    status: ORDER_STATUS.DELIVERED,
+    paymentStatus: PAYMENT_STATUS.PAID,
     paymentMethod: 'Online',
     createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
     deliveryAddress: 'Koramangala, Bangalore',
@@ -38,8 +34,8 @@ const mockOrders: AdminOrder[] = [
       { id: 'PROD004', name: 'Dashboard Polish', quantity: 1, price: 249 },
     ],
     total: 648,
-    status: 'processing',
-    paymentStatus: 'paid',
+    status: ORDER_STATUS.PROCESSING,
+    paymentStatus: PAYMENT_STATUS.PAID,
     paymentMethod: 'UPI',
     createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
     deliveryAddress: 'Indiranagar, Bangalore',
@@ -53,8 +49,8 @@ const mockOrders: AdminOrder[] = [
       { id: 'PROD005', name: 'Wax Polish', quantity: 1, price: 599 },
     ],
     total: 599,
-    status: 'pending',
-    paymentStatus: 'pending',
+    status: ORDER_STATUS.PENDING,
+    paymentStatus: PAYMENT_STATUS.PENDING,
     paymentMethod: 'COD',
     createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
     deliveryAddress: 'HSR Layout, Bangalore',
@@ -69,8 +65,8 @@ const mockOrders: AdminOrder[] = [
       { id: 'PROD002', name: 'Microfiber Cloth', quantity: 5, price: 199 },
     ],
     total: 1294,
-    status: 'shipped',
-    paymentStatus: 'paid',
+    status: ORDER_STATUS.SHIPPED,
+    paymentStatus: PAYMENT_STATUS.PAID,
     paymentMethod: 'Card',
     createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
     deliveryAddress: 'Whitefield, Bangalore',
@@ -93,22 +89,22 @@ const mockOrderDetails: Record<string, AdminOrderDetail> = {
     },
     statusHistory: [
       {
-        status: 'pending',
+        status: ORDER_STATUS.PENDING,
         timestamp: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
         note: 'Order placed',
       },
       {
-        status: 'processing',
+        status: ORDER_STATUS.PROCESSING,
         timestamp: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
         note: 'Order confirmed',
       },
       {
-        status: 'shipped',
+        status: ORDER_STATUS.SHIPPED,
         timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
         note: 'Order shipped',
       },
       {
-        status: 'delivered',
+        status: ORDER_STATUS.DELIVERED,
         timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
         note: 'Order delivered successfully',
       },

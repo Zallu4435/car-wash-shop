@@ -13,7 +13,6 @@ import { useConfirmation } from '@/hooks/useConfirmation';
 import { useAdminCategoryDetail, useAdminProductList, useDeleteCategory } from '@/api/domains/admin-catalog/queries';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
-import { toast } from 'sonner';
 import Link from 'next/link';
 import { DangerZone } from '@/components/admin/DangerZone';
 

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { registerSchema, RegisterInput } from '@/schemas/auth';
+import { registerSchema, RegisterInput } from '@/schemas/customer/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,16 +14,6 @@ import { Separator } from '@/components/ui/separator';
 import { User, Phone, Mail, Lock, Eye, EyeOff, UserPlus, Droplet, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { useRegister } from '@/api/domains/auth/queries';
-
-interface Vehicle {
-  id: string;
-  type: 'car' | 'bike';
-  category: string;
-  brand: string;
-  model: string;
-  year: string;
-  plateNumber?: string;
-}
 
 export default function RegisterPage() {
   const router = useRouter();

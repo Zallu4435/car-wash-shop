@@ -15,7 +15,6 @@ import {
   Trash2,
   SlidersHorizontal,
   X,
-  Loader2,
   CheckCheck
 } from 'lucide-react';
 import { useInfiniteNotifications, useMarkAsRead, useMarkAllAsRead } from '@/api/domains/notifications/queries';

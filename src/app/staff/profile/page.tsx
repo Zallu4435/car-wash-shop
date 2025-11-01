@@ -18,7 +18,7 @@ import Error from '@/components/shared/display/Error';
 import { StaffRoutes } from '@/lib/constants/routes';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { staffProfileEditSchema, StaffProfileEditInput } from '@/schemas/staff-profile';
+import { staffProfileEditSchema, StaffProfileEditInput } from '@/schemas/staff/profile';
 
 export default function StaffProfilePage() {
   const router = useRouter();

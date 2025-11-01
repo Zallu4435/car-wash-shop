@@ -14,7 +14,7 @@ import { useCurrentUser } from '@/api/domains/auth/queries';
 import { useUpdateProfile } from '@/api/domains/profile/queries';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { profileEditSchema, ProfileEditInput } from '@/schemas/profile';
+import { profileEditSchema, ProfileEditInput } from '@/schemas/customer/profile';
 
 export default function ProfilePage() {
   const router = useRouter();

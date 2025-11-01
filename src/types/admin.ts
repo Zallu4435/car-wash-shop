@@ -1,3 +1,5 @@
+import { BookingStatus, OrderStatus, PaymentStatus, TicketStatus, FeedbackStatus, CODPaymentStatus, Priority, SenderType } from '@/lib/constants/status';
+
 // Dashboard Types
 export interface AdminDashboardSummary {
   totalRevenue: number;
@@ -268,8 +270,8 @@ export interface AdminOrder {
     price: number;
   }>;
   total: number;
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
-  paymentStatus: 'pending' | 'paid' | 'failed' | 'refunded';
+  status: OrderStatus;
+  paymentStatus: PaymentStatus;
   paymentMethod: string;
   createdAt: string;
   deliveryAddress?: string;
@@ -299,7 +301,7 @@ export interface AdminOrderDetail extends AdminOrder {
 }
 
 export interface UpdateOrderStatusInput {
-  status: 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  status: Exclude<OrderStatus, 'pending' | 'packed' | 'out-for-delivery' | 'returned'>;
   note?: string;
 }
 
@@ -323,11 +325,11 @@ export interface AdminBooking {
   serviceId: string;
   scheduledDate: string;
   scheduledTime: string;
-  status: 'pending' | 'confirmed' | 'assigned' | 'in_progress' | 'completed' | 'cancelled';
+  status: BookingStatus;
   assignedStaff?: string;
   assignedStaffId?: string;
   amount: number;
-  paymentStatus: 'pending' | 'paid' | 'failed';
+  paymentStatus: PaymentStatus;
   createdAt: string;
   // Alias fields for compatibility
   date?: string; // Alias for scheduledDate
@@ -586,7 +588,7 @@ export interface AdminFeedback {
   bookingId?: string;
   rating: number;
   comment: string;
-  status: 'pending' | 'reviewed' | 'resolved';
+  status: FeedbackStatus;
   feedbackType?: 'service' | 'product';
   type?: string; // For categorization like 'Compliment', 'Suggestion', 'Bug'
   createdAt: string;
@@ -601,8 +603,8 @@ export interface AdminTicket {
   email?: string;
   subject: string;
   description: string;
-  status: 'open' | 'in_progress' | 'resolved' | 'closed';
-  priority: 'low' | 'medium' | 'high' | 'urgent';
+  status: TicketStatus;
+  priority: Priority;
   assignedTo?: string;
   createdAt: string;
   updatedAt: string;
@@ -613,7 +615,7 @@ export interface AdminTicketDetail extends AdminTicket {
   messages: Array<{
     id: string;
     sender: string;
-    senderType: 'customer' | 'admin' | 'staff';
+    senderType: SenderType;
     message: string;
     timestamp: string;
     attachments?: string[];
@@ -621,7 +623,7 @@ export interface AdminTicketDetail extends AdminTicket {
 }
 
 export interface UpdateTicketStatusInput {
-  status: 'in_progress' | 'resolved' | 'closed';
+  status: Exclude<TicketStatus, 'open'>;
   assignedTo?: string;
   note?: string;
 }
@@ -639,7 +641,7 @@ export interface CODTransaction {
   staffId: string;
   staffName: string;
   amount: number;
-  status: 'pending' | 'collected' | 'deposited' | 'verified';
+  status: CODPaymentStatus;
   collectedAt?: string;
   depositedAt?: string;
   verifiedAt?: string;

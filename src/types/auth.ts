@@ -1,9 +1,11 @@
+import { UserRole } from '@/lib/constants/status';
+
 export interface AuthUser {
     id: string;
     phone: string;
     name: string;
     email?: string;
-    role: 'customer' | 'staff' | 'admin';
+    role: UserRole;
     avatar?: string;
     isVerified?: boolean;
     createdAt?: string;

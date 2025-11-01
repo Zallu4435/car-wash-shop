@@ -21,7 +21,7 @@ import type { Vehicle } from '@/types/vehicle';
 import type { Address } from '@/types/address';
 import Loading from '@/components/shared/display/Loading';
 import { mockServiceTypes, mockAddOns } from '@/mocks/data/customer-mock-data';
-import { createBookingSchema, CreateBookingInput } from '@/schemas/booking';
+import { createBookingSchema, CreateBookingInput } from '@/schemas/customer/booking';
 
 export default function BookingPage() {
   const router = useRouter();
