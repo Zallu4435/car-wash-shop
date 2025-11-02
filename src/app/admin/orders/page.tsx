@@ -1,10 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
 import { 
   ShoppingBag, 
   Search, 
@@ -21,6 +18,7 @@ import { EmptyState } from '@/components/shared/display/EmptyState';
 import { SearchFilter } from '@/components/admin/SearchFilter';
 import { Pagination } from '@/components/admin/Pagination';
 import { StatCard } from '@/components/admin/StatCard';
+import { TransactionCard } from '@/components/admin/TransactionCard';
 
 export default function OrdersPage() {
   const router = useRouter();
@@ -83,7 +81,7 @@ export default function OrdersPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         <StatCard
           icon={ShoppingBag}
           label="Total Orders"
@@ -110,7 +108,6 @@ export default function OrdersPage() {
           change="+15.2%"
           trend="up"
           description="Successfully delivered"
-          className="sm:col-span-2 md:col-span-1"
         />
       </div>
 
@@ -118,10 +115,8 @@ export default function OrdersPage() {
       <Card className="border-2">
         <CardHeader className="pb-3 sm:pb-4">
           <div className="flex items-center gap-2">
-            <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
-              <ShoppingBag className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-            </div>
-            <CardTitle className="text-base sm:text-lg">All Orders</CardTitle>
+            <ShoppingBag className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+            <CardTitle className="text-sm sm:text-base lg:text-lg">All Orders</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
@@ -173,92 +168,25 @@ export default function OrdersPage() {
               {filteredOrders.map((order) => {
               const statusStyle = statusColors[order.status as keyof typeof statusColors] || statusColors.processing;
               return (
-                <Card key={order.id} className="border-2 hover:shadow-lg transition-all">
-                  <CardContent className="p-3 sm:p-4 md:p-5">
-                    {/* Desktop Layout */}
-                    <div className="hidden md:flex items-center justify-between gap-4">
-                      {/* Left Section */}
-                      <div className="flex items-center gap-4 flex-1 min-w-0">
-                        <div className="p-3 bg-primary/10 rounded-xl flex-shrink-0">
-                          <Package className="h-6 w-6 text-primary" />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <Badge variant="outline" className="font-mono text-xs">
-                              {order.orderNumber}
-                            </Badge>
-                            <Badge className={`${statusStyle.bgColor} text-xs capitalize`}>
-                              <span className={statusStyle.color}>{order.status}</span>
-                            </Badge>
-                          </div>
-                          <p className="font-semibold text-foreground truncate">
-                            {order.customer}
-                          </p>
-                          <p className="text-sm text-muted-foreground truncate">
-                            {order.createdAt}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Right Section */}
-                      <div className="flex items-center gap-4 flex-shrink-0">
-                        <div className="text-right">
-                          <p className="text-xs text-muted-foreground mb-1">Amount</p>
-                          <p className="text-xl font-bold text-primary">₹{order.total}</p>
-                        </div>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => router.push(`/admin/orders/${order.id}`)}
-                          className="h-9 text-xs sm:text-sm"
-                        >
-                          <Eye className="mr-2 h-4 w-4" />
-                          View
-                        </Button>
-                      </div>
-                    </div>
-
-                    {/* Mobile/Tablet Layout */}
-                    <div className="md:hidden space-y-3">
-                      <div className="flex items-start gap-3">
-                        <div className="p-2 sm:p-2.5 bg-primary/10 rounded-lg sm:rounded-xl flex-shrink-0">
-                          <Package className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-1">
-                            <Badge variant="outline" className="font-mono text-xs">
-                              {order.orderNumber}
-                            </Badge>
-                            <Badge className={`${statusStyle.bgColor} text-xs capitalize`}>
-                              <span className={statusStyle.color}>{order.status}</span>
-                            </Badge>
-                          </div>
-                          <p className="font-semibold text-sm sm:text-base text-foreground truncate">
-                            {order.customer}
-                          </p>
-                          <p className="text-xs sm:text-sm text-muted-foreground truncate">
-                            {order.createdAt}
-                          </p>
-                          <div className="mt-2 pt-2 border-t border-border flex items-center justify-between">
-                            <div>
-                              <p className="text-[10px] sm:text-xs text-muted-foreground">Amount</p>
-                              <p className="text-lg sm:text-xl font-bold text-primary">₹{order.total}</p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => router.push(`/admin/orders/${order.id}`)}
-                        className="w-full h-9 text-xs sm:text-sm"
-                      >
-                        <Eye className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                        View Details
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+                <TransactionCard
+                  key={order.id}
+                  id={order.id}
+                  icon={Package}
+                  primaryBadge={{
+                    label: order.orderNumber,
+                    variant: 'outline',
+                  }}
+                  statusBadge={{
+                    label: order.status,
+                    className: `border-2 ${statusStyle.color}`,
+                  }}
+                  title={order.customer}
+                  subtitle={order.createdAt}
+                  amount={order.total}
+                  amountLabel="Amount"
+                  onView={() => router.push(`/admin/orders/${order.id}`)}
+                  viewButtonText="View"
+                />
               );
             })}
             </div>

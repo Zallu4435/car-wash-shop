@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Car, Bike, Plus, Edit, Trash2, Move, Layers, ArrowLeft } from 'lucide-react';
 import { SearchFilter } from '@/components/admin/SearchFilter';
 import { Pagination } from '@/components/admin/Pagination';
+import { TransactionCard } from '@/components/admin/TransactionCard';
 import { EmptyState } from '@/components/shared/display/EmptyState';
 import { useConfirmation } from '@/hooks/useConfirmation';
 import { toast } from 'sonner';
@@ -93,7 +94,7 @@ export default function BodyTypesPage() {
               Manage vehicle body types and categories
             </p>
           </div>
-          <Button onClick={() => router.push('/admin/vehicles/body-types/new')} className="w-full md:w-auto h-9 sm:h-10 text-xs sm:text-sm">
+          <Button onClick={() => router.push('/admin/vehicles/body-types/new')} className="w-full md:w-auto h-9 sm:h-10 text-xs sm:text-sm border-2">
             <Plus className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
             Add Body Type
           </Button>
@@ -164,111 +165,44 @@ export default function BodyTypesPage() {
               {paginatedTypes.map((type) => {
               const Icon = iconMap[type.icon as keyof typeof iconMap];
               return (
-                <Card key={type.id} className="border-2 border-border hover:shadow-md transition-all">
-                  <CardContent className="p-4 sm:p-5">
-                    {/* Desktop Layout */}
-                    <div className="hidden md:flex items-center justify-between">
-                      <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
-                        <div className="flex items-center gap-2 text-muted-foreground cursor-move">
-                          <Move className="h-4 w-4" />
-                          <span className="text-sm font-mono">{type.order}</span>
-                        </div>
-                        
-                        <div className="p-2.5 sm:p-3 bg-primary/10 rounded-xl">
-                          <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-                        </div>
-                        
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h3 className="font-bold text-sm sm:text-base text-foreground truncate">
-                              {type.name}
-                            </h3>
-                            <Badge variant="outline" className="text-xs">
-                              {type.vehicleType}
-                            </Badge>
-                          </div>
-                          <p className="text-xs text-muted-foreground">
-                            {type.modelsCount} models available
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-                        <Badge variant={type.active ? 'default' : 'secondary'} className="text-xs">
-                          {type.active ? 'Active' : 'Inactive'}
-                        </Badge>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => router.push(`/admin/vehicles/body-types/${type.id}/edit`)}
-                          className="h-9 text-xs sm:text-sm"
-                        >
-                          <Edit className="mr-2 h-4 w-4" />
-                          Edit
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          className="text-destructive hover:text-destructive hover:bg-destructive/10 h-9 px-3"
-                          onClick={() => handleDelete(type.id, type.name)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+                <TransactionCard
+                  key={type.id}
+                  id={type.id}
+                  icon={Icon}
+                  layout="horizontal"
+                  primaryBadge={{
+                    label: type.vehicleType,
+                    variant: 'outline',
+                  }}
+                  statusBadge={{
+                    label: type.active ? 'Active' : 'Inactive',
+                    className: '',
+                  }}
+                  title={type.name}
+                  subtitle={`${type.modelsCount} models available`}
+                  amount={`Order: ${type.order}`}
+                  amountLabel="Position"
+                  additionalContent={
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Move className="h-4 w-4" />
+                      <span className="text-sm font-mono">{type.order}</span>
                     </div>
-
-                    {/* Mobile Layout */}
-                    <div className="md:hidden space-y-3">
-                      <div className="flex items-start gap-3">
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                          <Move className="h-3.5 w-3.5" />
-                          <span className="text-xs font-mono">{type.order}</span>
-                        </div>
-                        
-                        <div className="p-2.5 bg-primary/10 rounded-lg flex-shrink-0">
-                          <Icon className="h-5 w-5 text-primary" />
-                        </div>
-                        
-                        <div className="min-w-0 flex-1">
-                          <h3 className="font-bold text-sm text-foreground truncate">
-                            {type.name}
-                          </h3>
-                          <div className="flex flex-wrap gap-1.5 mt-1">
-                            <Badge variant="outline" className="text-xs">
-                              {type.vehicleType}
-                            </Badge>
-                            <Badge variant={type.active ? 'default' : 'secondary'} className="text-xs">
-                              {type.active ? 'Active' : 'Inactive'}
-                            </Badge>
-                          </div>
-                          <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">
-                            {type.modelsCount} models available
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => router.push(`/admin/vehicles/body-types/${type.id}/edit`)}
-                          className="flex-1 h-9 text-xs"
-                        >
-                          <Edit className="mr-1.5 h-3.5 w-3.5" />
-                          <span className="hidden xs:inline">Edit</span>
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="text-destructive hover:text-destructive hover:bg-destructive/10 h-9 px-3"
-                          onClick={() => handleDelete(type.id, type.name)}
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                  }
+                  actionButtons={[
+                    {
+                      label: 'Edit',
+                      icon: Edit,
+                      onClick: () => router.push(`/admin/vehicles/body-types/${type.id}/edit`),
+                      hideTextOnMobile: true,
+                    },
+                    {
+                      label: '',
+                      icon: Trash2,
+                      onClick: () => handleDelete(type.id, type.name),
+                      className: 'text-destructive hover:bg-destructive/10 flex-initial px-3',
+                    },
+                  ]}
+                />
               );
               })}
             </div>
@@ -304,14 +238,32 @@ export default function BodyTypesPage() {
           <CardContent>
             <div className="space-y-2 sm:space-y-3">
               {bodyTypes.filter(t => t.vehicleType === '4-Wheeler').map((type) => (
-                <div key={type.id} className="flex items-center justify-between p-3 sm:p-4 bg-muted rounded-lg">
+                <div key={type.id} className="flex items-center justify-between p-3 sm:p-4 bg-muted rounded-lg gap-2 sm:gap-3">
                   <div className="min-w-0 flex-1">
                     <p className="font-semibold text-sm sm:text-base text-foreground truncate">{type.name}</p>
                     <p className="text-[10px] sm:text-xs text-muted-foreground">{type.modelsCount} models</p>
                   </div>
-                  <Badge variant={type.active ? 'default' : 'secondary'} className="text-xs flex-shrink-0">
-                    {type.active ? 'Active' : 'Inactive'}
-                  </Badge>
+                  <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+                    <Badge variant={type.active ? 'default' : 'secondary'} className="text-xs">
+                      {type.active ? 'Active' : 'Inactive'}
+                    </Badge>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => router.push(`/admin/vehicles/body-types/${type.id}/edit`)}
+                      className="h-7 w-7 sm:h-8 sm:w-8 p-0"
+                    >
+                      <Edit className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDelete(type.id, type.name)}
+                      className="h-7 w-7 sm:h-8 sm:w-8 p-0 text-destructive hover:bg-destructive/10"
+                    >
+                      <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -328,14 +280,32 @@ export default function BodyTypesPage() {
           <CardContent>
             <div className="space-y-2 sm:space-y-3">
               {bodyTypes.filter(t => t.vehicleType === '2-Wheeler').map((type) => (
-                <div key={type.id} className="flex items-center justify-between p-3 sm:p-4 bg-muted rounded-lg">
+                <div key={type.id} className="flex items-center justify-between p-3 sm:p-4 bg-muted rounded-lg gap-2 sm:gap-3">
                   <div className="min-w-0 flex-1">
                     <p className="font-semibold text-sm sm:text-base text-foreground truncate">{type.name}</p>
                     <p className="text-[10px] sm:text-xs text-muted-foreground">{type.modelsCount} models</p>
                   </div>
-                  <Badge variant={type.active ? 'default' : 'secondary'} className="text-xs flex-shrink-0">
-                    {type.active ? 'Active' : 'Inactive'}
-                  </Badge>
+                  <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+                    <Badge variant={type.active ? 'default' : 'secondary'} className="text-xs">
+                      {type.active ? 'Active' : 'Inactive'}
+                    </Badge>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => router.push(`/admin/vehicles/body-types/${type.id}/edit`)}
+                      className="h-7 w-7 sm:h-8 sm:w-8 p-0"
+                    >
+                      <Edit className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDelete(type.id, type.name)}
+                      className="h-7 w-7 sm:h-8 sm:w-8 p-0 text-destructive hover:bg-destructive/10"
+                    >
+                      <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>

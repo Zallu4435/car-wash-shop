@@ -92,24 +92,24 @@ export function SearchFilter({
   const activeFilterCount = Object.keys(filters).length;
 
   return (
-    <div className={`space-y-3 ${className}`}>
+    <div className={`space-y-3 sm:space-y-4 ${className}`}>
       {/* Search and Filter Row */}
-      <div className="flex gap-2">
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
         {/* Search Input */}
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <div className="relative flex-1 w-full">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
           <Input
             placeholder={searchPlaceholder}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 h-10"
+            className="pl-9 sm:pl-10 h-9 sm:h-10 text-xs sm:text-sm"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+              className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
             >
-              <X className="h-4 w-4" />
+              <X className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </button>
           )}
         </div>
@@ -120,24 +120,24 @@ export function SearchFilter({
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
-                className="h-10 px-3 gap-2 flex-shrink-0"
+                className="h-9 sm:h-10 px-3 sm:px-4 gap-2 flex-shrink-0 w-full sm:w-auto text-xs sm:text-sm"
               >
-                <Filter className="h-4 w-4" />
-                <span className="hidden sm:inline">Filters</span>
+                <Filter className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                <span>Filters</span>
                 {activeFilterCount > 0 && (
                   <Badge
                     variant="default"
-                    className="h-5 min-w-[20px] rounded-full p-0 flex items-center justify-center text-[10px] font-medium"
+                    className="h-4 sm:h-5 min-w-[16px] sm:min-w-[20px] rounded-full px-1 flex items-center justify-center text-[9px] sm:text-[10px] font-medium"
                   >
                     {activeFilterCount}
                   </Badge>
                 )}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-[280px] sm:w-80 p-4" align="end" sideOffset={8}>
-              <div className="space-y-4">
+            <PopoverContent className="w-[calc(100vw-2rem)] max-w-[280px] sm:max-w-sm p-3 sm:p-4" align="end" sideOffset={8}>
+              <div className="space-y-3 sm:space-y-4">
                 <div className="flex items-center justify-between pb-2 border-b">
-                  <h4 className="font-semibold text-sm">Filters</h4>
+                  <h4 className="font-semibold text-xs sm:text-sm">Filters</h4>
                   {activeFilterCount > 0 && (
                     <Button
                       variant="ghost"
@@ -151,8 +151,8 @@ export function SearchFilter({
                 </div>
 
                 {filterOptions.map((filterOption) => (
-                  <div key={filterOption.value} className="space-y-2">
-                    <label className="text-xs font-medium">
+                  <div key={filterOption.value} className="space-y-1.5 sm:space-y-2">
+                    <label className="text-[10px] sm:text-xs font-medium">
                       {filterOption.label}
                     </label>
                     
@@ -171,7 +171,7 @@ export function SearchFilter({
                             }
                           }}
                         >
-                          <SelectTrigger className="h-9 text-sm">
+                          <SelectTrigger className="h-8 sm:h-9 text-xs sm:text-sm">
                             <SelectValue placeholder={`Select ${filterOption.label.toLowerCase()}`} />
                           </SelectTrigger>
                           <SelectContent>
@@ -249,7 +249,7 @@ export function SearchFilter({
                           }
                         }}
                       >
-                        <SelectTrigger className="h-9 text-sm">
+                        <SelectTrigger className="h-8 sm:h-9 text-xs sm:text-sm">
                           <SelectValue placeholder={`Select ${filterOption.label.toLowerCase()}`} />
                         </SelectTrigger>
                         <SelectContent>
@@ -275,7 +275,7 @@ export function SearchFilter({
 
       {/* Active Filters */}
       {activeFilterCount > 0 && (
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-1.5 sm:gap-2">
           {Object.entries(filters).map(([key, value]) => {
             const filterOption = filterOptions.find((f) => f.value === key);
             const optionLabel = filterOption?.options.find(
@@ -285,7 +285,7 @@ export function SearchFilter({
               <Badge
                 key={key}
                 variant="secondary"
-                className="gap-1.5 pr-1 text-xs h-7"
+                className="gap-1 sm:gap-1.5 pr-0.5 sm:pr-1 text-[10px] sm:text-xs h-6 sm:h-7"
               >
                 <span className="font-medium">{filterOption?.label}:</span>
                 <span>{optionLabel}</span>
@@ -293,7 +293,7 @@ export function SearchFilter({
                   onClick={() => clearFilter(key)}
                   className="ml-0.5 hover:bg-muted rounded-full p-0.5 transition-colors cursor-pointer"
                 >
-                  <X className="h-3 w-3" />
+                  <X className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                 </button>
               </Badge>
             );

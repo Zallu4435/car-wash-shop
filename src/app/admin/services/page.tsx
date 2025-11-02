@@ -3,11 +3,9 @@
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { 
   Car, 
   Plus, 
-  Search, 
   Eye, 
   Edit,
   Trash2,
@@ -23,6 +21,7 @@ import { EmptyState } from '@/components/shared/display/EmptyState';
 import { SearchFilter } from '@/components/admin/SearchFilter';
 import { StatCard } from '@/components/admin/StatCard';
 import { Pagination } from '@/components/admin/Pagination';
+import { TransactionCard } from '@/components/admin/TransactionCard';
 import { useConfirmation } from '@/hooks/useConfirmation';
 import { toast } from 'sonner';
 
@@ -97,14 +96,14 @@ export default function ServicesPage() {
             Manage your service offerings
           </p>
         </div>
-        <Button onClick={() => router.push('/admin/services/new')} className="w-full md:w-auto h-9 sm:h-10 text-xs sm:text-sm">
+        <Button onClick={() => router.push('/admin/services/new')} className="w-full md:w-auto h-9 sm:h-10 text-xs sm:text-sm border-2">
           <Plus className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Add Service
         </Button>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         <StatCard
           icon={Car}
           label="Total Services"
@@ -131,18 +130,16 @@ export default function ServicesPage() {
           change="+4.8%"
           trend="up"
           description="Average pricing"
-          className="sm:col-span-2 md:col-span-1"
+          className="xs:col-span-2 lg:col-span-1"
         />
       </div>
 
       {/* Services List */}
-      <Card className="border-2">
+      <Card className="border-2 border-border rounded-lg sm:rounded-xl">
         <CardHeader className="pb-3 sm:pb-4">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
-              <Car className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-            </div>
-            <CardTitle className="text-base sm:text-lg">All Services</CardTitle>
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <Car className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+            <CardTitle className="text-sm sm:text-base lg:text-lg">All Services</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
@@ -194,79 +191,57 @@ export default function ServicesPage() {
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
               {filteredServices.map((service) => (
-              <Card key={service.id} className="border-2 hover:shadow-lg transition-all">
-                <CardContent className="p-4 sm:p-5">
-                  <div className="flex items-start justify-between mb-3 sm:mb-4 gap-2">
-                    <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-                      <div className="p-2 sm:p-3 bg-primary/10 rounded-lg sm:rounded-xl flex-shrink-0">
-                        <Car className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <h3 className="font-bold text-sm sm:text-base text-foreground truncate">
-                          {service.name}
-                        </h3>
-                        <Badge variant="outline" className="text-xs mt-0.5 sm:mt-1">
-                          {service.category}
-                        </Badge>
-                      </div>
-                    </div>
-                    <Badge variant={service.status === 'active' ? 'default' : 'secondary'} className="text-xs flex-shrink-0">
-                      {service.status === 'active' ? 'Active' : 'Inactive'}
-                    </Badge>
-                  </div>
-
-                  <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4 line-clamp-2">
-                    {service.description || 'No description available'}
-                  </p>
-
-                  <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-3 sm:mb-4">
-                    <div className="p-2.5 sm:p-3 bg-muted rounded-lg">
-                      <div className="flex items-center gap-1.5 sm:gap-2 mb-0.5 sm:mb-1">
-                        <IndianRupee className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
-                        <p className="text-[10px] sm:text-xs text-muted-foreground">Price</p>
-                      </div>
-                      <p className="text-base sm:text-lg font-bold text-primary">₹{service.price}</p>
-                    </div>
-                    <div className="p-2.5 sm:p-3 bg-muted rounded-lg">
-                      <div className="flex items-center gap-1.5 sm:gap-2 mb-0.5 sm:mb-1">
-                        <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
-                        <p className="text-[10px] sm:text-xs text-muted-foreground">Duration</p>
-                      </div>
-                      <p className="text-base sm:text-lg font-bold text-foreground">{service.duration} min</p>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="flex-1 h-9 text-xs sm:text-sm"
-                      onClick={() => router.push(`/admin/services/${service.id}`)}
-                    >
-                      <Eye className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                      <span className="hidden xs:inline">View</span>
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="flex-1 h-9 text-xs sm:text-sm"
-                      onClick={() => router.push(`/admin/services/${service.id}/edit`)}
-                    >
-                      <Edit className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                      <span className="hidden xs:inline">Edit</span>
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20 h-9 px-3"
-                      onClick={() => handleDelete(service.id, service.name)}
-                      disabled={deleteServiceMutation.isPending}
-                    >
-                      <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+                <TransactionCard
+                  key={service.id}
+                  id={service.id}
+                  icon={Car}
+                  layout="vertical"
+                  primaryBadge={{
+                    label: service.category,
+                    variant: 'outline',
+                  }}
+                  statusBadge={{
+                    label: service.status === 'active' ? 'Active' : 'Inactive',
+                    className: '',
+                  }}
+                  title={service.name}
+                  subtitle={service.category}
+                  description={service.description || 'No description available'}
+                  infoBoxes={[
+                    {
+                      icon: IndianRupee,
+                      label: 'Price',
+                      value: `₹${service.price}`,
+                      valueClassName: 'text-primary',
+                    },
+                    {
+                      icon: Clock,
+                      label: 'Duration',
+                      value: `${service.duration} min`,
+                    },
+                  ]}
+                  actionButtons={[
+                    {
+                      label: 'View',
+                      icon: Eye,
+                      onClick: () => router.push(`/admin/services/${service.id}`),
+                      hideTextOnMobile: true,
+                    },
+                    {
+                      label: 'Edit',
+                      icon: Edit,
+                      onClick: () => router.push(`/admin/services/${service.id}/edit`),
+                      hideTextOnMobile: true,
+                    },
+                    {
+                      label: '',
+                      icon: Trash2,
+                      onClick: () => handleDelete(service.id, service.name),
+                      disabled: deleteServiceMutation.isPending,
+                      className: 'text-destructive hover:bg-destructive/10 flex-initial px-3',
+                    },
+                  ]}
+                />
               ))}
             </div>
           )}

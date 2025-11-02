@@ -24,28 +24,28 @@ export function ProgressBar({
   const heightClass = height === 'md' ? 'h-2 sm:h-3' : 'h-1.5 sm:h-2';
   
   return (
-    <div className="space-y-1.5 sm:space-y-2">
+    <div className="space-y-1 sm:space-y-1.5 lg:space-y-2">
       {showLabel && (
-        <div className="flex items-center justify-between text-xs sm:text-sm">
-          <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+        <div className="flex items-center justify-between text-[10px] sm:text-xs lg:text-sm">
+          <div className="flex items-center gap-1.5 sm:gap-2 lg:gap-3 min-w-0 flex-1">
             {Icon ? (
               <div 
-                className="p-1.5 sm:p-2 rounded-lg flex-shrink-0"
+                className="p-1 sm:p-1.5 lg:p-2 rounded-md sm:rounded-lg flex-shrink-0"
                 style={{ backgroundColor: `${color}15` }}
               >
-                <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" style={{ color }} />
+                <Icon className="h-3 w-3 sm:h-3.5 sm:w-3.5 lg:h-4 lg:w-4" style={{ color }} />
               </div>
             ) : color ? (
               <div 
-                className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full flex-shrink-0" 
+                className="w-2 h-2 sm:w-2.5 sm:h-2.5 lg:w-3 lg:h-3 rounded-full flex-shrink-0" 
                 style={{ backgroundColor: color, opacity }}
               />
             ) : null}
-            {label && <span className="font-medium text-foreground truncate">{label}</span>}
+            {label && <span className="font-medium text-foreground truncate text-[10px] sm:text-xs lg:text-sm">{label}</span>}
           </div>
-          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-            {value !== undefined && <span className="text-muted-foreground">{value}</span>}
-            <span className="font-bold text-foreground w-10 sm:w-12 text-right">
+          <div className="flex items-center gap-1.5 sm:gap-2 lg:gap-3 flex-shrink-0">
+            {value !== undefined && <span className="text-muted-foreground text-[10px] sm:text-xs">{value}</span>}
+            <span className="font-bold text-foreground w-8 sm:w-10 lg:w-12 text-right text-[10px] sm:text-xs lg:text-sm">
               {percentage}%
             </span>
           </div>

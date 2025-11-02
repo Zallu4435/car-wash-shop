@@ -19,6 +19,7 @@ import { EmptyState } from '@/components/shared/display/EmptyState';
 import { SearchFilter } from '@/components/admin/SearchFilter';
 import { StatCard } from '@/components/admin/StatCard';
 import { Pagination } from '@/components/admin/Pagination';
+import { TransactionCard } from '@/components/admin/TransactionCard';
 import { AdminRoutes } from '@/lib/constants/routes';
 
 export default function TicketsPage() {
@@ -62,61 +63,29 @@ export default function TicketsPage() {
   const inProgressTickets = tickets.filter((t: any) => t.status === 'in_progress').length;
   const resolvedTickets = tickets.filter((t: any) => t.status === 'resolved').length;
 
-  const getPriorityStyle = (priority: string) => {
+  const getPriorityClass = (priority: string) => {
     switch (priority) {
       case 'high':
-        return {
-          backgroundColor: 'hsl(0 63% 55% / 0.1)',
-          color: 'hsl(0 63% 55%)',
-          borderColor: 'hsl(0 63% 55% / 0.3)'
-        };
+        return 'border-2 text-red-600 dark:text-red-400';
       case 'medium':
-        return {
-          backgroundColor: 'hsl(30 80% 55% / 0.1)',
-          color: 'hsl(30 80% 55%)',
-          borderColor: 'hsl(30 80% 55% / 0.3)'
-        };
+        return 'border-2 text-orange-600 dark:text-orange-400';
       case 'low':
-        return {
-          backgroundColor: 'hsl(221 83% 53% / 0.1)',
-          color: 'hsl(221 83% 53%)',
-          borderColor: 'hsl(221 83% 53% / 0.3)'
-        };
+        return 'border-2 text-blue-600 dark:text-blue-400';
       default:
-        return {
-          backgroundColor: 'hsl(var(--muted))',
-          color: 'hsl(var(--muted-foreground))',
-          borderColor: 'hsl(var(--border))'
-        };
+        return 'border-2';
     }
   };
 
-  const getStatusStyle = (status: string) => {
+  const getStatusClass = (status: string) => {
     switch (status) {
       case 'open':
-        return {
-          backgroundColor: 'hsl(30 80% 55% / 0.1)',
-          color: 'hsl(30 80% 55%)',
-          borderColor: 'hsl(30 80% 55% / 0.3)'
-        };
-      case 'in-progress':
-        return {
-          backgroundColor: 'hsl(221 83% 53% / 0.1)',
-          color: 'hsl(221 83% 53%)',
-          borderColor: 'hsl(221 83% 53% / 0.3)'
-        };
+        return 'border-2 text-orange-600 dark:text-orange-400';
+      case 'in_progress':
+        return 'border-2 text-blue-600 dark:text-blue-400';
       case 'resolved':
-        return {
-          backgroundColor: 'hsl(160 60% 45% / 0.1)',
-          color: 'hsl(160 60% 45%)',
-          borderColor: 'hsl(160 60% 45% / 0.3)'
-        };
+        return 'border-2 text-green-600 dark:text-green-400';
       default:
-        return {
-          backgroundColor: 'hsl(var(--muted))',
-          color: 'hsl(var(--muted-foreground))',
-          borderColor: 'hsl(var(--border))'
-        };
+        return 'border-2';
     }
   };
 
@@ -133,7 +102,7 @@ export default function TicketsPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <StatCard
           icon={Ticket}
           label="Total Tickets"
@@ -174,13 +143,11 @@ export default function TicketsPage() {
       </div>
 
       {/* Tickets List */}
-      <Card className="border-2 border-border">
+      <Card className="border-2 border-border rounded-lg sm:rounded-xl">
         <CardHeader className="pb-3 sm:pb-4">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 sm:p-2 rounded-lg" style={{ backgroundColor: 'hsl(var(--primary) / 0.1)' }}>
-              <Ticket className="h-4 w-4 sm:h-5 sm:w-5" style={{ color: 'hsl(var(--primary))' }} />
-            </div>
-            <CardTitle className="text-base sm:text-lg">All Tickets</CardTitle>
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <Ticket className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+            <CardTitle className="text-sm sm:text-base lg:text-lg">All Tickets</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
@@ -223,81 +190,37 @@ export default function TicketsPage() {
             />
           ) : (
             <div className="space-y-2.5 sm:space-y-3">
-              {filteredTickets.map((ticket) => {
-                const priorityStyle = getPriorityStyle(ticket.priority);
-                const statusStyle = getStatusStyle(ticket.status);
-                
-                return (
-                  <Card key={ticket.id} className="border-2 border-border hover:shadow-lg transition-all">
-                    <CardContent className="p-4 sm:p-5">
-                      <div className="flex flex-col sm:flex-row items-start justify-between gap-3 sm:gap-4">
-                        {/* Left Section */}
-                        <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0 w-full sm:w-auto">
-                          <div 
-                            className="p-2 sm:p-3 rounded-lg sm:rounded-xl flex-shrink-0"
-                            style={{ backgroundColor: 'hsl(var(--primary) / 0.1)' }}
-                          >
-                            <Ticket className="h-5 w-5 sm:h-6 sm:w-6" style={{ color: 'hsl(var(--primary))' }} />
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-0.5 sm:mb-1">
-                              <Badge variant="outline" className="font-mono text-xs">{ticket.ticketNumber}</Badge>
-                              <Badge 
-                                variant="outline"
-                                className="text-xs capitalize"
-                                style={{
-                                  backgroundColor: priorityStyle.backgroundColor,
-                                  color: priorityStyle.color,
-                                  borderColor: priorityStyle.borderColor
-                                }}
-                              >
-                                {ticket.priority}
-                              </Badge>
-                              <Badge 
-                                variant="outline"
-                                className="text-xs capitalize"
-                                style={{
-                                  backgroundColor: statusStyle.backgroundColor,
-                                  color: statusStyle.color,
-                                  borderColor: statusStyle.borderColor
-                                }}
-                              >
-                                {ticket.status}
-                              </Badge>
-                            </div>
-                            <p className="font-semibold text-sm sm:text-base text-foreground truncate">
-                              {ticket.subject}
-                            </p>
-                            <p className="text-xs sm:text-sm text-muted-foreground truncate">
-                              {ticket.customerName}
-                            </p>
-                            <p className="text-[10px] sm:text-xs text-muted-foreground mt-1 sm:hidden">
-                              Created: {new Date(ticket.createdAt).toLocaleDateString()}
-                            </p>
-                          </div>
-                        </div>
-
-                        {/* Right Section */}
-                        <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto">
-                          <div className="text-left sm:text-right hidden sm:block flex-1">
-                            <p className="text-xs text-muted-foreground">Created</p>
-                            <p className="font-semibold text-sm text-foreground">{new Date(ticket.createdAt).toLocaleDateString()}</p>
-                          </div>
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => router.push(AdminRoutes.TICKET_DETAIL(ticket.id))}
-                            className="w-full sm:w-auto h-9 text-xs sm:text-sm"
-                          >
-                            <Eye className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                            <span className="hidden xs:inline">View</span>
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
+              {filteredTickets.map((ticket) => (
+                <TransactionCard
+                  key={ticket.id}
+                  id={ticket.id}
+                  icon={Ticket}
+                  layout="horizontal"
+                  primaryBadge={{
+                    label: ticket.ticketNumber,
+                    variant: 'outline',
+                    className: 'font-mono',
+                  }}
+                  statusBadge={{
+                    label: ticket.status.replace('_', ' '),
+                    className: `${getStatusClass(ticket.status)} capitalize`,
+                  }}
+                  title={ticket.subject}
+                  subtitle={ticket.customerName}
+                  amount={new Date(ticket.createdAt).toLocaleDateString()}
+                  amountLabel="Created"
+                  onView={() => router.push(AdminRoutes.TICKET_DETAIL(ticket.id))}
+                  viewButtonText="View"
+                  additionalContent={
+                    <Badge 
+                      variant="outline"
+                      className={`text-xs capitalize ${getPriorityClass(ticket.priority)}`}
+                    >
+                      {ticket.priority} Priority
+                    </Badge>
+                  }
+                />
+              ))}
             </div>
           )}
           

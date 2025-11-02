@@ -125,7 +125,7 @@ export default function ForgotPasswordPage() {
 
                 <Button 
                   type="submit" 
-                  className="w-full shadow-lg h-11 sm:h-12 text-sm sm:text-base" 
+                  className="w-full shadow-lg h-11 sm:h-12 text-sm sm:text-base border-2" 
                   size="lg" 
                   disabled={isLoading}
                 >
@@ -170,7 +170,7 @@ export default function ForgotPasswordPage() {
                 <div className="space-y-2 sm:space-y-3">
                   <Button 
                     type="submit" 
-                    className="w-full shadow-lg h-11 sm:h-12 text-sm sm:text-base" 
+                    className="w-full shadow-lg h-11 sm:h-12 text-sm sm:text-base border-2" 
                     size="lg" 
                     disabled={isLoading}
                   >
@@ -180,7 +180,7 @@ export default function ForgotPasswordPage() {
                   <Button
                     type="button"
                     variant="outline"
-                    className="w-full h-10 sm:h-11 text-xs sm:text-sm"
+                    className="w-full h-10 sm:h-11 text-xs sm:text-sm border-2"
                     onClick={() => setStep('phone')}
                   >
                     Change Phone Number
@@ -239,7 +239,7 @@ export default function ForgotPasswordPage() {
                 <div className="pt-2 sm:pt-3">
                   <Button 
                     type="submit" 
-                    className="w-full shadow-lg h-11 sm:h-12 text-sm sm:text-base" 
+                    className="w-full shadow-lg h-11 sm:h-12 text-sm sm:text-base border-2" 
                     size="lg" 
                     disabled={isLoading}
                   >

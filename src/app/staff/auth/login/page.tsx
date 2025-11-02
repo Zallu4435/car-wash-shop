@@ -89,7 +89,7 @@ export default function StaffLoginPage() {
                 <p className="text-xs text-red-600 dark:text-red-400 mt-1">{errors.otp.message}</p>
               )}
             </div>
-            <Button type="submit" className="w-full" disabled={loginMutation.isPending}>
+            <Button type="submit" className="w-full border-2" disabled={loginMutation.isPending}>
               {loginMutation.isPending ? 'Logging in...' : 'Login'}
             </Button>
           </form>

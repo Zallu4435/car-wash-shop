@@ -49,106 +49,106 @@ export default function CouponDetailPage({ params }: { params: Promise<{ id: str
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 pb-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <Button variant="ghost" onClick={() => router.push('/admin/coupons')} className="cursor-pointer">
-          <ArrowLeft className="mr-2 h-4 w-4" />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+        <Button variant="ghost" onClick={() => router.push('/admin/coupons')} className="w-fit h-9 sm:h-10 text-xs sm:text-sm cursor-pointer border-2 -ml-2">
+          <ArrowLeft className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Back to Coupons
         </Button>
-        <Button onClick={() => router.push(`/admin/coupons/${id}/edit`)}>
-          <Edit className="mr-2 h-4 w-4" />
+        <Button onClick={() => router.push(`/admin/coupons/${id}/edit`)} className="h-9 sm:h-10 text-xs sm:text-sm border-2">
+          <Edit className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Edit Coupon
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6 items-start">
         {/* Coupon Details */}
-        <div className="lg:col-span-2">
-          <Card className="border-2">
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="p-4 bg-primary/10 rounded-xl">
-                    <Percent className="h-8 w-8 text-primary" />
+        <div className="xl:col-span-2">
+          <Card className="border-2 border-border rounded-lg sm:rounded-xl">
+            <CardHeader className="pb-3 sm:pb-4">
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4">
+                <div className="flex flex-col sm:flex-row items-center sm:items-start gap-3 sm:gap-4 text-center sm:text-left">
+                  <div className="p-3 sm:p-3.5 md:p-4 bg-primary/10 rounded-lg sm:rounded-xl border-2 border-primary/20 flex-shrink-0">
+                    <Percent className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary" />
                   </div>
-                  <div>
-                    <CardTitle className="font-mono text-3xl">{coupon.code}</CardTitle>
-                    <p className="text-muted-foreground mt-1">Coupon ID: {coupon.id}</p>
+                  <div className="min-w-0">
+                    <CardTitle className="font-mono text-xl sm:text-2xl md:text-3xl mb-1">{coupon.code}</CardTitle>
+                    <p className="text-xs sm:text-sm text-muted-foreground">Coupon ID: {coupon.id}</p>
                   </div>
                 </div>
-                <Badge variant={coupon.active ? 'default' : 'secondary'}>
+                <Badge variant={coupon.active ? 'default' : 'secondary'} className="text-xs sm:text-sm mx-auto sm:mx-0 w-fit">
                   {coupon.active ? 'Active' : 'Expired'}
                 </Badge>
               </div>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-4 bg-muted rounded-xl">
-                  <div className="flex items-center gap-2 mb-2">
+            <CardContent className="space-y-3 sm:space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 md:gap-4">
+                <div className="p-3 sm:p-3.5 md:p-4 bg-muted rounded-lg sm:rounded-xl border-2 border-border">
+                  <div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-2">
                     {coupon.type === 'percentage' ? (
-                      <Percent className="h-4 w-4 text-muted-foreground" />
+                      <Percent className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
                     ) : (
-                      <IndianRupee className="h-4 w-4 text-muted-foreground" />
+                      <IndianRupee className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
                     )}
-                    <p className="text-xs text-muted-foreground uppercase tracking-wide">Discount</p>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Discount</p>
                   </div>
-                  <p className="text-2xl font-bold text-foreground">
+                  <p className="text-lg sm:text-xl md:text-2xl font-bold text-foreground">
                     {coupon.type === 'percentage' ? `${coupon.value}% Off` : `₹${coupon.value} Off`}
                   </p>
                 </div>
 
-                <div className="p-4 bg-muted rounded-xl">
-                  <div className="flex items-center gap-2 mb-2">
-                    <IndianRupee className="h-4 w-4 text-muted-foreground" />
-                    <p className="text-xs text-muted-foreground uppercase tracking-wide">Min Order</p>
+                <div className="p-3 sm:p-3.5 md:p-4 bg-muted rounded-lg sm:rounded-xl border-2 border-border">
+                  <div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-2">
+                    <IndianRupee className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
+                    <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Min Order</p>
                   </div>
-                  <p className="text-2xl font-bold text-foreground">₹{coupon.minOrderValue}</p>
+                  <p className="text-lg sm:text-xl md:text-2xl font-bold text-foreground">₹{coupon.minOrderValue}</p>
                 </div>
               </div>
 
               <Separator />
 
-              <div className="p-4 bg-muted rounded-xl">
-                <div className="flex items-center gap-2 mb-2">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide">Valid Until</p>
+              <div className="p-3 sm:p-3.5 md:p-4 bg-muted rounded-lg sm:rounded-xl border-2 border-border">
+                <div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-2">
+                  <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
+                  <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Valid Until</p>
                 </div>
-                <p className="font-semibold text-foreground">{coupon.validUntil}</p>
+                <p className="text-sm sm:text-base font-semibold text-foreground">{coupon.validUntil}</p>
               </div>
             </CardContent>
           </Card>
         </div>
 
         {/* Usage Stats */}
-        <div className="lg:col-span-1 space-y-6">
-          <Card className="border-2">
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <div className="p-2 bg-primary/10 rounded-lg">
-                  <TrendingUp className="h-5 w-5 text-primary" />
-                </div>
-                <CardTitle>Usage Statistics</CardTitle>
+        <div className="xl:col-span-1 space-y-4 sm:space-y-6">
+          <Card className="border-2 border-border rounded-lg sm:rounded-xl xl:sticky xl:top-6 xl:max-h-[calc(100vh-8rem)] xl:overflow-auto">
+            <CardHeader className="pb-3 sm:pb-4">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+                <CardTitle className="text-sm sm:text-base lg:text-lg">Usage Statistics</CardTitle>
               </div>
             </CardHeader>
-            <CardContent className="space-y-5">
-              <div className="p-4 bg-muted rounded-xl">
-                <p className="text-xs text-muted-foreground mb-1">Times Used</p>
-                <p className="text-4xl font-bold text-foreground">{coupon.usedCount}</p>
-              </div>
+            <CardContent className="space-y-3 sm:space-y-4">
+              <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                <div className="p-2.5 sm:p-3 md:p-4 bg-primary/10 rounded-lg sm:rounded-xl border-2 border-primary/20">
+                  <p className="text-[9px] sm:text-[10px] md:text-xs text-muted-foreground mb-0.5 sm:mb-1">Times Used</p>
+                  <p className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-primary">{coupon.usedCount}</p>
+                </div>
 
-              <div className="p-4 bg-muted rounded-xl">
-                <p className="text-xs text-muted-foreground mb-1">Remaining Uses</p>
-                <p className="text-4xl font-bold text-foreground">{coupon.usageLimit - coupon.usedCount}</p>
+                <div className="p-2.5 sm:p-3 md:p-4 bg-muted rounded-lg sm:rounded-xl border-2 border-border">
+                  <p className="text-[9px] sm:text-[10px] md:text-xs text-muted-foreground mb-0.5 sm:mb-1">Remaining</p>
+                  <p className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-foreground">{coupon.usageLimit - coupon.usedCount}</p>
+                </div>
               </div>
 
               <div>
-                <div className="flex items-center justify-between text-sm mb-2">
+                <div className="flex items-center justify-between gap-2 text-xs sm:text-sm mb-2">
                   <span className="text-muted-foreground">Usage Progress</span>
-                  <span className="font-semibold text-foreground">{usagePercentage.toFixed(0)}%</span>
+                  <span className="font-semibold text-foreground flex-shrink-0">{usagePercentage.toFixed(0)}%</span>
                 </div>
-                <Progress value={usagePercentage} className="h-3" />
-                <p className="text-xs text-muted-foreground mt-2">
+                <Progress value={usagePercentage} className="h-2.5 sm:h-3" />
+                <p className="text-[10px] sm:text-xs text-muted-foreground mt-2">
                   {coupon.usedCount} of {coupon.usageLimit} uses
                 </p>
               </div>

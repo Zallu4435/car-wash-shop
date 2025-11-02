@@ -53,13 +53,15 @@ export default function EditCampaignPage({ params }: { params: Promise<{ id: str
   };
 
   return (
-    <div className="max-w-2xl">
-      <Link href={AdminRoutes.CAMPAIGNS}>
-        <Button variant="ghost" className="mb-6">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back
-        </Button>
-      </Link>
+    <div className="max-w-2xl space-y-4 sm:space-y-6 pb-6">
+      <div>
+        <Link href={AdminRoutes.CAMPAIGNS}>
+          <Button variant="ghost" className="w-fit h-9 sm:h-10 text-xs sm:text-sm cursor-pointer border-2 -ml-2">
+            <ArrowLeft className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            Back to Campaigns
+          </Button>
+        </Link>
+      </div>
       <FormBuilder
         title={`Edit Campaign - ${id}`}
         fields={fields}

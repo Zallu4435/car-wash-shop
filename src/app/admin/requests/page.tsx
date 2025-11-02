@@ -1,13 +1,9 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { 
   Calendar, 
-  Search, 
-  Eye,
   Clock,
   TrendingUp,
   CheckCircle,
@@ -20,6 +16,7 @@ import { EmptyState } from '@/components/shared/display/EmptyState';
 import { SearchFilter } from '@/components/admin/SearchFilter';
 import { Pagination } from '@/components/admin/Pagination';
 import { StatCard } from '@/components/admin/StatCard';
+import { TransactionCard } from '@/components/admin/TransactionCard';
 
 export default function RequestsPage() {
   const router = useRouter();
@@ -81,7 +78,7 @@ export default function RequestsPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <StatCard
           icon={Calendar}
           label="Total Bookings"
@@ -118,7 +115,6 @@ export default function RequestsPage() {
           change="+12.3%"
           trend="up"
           description="Successfully completed"
-          className="col-span-2 lg:col-span-1"
         />
       </div>
 
@@ -126,10 +122,8 @@ export default function RequestsPage() {
       <Card className="border-2 border-border">
         <CardHeader className="pb-3 sm:pb-4">
           <div className="flex items-center gap-2">
-            <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
-              <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-            </div>
-            <CardTitle className="text-base sm:text-lg">All Service Bookings</CardTitle>
+            <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+            <CardTitle className="text-sm sm:text-base lg:text-lg">All Service Bookings</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
@@ -177,96 +171,30 @@ export default function RequestsPage() {
               {filteredBookings.map((booking) => {
               const statusVariant = statusVariants[booking.status as keyof typeof statusVariants] || 'secondary';
               return (
-                <Card key={booking.id} className="border-2 border-border hover:shadow-lg transition-all">
-                  <CardContent className="p-3 sm:p-4 md:p-5">
-                    {/* Desktop Layout */}
-                    <div className="hidden md:flex items-center justify-between gap-4">
-                      {/* Left Section */}
-                      <div className="flex items-center gap-4 flex-1 min-w-0">
-                        <div className="p-3 bg-primary/10 rounded-xl flex-shrink-0">
-                          <Calendar className="h-6 w-6 text-primary" />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <Badge variant="outline" className="font-mono text-xs">
-                              {booking.id}
-                            </Badge>
-                            <Badge variant={statusVariant} className="text-xs capitalize">
-                              {booking.status}
-                            </Badge>
-                          </div>
-                          <p className="font-semibold text-foreground truncate">
-                            {booking.customer}
-                          </p>
-                          <p className="text-sm text-muted-foreground truncate">
-                            {booking.service}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Middle Section */}
-                      <div className="flex items-center gap-6">
-                        <div>
-                          <p className="text-xs text-muted-foreground mb-1">Date & Time</p>
-                          <p className="font-semibold text-foreground">{booking.date}</p>
-                          <p className="text-sm text-muted-foreground">{booking.time}</p>
-                        </div>
-                      </div>
-
-                      {/* Right Section */}
-                      <div className="flex items-center gap-3 flex-shrink-0">
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => router.push(`/admin/requests/${booking.id}`)}
-                          className="h-9 text-xs sm:text-sm"
-                        >
-                          <Eye className="mr-2 h-4 w-4" />
-                          View Details
-                        </Button>
-                      </div>
+                <TransactionCard
+                  key={booking.id}
+                  id={booking.id}
+                  icon={Calendar}
+                  primaryBadge={{
+                    label: booking.id,
+                    variant: 'outline',
+                  }}
+                  statusBadge={{
+                    label: booking.status,
+                    className: '',
+                  }}
+                  title={booking.customer}
+                  subtitle={booking.service}
+                  onView={() => router.push(`/admin/requests/${booking.id}`)}
+                  viewButtonText="View Details"
+                  additionalContent={
+                    <div className="mt-2 pt-2 border-t border-border md:hidden">
+                      <p className="text-xs text-muted-foreground">
+                        {booking.date} • {booking.time}
+                      </p>
                     </div>
-
-                    {/* Mobile/Tablet Layout */}
-                    <div className="md:hidden space-y-3">
-                      <div className="flex items-start gap-3">
-                        <div className="p-2 sm:p-2.5 bg-primary/10 rounded-lg sm:rounded-xl flex-shrink-0">
-                          <Calendar className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-1">
-                            <Badge variant="outline" className="font-mono text-xs">
-                              {booking.id}
-                            </Badge>
-                            <Badge variant={statusVariant} className="text-xs capitalize">
-                              {booking.status}
-                            </Badge>
-                          </div>
-                          <p className="font-semibold text-sm sm:text-base text-foreground truncate">
-                            {booking.customer}
-                          </p>
-                          <p className="text-xs sm:text-sm text-muted-foreground truncate">
-                            {booking.service}
-                          </p>
-                          <div className="mt-2 pt-2 border-t border-border">
-                            <p className="text-xs text-muted-foreground">
-                              {booking.date} • {booking.time}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => router.push(`/admin/requests/${booking.id}`)}
-                        className="w-full h-9 text-xs sm:text-sm"
-                      >
-                        <Eye className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                        View Details
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+                  }
+                />
               );
             })}
             </div>

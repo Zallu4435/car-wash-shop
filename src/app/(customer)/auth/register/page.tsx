@@ -192,7 +192,7 @@ export default function RegisterPage() {
               <div className="pt-1 sm:pt-2">
                 <Button 
                   type="submit" 
-                  className="w-full shadow-lg h-11 sm:h-12 text-sm sm:text-base" 
+                  className="w-full shadow-lg h-11 sm:h-12 text-sm sm:text-base border-2" 
                   size="lg" 
                   disabled={registerMutation.isPending}
                 >

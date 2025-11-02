@@ -115,17 +115,17 @@ export function AdminSidebar({ sidebarOpen, setSidebarOpen }: AdminSidebarProps)
   return (
     <>
       {/* Mobile sidebar backdrop */}
-      {sidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden" 
-          onClick={() => setSidebarOpen(false)} 
-        />
-      )}
+      <div 
+        className={`fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden transition-opacity duration-500 ${
+          sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
+        onClick={() => setSidebarOpen(false)} 
+      />
 
       {/* Mobile sidebar */}
       <div className={cn(
-        'fixed inset-y-0 left-0 z-50 w-[280px] sm:w-80 bg-card border-r border-border transform transition-transform duration-300 ease-in-out lg:hidden',
-        sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        'fixed inset-y-0 left-0 z-50 w-[280px] sm:w-80 force-sheet-bg border-r-2 border-border shadow-2xl transform transition-all duration-500 ease-in-out lg:hidden',
+        sidebarOpen ? 'translate-x-0 opacity-100' : '-translate-x-full opacity-0'
       )}>
         <div className="flex flex-col h-full">
           {/* Mobile Header */}
@@ -228,7 +228,7 @@ export function AdminSidebar({ sidebarOpen, setSidebarOpen }: AdminSidebarProps)
 
       {/* Desktop sidebar */}
       <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-80 lg:flex-col z-30">
-        <div className="flex flex-col flex-1 min-h-0 bg-card border-r border-border">
+        <div className="flex flex-col flex-1 min-h-0 force-sheet-bg border-r-2 border-border">
           {/* Desktop Header */}
           <div className="px-6 py-5 border-b border-border">
             <div className="flex items-center gap-3">

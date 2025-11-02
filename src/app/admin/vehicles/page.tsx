@@ -105,7 +105,7 @@ export default function VehiclesHomePage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <StatCard
           icon={Car}
           label="Types"
@@ -145,11 +145,11 @@ export default function VehiclesHomePage() {
       </div>
 
       {/* Main Sections */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {vehicleSections.map((section) => (
           <Card 
             key={section.title} 
-            className="border-2 border-border hover:shadow-xl hover:scale-[1.02] transition-all cursor-pointer group"
+            className="border-2 border-border rounded-lg sm:rounded-xl hover:shadow-xl hover:scale-[1.02] transition-all cursor-pointer group"
             onClick={() => router.push(section.href)}
           >
             <CardContent className="p-5 sm:p-6">
@@ -179,16 +179,14 @@ export default function VehiclesHomePage() {
       </div>
 
       {/* Popular Vehicles */}
-      <Card className="border-2 border-border">
+      <Card className="border-2 border-border rounded-lg sm:rounded-xl">
         <CardHeader className="pb-3 sm:pb-4">
           <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2 min-w-0 flex-1">
-              <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg flex-shrink-0">
-                <Star className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-              </div>
-              <CardTitle className="text-base sm:text-lg truncate">Popular Vehicles</CardTitle>
+            <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1">
+              <Star className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+              <CardTitle className="text-sm sm:text-base lg:text-lg truncate">Popular Vehicles</CardTitle>
             </div>
-            <Button variant="ghost" size="sm" onClick={() => router.push(AdminRoutes.VEHICLE_MODELS_PAGE)} className="text-xs sm:text-sm h-8 sm:h-9 flex-shrink-0">
+            <Button variant="ghost" size="sm" onClick={() => router.push(AdminRoutes.VEHICLE_MODELS_PAGE)} className="text-xs sm:text-sm h-8 sm:h-9 flex-shrink-0 border-2">
               View All
             </Button>
           </div>
@@ -224,10 +222,10 @@ export default function VehiclesHomePage() {
 
       {/* Quick Info */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-        <Card className="border-2 border-border">
+        <Card className="border-2 border-border rounded-lg sm:rounded-xl">
           <CardHeader className="pb-3 sm:pb-4">
-            <CardTitle className="text-base sm:text-lg flex items-center gap-2">
-              <Star className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+            <CardTitle className="text-sm sm:text-base lg:text-lg flex items-center gap-1.5 sm:gap-2">
+              <Star className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
               Vehicle Brands
             </CardTitle>
           </CardHeader>
@@ -248,10 +246,10 @@ export default function VehiclesHomePage() {
           </CardContent>
         </Card>
 
-        <Card className="border-2 border-border">
+        <Card className="border-2 border-border rounded-lg sm:rounded-xl">
           <CardHeader className="pb-3 sm:pb-4">
-            <CardTitle className="text-base sm:text-lg flex items-center gap-2">
-              <Car className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+            <CardTitle className="text-sm sm:text-base lg:text-lg flex items-center gap-1.5 sm:gap-2">
+              <Car className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
               Model Types
             </CardTitle>
           </CardHeader>

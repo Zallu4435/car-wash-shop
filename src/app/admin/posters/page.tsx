@@ -14,6 +14,7 @@ import { EmptyState } from '@/components/shared/display/EmptyState';
 import { SearchFilter } from '@/components/admin/SearchFilter';
 import { StatCard } from '@/components/admin/StatCard';
 import { Pagination } from '@/components/admin/Pagination';
+import { TransactionCard } from '@/components/admin/TransactionCard';
 import { useConfirmation } from '@/hooks/useConfirmation';
 import { toast } from 'sonner';
 
@@ -86,14 +87,14 @@ export default function PostersPage() {
             Upload and display promotional posters
           </p>
         </div>
-        <Button onClick={() => router.push(AdminRoutes.POSTER_NEW)} className="w-full md:w-auto h-9 sm:h-10 text-xs sm:text-sm">
+        <Button onClick={() => router.push(AdminRoutes.POSTER_NEW)} className="w-full md:w-auto h-9 sm:h-10 text-xs sm:text-sm border-2">
           <Plus className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Create Poster
         </Button>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         <StatCard
           icon={FileImage}
           label="Total Posters"
@@ -120,18 +121,16 @@ export default function PostersPage() {
           change="+19.5%"
           trend="up"
           description="All time views"
-          className="sm:col-span-2 md:col-span-1"
+          className="xs:col-span-2 lg:col-span-1"
         />
       </div>
 
       {/* Posters List */}
-      <Card className="border-2">
+      <Card className="border-2 border-border rounded-lg sm:rounded-xl">
         <CardHeader className="pb-3 sm:pb-4">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
-              <FileImage className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-            </div>
-            <CardTitle className="text-base sm:text-lg">All Posters</CardTitle>
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <FileImage className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+            <CardTitle className="text-sm sm:text-base lg:text-lg">All Posters</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
@@ -172,61 +171,45 @@ export default function PostersPage() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               {filteredPosters.map((poster) => (
-              <Card key={poster.id} className="border-2 hover:shadow-lg transition-all">
-                <CardContent className="p-4 sm:p-5">
-                  <div className="mb-3 sm:mb-4">
-                    <div className="w-full h-32 sm:h-40 bg-muted rounded-lg flex items-center justify-center mb-2 sm:mb-3">
-                      <FileImage className="h-12 w-12 sm:h-16 sm:w-16 text-muted-foreground" />
-                    </div>
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0 flex-1">
-                        <h3 className="font-bold text-sm sm:text-base text-foreground truncate">
-                          {poster.title}
-                        </h3>
-                        <Badge variant="outline" className="text-xs mt-0.5 sm:mt-1">
-                          {poster.location}
-                        </Badge>
-                      </div>
-                      <Badge variant={poster.status === 'active' ? 'default' : 'secondary'} className="text-xs flex-shrink-0">
-                        {poster.status === 'active' ? 'Active' : 'Inactive'}
-                      </Badge>
-                    </div>
-                  </div>
-
-                  <div className="space-y-1 sm:space-y-2 mb-3 sm:mb-4 text-xs sm:text-sm text-muted-foreground">
-                    <p>From: {poster.startDate}</p>
-                    <p>To: {poster.endDate}</p>
-                  </div>
-
-                  <div className="p-2.5 sm:p-3 bg-muted rounded-lg mb-3 sm:mb-4">
-                    <p className="text-[10px] sm:text-xs text-muted-foreground mb-0.5 sm:mb-1">Views</p>
-                    <p className="text-xl sm:text-2xl font-bold text-foreground">
-                      {poster.views.toLocaleString()}
-                    </p>
-                  </div>
-
-                  <div className="flex gap-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="flex-1 h-9 text-xs sm:text-sm"
-                      onClick={() => router.push(AdminRoutes.POSTER_EDIT(poster.id))}
-                    >
-                      <Edit className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                      <span className="hidden xs:inline">Edit</span>
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20 h-9 px-3"
-                      onClick={() => handleDelete(poster.id, poster.title)}
-                      disabled={deletePosterMutation.isPending}
-                    >
-                      <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+                <TransactionCard
+                  key={poster.id}
+                  id={poster.id}
+                  icon={FileImage}
+                  layout="vertical"
+                  primaryBadge={{
+                    label: poster.location,
+                    variant: 'outline',
+                  }}
+                  statusBadge={{
+                    label: poster.status === 'active' ? 'Active' : 'Inactive',
+                    className: '',
+                  }}
+                  title={poster.title}
+                  subtitle={poster.location}
+                  description={`From: ${poster.startDate} | To: ${poster.endDate}`}
+                  infoBoxes={[
+                    {
+                      icon: Eye,
+                      label: 'Views',
+                      value: poster.views.toLocaleString(),
+                    },
+                  ]}
+                  actionButtons={[
+                    {
+                      label: 'Edit',
+                      icon: Edit,
+                      onClick: () => router.push(AdminRoutes.POSTER_EDIT(poster.id)),
+                      hideTextOnMobile: true,
+                    },
+                    {
+                      label: '',
+                      icon: Trash2,
+                      onClick: () => handleDelete(poster.id, poster.title),
+                      disabled: deletePosterMutation.isPending,
+                      className: 'text-destructive hover:bg-destructive/10 flex-initial px-3',
+                    },
+                  ]}
+                />
               ))}
             </div>
           )}

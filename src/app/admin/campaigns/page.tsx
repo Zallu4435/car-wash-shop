@@ -14,8 +14,10 @@ import { EmptyState } from '@/components/shared/display/EmptyState';
 import { SearchFilter } from '@/components/admin/SearchFilter';
 import { StatCard } from '@/components/admin/StatCard';
 import { Pagination } from '@/components/admin/Pagination';
+import { TransactionCard } from '@/components/admin/TransactionCard';
 import { useConfirmation } from '@/hooks/useConfirmation';
 import { toast } from 'sonner';
+import { IndianRupee, Users, Target } from 'lucide-react';
 
 export default function CampaignsPage() {
   const router = useRouter();
@@ -78,13 +80,13 @@ export default function CampaignsPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active':
-        return 'bg-green-100 dark:bg-green-950/30 text-green-600 dark:text-green-400';
+        return 'border-2 text-green-600 dark:text-green-400';
       case 'scheduled':
-        return 'bg-blue-100 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400';
+        return 'border-2 text-blue-600 dark:text-blue-400';
       case 'completed':
-        return 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400';
+        return 'border-2 text-gray-600 dark:text-gray-400';
       default:
-        return '';
+        return 'border-2';
     }
   };
 
@@ -100,14 +102,14 @@ export default function CampaignsPage() {
             Create and manage marketing campaigns
           </p>
         </div>
-        <Button onClick={() => router.push(AdminRoutes.CAMPAIGN_NEW)} className="w-full md:w-auto h-9 sm:h-10 text-xs sm:text-sm">
+        <Button onClick={() => router.push(AdminRoutes.CAMPAIGN_NEW)} className="w-full md:w-auto h-9 sm:h-10 text-xs sm:text-sm border-2">
           <Plus className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Create Campaign
         </Button>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <StatCard
           icon={Megaphone}
           label="Total Campaigns"
@@ -147,13 +149,11 @@ export default function CampaignsPage() {
       </div>
 
       {/* Campaigns List */}
-      <Card className="border-2">
+      <Card className="border-2 border-border rounded-lg sm:rounded-xl">
         <CardHeader className="pb-3 sm:pb-4">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
-              <Megaphone className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-            </div>
-            <CardTitle className="text-base sm:text-lg">All Campaigns</CardTitle>
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <Megaphone className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+            <CardTitle className="text-sm sm:text-base lg:text-lg">All Campaigns</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
@@ -194,75 +194,56 @@ export default function CampaignsPage() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               {filteredCampaigns.map((campaign: any) => (
-              <Card key={campaign.id} className="border-2 hover:shadow-lg transition-all">
-                <CardContent className="p-4 sm:p-5">
-                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4 mb-3 sm:mb-4">
-                    <div className="flex items-start gap-3 sm:gap-4 min-w-0 flex-1">
-                      <div className="p-2 sm:p-3 bg-primary/10 rounded-lg sm:rounded-xl flex-shrink-0">
-                        <Megaphone className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-0.5 sm:mb-1">
-                          <h3 className="font-bold text-sm sm:text-base text-foreground truncate">
-                            {campaign.name}
-                          </h3>
-                          <Badge variant="outline" className="text-xs flex-shrink-0">{campaign.type}</Badge>
-                        </div>
-                        <p className="text-xs sm:text-sm text-muted-foreground">
-                          {campaign.startDate} to {campaign.endDate}
-                        </p>
-                      </div>
-                    </div>
-                    <Badge className={`${getStatusColor(campaign.status)} text-xs capitalize w-fit`}>
-                      {campaign.status}
-                    </Badge>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-3 sm:mb-4">
-                    <div className="p-2.5 sm:p-3 bg-muted rounded-lg">
-                      <p className="text-[10px] sm:text-xs text-muted-foreground mb-0.5 sm:mb-1">Budget</p>
-                      <p className="text-base sm:text-lg font-bold text-foreground">
-                        ₹{(campaign.budget / 1000).toFixed(0)}K
-                      </p>
-                    </div>
-                    <div className="p-2.5 sm:p-3 bg-muted rounded-lg">
-                      <p className="text-[10px] sm:text-xs text-muted-foreground mb-0.5 sm:mb-1">Reach</p>
-                      <p className="text-base sm:text-lg font-bold text-foreground">
-                        {(campaign.impressions || 0).toLocaleString()}
-                      </p>
-                    </div>
-                    <div className="p-2.5 sm:p-3 bg-green-50 dark:bg-green-950/20 rounded-lg">
-                      <p className="text-[10px] sm:text-xs text-green-900 dark:text-green-100 mb-0.5 sm:mb-1">
-                        Conversions
-                      </p>
-                      <p className="text-base sm:text-lg font-bold text-green-600 dark:text-green-400">
-                        {campaign.conversions}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="flex-1 h-9 text-xs sm:text-sm"
-                      onClick={() => router.push(`${AdminRoutes.CAMPAIGNS}/${campaign.id}/edit`)}
-                    >
-                      <Edit className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                      <span className="hidden xs:inline">Edit</span>
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20 h-9 px-3"
-                      onClick={() => handleDelete(campaign.id, campaign.title)}
-                      disabled={deleteCampaignMutation.isPending}
-                    >
-                      <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+                <TransactionCard
+                  key={campaign.id}
+                  id={campaign.id}
+                  icon={Megaphone}
+                  layout="vertical"
+                  primaryBadge={{
+                    label: campaign.type,
+                    variant: 'outline',
+                  }}
+                  statusBadge={{
+                    label: campaign.status,
+                    className: `${getStatusColor(campaign.status)} capitalize`,
+                  }}
+                  title={campaign.name}
+                  subtitle={campaign.type}
+                  description={`${campaign.startDate} to ${campaign.endDate}`}
+                  infoBoxes={[
+                    {
+                      icon: IndianRupee,
+                      label: 'Budget',
+                      value: `₹${(campaign.budget / 1000).toFixed(0)}K`,
+                    },
+                    {
+                      icon: Users,
+                      label: 'Reach',
+                      value: (campaign.impressions || 0).toLocaleString(),
+                    },
+                    {
+                      icon: Target,
+                      label: 'Conversions',
+                      value: campaign.conversions,
+                      valueClassName: 'text-green-600 dark:text-green-400',
+                    },
+                  ]}
+                  actionButtons={[
+                    {
+                      label: 'Edit',
+                      icon: Edit,
+                      onClick: () => router.push(`${AdminRoutes.CAMPAIGNS}/${campaign.id}/edit`),
+                      hideTextOnMobile: true,
+                    },
+                    {
+                      label: '',
+                      icon: Trash2,
+                      onClick: () => handleDelete(campaign.id, campaign.name),
+                      disabled: deleteCampaignMutation.isPending,
+                      className: 'text-destructive hover:bg-destructive/10 flex-initial px-3',
+                    },
+                  ]}
+                />
               ))}
             </div>
           )}

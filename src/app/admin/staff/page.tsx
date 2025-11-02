@@ -3,16 +3,12 @@
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { 
   UserCog, 
   Plus, 
   Eye, 
   Edit, 
   Trash2,
-  Mail,
-  Phone,
-  MapPin,
   Briefcase,
   Ban,
   CheckCircle
@@ -25,9 +21,11 @@ import { EmptyState } from '@/components/shared/display/EmptyState';
 import { SearchFilter } from '@/components/admin/SearchFilter';
 import { StatCard } from '@/components/admin/StatCard';
 import { Pagination } from '@/components/admin/Pagination';
+import { TransactionCard } from '@/components/admin/TransactionCard';
 import { useConfirmation } from '@/hooks/useConfirmation';
 import { toast } from 'sonner';
 import { AdminRoutes } from '@/lib/constants/routes';
+import { Star, Target } from 'lucide-react';
 
 export default function StaffPage() {
   const router = useRouter();
@@ -118,14 +116,14 @@ export default function StaffPage() {
             Manage your team and their performance
           </p>
         </div>
-        <Button onClick={() => router.push(AdminRoutes.STAFF_NEW)} className="w-full md:w-auto h-9 sm:h-10 text-xs sm:text-sm">
+        <Button onClick={() => router.push(AdminRoutes.STAFF_NEW)} className="w-full md:w-auto h-9 sm:h-10 text-xs sm:text-sm border-2">
           <Plus className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Add Staff
         </Button>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         <StatCard
           icon={UserCog}
           label="Total Staff"
@@ -152,18 +150,16 @@ export default function StaffPage() {
           change="+12.4%"
           trend="up"
           description="Completed jobs"
-          className="sm:col-span-2 md:col-span-1"
+          className="xs:col-span-2 lg:col-span-1"
         />
       </div>
 
       {/* Search Bar */}
-      <Card className="border-2 border-border">
+      <Card className="border-2 border-border rounded-lg sm:rounded-xl">
         <CardHeader className="pb-3 sm:pb-4">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
-              <UserCog className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-            </div>
-            <CardTitle className="text-base sm:text-lg">All Staff Members</CardTitle>
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <UserCog className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+            <CardTitle className="text-sm sm:text-base lg:text-lg">All Staff Members</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
@@ -214,94 +210,65 @@ export default function StaffPage() {
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
               {filteredStaff.map((member) => (
-              <Card key={member.id} className="border-2 border-border hover:shadow-lg transition-all">
-                <CardContent className="p-4 sm:p-5">
-                  <div className="flex items-start justify-between gap-2 mb-3 sm:mb-4">
-                    <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-                      <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
-                        <UserCog className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <h3 className="font-bold text-sm sm:text-base text-foreground truncate">
-                          {member.name}
-                        </h3>
-                        <p className="text-xs sm:text-sm text-muted-foreground truncate">
-                          {member.role}
-                        </p>
-                      </div>
-                    </div>
-                    <Badge variant={member.status === 'active' ? 'default' : 'secondary'} className="text-xs flex-shrink-0">
-                      {member.status === 'active' ? 'Active' : 'Inactive'}
-                    </Badge>
-                  </div>
-
-                  <div className="space-y-1.5 sm:space-y-2 mb-3 sm:mb-4">
-                    <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-muted-foreground">
-                      <Phone className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
-                      <span className="truncate">{member.phone}</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-muted-foreground">
-                      <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
-                      <span className="truncate">{member.area}</span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between p-2.5 sm:p-3 bg-muted rounded-lg mb-3 sm:mb-4">
-                    <div>
-                      <p className="text-[10px] sm:text-xs text-muted-foreground">Completed Jobs</p>
-                      <p className="text-base sm:text-lg font-bold text-foreground">{member.totalJobs}</p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] sm:text-xs text-muted-foreground">Rating</p>
-                      <p className="text-base sm:text-lg font-bold text-foreground">⭐ {member.avgRating}</p>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="flex-1 h-9 text-xs sm:text-sm"
-                      onClick={() => router.push(AdminRoutes.STAFF_DETAIL(member.id))}
-                    >
-                      <Eye className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                      <span className="hidden xs:inline">View</span>
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="flex-1 h-9 text-xs sm:text-sm"
-                      onClick={() => router.push(AdminRoutes.STAFF_EDIT(member.id))}
-                    >
-                      <Edit className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                      <span className="hidden xs:inline">Edit</span>
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      className={member.status === 'suspended' ? 'text-green-600 hover:text-green-600 hover:bg-green-50 h-9 px-3' : 'text-orange-600 hover:text-orange-600 hover:bg-orange-50 h-9 px-3'}
-                      onClick={() => handleToggleStatus(member.id, member.status, member.name)}
-                      disabled={updateStatusMutation.isPending}
-                      title={member.status === 'suspended' ? 'Activate' : 'Suspend'}
-                    >
-                      {member.status === 'suspended' ? (
-                        <CheckCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                      ) : (
-                        <Ban className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                      )}
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      className="text-destructive hover:text-destructive hover:bg-destructive/10 h-9 px-3"
-                      onClick={() => handleDelete(member.id, member.name)}
-                      disabled={deleteStaffMutation.isPending}
-                    >
-                      <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+                <TransactionCard
+                  key={member.id}
+                  id={member.id}
+                  icon={UserCog}
+                  layout="vertical"
+                  primaryBadge={{
+                    label: member.role,
+                    variant: 'outline',
+                  }}
+                  statusBadge={{
+                    label: member.status === 'active' ? 'Active' : 'Inactive',
+                    className: '',
+                  }}
+                  title={member.name}
+                  subtitle={member.role}
+                  description={`${member.phone} | ${member.area}`}
+                  infoBoxes={[
+                    {
+                      icon: Target,
+                      label: 'Completed Jobs',
+                      value: member.totalJobs,
+                    },
+                    {
+                      icon: Star,
+                      label: 'Rating',
+                      value: `⭐ ${member.avgRating}`,
+                    },
+                  ]}
+                  actionButtons={[
+                    {
+                      label: 'View',
+                      icon: Eye,
+                      onClick: () => router.push(AdminRoutes.STAFF_DETAIL(member.id)),
+                      hideTextOnMobile: true,
+                    },
+                    {
+                      label: 'Edit',
+                      icon: Edit,
+                      onClick: () => router.push(AdminRoutes.STAFF_EDIT(member.id)),
+                      hideTextOnMobile: true,
+                    },
+                    {
+                      label: '',
+                      icon: member.status === 'suspended' ? CheckCircle : Ban,
+                      onClick: () => handleToggleStatus(member.id, member.status, member.name),
+                      disabled: updateStatusMutation.isPending,
+                      className: member.status === 'suspended' 
+                        ? 'text-green-600 hover:bg-green-50 dark:hover:bg-green-950/20 flex-initial px-3' 
+                        : 'text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950/20 flex-initial px-3',
+                    },
+                    {
+                      label: '',
+                      icon: Trash2,
+                      onClick: () => handleDelete(member.id, member.name),
+                      disabled: deleteStaffMutation.isPending,
+                      className: 'text-destructive hover:bg-destructive/10 flex-initial px-3',
+                    },
+                  ]}
+                />
               ))}
             </div>
           )}

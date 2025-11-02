@@ -3,7 +3,6 @@
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { 
   Package, 
   Plus, 
@@ -22,6 +21,7 @@ import { EmptyState } from '@/components/shared/display/EmptyState';
 import { SearchFilter } from '@/components/admin/SearchFilter';
 import { Pagination } from '@/components/admin/Pagination';
 import { StatCard } from '@/components/admin/StatCard';
+import { TransactionCard } from '@/components/admin/TransactionCard';
 import { useConfirmation } from '@/hooks/useConfirmation';
 import { toast } from 'sonner';
 
@@ -95,14 +95,14 @@ export default function ProductsPage() {
             Manage your product inventory
           </p>
         </div>
-        <Button onClick={() => router.push('/admin/products/new')} className="w-full md:w-auto h-9 sm:h-10 text-xs sm:text-sm">
+        <Button onClick={() => router.push('/admin/products/new')} className="w-full md:w-auto h-9 sm:h-10 text-xs sm:text-sm border-2">
           <Plus className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Add Product
         </Button>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <StatCard
           icon={Package}
           label="Total Products"
@@ -145,10 +145,8 @@ export default function ProductsPage() {
       <Card className="border-2 border-border">
         <CardHeader className="pb-3 sm:pb-4">
           <div className="flex items-center gap-2">
-            <div className="p-1.5 sm:p-2 rounded-lg" style={{ backgroundColor: 'hsl(var(--primary) / 0.1)' }}>
-              <Package className="h-4 w-4 sm:h-5 sm:w-5" style={{ color: 'hsl(var(--primary))' }} />
-            </div>
-            <CardTitle className="text-base sm:text-lg">All Products</CardTitle>
+            <Package className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+            <CardTitle className="text-sm sm:text-base lg:text-lg">All Products</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
@@ -211,104 +209,64 @@ export default function ProductsPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
               {filteredProducts.map((product) => {
                 const stockStatus = product.stock > 10 ? 'good' : product.stock > 0 ? 'low' : 'out';
+                const stockColor = stockStatus === 'good'
+                  ? 'text-green-600 dark:text-green-400'
+                  : stockStatus === 'low'
+                  ? 'text-orange-600 dark:text-orange-400'
+                  : 'text-red-600 dark:text-red-400';
+                
                 return (
-                  <Card key={product.id} className="border-2 border-border hover:shadow-lg transition-all">
-                    <CardContent className="p-4 sm:p-5">
-                      <div className="flex items-start justify-between mb-3 sm:mb-4 gap-2">
-                        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-                          <div className="p-2 sm:p-3 rounded-lg sm:rounded-xl flex-shrink-0" style={{ backgroundColor: 'hsl(var(--primary) / 0.1)' }}>
-                            <Package className="h-5 w-5 sm:h-6 sm:w-6" style={{ color: 'hsl(var(--primary))' }} />
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <h3 className="font-bold text-sm sm:text-base text-foreground truncate">
-                              {product.name}
-                            </h3>
-                            <Badge variant="outline" className="text-xs mt-0.5 sm:mt-1">
-                              {product.category}
-                            </Badge>
-                          </div>
-                        </div>
-                        <Badge variant={product.active ? 'default' : 'secondary'} className="text-xs flex-shrink-0">
-                          {product.active ? 'Active' : 'Inactive'}
-                        </Badge>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-3 sm:mb-4">
-                        <div className="p-2.5 sm:p-3 bg-muted rounded-lg border border-border">
-                          <div className="flex items-center gap-1.5 sm:gap-2 mb-0.5 sm:mb-1">
-                            <IndianRupee className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
-                            <p className="text-[10px] sm:text-xs text-muted-foreground">Price</p>
-                          </div>
-                          <p className="text-base sm:text-lg font-bold" style={{ color: 'hsl(var(--primary))' }}>
-                            ₹{product.price}
-                          </p>
-                        </div>
-                        <div 
-                          className="p-2.5 sm:p-3 rounded-lg border"
-                          style={{
-                            backgroundColor: stockStatus === 'good' 
-                              ? 'hsl(160 60% 45% / 0.1)' 
-                              : stockStatus === 'low' 
-                              ? 'hsl(30 80% 55% / 0.1)' 
-                              : 'hsl(0 63% 55% / 0.1)',
-                            borderColor: stockStatus === 'good'
-                              ? 'hsl(160 60% 45% / 0.3)'
-                              : stockStatus === 'low'
-                              ? 'hsl(30 80% 55% / 0.3)'
-                              : 'hsl(0 63% 55% / 0.3)'
-                          }}
-                        >
-                          <div className="flex items-center gap-1.5 sm:gap-2 mb-0.5 sm:mb-1">
-                            <Package className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
-                            <p className="text-[10px] sm:text-xs text-muted-foreground">Stock</p>
-                          </div>
-                          <p 
-                            className="text-base sm:text-lg font-bold"
-                            style={{
-                              color: stockStatus === 'good'
-                                ? 'hsl(160 60% 45%)'
-                                : stockStatus === 'low'
-                                ? 'hsl(30 80% 55%)'
-                                : 'hsl(0 63% 55%)'
-                            }}
-                          >
-                            {product.stock} <span className="text-xs sm:text-sm">units</span>
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex gap-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="flex-1 h-9 text-xs sm:text-sm"
-                          onClick={() => router.push(`/admin/products/${product.id}`)}
-                        >
-                          <Eye className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                          <span className="hidden xs:inline">View</span>
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="flex-1 h-9 text-xs sm:text-sm"
-                          onClick={() => router.push(`/admin/products/${product.id}/edit`)}
-                        >
-                          <Edit className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                          <span className="hidden xs:inline">Edit</span>
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          style={{ color: 'hsl(0 63% 55%)' }}
-                          className="hover:bg-destructive/10 border-border h-9 px-3"
-                          onClick={() => handleDelete(product.id, product.name)}
-                          disabled={deleteProductMutation.isPending}
-                        >
-                          <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <TransactionCard
+                    key={product.id}
+                    id={product.id}
+                    icon={Package}
+                    layout="vertical"
+                    primaryBadge={{
+                      label: product.category,
+                      variant: 'outline',
+                    }}
+                    statusBadge={{
+                      label: product.active ? 'Active' : 'Inactive',
+                      className: '',
+                    }}
+                    title={product.name}
+                    subtitle={product.category}
+                    infoBoxes={[
+                      {
+                        icon: IndianRupee,
+                        label: 'Price',
+                        value: `₹${product.price}`,
+                        valueClassName: 'text-primary',
+                      },
+                      {
+                        icon: Package,
+                        label: 'Stock',
+                        value: `${product.stock} units`,
+                        valueClassName: stockColor,
+                      },
+                    ]}
+                    actionButtons={[
+                      {
+                        label: 'View',
+                        icon: Eye,
+                        onClick: () => router.push(`/admin/products/${product.id}`),
+                        hideTextOnMobile: true,
+                      },
+                      {
+                        label: 'Edit',
+                        icon: Edit,
+                        onClick: () => router.push(`/admin/products/${product.id}/edit`),
+                        hideTextOnMobile: true,
+                      },
+                      {
+                        label: '',
+                        icon: Trash2,
+                        onClick: () => handleDelete(product.id, product.name),
+                        disabled: deleteProductMutation.isPending,
+                        className: 'text-destructive hover:bg-destructive/10 flex-initial px-2 sm:px-3',
+                      },
+                    ]}
+                  />
                 );
               })}
             </div>

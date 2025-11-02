@@ -92,43 +92,39 @@ export function AdminHeader({ setSidebarOpen }: AdminHeaderProps) {
   ];
 
   return (
-    <header className="sticky top-0 z-30 h-14 sm:h-16 bg-background border-b border-border backdrop-blur-xl shadow-sm">
-      <div className="flex items-center justify-between h-full px-3 sm:px-4 lg:px-6">
+    <header className="sticky top-0 z-30 h-14 sm:h-16 bg-background border-b-2 border-border backdrop-blur-xl shadow-sm">
+      <div className="flex items-center justify-between h-full px-2 sm:px-4 lg:px-6 gap-2 sm:gap-3">
         {/* Left Section - Mobile Menu & Search */}
-        <div className="flex items-center gap-2 sm:gap-3 md:gap-4 flex-1 min-w-0">
+        <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 flex-1 min-w-0">
           <Button
             variant="ghost"
             size="icon"
-            className="lg:hidden h-8 w-8 sm:h-9 sm:w-9 cursor-pointer"
+            className="lg:hidden h-8 w-8 sm:h-9 sm:w-9 cursor-pointer flex-shrink-0"
             onClick={() => setSidebarOpen(true)}
           >
             <Menu className="h-4 w-4 sm:h-5 sm:w-5" />
           </Button>
 
           {/* Search Bar */}
-          <div className="hidden md:flex items-center flex-1 max-w-md">
+          <div className="flex items-center flex-1 max-w-md">
             <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
+              <Search className="absolute left-2 sm:left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
               <Input
                 placeholder="Search..."
-                className="pl-9 sm:pl-10 h-9 sm:h-10 text-xs sm:text-sm bg-muted border border-border"
+                className="pl-7 sm:pl-9 lg:pl-10 pr-2 h-8 sm:h-9 lg:h-10 text-xs sm:text-sm bg-muted border-2"
               />
             </div>
           </div>
         </div>
 
         {/* Right Section - Actions */}
-        <div className="flex items-center gap-1 sm:gap-2">
-          {/* Search Icon (Mobile) */}
-          <Button variant="ghost" size="icon" className="md:hidden h-8 w-8 sm:h-9 sm:w-9 cursor-pointer">
-            <Search className="h-4 w-4 sm:h-5 sm:w-5" />
-          </Button>
+        <div className="flex items-center gap-0.5 sm:gap-1 lg:gap-2 flex-shrink-0">
 
           {/* Theme Toggle */}
           <div className="relative">
             <button
               onClick={() => setShowThemeMenu(!showThemeMenu)}
-              className="p-2 sm:p-2.5 rounded-lg sm:rounded-xl hover:bg-muted transition-colors group cursor-pointer"
+              className="p-1.5 sm:p-2 lg:p-2.5 rounded-lg sm:rounded-xl hover:bg-muted transition-colors group cursor-pointer"
             >
               {theme === 'dark' ? (
                 <Moon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground group-hover:text-primary" />
@@ -193,13 +189,13 @@ export function AdminHeader({ setSidebarOpen }: AdminHeaderProps) {
           <div className="relative">
             <button
               onClick={() => setShowUserMenu(!showUserMenu)}
-              className="flex items-center gap-2 px-2 lg:px-3 py-2 rounded-lg lg:rounded-xl hover:bg-muted transition-colors group cursor-pointer"
+              className="flex items-center gap-1.5 sm:gap-2 px-1.5 sm:px-2 lg:px-3 py-1.5 sm:py-2 rounded-lg lg:rounded-xl hover:bg-muted transition-colors group cursor-pointer"
             >
               <img 
                 src={getAvatarSrc()} 
                 alt="Admin User"
                 onError={handleAvatarError}
-                className="h-7 w-7 sm:h-8 sm:w-8 rounded-full object-cover ring-2 ring-primary/20"
+                className="h-8 w-8 sm:h-9 sm:w-9 lg:h-10 lg:w-10 rounded-full object-cover ring-2 ring-primary/20 flex-shrink-0"
               />
               <ChevronDown className={`h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground transition-transform ${showUserMenu ? 'rotate-180' : ''}`} />
             </button>

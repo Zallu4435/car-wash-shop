@@ -48,49 +48,50 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
   const currentStatusStyle = statusColors[status as keyof typeof statusColors] || statusColors.processing;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <div>
-        <Button variant="ghost" onClick={() => router.push('/admin/orders')} className="cursor-pointer">
-          <ArrowLeft className="mr-2 h-4 w-4" />
+        <Button variant="ghost" onClick={() => router.push('/admin/orders')} className="h-9 sm:h-10 text-xs sm:text-sm cursor-pointer border-2">
+          <ArrowLeft className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Back to Orders
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Order Details */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-4 sm:space-y-6">
           {/* Order Info */}
-          <Card className="border-2">
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-3 bg-primary/10 rounded-xl">
-                    <Package className="h-6 w-6 text-primary" />
-                  </div>
-                  <div>
-                    <CardTitle>Order #{order.id}</CardTitle>
-                    <p className="text-sm text-muted-foreground mt-1">Placed on {order.orderDate}</p>
+          <Card className="border-2 border-border rounded-lg sm:rounded-xl">
+            <CardHeader className="pb-3 sm:pb-4">
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                  <Package className="h-5 w-5 sm:h-6 sm:w-6 text-primary flex-shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <CardTitle className="text-sm sm:text-base lg:text-lg truncate">Order #{order.id}</CardTitle>
+                    <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1">Placed on {order.orderDate}</p>
                   </div>
                 </div>
-                <Badge className={currentStatusStyle.bgColor}>
-                  <span className={currentStatusStyle.color}>{status}</span>
+                <Badge 
+                  variant="outline"
+                  className={`text-xs sm:text-sm flex-shrink-0 border-2 capitalize ${currentStatusStyle.color}`}
+                >
+                  {status}
                 </Badge>
               </div>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-3 sm:space-y-4">
               {/* Customer Info */}
-              <div className="p-4 bg-muted rounded-xl">
-                <h3 className="font-semibold mb-3 text-foreground">Customer Details</h3>
-                <div className="space-y-2">
-                  <p className="font-semibold text-foreground">{order.customer.name}</p>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Phone className="h-4 w-4" />
+              <div className="p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl border-2 border-border">
+                <h3 className="font-semibold text-xs sm:text-sm mb-2 sm:mb-3 text-foreground">Customer Details</h3>
+                <div className="space-y-1.5 sm:space-y-2">
+                  <p className="font-semibold text-sm sm:text-base text-foreground">{order.customer.name}</p>
+                  <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-muted-foreground">
+                    <Phone className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
                     <span>{order.customer.phone}</span>
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Mail className="h-4 w-4" />
-                    <span>{order.customer.email}</span>
+                  <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-muted-foreground">
+                    <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                    <span className="truncate">{order.customer.email}</span>
                   </div>
                 </div>
               </div>
@@ -99,18 +100,18 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
 
               {/* Items */}
               <div>
-                <h3 className="font-semibold mb-3 flex items-center gap-2 text-foreground">
-                  <Package className="h-5 w-5" />
+                <h3 className="font-semibold text-xs sm:text-sm mb-2 sm:mb-3 flex items-center gap-1.5 sm:gap-2 text-foreground">
+                  <Package className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
                   Order Items
                 </h3>
-                <div className="space-y-3">
+                <div className="space-y-2 sm:space-y-3">
                   {order.items.map((item) => (
-                    <div key={item.id} className="flex items-center justify-between p-4 bg-muted rounded-xl">
-                      <div className="flex-1">
-                        <p className="font-semibold text-foreground">{item.name}</p>
-                        <p className="text-sm text-muted-foreground">Qty: {item.quantity} × ₹{item.price}</p>
+                    <div key={item.id} className="flex items-center justify-between gap-3 p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl border-2 border-border">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-xs sm:text-sm lg:text-base text-foreground truncate">{item.name}</p>
+                        <p className="text-[10px] sm:text-xs lg:text-sm text-muted-foreground">Qty: {item.quantity} × ₹{item.price}</p>
                       </div>
-                      <p className="text-lg font-bold text-primary">₹{item.total}</p>
+                      <p className="text-sm sm:text-base lg:text-lg font-bold text-primary flex-shrink-0">₹{item.total}</p>
                     </div>
                   ))}
                 </div>
@@ -119,38 +120,36 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
               <Separator />
 
               {/* Delivery Address */}
-              <div className="p-4 bg-muted rounded-xl">
-                <h3 className="font-semibold mb-2 flex items-center gap-2 text-foreground">
-                  <MapPin className="h-5 w-5" />
+              <div className="p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl border-2 border-border">
+                <h3 className="font-semibold text-xs sm:text-sm mb-1.5 sm:mb-2 flex items-center gap-1.5 sm:gap-2 text-foreground">
+                  <MapPin className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
                   Delivery Address
                 </h3>
-                <p className="text-sm text-foreground leading-relaxed">{order.address}</p>
+                <p className="text-xs sm:text-sm text-foreground leading-relaxed">{order.address}</p>
               </div>
             </CardContent>
           </Card>
 
           {/* Update Status */}
-          <Card className="border-2">
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <div className="p-2 bg-primary/10 rounded-lg">
-                  <Truck className="h-5 w-5 text-primary" />
-                </div>
-                <CardTitle>Update Order Status</CardTitle>
+          <Card className="border-2 border-border rounded-lg sm:rounded-xl">
+            <CardHeader className="pb-3 sm:pb-4">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <Truck className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+                <CardTitle className="text-sm sm:text-base lg:text-lg">Update Order Status</CardTitle>
               </div>
             </CardHeader>
             <CardContent>
               <Select value={status} onValueChange={handleStatusUpdate}>
-                <SelectTrigger>
+                <SelectTrigger className="h-9 sm:h-10 text-xs sm:text-sm border-2 rounded-lg">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="processing">Processing</SelectItem>
-                  <SelectItem value="confirmed">Confirmed</SelectItem>
-                  <SelectItem value="shipped">Shipped</SelectItem>
-                  <SelectItem value="out-for-delivery">Out for Delivery</SelectItem>
-                  <SelectItem value="delivered">Delivered</SelectItem>
-                  <SelectItem value="cancelled">Cancelled</SelectItem>
+                <SelectContent className="force-sheet-bg border-2 rounded-lg">
+                  <SelectItem value="processing" className="text-xs sm:text-sm rounded-md">Processing</SelectItem>
+                  <SelectItem value="confirmed" className="text-xs sm:text-sm rounded-md">Confirmed</SelectItem>
+                  <SelectItem value="shipped" className="text-xs sm:text-sm rounded-md">Shipped</SelectItem>
+                  <SelectItem value="out-for-delivery" className="text-xs sm:text-sm rounded-md">Out for Delivery</SelectItem>
+                  <SelectItem value="delivered" className="text-xs sm:text-sm rounded-md">Delivered</SelectItem>
+                  <SelectItem value="cancelled" className="text-xs sm:text-sm rounded-md">Cancelled</SelectItem>
                 </SelectContent>
               </Select>
             </CardContent>
@@ -159,30 +158,28 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
 
         {/* Order Summary Sidebar */}
         <div className="lg:col-span-1">
-          <Card className="border-2 sticky top-24">
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <div className="p-2 bg-primary/10 rounded-lg">
-                  <FileText className="h-5 w-5 text-primary" />
-                </div>
-              <CardTitle>Order Summary</CardTitle>
+          <Card className="border-2 border-border rounded-lg sm:rounded-xl lg:sticky lg:top-24">
+            <CardHeader className="pb-3 sm:pb-4">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+              <CardTitle className="text-sm sm:text-base lg:text-lg">Order Summary</CardTitle>
               </div>
             </CardHeader>
-            <CardContent className="space-y-5">
-              <div className="space-y-3">
-                <div className="flex justify-between text-sm">
+            <CardContent className="space-y-3 sm:space-y-4">
+              <div className="space-y-2 sm:space-y-2.5">
+                <div className="flex justify-between gap-2 text-xs sm:text-sm">
                   <span className="text-muted-foreground">Subtotal</span>
-                  <span className="font-semibold text-foreground">₹{order.amount}</span>
+                  <span className="font-semibold text-foreground flex-shrink-0">₹{order.amount}</span>
                 </div>
                 {order.discount > 0 && (
-                  <div className="flex justify-between text-sm">
+                  <div className="flex justify-between gap-2 text-xs sm:text-sm">
                     <span className="text-green-600 dark:text-green-400">Discount</span>
-                    <span className="font-semibold text-green-600 dark:text-green-400">-₹{order.discount}</span>
+                    <span className="font-semibold text-green-600 dark:text-green-400 flex-shrink-0">-₹{order.discount}</span>
                   </div>
                 )}
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between gap-2 text-xs sm:text-sm">
                   <span className="text-muted-foreground">Delivery Fee</span>
-                  <span className={`font-semibold ${order.deliveryFee === 0 ? 'text-green-600 dark:text-green-400' : 'text-foreground'}`}>
+                  <span className={`font-semibold flex-shrink-0 ${order.deliveryFee === 0 ? 'text-green-600 dark:text-green-400' : 'text-foreground'}`}>
                     {order.deliveryFee === 0 ? 'FREE' : `₹${order.deliveryFee}`}
                   </span>
                 </div>
@@ -190,19 +187,19 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
 
               <Separator />
 
-              <div className="p-4 bg-primary/10 rounded-xl">
-                <div className="flex justify-between items-center">
-                  <span className="font-semibold text-foreground">Total</span>
-                  <div className="flex items-center gap-1">
-                    <IndianRupee className="h-6 w-6 text-primary" />
-                    <span className="text-2xl font-bold text-primary">{order.finalAmount}</span>
+              <div className="p-3 sm:p-4 bg-primary/10 rounded-lg sm:rounded-xl border-2 border-primary/20">
+                <div className="flex justify-between items-center gap-2">
+                  <span className="font-semibold text-xs sm:text-sm text-foreground">Total</span>
+                  <div className="flex items-center gap-0.5 sm:gap-1">
+                    <IndianRupee className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-primary flex-shrink-0" />
+                    <span className="text-lg sm:text-xl lg:text-2xl font-bold text-primary">{order.finalAmount}</span>
                   </div>
                 </div>
               </div>
 
-              <div className="p-3 bg-muted rounded-lg">
-                <p className="text-xs text-muted-foreground mb-1">Payment Method</p>
-                <p className="font-semibold text-foreground">{order.paymentMethod}</p>
+              <div className="p-2.5 sm:p-3 bg-muted rounded-lg border-2 border-border">
+                <p className="text-[10px] sm:text-xs text-muted-foreground mb-0.5 sm:mb-1">Payment Method</p>
+                <p className="font-semibold text-xs sm:text-sm text-foreground">{order.paymentMethod}</p>
               </div>
 
               <Separator />
@@ -210,14 +207,14 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
               <div className="space-y-2">
                 <Button 
                   variant="outline" 
-                  className="w-full"
+                  className="w-full h-9 sm:h-10 text-xs sm:text-sm border-2 rounded-lg"
                   onClick={() => router.push(`/admin/orders/${id}/invoice`)}
                 >
-                  <FileText className="mr-2 h-4 w-4" />
+                  <FileText className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   Generate Invoice
                 </Button>
-                <Button variant="outline" className="w-full">
-                  <Phone className="mr-2 h-4 w-4" />
+                <Button variant="outline" className="w-full h-9 sm:h-10 text-xs sm:text-sm border-2 rounded-lg">
+                  <Phone className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   Contact Customer
                 </Button>
               </div>

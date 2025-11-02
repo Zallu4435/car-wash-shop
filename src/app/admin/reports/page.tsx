@@ -2,14 +2,11 @@
 
 import { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
-  TrendingUp, 
-  TrendingDown, 
-  Download,
+ 
   BarChart3,
   PieChart,
   Activity,
@@ -25,6 +22,7 @@ import { EmptyState } from '@/components/shared/display/EmptyState';
 import { ExportButton } from '@/components/admin/ExportButton';
 import { ProgressBar } from '@/components/admin/ProgressBar';
 import { StatCard } from '@/components/admin/StatCard';
+import { PerformanceCard } from '@/components/admin/PerformanceCard';
 
 export default function ReportsPage() {
   const [timeRange, setTimeRange] = useState('last-12-months');
@@ -128,7 +126,7 @@ export default function ReportsPage() {
         </div>
         <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
           <Select value={timeRange} onValueChange={setTimeRange}>
-            <SelectTrigger className="w-full sm:w-48 h-9 sm:h-10 text-xs sm:text-sm">
+            <SelectTrigger className="w-full sm:w-48 h-9 sm:h-10 text-xs sm:text-sm border-2">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -151,36 +149,48 @@ export default function ReportsPage() {
               'Tab': selectedTab,
             }}
             variant="outline"
-            className="w-full sm:w-auto h-9 sm:h-10 text-xs sm:text-sm"
+            className="w-full sm:w-auto h-9 sm:h-10 text-xs sm:text-sm border-2"
           />
         </div>
       </div>
 
       {/* Tabs */}
       <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto">
-          <TabsTrigger value="overview" className="text-xs sm:text-sm py-2 sm:py-2.5">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto gap-1.5 sm:gap-2 p-1.5 sm:p-2 bg-muted border-2 border-border rounded-lg sm:rounded-xl">
+          <TabsTrigger 
+            value="overview" 
+            className="text-xs sm:text-sm py-2 sm:py-2.5 px-2 sm:px-3 rounded-md sm:rounded-lg border-2 border-border font-medium transition-all data-[state=active]:border-primary data-[state=active]:border-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-xl data-[state=active]:scale-105 hover:bg-muted hover:border-muted-foreground/30"
+          >
             Overview
           </TabsTrigger>
-          <TabsTrigger value="revenue" className="text-xs sm:text-sm py-2 sm:py-2.5">
+          <TabsTrigger 
+            value="revenue" 
+            className="text-xs sm:text-sm py-2 sm:py-2.5 px-2 sm:px-3 rounded-md sm:rounded-lg border-2 border-border font-medium transition-all data-[state=active]:border-primary data-[state=active]:border-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-xl data-[state=active]:scale-105 hover:bg-muted hover:border-muted-foreground/30"
+          >
             Revenue
           </TabsTrigger>
-          <TabsTrigger value="customers" className="text-xs sm:text-sm py-2 sm:py-2.5">
+          <TabsTrigger 
+            value="customers" 
+            className="text-xs sm:text-sm py-2 sm:py-2.5 px-2 sm:px-3 rounded-md sm:rounded-lg border-2 border-border font-medium transition-all data-[state=active]:border-primary data-[state=active]:border-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-xl data-[state=active]:scale-105 hover:bg-muted hover:border-muted-foreground/30"
+          >
             Customers
           </TabsTrigger>
-          <TabsTrigger value="services" className="text-xs sm:text-sm py-2 sm:py-2.5">
+          <TabsTrigger 
+            value="services" 
+            className="text-xs sm:text-sm py-2 sm:py-2.5 px-2 sm:px-3 rounded-md sm:rounded-lg border-2 border-border font-medium transition-all data-[state=active]:border-primary data-[state=active]:border-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-xl data-[state=active]:scale-105 hover:bg-muted hover:border-muted-foreground/30"
+          >
             Services
           </TabsTrigger>
         </TabsList>
       </Tabs>
       
       {/* Tab Content Indicator */}
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-muted-foreground">
         <span>Showing: <span className="font-semibold text-foreground capitalize">{selectedTab}</span></span>
-        <span>•</span>
-        <span className="font-medium">{timeRange.replace(/-/g, ' ')}</span>
-        <span>•</span>
-        <span className="text-xs">
+        <span className="hidden sm:inline">•</span>
+        <span className="font-medium text-[10px] sm:text-sm">{timeRange.replace(/-/g, ' ')}</span>
+        <span className="hidden sm:inline">•</span>
+        <span className="text-[10px] sm:text-xs">
           {fromDate} to {toDate}
         </span>
       </div>
@@ -233,10 +243,8 @@ export default function ReportsPage() {
         <CardHeader className="pb-3 sm:pb-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
             <div className="flex items-center gap-2">
-              <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
-                <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-              </div>
-              <CardTitle className="text-base sm:text-lg">Revenue Trend</CardTitle>
+              <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+              <CardTitle className="text-sm sm:text-base lg:text-lg">Revenue Trend</CardTitle>
             </div>
             <Badge variant="outline" className="text-xs w-fit">
               {timeRange.replace(/-/g, ' ')}
@@ -287,10 +295,8 @@ export default function ReportsPage() {
         <Card className="border-2 border-border">
           <CardHeader className="pb-3 sm:pb-4">
             <div className="flex items-center gap-2">
-              <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
-                <PieChart className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-              </div>
-              <CardTitle className="text-base sm:text-lg">Service Distribution</CardTitle>
+              <PieChart className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+              <CardTitle className="text-sm sm:text-base lg:text-lg">Service Distribution</CardTitle>
             </div>
           </CardHeader>
           <CardContent>
@@ -331,10 +337,8 @@ export default function ReportsPage() {
         <Card className="border-2 border-border">
           <CardHeader className="pb-3 sm:pb-4">
             <div className="flex items-center gap-2">
-              <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
-                <Activity className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-              </div>
-              <CardTitle className="text-base sm:text-lg">Top Selling Products</CardTitle>
+              <Activity className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+              <CardTitle className="text-sm sm:text-base lg:text-lg">Top Selling Products</CardTitle>
             </div>
           </CardHeader>
           <CardContent>
@@ -382,10 +386,8 @@ export default function ReportsPage() {
       <Card className="border-2 border-border">
         <CardHeader className="pb-3 sm:pb-4">
           <div className="flex items-center gap-2">
-            <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
-              <Users className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-            </div>
-            <CardTitle className="text-base sm:text-lg">Staff Performance</CardTitle>
+            <Users className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+            <CardTitle className="text-sm sm:text-base lg:text-lg">Staff Performance</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
@@ -394,23 +396,23 @@ export default function ReportsPage() {
               {staffReport.slice(0, 4).map((staff) => (
                 <div 
                   key={staff.staffId}
-                  className="p-4 sm:p-5 rounded-lg sm:rounded-xl border border-border bg-muted/50"
+                  className="p-3 sm:p-4 lg:p-5 rounded-lg sm:rounded-xl border-2 border-border bg-muted/50"
                 >
                   <div className="flex items-center justify-between mb-1.5 sm:mb-2">
-                    <p className="text-xs sm:text-sm text-muted-foreground truncate flex-1">
+                    <p className="text-[10px] sm:text-xs lg:text-sm text-muted-foreground truncate flex-1">
                       {staff.staffName}
                     </p>
                     <Badge 
                       variant="outline"
-                      className="gap-0.5 sm:gap-1 text-[10px] sm:text-xs flex-shrink-0"
+                      className="gap-0.5 sm:gap-1 text-[10px] sm:text-xs flex-shrink-0 ml-1"
                     >
                       ⭐ {staff.avgRating.toFixed(1)}
                     </Badge>
                   </div>
-                  <p className="text-2xl sm:text-3xl font-bold text-primary">
+                  <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-primary">
                     {staff.completedJobs}
                   </p>
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">
                     {staff.completionRate.toFixed(1)}% completion
                   </p>
                 </div>
@@ -432,40 +434,40 @@ export default function ReportsPage() {
       {selectedTab === 'revenue' && (
         <>
           <Card className="border-2 border-border">
-            <CardHeader>
-              <CardTitle className="text-lg sm:text-xl">Revenue Analytics</CardTitle>
-              <p className="text-sm text-muted-foreground">Detailed revenue breakdown and trends</p>
+            <CardHeader className="pb-3 sm:pb-4">
+              <CardTitle className="text-sm sm:text-base lg:text-lg">Revenue Analytics</CardTitle>
+              <p className="text-xs sm:text-sm text-muted-foreground">Detailed revenue breakdown and trends</p>
             </CardHeader>
             <CardContent>
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div className="p-4 bg-primary/10 rounded-lg border border-primary/20">
-                    <p className="text-sm text-muted-foreground">Total Revenue</p>
-                    <p className="text-2xl font-bold text-primary">₹{revenueReport?.totalRevenue?.toLocaleString('en-IN') || '0'}</p>
+              <div className="space-y-4 sm:space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                  <div className="p-3 sm:p-4 bg-primary/10 rounded-lg sm:rounded-xl border-2 border-primary/20">
+                    <p className="text-xs sm:text-sm text-muted-foreground">Total Revenue</p>
+                    <p className="text-xl sm:text-2xl font-bold text-primary">₹{revenueReport?.totalRevenue?.toLocaleString('en-IN') || '0'}</p>
                   </div>
-                  <div className="p-4 bg-primary/10 rounded-lg border border-primary/20">
-                    <p className="text-sm text-muted-foreground">By Services</p>
-                    <p className="text-2xl font-bold text-primary">
+                  <div className="p-3 sm:p-4 bg-primary/10 rounded-lg sm:rounded-xl border-2 border-primary/20">
+                    <p className="text-xs sm:text-sm text-muted-foreground">By Services</p>
+                    <p className="text-xl sm:text-2xl font-bold text-primary">
                       ₹{revenueReport?.revenueByService?.reduce((sum, s) => sum + s.revenue, 0)?.toLocaleString('en-IN') || '0'}
                     </p>
                   </div>
-                  <div className="p-4 bg-primary/10 rounded-lg border border-primary/20">
-                    <p className="text-sm text-muted-foreground">By Products</p>
-                    <p className="text-2xl font-bold text-primary">
+                  <div className="p-3 sm:p-4 bg-primary/10 rounded-lg sm:rounded-xl border-2 border-primary/20">
+                    <p className="text-xs sm:text-sm text-muted-foreground">By Products</p>
+                    <p className="text-xl sm:text-2xl font-bold text-primary">
                       ₹{revenueReport?.revenueByProduct?.reduce((sum, p) => sum + p.revenue, 0)?.toLocaleString('en-IN') || '0'}
                     </p>
                   </div>
                 </div>
 
                 <div>
-                  <h3 className="font-semibold mb-3">Revenue by Service</h3>
-                  <div className="space-y-3">
+                  <h3 className="font-semibold text-sm sm:text-base mb-2 sm:mb-3">Revenue by Service</h3>
+                  <div className="space-y-2 sm:space-y-3">
                     {revenueReport?.revenueByService?.map((service, index) => (
-                      <div key={index} className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                        <span className="font-medium">{service.service}</span>
-                        <div className="text-right">
-                          <p className="font-bold">₹{service.revenue.toLocaleString('en-IN')}</p>
-                          <p className="text-xs text-muted-foreground">{service.bookings} bookings</p>
+                      <div key={index} className="flex items-center justify-between p-2.5 sm:p-3 bg-muted rounded-lg sm:rounded-xl border-2 border-border">
+                        <span className="font-medium text-xs sm:text-sm truncate flex-1 mr-2">{service.service}</span>
+                        <div className="text-right flex-shrink-0">
+                          <p className="font-bold text-xs sm:text-sm">₹{service.revenue.toLocaleString('en-IN')}</p>
+                          <p className="text-[10px] sm:text-xs text-muted-foreground">{service.bookings} bookings</p>
                         </div>
                       </div>
                     ))}
@@ -473,14 +475,14 @@ export default function ReportsPage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold mb-3">Revenue by Payment Method</h3>
-                  <div className="space-y-3">
+                  <h3 className="font-semibold text-sm sm:text-base mb-2 sm:mb-3">Revenue by Payment Method</h3>
+                  <div className="space-y-2 sm:space-y-3">
                     {revenueReport?.revenueByPaymentMethod?.map((method, index) => (
-                      <div key={index} className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                        <span className="font-medium">{method.method}</span>
-                        <div className="text-right">
-                          <p className="font-bold">₹{method.amount.toLocaleString('en-IN')}</p>
-                          <p className="text-xs text-muted-foreground">{method.count} transactions</p>
+                      <div key={index} className="flex items-center justify-between p-2.5 sm:p-3 bg-muted rounded-lg sm:rounded-xl border-2 border-border">
+                        <span className="font-medium text-xs sm:text-sm truncate flex-1 mr-2">{method.method}</span>
+                        <div className="text-right flex-shrink-0">
+                          <p className="font-bold text-xs sm:text-sm">₹{method.amount.toLocaleString('en-IN')}</p>
+                          <p className="text-[10px] sm:text-xs text-muted-foreground">{method.count} transactions</p>
                         </div>
                       </div>
                     ))}
@@ -496,48 +498,27 @@ export default function ReportsPage() {
       {selectedTab === 'services' && (
         <>
           <Card className="border-2 border-border">
-            <CardHeader>
-              <CardTitle className="text-lg sm:text-xl">Service Performance</CardTitle>
-              <p className="text-sm text-muted-foreground">Detailed service analytics and ratings</p>
+            <CardHeader className="pb-3 sm:pb-4">
+              <CardTitle className="text-sm sm:text-base lg:text-lg">Service Performance</CardTitle>
+              <p className="text-xs sm:text-sm text-muted-foreground">Detailed service analytics and ratings</p>
             </CardHeader>
             <CardContent>
               {serviceReport && serviceReport.length > 0 ? (
-                <div className="space-y-4">
-                  {serviceReport.map((service, index) => (
-                  <div key={service.serviceId} className="p-4 border rounded-lg">
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <h3 className="font-semibold text-lg">{service.serviceName}</h3>
-                        <p className="text-sm text-muted-foreground">ID: {service.serviceId}</p>
-                      </div>
-                      <Badge variant="outline" className="gap-1">
-                        ⭐ {service.avgRating.toFixed(1)}
-                      </Badge>
-                    </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                      <div>
-                        <p className="text-xs text-muted-foreground">Total Bookings</p>
-                        <p className="text-xl font-bold">{service.totalBookings}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Completed</p>
-                        <p className="text-xl font-bold text-primary">{service.completedBookings}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Cancelled</p>
-                        <p className="text-xl font-bold text-muted-foreground">{service.cancelledBookings}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Revenue</p>
-                        <p className="text-xl font-bold text-primary">₹{service.totalRevenue.toLocaleString('en-IN')}</p>
-                      </div>
-                    </div>
-                    <div className="mt-3">
-                      <Badge variant="outline" className="text-xs">
-                        Trend: {service.popularityTrend}
-                      </Badge>
-                    </div>
-                  </div>
+                <div className="space-y-3 sm:space-y-4">
+                  {serviceReport.map((service) => (
+                    <PerformanceCard
+                      key={service.serviceId}
+                      id={service.serviceId}
+                      name={service.serviceName}
+                      rating={service.avgRating}
+                      metrics={[
+                        { label: 'Total Bookings', value: service.totalBookings },
+                        { label: 'Completed', value: service.completedBookings, highlight: true },
+                        { label: 'Cancelled', value: service.cancelledBookings },
+                        { label: 'Revenue', value: `₹${service.totalRevenue.toLocaleString('en-IN')}`, highlight: true },
+                      ]}
+                      badge={{ label: 'Trend', value: service.popularityTrend }}
+                    />
                   ))}
                 </div>
               ) : (
@@ -556,48 +537,27 @@ export default function ReportsPage() {
       {selectedTab === 'customers' && (
         <>
           <Card className="border-2 border-border">
-            <CardHeader>
-              <CardTitle className="text-lg sm:text-xl">Staff Performance Details</CardTitle>
-              <p className="text-sm text-muted-foreground">Detailed staff metrics and performance</p>
+            <CardHeader className="pb-3 sm:pb-4">
+              <CardTitle className="text-sm sm:text-base lg:text-lg">Staff Performance Details</CardTitle>
+              <p className="text-xs sm:text-sm text-muted-foreground">Detailed staff metrics and performance</p>
             </CardHeader>
             <CardContent>
               {staffReport && staffReport.length > 0 ? (
-                <div className="space-y-4">
-                  {staffReport.map((staff, index) => (
-                  <div key={staff.staffId} className="p-4 border rounded-lg">
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <h3 className="font-semibold text-lg">{staff.staffName}</h3>
-                        <p className="text-sm text-muted-foreground">ID: {staff.staffId}</p>
-                      </div>
-                      <Badge variant="outline">
-                        ⭐ {staff.avgRating.toFixed(1)}
-                      </Badge>
-                    </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                      <div>
-                        <p className="text-xs text-muted-foreground">Total Jobs</p>
-                        <p className="text-xl font-bold">{staff.totalJobs}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Completed</p>
-                        <p className="text-xl font-bold text-primary">{staff.completedJobs}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Completion Rate</p>
-                        <p className="text-xl font-bold">{staff.completionRate.toFixed(1)}%</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Earnings</p>
-                        <p className="text-xl font-bold">₹{staff.totalEarnings.toLocaleString('en-IN')}</p>
-                      </div>
-                    </div>
-                    <div className="mt-3">
-                      <Badge variant="outline" className="text-xs">
-                        On-Time Rate: {staff.onTimeRate.toFixed(1)}%
-                      </Badge>
-                    </div>
-                  </div>
+                <div className="space-y-3 sm:space-y-4">
+                  {staffReport.map((staff) => (
+                    <PerformanceCard
+                      key={staff.staffId}
+                      id={staff.staffId}
+                      name={staff.staffName}
+                      rating={staff.avgRating}
+                      metrics={[
+                        { label: 'Total Jobs', value: staff.totalJobs },
+                        { label: 'Completed', value: staff.completedJobs, highlight: true },
+                        { label: 'Completion Rate', value: `${staff.completionRate.toFixed(1)}%` },
+                        { label: 'Earnings', value: `₹${staff.totalEarnings.toLocaleString('en-IN')}` },
+                      ]}
+                      badge={{ label: 'On-Time Rate', value: `${staff.onTimeRate.toFixed(1)}%` }}
+                    />
                   ))}
                 </div>
               ) : (

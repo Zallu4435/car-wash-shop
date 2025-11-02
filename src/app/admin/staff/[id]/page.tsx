@@ -71,94 +71,92 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 pb-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <Button variant="ghost" onClick={() => router.push('/admin/staff')} className="cursor-pointer">
-          <ArrowLeft className="mr-2 h-4 w-4" />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+        <Button variant="ghost" onClick={() => router.push('/admin/staff')} className="w-fit h-9 sm:h-10 text-xs sm:text-sm cursor-pointer border-2 -ml-2">
+          <ArrowLeft className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Back to Staff
         </Button>
-        <Button onClick={() => router.push(`/admin/staff/${id}/edit`)}>
-          <Edit className="mr-2 h-4 w-4" />
+        <Button onClick={() => router.push(`/admin/staff/${id}/edit`)} className="h-9 sm:h-10 text-xs sm:text-sm border-2">
+          <Edit className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Edit Staff
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6 items-start">
         {/* Staff Info */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="xl:col-span-2 space-y-4 sm:space-y-6">
           {/* Profile Card */}
-          <Card className="border-2">
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
-                    <Briefcase className="h-8 w-8 text-primary" />
+          <Card className="border-2 border-border rounded-lg sm:rounded-xl">
+            <CardHeader className="pb-3 sm:pb-4">
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4">
+                <div className="flex flex-col sm:flex-row items-center sm:items-start gap-3 sm:gap-4 text-center sm:text-left">
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 bg-primary/10 rounded-full flex items-center justify-center border-2 border-primary/20 flex-shrink-0">
+                    <Briefcase className="h-7 w-7 sm:h-8 sm:w-8 text-primary" />
                   </div>
-                  <div>
-                    <CardTitle className="text-2xl">{staffMember.name}</CardTitle>
-                    <p className="text-muted-foreground mt-1">{staffMember.role}</p>
+                  <div className="min-w-0">
+                    <CardTitle className="text-lg sm:text-xl md:text-2xl mb-1">{staffMember.name}</CardTitle>
+                    <p className="text-xs sm:text-sm text-muted-foreground">{staffMember.role}</p>
                   </div>
                 </div>
-                <Badge variant={staffMember.active ? 'default' : 'secondary'}>
+                <Badge variant={staffMember.active ? 'default' : 'secondary'} className="text-xs sm:text-sm mx-auto sm:mx-0 w-fit">
                   {staffMember.active ? 'Active' : 'Inactive'}
                 </Badge>
               </div>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-4 bg-muted rounded-xl">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Phone className="h-4 w-4 text-muted-foreground" />
-                    <p className="text-xs text-muted-foreground uppercase tracking-wide">Phone</p>
+            <CardContent className="space-y-3 sm:space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 md:gap-4">
+                <div className="p-3 sm:p-3.5 md:p-4 bg-muted rounded-lg sm:rounded-xl border-2 border-border">
+                  <div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-2">
+                    <Phone className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
+                    <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Phone</p>
                   </div>
-                  <p className="font-semibold text-foreground">{staffMember.phone}</p>
+                  <p className="text-xs sm:text-sm font-semibold text-foreground">{staffMember.phone}</p>
                 </div>
 
-                <div className="p-4 bg-muted rounded-xl">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Mail className="h-4 w-4 text-muted-foreground" />
-                    <p className="text-xs text-muted-foreground uppercase tracking-wide">Email</p>
+                <div className="p-3 sm:p-3.5 md:p-4 bg-muted rounded-lg sm:rounded-xl border-2 border-border">
+                  <div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-2">
+                    <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
+                    <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Email</p>
                   </div>
-                  <p className="font-semibold text-foreground">{staffMember.email}</p>
+                  <p className="text-xs sm:text-sm font-semibold text-foreground truncate">{staffMember.email}</p>
                 </div>
               </div>
 
-              <div className="p-4 bg-muted rounded-xl">
-                <div className="flex items-center gap-2 mb-2">
-                  <MapPin className="h-4 w-4 text-muted-foreground" />
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide">Service Area</p>
+              <div className="p-3 sm:p-3.5 md:p-4 bg-muted rounded-lg sm:rounded-xl border-2 border-border">
+                <div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-2">
+                  <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
+                  <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Service Area</p>
                 </div>
-                <p className="font-semibold text-foreground">{staffMember.area}</p>
+                <p className="text-xs sm:text-sm font-semibold text-foreground">{staffMember.area}</p>
               </div>
 
               <Separator />
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-2.5 sm:gap-3 md:gap-4">
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Joined Date</p>
-                  <p className="font-semibold text-foreground">{staffMember.joinedDate}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground mb-1">Joined Date</p>
+                  <p className="text-xs sm:text-sm font-semibold text-foreground">{staffMember.joinedDate}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Rating</p>
-                  <p className="font-semibold text-foreground">⭐ {staffMember.rating}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground mb-1">Rating</p>
+                  <p className="text-xs sm:text-sm font-semibold text-foreground">⭐ {staffMember.rating}</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
           {/* Recent Jobs */}
-          <Card className="border-2">
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <div className="p-2 bg-primary/10 rounded-lg">
-                  <Briefcase className="h-5 w-5 text-primary" />
-                </div>
-                <CardTitle>Recent Jobs</CardTitle>
+          <Card className="border-2 border-border rounded-lg sm:rounded-xl">
+            <CardHeader className="pb-3 sm:pb-4">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <Briefcase className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+                <CardTitle className="text-sm sm:text-base lg:text-lg">Recent Jobs</CardTitle>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-2.5 md:space-y-3">
                 {recentJobs.map((job) => (
                   <div key={job.id} className="flex items-center justify-between p-4 bg-muted rounded-xl hover:shadow-sm transition-shadow">
                     <div>
@@ -182,42 +180,42 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
         </div>
 
         {/* Stats */}
-        <div className="lg:col-span-1 space-y-6">
-          <Card className="border-2">
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <div className="p-2 bg-primary/10 rounded-lg">
-                  <Star className="h-5 w-5 text-primary" />
-                </div>
-                <CardTitle>Performance</CardTitle>
+        <div className="xl:col-span-1 space-y-4 sm:space-y-6">
+          <Card className="border-2 border-border rounded-lg sm:rounded-xl">
+            <CardHeader className="pb-3 sm:pb-4">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <Star className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+                <CardTitle className="text-sm sm:text-base lg:text-lg">Performance</CardTitle>
               </div>
             </CardHeader>
-            <CardContent className="space-y-5">
-              <div className="p-4 bg-muted rounded-xl">
-                <div className="flex items-center gap-2 mb-2">
-                  <Briefcase className="h-4 w-4 text-muted-foreground" />
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide">Total Jobs</p>
+            <CardContent className="space-y-3 sm:space-y-4">
+              <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                <div className="p-2.5 sm:p-3 md:p-4 bg-muted rounded-lg sm:rounded-xl border-2 border-border">
+                  <div className="flex items-center gap-1 sm:gap-1.5 mb-0.5 sm:mb-1">
+                    <Briefcase className="h-3 w-3 sm:h-3.5 sm:w-3.5 md:h-4 md:w-4 text-muted-foreground flex-shrink-0" />
+                    <p className="text-[9px] sm:text-[10px] md:text-xs text-muted-foreground uppercase tracking-wide">Jobs</p>
+                  </div>
+                  <p className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-foreground">{staffMember.completedJobs}</p>
+                  <p className="text-[9px] sm:text-[10px] md:text-xs text-muted-foreground mt-0.5 sm:mt-1">Completed</p>
                 </div>
-                <p className="text-4xl font-bold text-foreground">{staffMember.completedJobs}</p>
-                <p className="text-xs text-muted-foreground mt-1">Completed successfully</p>
+
+                <div className="p-2.5 sm:p-3 md:p-4 bg-primary/10 rounded-lg sm:rounded-xl border-2 border-primary/20">
+                  <div className="flex items-center gap-1 sm:gap-1.5 mb-0.5 sm:mb-1">
+                    <IndianRupee className="h-3 w-3 sm:h-3.5 sm:w-3.5 md:h-4 md:w-4 text-primary flex-shrink-0" />
+                    <p className="text-[9px] sm:text-[10px] md:text-xs text-muted-foreground uppercase tracking-wide">Earned</p>
+                  </div>
+                  <p className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-primary">₹{(staffMember.totalEarnings / 1000).toFixed(0)}K</p>
+                  <p className="text-[9px] sm:text-[10px] md:text-xs text-muted-foreground mt-0.5 sm:mt-1">Lifetime</p>
+                </div>
               </div>
 
-              <div className="p-4 bg-green-50 dark:bg-green-950/20 rounded-xl border-2 border-green-200 dark:border-green-800">
-                <div className="flex items-center gap-2 mb-2">
-                  <IndianRupee className="h-4 w-4 text-green-600 dark:text-green-400" />
-                  <p className="text-xs text-green-900 dark:text-green-100 uppercase tracking-wide">Earnings</p>
+              <div className="p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl border-2 border-border">
+                <div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-2">
+                  <Star className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
+                  <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Avg Rating</p>
                 </div>
-                <p className="text-4xl font-bold text-foreground">₹{staffMember.totalEarnings.toLocaleString()}</p>
-                <p className="text-xs text-green-900 dark:text-green-100 mt-1">Lifetime earnings</p>
-              </div>
-
-              <div className="p-4 bg-amber-50 dark:bg-amber-950/20 rounded-xl border-2 border-amber-200 dark:border-amber-800">
-                <div className="flex items-center gap-2 mb-2">
-                  <Star className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                  <p className="text-xs text-amber-900 dark:text-amber-100 uppercase tracking-wide">Avg Rating</p>
-                </div>
-                <p className="text-4xl font-bold text-foreground">⭐ {staffMember.rating}</p>
-                <p className="text-xs text-amber-900 dark:text-amber-100 mt-1">Based on {staffMember.completedJobs} reviews</p>
+                <p className="text-3xl sm:text-4xl font-bold text-foreground">⭐ {staffMember.rating}</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">Based on {staffMember.completedJobs} reviews</p>
               </div>
             </CardContent>
           </Card>

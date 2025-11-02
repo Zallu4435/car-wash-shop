@@ -4,10 +4,10 @@ import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Car, Bike, Plus, Edit, Trash2, Eye, Layers, ArrowLeft } from 'lucide-react';
 import { SearchFilter } from '@/components/admin/SearchFilter';
 import { Pagination } from '@/components/admin/Pagination';
+import { TransactionCard } from '@/components/admin/TransactionCard';
 import { EmptyState } from '@/components/shared/display/EmptyState';
 import { useConfirmation } from '@/hooks/useConfirmation';
 import { toast } from 'sonner';
@@ -98,7 +98,7 @@ export default function VehicleModelsPage() {
               Manage specific vehicle models and variants
             </p>
           </div>
-          <Button onClick={() => router.push('/admin/vehicles/models/new')} className="w-full md:w-auto h-9 sm:h-10 text-xs sm:text-sm">
+          <Button onClick={() => router.push('/admin/vehicles/models/new')} className="w-full md:w-auto h-9 sm:h-10 text-xs sm:text-sm border-2">
             <Plus className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
             Add Vehicle
           </Button>
@@ -177,69 +177,50 @@ export default function VehicleModelsPage() {
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
               {paginatedVehicles.map((vehicle: any) => (
-                <Card key={vehicle.id} className="border-2 border-border hover:shadow-lg transition-all">
-                  <CardContent className="p-4 sm:p-5">
-                    <div className="flex items-start justify-between gap-2 mb-3 sm:mb-4">
-                      <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-                        <div className="p-2.5 sm:p-3 bg-primary/10 rounded-xl flex-shrink-0">
-                          <Car className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-                        </div>
-                        
-                        <div className="min-w-0 flex-1">
-                          <h3 className="font-bold text-sm sm:text-base text-foreground truncate">
-                            {vehicle.name}
-                          </h3>
-                          <div className="flex flex-wrap gap-1.5 mt-1">
-                            <Badge variant="outline" className="text-xs">
-                              {vehicle.brandName}
-                            </Badge>
-                            <Badge variant="outline" className="text-xs capitalize">
-                              {vehicle.type}
-                            </Badge>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <Badge variant={vehicle.status === 'active' ? 'default' : 'secondary'} className="text-xs flex-shrink-0">
-                        {vehicle.status === 'active' ? 'Active' : 'Inactive'}
-                      </Badge>
-                    </div>
-
-                    <div className="p-2.5 sm:p-3 bg-muted rounded-lg mb-3 sm:mb-4">
-                      <p className="text-[10px] sm:text-xs text-muted-foreground mb-0.5 sm:mb-1">Brand</p>
-                      <p className="text-xl sm:text-2xl font-bold text-foreground">{vehicle.brandName}</p>
-                    </div>
-
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex-1 h-9 text-xs sm:text-sm"
-                        onClick={() => router.push(`/admin/vehicles/models/${vehicle.id}`)}
-                      >
-                        <Eye className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                        <span className="hidden xs:inline">View</span>
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex-1 h-9 text-xs sm:text-sm"
-                        onClick={() => router.push(`/admin/vehicles/models/${vehicle.id}/edit`)}
-                      >
-                        <Edit className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                        <span className="hidden xs:inline">Edit</span>
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        className="text-destructive hover:text-destructive hover:bg-destructive/10 h-9 px-3"
-                        onClick={() => handleDelete(vehicle.id, vehicle.brandName + ' ' + vehicle.modelName)}
-                      >
-                        <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+                <TransactionCard
+                  key={vehicle.id}
+                  id={vehicle.id}
+                  icon={Car}
+                  layout="vertical"
+                  primaryBadge={{
+                    label: vehicle.type,
+                    variant: 'outline',
+                    className: 'capitalize',
+                  }}
+                  statusBadge={{
+                    label: vehicle.status === 'active' ? 'Active' : 'Inactive',
+                    className: '',
+                  }}
+                  title={vehicle.name}
+                  subtitle={vehicle.brandName}
+                  infoBoxes={[
+                    {
+                      icon: Car,
+                      label: 'Brand',
+                      value: vehicle.brandName,
+                    },
+                  ]}
+                  actionButtons={[
+                    {
+                      label: 'View',
+                      icon: Eye,
+                      onClick: () => router.push(`/admin/vehicles/models/${vehicle.id}`),
+                      hideTextOnMobile: true,
+                    },
+                    {
+                      label: 'Edit',
+                      icon: Edit,
+                      onClick: () => router.push(`/admin/vehicles/models/${vehicle.id}/edit`),
+                      hideTextOnMobile: true,
+                    },
+                    {
+                      label: '',
+                      icon: Trash2,
+                      onClick: () => handleDelete(vehicle.id, vehicle.brandName + ' ' + vehicle.name),
+                      className: 'text-destructive hover:bg-destructive/10 flex-initial px-3',
+                    },
+                  ]}
+                />
               ))}
             </div>
           )}

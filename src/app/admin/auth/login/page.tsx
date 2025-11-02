@@ -77,7 +77,7 @@ export default function AdminLoginPage() {
                 />
               </div>
             </div>
-            <Button type="submit" className="w-full" disabled={loginMutation.isPending}>
+            <Button type="submit" className="w-full border-2" disabled={loginMutation.isPending}>
               {loginMutation.isPending ? 'Logging in...' : 'Login to Dashboard'}
             </Button>
           </form>

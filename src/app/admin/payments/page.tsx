@@ -1,9 +1,8 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Download, IndianRupee, CreditCard, Wallet, TrendingUp, PieChart, Smartphone, Building2 } from 'lucide-react';
+import { IndianRupee, CreditCard, Wallet, PieChart, Smartphone, Building2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { usePaymentTransactions, usePaymentReport } from '@/api/domains/admin-payments/queries';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
@@ -14,8 +13,10 @@ import { StatCard } from '@/components/admin/StatCard';
 import { ExportButton } from '@/components/admin/ExportButton';
 import { ProgressBar } from '@/components/admin/ProgressBar';
 import { Pagination } from '@/components/admin/Pagination';
+import { TransactionCard } from '@/components/admin/TransactionCard';
 
 export default function PaymentReportsPage() {
+  const router = useRouter();
   const [search, setSearch] = useState('');
   const [filterValues, setFilterValues] = useState<Record<string, string>>({});
   const [currentPage, setCurrentPage] = useState(1);
@@ -132,7 +133,7 @@ export default function PaymentReportsPage() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         <StatCard
           icon={IndianRupee}
           label="Total Revenue"
@@ -159,21 +160,15 @@ export default function PaymentReportsPage() {
           change="-5.2%"
           trend="down"
           description={`${(report as any).codPercentage || 0}% of total`}
-          className="sm:col-span-2 md:col-span-1"
         />
       </div>
 
       {/* Payment Methods Breakdown */}
-      <Card className="border-2 border-border">
+      <Card className="border-2 border-border rounded-lg sm:rounded-xl">
         <CardHeader className="pb-3 sm:pb-4">
           <div className="flex items-center gap-2">
-            <div 
-              className="p-1.5 sm:p-2 rounded-lg"
-              style={{ backgroundColor: 'hsl(var(--primary) / 0.1)' }}
-            >
-              <PieChart className="h-4 w-4 sm:h-5 sm:w-5" style={{ color: 'hsl(var(--primary))' }} />
-            </div>
-            <CardTitle className="text-base sm:text-lg">Payment Methods Distribution</CardTitle>
+            <PieChart className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+            <CardTitle className="text-sm sm:text-base lg:text-lg">Payment Methods Distribution</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
@@ -197,16 +192,11 @@ export default function PaymentReportsPage() {
       </Card>
 
       {/* Recent Transactions */}
-      <Card className="border-2 border-border">
+      <Card className="border-2 border-border rounded-lg sm:rounded-xl">
         <CardHeader className="pb-3 sm:pb-4">
           <div className="flex items-center gap-2">
-            <div 
-              className="p-1.5 sm:p-2 rounded-lg"
-              style={{ backgroundColor: 'hsl(var(--primary) / 0.1)' }}
-            >
-              <IndianRupee className="h-4 w-4 sm:h-5 sm:w-5" style={{ color: 'hsl(var(--primary))' }} />
-            </div>
-            <CardTitle className="text-base sm:text-lg truncate">Recent High-Value Transactions</CardTitle>
+            <IndianRupee className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+            <CardTitle className="text-sm sm:text-base lg:text-lg truncate">Recent High-Value Transactions</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
@@ -264,51 +254,29 @@ export default function PaymentReportsPage() {
           <div className="space-y-2.5 sm:space-y-3">
             {transactions.map((txn: any) => {
               const statusStyle = txn.status === 'Success' 
-                ? {
-                    backgroundColor: 'hsl(160 60% 45% / 0.1)',
-                    color: 'hsl(160 60% 45%)',
-                    borderColor: 'hsl(160 60% 45% / 0.3)'
-                  }
-                : {
-                    backgroundColor: 'hsl(30 80% 55% / 0.1)',
-                    color: 'hsl(30 80% 55%)',
-                    borderColor: 'hsl(30 80% 55% / 0.3)'
-                  };
+                ? 'border-2 text-green-600 dark:text-green-400'
+                : 'border-2 text-yellow-600 dark:text-yellow-400';
 
               return (
-                <div key={txn.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 p-3 sm:p-4 md:p-5 bg-muted rounded-lg sm:rounded-xl border border-border">
-                  <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
-                    <div 
-                      className="p-2 sm:p-3 rounded-lg flex-shrink-0"
-                      style={{ backgroundColor: 'hsl(var(--primary) / 0.1)' }}
-                    >
-                      <IndianRupee className="h-4 w-4 sm:h-5 sm:w-5" style={{ color: 'hsl(var(--primary))' }} />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-0.5 sm:mb-1">
-                        <Badge variant="outline" className="font-mono text-xs">{txn.id}</Badge>
-                        <Badge 
-                          variant="outline"
-                          className="text-xs"
-                          style={{
-                            backgroundColor: statusStyle.backgroundColor,
-                            color: statusStyle.color,
-                            borderColor: statusStyle.borderColor
-                          }}
-                        >
-                          {txn.status}
-                        </Badge>
-                      </div>
-                      <p className="font-semibold text-sm sm:text-base text-foreground">{txn.type}</p>
-                      <p className="text-xs sm:text-sm text-muted-foreground">{txn.method} • {txn.date}</p>
-                    </div>
-                  </div>
-                  <div className="text-left sm:text-right flex-shrink-0">
-                    <p className="text-xl sm:text-2xl font-bold" style={{ color: 'hsl(var(--primary))' }}>
-                      ₹{txn.amount.toLocaleString()}
-                    </p>
-                  </div>
-                </div>
+                <TransactionCard
+                  key={txn.id}
+                  id={txn.id}
+                  icon={IndianRupee}
+                  primaryBadge={{
+                    label: txn.id,
+                    variant: 'outline',
+                  }}
+                  statusBadge={{
+                    label: txn.status,
+                    className: statusStyle,
+                  }}
+                  title={txn.type}
+                  subtitle={`${txn.method} • ${txn.date}`}
+                  amount={txn.amount.toLocaleString()}
+                  amountLabel="Amount"
+                  onView={() => router.push(`/admin/payments/${txn.id}`)}
+                  viewButtonText="View"
+                />
               );
             })}
           </div>

@@ -140,12 +140,19 @@ export const ROUTES = {
     // Vehicle Management (Pages)
     VEHICLES: '/admin/vehicles',
     VEHICLE_TYPES: '/admin/vehicles/types',
+    VEHICLE_TYPE_NEW: '/admin/vehicles/types/new',
+    VEHICLE_TYPE_EDIT: (id: string) => `/admin/vehicles/types/${id}/edit`,
     VEHICLE_BODY_TYPES: '/admin/vehicles/body-types',
-    VEHICLE_MODELS_PAGE: '/admin/vehicles/models',
+    VEHICLE_BODY_TYPE_NEW: '/admin/vehicles/body-types/new',
+    VEHICLE_BODY_TYPE_EDIT: (id: string) => `/admin/vehicles/body-types/${id}/edit`,
+    VEHICLE_MODELS: '/admin/vehicles/models',
+    VEHICLE_MODEL_NEW: '/admin/vehicles/models/new',
+    VEHICLE_MODEL_DETAIL: (id: string) => `/admin/vehicles/models/${id}`,
+    VEHICLE_MODEL_EDIT: (id: string) => `/admin/vehicles/models/${id}/edit`,
     
     // Vehicle Management (API Endpoints)
-    VEHICLE_BRANDS: '/api/admin/vehicles/brands',
-    VEHICLE_MODELS: '/api/admin/vehicles/models',
+    VEHICLE_BRANDS_API: '/api/admin/vehicles/brands',
+    VEHICLE_MODELS_API: '/api/admin/vehicles/models',
     
     // Order Management
     ORDERS: '/admin/orders',

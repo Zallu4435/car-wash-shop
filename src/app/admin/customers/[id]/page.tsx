@@ -78,74 +78,72 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 pb-6">
       {/* Header */}
       <div>
-        <Button variant="ghost" onClick={() => router.push('/admin/customers')} className="cursor-pointer">
-          <ArrowLeft className="mr-2 h-4 w-4" />
+        <Button variant="ghost" onClick={() => router.push('/admin/customers')} className="w-fit h-9 sm:h-10 text-xs sm:text-sm cursor-pointer border-2 -ml-2">
+          <ArrowLeft className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Back to Customers
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6 items-start">
         {/* Customer Info */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="xl:col-span-2 space-y-4 sm:space-y-6">
           {/* Profile Card */}
-          <Card className="border-2">
-            <CardHeader>
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
-                  <Mail className="h-8 w-8 text-primary" />
+          <Card className="border-2 border-border rounded-lg sm:rounded-xl">
+            <CardHeader className="pb-3 sm:pb-4">
+              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-3 sm:gap-4 text-center sm:text-left">
+                <div className="w-14 h-14 sm:w-16 sm:h-16 bg-primary/10 rounded-full flex items-center justify-center border-2 border-primary/20 flex-shrink-0">
+                  <Mail className="h-7 w-7 sm:h-8 sm:w-8 text-primary" />
                 </div>
-                <div>
-                  <CardTitle className="text-2xl">{customer.name}</CardTitle>
-                  <p className="text-sm text-muted-foreground mt-1">Customer ID: {customer.id}</p>
+                <div className="min-w-0">
+                  <CardTitle className="text-lg sm:text-xl md:text-2xl mb-1">{customer.name}</CardTitle>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Customer ID: {customer.id}</p>
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-4 bg-muted rounded-xl">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Mail className="h-4 w-4 text-muted-foreground" />
-                    <p className="text-xs text-muted-foreground uppercase tracking-wide">Email</p>
+            <CardContent className="space-y-3 sm:space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 md:gap-4">
+                <div className="p-3 sm:p-3.5 md:p-4 bg-muted rounded-lg sm:rounded-xl border-2 border-border">
+                  <div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-2">
+                    <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
+                    <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Email</p>
                   </div>
-                  <p className="font-semibold text-foreground">{customer.email}</p>
+                  <p className="text-xs sm:text-sm font-semibold text-foreground truncate">{customer.email}</p>
                 </div>
 
-                <div className="p-4 bg-muted rounded-xl">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Phone className="h-4 w-4 text-muted-foreground" />
-                    <p className="text-xs text-muted-foreground uppercase tracking-wide">Phone</p>
+                <div className="p-3 sm:p-3.5 md:p-4 bg-muted rounded-lg sm:rounded-xl border-2 border-border">
+                  <div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-2">
+                    <Phone className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
+                    <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Phone</p>
                   </div>
-                  <p className="font-semibold text-foreground">{customer.phone}</p>
+                  <p className="text-xs sm:text-sm font-semibold text-foreground">{customer.phone}</p>
                 </div>
               </div>
 
-              <div className="p-4 bg-muted rounded-xl">
-                <div className="flex items-center gap-2 mb-2">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide">Member Since</p>
+              <div className="p-3 sm:p-3.5 md:p-4 bg-muted rounded-lg sm:rounded-xl border-2 border-border">
+                <div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-2">
+                  <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
+                  <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Member Since</p>
                 </div>
-                <p className="font-semibold text-foreground">{customer.joinedDate}</p>
+                <p className="text-xs sm:text-sm font-semibold text-foreground">{customer.joinedDate}</p>
               </div>
             </CardContent>
           </Card>
 
           {/* Vehicles */}
-          <Card className="border-2">
-            <CardHeader>
+          <Card className="border-2 border-border rounded-lg sm:rounded-xl">
+            <CardHeader className="pb-3 sm:pb-4">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="p-2 bg-primary/10 rounded-lg">
-                    <Car className="h-5 w-5 text-primary" />
-                  </div>
-                  <CardTitle>Vehicles ({customer.vehicles.length})</CardTitle>
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <Car className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+                  <CardTitle className="text-sm sm:text-base lg:text-lg">Vehicles ({customer.vehicles.length})</CardTitle>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-2.5 md:space-y-3">
                 {customer.vehicles.map((vehicle) => (
                   <div key={vehicle.id} className="flex items-center gap-3 p-4 bg-muted rounded-xl">
                     <div className="p-2 bg-blue-100 dark:bg-blue-950/30 rounded-lg">
@@ -162,17 +160,15 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
           </Card>
 
           {/* Addresses */}
-          <Card className="border-2">
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <div className="p-2 bg-primary/10 rounded-lg">
-                  <MapPin className="h-5 w-5 text-primary" />
-                </div>
-                <CardTitle>Saved Addresses</CardTitle>
+          <Card className="border-2 border-border rounded-lg sm:rounded-xl">
+            <CardHeader className="pb-3 sm:pb-4">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+                <CardTitle className="text-sm sm:text-base lg:text-lg">Saved Addresses</CardTitle>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-2.5 md:space-y-3">
                 {customer.addresses.map((addr) => (
                   <div key={addr.id} className="p-4 bg-muted rounded-xl">
                     <div className="flex items-center gap-2 mb-2">
@@ -187,33 +183,30 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
           </Card>
 
           {/* Recent Orders */}
-          <Card className="border-2">
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <div className="p-2 bg-primary/10 rounded-lg">
-                  <ShoppingBag className="h-5 w-5 text-primary" />
-                </div>
-                <CardTitle>Recent Orders</CardTitle>
+          <Card className="border-2 border-border rounded-lg sm:rounded-xl">
+            <CardHeader className="pb-3 sm:pb-4">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <ShoppingBag className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+                <CardTitle className="text-sm sm:text-base lg:text-lg">Recent Orders</CardTitle>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-2.5 md:space-y-3">
                 {customer.recentOrders.map((order) => (
-                  <div key={order.id} className="flex items-center justify-between p-4 bg-muted rounded-xl hover:shadow-sm transition-shadow">
-                    <div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <Badge variant="outline" className="font-mono">{order.id}</Badge>
-                        <Badge variant="secondary" className="capitalize">{order.status}</Badge>
+                  <div key={order.id} className="flex flex-col xs:flex-row xs:items-center justify-between gap-2 xs:gap-3 p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl hover:shadow-sm transition-shadow border-2 border-transparent hover:border-primary/20">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
+                        <Badge variant="outline" className="font-mono text-[10px] sm:text-xs">{order.id}</Badge>
+                        <Badge variant="default" className="capitalize text-[10px] sm:text-xs">{order.status}</Badge>
                       </div>
-                      <p className="font-semibold text-foreground">{order.service}</p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        <Calendar className="h-3 w-3 inline mr-1" />
+                      <p className="text-sm sm:text-base font-semibold text-foreground truncate">{order.service}</p>
+                      <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">
+                        <Calendar className="h-3 w-3 inline mr-1 flex-shrink-0" />
                         {order.date}
                       </p>
                     </div>
-                    <div className="text-right">
-                      <p className="text-lg font-bold text-primary">₹{order.amount}</p>
-                      <Badge variant="default" className="text-xs mt-1 capitalize">{order.status}</Badge>
+                    <div className="text-left xs:text-right flex-shrink-0">
+                      <p className="text-base sm:text-lg font-bold text-primary">₹{order.amount}</p>
                     </div>
                   </div>
                 ))}
@@ -223,42 +216,42 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
         </div>
 
         {/* Stats Sidebar */}
-        <div className="lg:col-span-1 space-y-6">
-          <Card className="border-2">
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <div className="p-2 bg-primary/10 rounded-lg">
-                  <TrendingUp className="h-5 w-5 text-primary" />
-                </div>
-                <CardTitle>Customer Stats</CardTitle>
+        <div className="xl:col-span-1 space-y-4 sm:space-y-6">
+          <Card className="border-2 border-border rounded-lg sm:rounded-xl">
+            <CardHeader className="pb-3 sm:pb-4">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+                <CardTitle className="text-sm sm:text-base lg:text-lg">Customer Stats</CardTitle>
               </div>
             </CardHeader>
-            <CardContent className="space-y-5">
-              <div className="p-4 bg-muted rounded-xl">
-                <div className="flex items-center gap-2 mb-2">
-                  <ShoppingBag className="h-4 w-4 text-muted-foreground" />
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide">Total Orders</p>
+            <CardContent className="space-y-3 sm:space-y-4">
+              <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                <div className="p-2.5 sm:p-3 md:p-4 bg-muted rounded-lg sm:rounded-xl border-2 border-border">
+                  <div className="flex items-center gap-1 sm:gap-1.5 mb-0.5 sm:mb-1">
+                    <ShoppingBag className="h-3 w-3 sm:h-3.5 sm:w-3.5 md:h-4 md:w-4 text-muted-foreground flex-shrink-0" />
+                    <p className="text-[9px] sm:text-[10px] md:text-xs text-muted-foreground uppercase tracking-wide">Orders</p>
+                  </div>
+                  <p className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-foreground">{customer.totalOrders}</p>
+                  <p className="text-[9px] sm:text-[10px] md:text-xs text-muted-foreground mt-0.5 sm:mt-1">Lifetime</p>
                 </div>
-                <p className="text-4xl font-bold text-foreground">{customer.totalOrders}</p>
-                <p className="text-xs text-muted-foreground mt-1">Lifetime orders</p>
+
+                <div className="p-2.5 sm:p-3 md:p-4 bg-primary/10 rounded-lg sm:rounded-xl border-2 border-primary/20">
+                  <div className="flex items-center gap-1 sm:gap-1.5 mb-0.5 sm:mb-1">
+                    <IndianRupee className="h-3 w-3 sm:h-3.5 sm:w-3.5 md:h-4 md:w-4 text-primary flex-shrink-0" />
+                    <p className="text-[9px] sm:text-[10px] md:text-xs text-muted-foreground uppercase tracking-wide">Spent</p>
+                  </div>
+                  <p className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-primary">₹{(customer.totalSpent / 1000).toFixed(0)}K</p>
+                  <p className="text-[9px] sm:text-[10px] md:text-xs text-muted-foreground mt-0.5 sm:mt-1">Total</p>
+                </div>
               </div>
 
-              <div className="p-4 bg-green-50 dark:bg-green-950/20 rounded-xl border-2 border-green-200 dark:border-green-800">
-                <div className="flex items-center gap-2 mb-2">
-                  <IndianRupee className="h-4 w-4 text-green-600 dark:text-green-400" />
-                  <p className="text-xs text-green-900 dark:text-green-100 uppercase tracking-wide">Total Spent</p>
+              <div className="p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl border-2 border-border">
+                <div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-2">
+                  <IndianRupee className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
+                  <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Avg Order Value</p>
                 </div>
-                <p className="text-4xl font-bold text-foreground">₹{customer.totalSpent.toLocaleString()}</p>
-                <p className="text-xs text-green-900 dark:text-green-100 mt-1">Lifetime revenue</p>
-              </div>
-
-              <div className="p-4 bg-purple-50 dark:bg-purple-950/20 rounded-xl border-2 border-purple-200 dark:border-purple-800">
-                <div className="flex items-center gap-2 mb-2">
-                  <IndianRupee className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-                  <p className="text-xs text-purple-900 dark:text-purple-100 uppercase tracking-wide">Avg Order Value</p>
-                </div>
-                <p className="text-4xl font-bold text-foreground">₹{Math.round(customer.totalSpent / customer.totalOrders)}</p>
-                <p className="text-xs text-purple-900 dark:text-purple-100 mt-1">Per order</p>
+                <p className="text-3xl sm:text-4xl font-bold text-foreground">₹{Math.round(customer.totalSpent / customer.totalOrders)}</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">Per order</p>
               </div>
             </CardContent>
           </Card>

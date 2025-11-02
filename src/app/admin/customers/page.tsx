@@ -19,6 +19,7 @@ import { EmptyState } from '@/components/shared/display/EmptyState';
 import { SearchFilter } from '@/components/admin/SearchFilter';
 import { StatCard } from '@/components/admin/StatCard';
 import { Pagination } from '@/components/admin/Pagination';
+import { TransactionCard } from '@/components/admin/TransactionCard';
 import { AdminRoutes } from '@/lib/constants/routes';
 
 export default function CustomersPage() {
@@ -70,7 +71,7 @@ export default function CustomersPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         <StatCard
           icon={Users}
           label="Total Customers"
@@ -97,18 +98,16 @@ export default function CustomersPage() {
           change="+11.8%"
           trend="up"
           description="All time orders"
-          className="sm:col-span-2 md:col-span-1"
+          className="xs:col-span-2 lg:col-span-1"
         />
       </div>
 
       {/* Customer List */}
-      <Card className="border-2">
+      <Card className="border-2 border-border rounded-lg sm:rounded-xl">
         <CardHeader className="pb-3 sm:pb-4">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
-              <Users className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-            </div>
-            <CardTitle className="text-base sm:text-lg">All Customers</CardTitle>
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <Users className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+            <CardTitle className="text-sm sm:text-base lg:text-lg">All Customers</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
@@ -142,57 +141,44 @@ export default function CustomersPage() {
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
               {filteredCustomers.map((customer) => (
-              <Card key={customer.id} className="border-2 hover:shadow-lg transition-all">
-                <CardContent className="p-4 sm:p-5">
-                  <div className="flex items-start justify-between gap-2 mb-3 sm:mb-4">
-                    <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-                      <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
-                        <Users className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <h3 className="font-bold text-sm sm:text-base text-foreground truncate">
-                          {customer.name}
-                        </h3>
-                        <p className="text-[10px] sm:text-xs text-muted-foreground truncate">
-                          Joined {customer.joinedDate}
-                        </p>
-                      </div>
-                    </div>
-                    <Button 
-                      variant="ghost" 
-                      size="icon"
-                      onClick={() => router.push(AdminRoutes.CUSTOMER_DETAIL(customer.id))}
-                      className="h-8 w-8 sm:h-9 sm:w-9 flex-shrink-0"
-                    >
-                      <Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                    </Button>
-                  </div>
-
-                  <div className="space-y-1.5 sm:space-y-2 mb-3 sm:mb-4">
-                    <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-muted-foreground">
-                      <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
-                      <span className="truncate">{customer.email}</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-muted-foreground">
-                      <Phone className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
-                      <span className="truncate">{customer.phone}</span>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                    <div className="p-2.5 sm:p-3 bg-muted rounded-lg">
-                      <p className="text-[10px] sm:text-xs text-muted-foreground mb-0.5 sm:mb-1">Orders</p>
-                      <p className="text-base sm:text-lg font-bold text-foreground">{customer.totalOrders}</p>
-                    </div>
-                    <div className="p-2.5 sm:p-3 bg-muted rounded-lg">
-                      <p className="text-[10px] sm:text-xs text-muted-foreground mb-0.5 sm:mb-1">Spent</p>
-                      <p className="text-base sm:text-lg font-bold text-primary">
-                        ₹{customer.totalSpent.toLocaleString()}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                <TransactionCard
+                  key={customer.id}
+                  id={customer.id}
+                  icon={Users}
+                  layout="vertical"
+                  primaryBadge={{
+                    label: `Joined ${customer.joinedDate}`,
+                    variant: 'outline',
+                  }}
+                  statusBadge={{
+                    label: 'Customer',
+                    className: '',
+                  }}
+                  title={customer.name}
+                  subtitle={`Joined ${customer.joinedDate}`}
+                  description={`${customer.email} | ${customer.phone}`}
+                  infoBoxes={[
+                    {
+                      icon: ShoppingBag,
+                      label: 'Orders',
+                      value: customer.totalOrders,
+                    },
+                    {
+                      icon: IndianRupee,
+                      label: 'Spent',
+                      value: `₹${customer.totalSpent.toLocaleString()}`,
+                      valueClassName: 'text-primary',
+                    },
+                  ]}
+                  actionButtons={[
+                    {
+                      label: 'View',
+                      icon: Eye,
+                      onClick: () => router.push(AdminRoutes.CUSTOMER_DETAIL(customer.id)),
+                      hideTextOnMobile: true,
+                    },
+                  ]}
+                />
               ))}
             </div>
           )}

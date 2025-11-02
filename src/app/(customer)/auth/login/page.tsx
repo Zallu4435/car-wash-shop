@@ -161,7 +161,7 @@ export default function LoginPage() {
 
                 <Button 
                   type="submit" 
-                  className="w-full shadow-lg h-11 sm:h-12 text-sm sm:text-base" 
+                  className="w-full shadow-lg h-11 sm:h-12 text-sm sm:text-base border-2" 
                   size="lg" 
                   disabled={sendOtpMutation.isPending}
                 >
@@ -204,7 +204,7 @@ export default function LoginPage() {
                 <div className="space-y-2 sm:space-y-3">
                   <Button 
                     type="submit" 
-                    className="w-full shadow-lg h-11 sm:h-12 text-sm sm:text-base" 
+                    className="w-full shadow-lg h-11 sm:h-12 text-sm sm:text-base border-2" 
                     size="lg" 
                     disabled={loginMutation.isPending}
                   >
@@ -214,7 +214,7 @@ export default function LoginPage() {
                   <Button
                     type="button"
                     variant="outline"
-                    className="w-full h-10 sm:h-11 text-xs sm:text-sm"
+                    className="w-full h-10 sm:h-11 text-xs sm:text-sm border-2"
                     onClick={() => {
                       setStep('phone');
                       resetOtpForm();

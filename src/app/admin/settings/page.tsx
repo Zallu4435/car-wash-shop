@@ -155,23 +155,23 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="space-y-4">
+      <div className="space-y-2 sm:space-y-4">
         <div>
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight">
             Settings
           </h1>
-          <p className="text-muted-foreground mt-1.5">
+          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1.5">
             Manage your account settings and preferences
           </p>
         </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-6">
-        {/* Sidebar Navigation */}
+      <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
+        {/* Sidebar Navigation - Horizontal on mobile, vertical on desktop */}
         <aside className="lg:w-64 flex-shrink-0">
-          <nav className="space-y-1">
+          <nav className="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-x-visible pb-2 lg:pb-0 -mx-1 px-1">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -179,21 +179,21 @@ export default function SettingsPage() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`w-full flex items-start gap-3 px-4 py-3 rounded-lg transition-all text-left ${
+                  className={`flex-shrink-0 lg:w-full flex items-center lg:items-start gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl transition-all text-left border-2 ${
                     isActive
-                      ? 'bg-primary/10 text-primary border-l-2 border-primary'
-                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                      ? 'bg-primary/10 text-primary border-primary'
+                      : 'border-transparent text-muted-foreground hover:bg-muted hover:text-foreground hover:border-border'
                   }`}
                 >
-                  <Icon className="h-5 w-5 mt-0.5 flex-shrink-0" />
+                  <Icon className="h-4 w-4 sm:h-5 sm:w-5 lg:mt-0.5 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm">{tab.label}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5 hidden sm:block">
+                    <p className="font-medium text-xs sm:text-sm whitespace-nowrap lg:whitespace-normal">{tab.label}</p>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 hidden lg:block">
                       {tab.description}
                     </p>
                   </div>
                   {isActive && (
-                    <Check className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                    <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0 lg:mt-0.5" />
                   )}
                 </button>
               );
@@ -205,23 +205,23 @@ export default function SettingsPage() {
         <div className="flex-1 min-w-0">
           {/* Profile Tab */}
           {activeTab === 'profile' && (
-            <div className="space-y-6">
-              <Card className="border-2">
-                <CardHeader className="space-y-1">
-                  <CardTitle>Profile Information</CardTitle>
-                  <CardDescription>
+            <div className="space-y-4 sm:space-y-6">
+              <Card className="border-2 border-border rounded-lg sm:rounded-xl">
+                <CardHeader className="space-y-1 pb-3 sm:pb-4">
+                  <CardTitle className="text-base sm:text-lg lg:text-xl">Profile Information</CardTitle>
+                  <CardDescription className="text-xs sm:text-sm">
                     Update your account profile information and email address
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-6">
+                <CardContent className="space-y-4 sm:space-y-6">
                   {/* Profile Picture Section */}
-                  <div className="flex items-center gap-6 p-4 bg-muted/30 rounded-lg">
+                  <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 p-3 sm:p-4 bg-muted/30 rounded-lg sm:rounded-xl">
                     <div className="relative group">
-                      <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center ring-4 ring-background overflow-hidden">
+                      <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-primary/10 flex items-center justify-center ring-2 sm:ring-4 ring-background overflow-hidden">
                         {profile?.avatar ? (
                           <img src={profile.avatar} alt={profileData.name} className="w-full h-full object-cover" />
                         ) : (
-                          <User className="h-12 w-12 text-primary" />
+                          <User className="h-10 w-10 sm:h-12 sm:w-12 text-primary" />
                         )}
                       </div>
                       <input
@@ -233,22 +233,22 @@ export default function SettingsPage() {
                       />
                       <label
                         htmlFor="avatar-upload"
-                        className="absolute bottom-0 right-0 p-2 bg-primary text-primary-foreground rounded-full shadow-lg hover:bg-primary/90 transition-colors cursor-pointer"
+                        className="absolute bottom-0 right-0 p-1.5 sm:p-2 bg-primary text-primary-foreground rounded-full shadow-lg hover:bg-primary/90 transition-colors cursor-pointer"
                       >
-                        <Camera className="h-4 w-4" />
+                        <Camera className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                       </label>
                     </div>
-                    <div>
-                      <h3 className="font-semibold text-lg">{profileData.name}</h3>
-                      <p className="text-sm text-muted-foreground">{profileData.role}</p>
+                    <div className="text-center sm:text-left">
+                      <h3 className="font-semibold text-base sm:text-lg">{profileData.name}</h3>
+                      <p className="text-xs sm:text-sm text-muted-foreground">{profileData.role}</p>
                       <Button 
                         variant="outline" 
                         size="sm" 
-                        className="mt-2 h-8 text-xs"
+                        className="mt-2 h-8 text-xs border-2"
                         onClick={() => document.getElementById('avatar-upload')?.click()}
                         disabled={uploadAvatarMutation.isPending}
                       >
-                        <Camera className="mr-2 h-3 w-3" />
+                        <Camera className="mr-1.5 sm:mr-2 h-3 w-3" />
                         {uploadAvatarMutation.isPending ? 'Uploading...' : 'Change Photo'}
                       </Button>
                     </div>
@@ -257,68 +257,68 @@ export default function SettingsPage() {
                   <Separator />
 
                   {/* Form Fields */}
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="name" className="text-sm font-medium">
+                  <div className="space-y-3 sm:space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                      <div className="space-y-1.5 sm:space-y-2">
+                        <Label htmlFor="name" className="text-xs sm:text-sm font-medium">
                           Full Name
                         </Label>
                         <div className="relative">
-                          <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <User className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
                           <Input
                             id="name"
                             value={profileData.name}
                             onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
-                            className="pl-10 h-10"
+                            className="pl-9 sm:pl-10 h-9 sm:h-10 text-xs sm:text-sm"
                             placeholder="Enter your full name"
                           />
                         </div>
                       </div>
 
-                      <div className="space-y-2">
-                        <Label htmlFor="email" className="text-sm font-medium">
+                      <div className="space-y-1.5 sm:space-y-2">
+                        <Label htmlFor="email" className="text-xs sm:text-sm font-medium">
                           Email Address
                         </Label>
                         <div className="relative">
-                          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
                           <Input
                             id="email"
                             type="email"
                             value={profileData.email}
                             onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
-                            className="pl-10 h-10"
+                            className="pl-9 sm:pl-10 h-9 sm:h-10 text-xs sm:text-sm"
                             placeholder="Enter your email"
                           />
                         </div>
                       </div>
 
-                      <div className="space-y-2">
-                        <Label htmlFor="phone" className="text-sm font-medium">
+                      <div className="space-y-1.5 sm:space-y-2">
+                        <Label htmlFor="phone" className="text-xs sm:text-sm font-medium">
                           Phone Number
                         </Label>
                         <div className="relative">
-                          <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
                           <Input
                             id="phone"
                             value={profileData.phone}
                             onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
-                            className="pl-10 h-10"
+                            className="pl-9 sm:pl-10 h-9 sm:h-10 text-xs sm:text-sm"
                             placeholder="Enter your phone number"
                           />
                         </div>
                       </div>
 
-                      <div className="space-y-2">
-                        <Label htmlFor="role" className="text-sm font-medium">
+                      <div className="space-y-1.5 sm:space-y-2">
+                        <Label htmlFor="role" className="text-xs sm:text-sm font-medium">
                           Role
                         </Label>
                         <div className="relative">
-                          <Shield className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                          <Shield className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
                           <Input
                             id="role"
                             value={profileData.role}
                             disabled
-                            className="pl-10 h-10 bg-muted cursor-not-allowed"
+                            className="pl-9 sm:pl-10 h-9 sm:h-10 text-xs sm:text-sm bg-muted cursor-not-allowed"
                           />
                         </div>
                       </div>
@@ -327,12 +327,12 @@ export default function SettingsPage() {
                 </CardContent>
               </Card>
 
-              <div className="flex justify-end gap-3">
-                <Button variant="outline" onClick={() => router.push(AdminRoutes.DASHBOARD)}>
+              <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3">
+                <Button variant="outline" onClick={() => router.push(AdminRoutes.DASHBOARD)} className="h-9 sm:h-10 text-xs sm:text-sm border-2">
                   Cancel
                 </Button>
-                <Button onClick={handleProfileUpdate} disabled={updateProfileMutation.isPending}>
-                  <Save className="mr-2 h-4 w-4" />
+                <Button onClick={handleProfileUpdate} disabled={updateProfileMutation.isPending} className="h-9 sm:h-10 text-xs sm:text-sm border-2">
+                  <Save className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   {updateProfileMutation.isPending ? 'Saving...' : 'Save Changes'}
                 </Button>
               </div>
@@ -341,27 +341,27 @@ export default function SettingsPage() {
 
           {/* Security Tab */}
           {activeTab === 'security' && (
-            <div className="space-y-6">
-              <Card className="border-2">
-                <CardHeader className="space-y-1">
-                  <CardTitle>Change Password</CardTitle>
-                  <CardDescription>
+            <div className="space-y-4 sm:space-y-6">
+              <Card className="border-2 border-border rounded-lg sm:rounded-xl">
+                <CardHeader className="space-y-1 pb-3 sm:pb-4">
+                  <CardTitle className="text-base sm:text-lg lg:text-xl">Change Password</CardTitle>
+                  <CardDescription className="text-xs sm:text-sm">
                     Ensure your account is using a strong password to stay secure
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="currentPassword" className="text-sm font-medium">
+                <CardContent className="space-y-3 sm:space-y-4">
+                  <div className="space-y-1.5 sm:space-y-2">
+                    <Label htmlFor="currentPassword" className="text-xs sm:text-sm font-medium">
                       Current Password
                     </Label>
                     <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
                       <Input
                         id="currentPassword"
                         type="password"
                         value={passwordData.currentPassword}
                         onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
-                        className="pl-10 h-10"
+                        className="pl-9 sm:pl-10 h-9 sm:h-10 text-xs sm:text-sm"
                         placeholder="Enter current password"
                       />
                     </div>
@@ -369,39 +369,39 @@ export default function SettingsPage() {
 
                   <Separator />
 
-                  <div className="space-y-2">
-                    <Label htmlFor="newPassword" className="text-sm font-medium">
+                  <div className="space-y-1.5 sm:space-y-2">
+                    <Label htmlFor="newPassword" className="text-xs sm:text-sm font-medium">
                       New Password
                     </Label>
                     <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
                       <Input
                         id="newPassword"
                         type="password"
                         value={passwordData.newPassword}
                         onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                        className="pl-10 h-10"
+                        className="pl-9 sm:pl-10 h-9 sm:h-10 text-xs sm:text-sm"
                         placeholder="Enter new password"
                       />
                     </div>
-                    <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                    <p className="text-[10px] sm:text-xs text-muted-foreground flex items-center gap-1.5">
                       <span className="w-1 h-1 rounded-full bg-muted-foreground"></span>
                       Must be at least 8 characters long
                     </p>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="confirmPassword" className="text-sm font-medium">
+                  <div className="space-y-1.5 sm:space-y-2">
+                    <Label htmlFor="confirmPassword" className="text-xs sm:text-sm font-medium">
                       Confirm New Password
                     </Label>
                     <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
                       <Input
                         id="confirmPassword"
                         type="password"
                         value={passwordData.confirmPassword}
                         onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-                        className="pl-10 h-10"
+                        className="pl-9 sm:pl-10 h-9 sm:h-10 text-xs sm:text-sm"
                         placeholder="Confirm new password"
                       />
                     </div>
@@ -409,15 +409,16 @@ export default function SettingsPage() {
                 </CardContent>
               </Card>
 
-              <div className="flex justify-end gap-3">
+              <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3">
                 <Button 
                   variant="outline" 
                   onClick={() => setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' })}
+                  className="h-9 sm:h-10 text-xs sm:text-sm border-2"
                 >
                   Cancel
                 </Button>
-                <Button onClick={handlePasswordChange} disabled={changePasswordMutation.isPending}>
-                  <Lock className="mr-2 h-4 w-4" />
+                <Button onClick={handlePasswordChange} disabled={changePasswordMutation.isPending} className="h-9 sm:h-10 text-xs sm:text-sm border-2">
+                  <Lock className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   {changePasswordMutation.isPending ? 'Updating...' : 'Update Password'}
                 </Button>
               </div>

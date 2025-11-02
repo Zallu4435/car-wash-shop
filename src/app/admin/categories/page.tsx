@@ -3,7 +3,6 @@
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { 
   Folder, 
   Plus, 
@@ -22,6 +21,7 @@ import { EmptyState } from '@/components/shared/display/EmptyState';
 import { SearchFilter } from '@/components/admin/SearchFilter';
 import { Pagination } from '@/components/admin/Pagination';
 import { StatCard } from '@/components/admin/StatCard';
+import { TransactionCard } from '@/components/admin/TransactionCard';
 import { useConfirmation } from '@/hooks/useConfirmation';
 import { toast } from 'sonner';
 
@@ -93,7 +93,7 @@ export default function CategoriesPage() {
             Organize services and products
           </p>
         </div>
-        <Button onClick={() => router.push('/admin/categories/new')} className="w-full md:w-auto h-9 sm:h-10 text-xs sm:text-sm">
+        <Button onClick={() => router.push('/admin/categories/new')} className="w-full md:w-auto h-9 sm:h-10 text-xs sm:text-sm border-2">
           <Plus className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Add Category
         </Button>
@@ -179,59 +179,50 @@ export default function CategoriesPage() {
           ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             {filteredCategories.map((category) => (
-              <Card key={category.id} className="border-2 hover:shadow-lg transition-all">
-                <CardContent className="p-4 sm:p-5">
-                  <div className="flex items-start justify-between mb-3 sm:mb-4">
-                    <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-                      <div className="p-2 sm:p-3 bg-primary/10 rounded-lg sm:rounded-xl flex-shrink-0">
-                        <Folder className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <h3 className="font-bold text-sm sm:text-base text-foreground truncate">
-                          {category.name}
-                        </h3>
-                        <Badge variant="outline" className="text-xs flex-shrink-0">
-                          {category.itemCount} items
-                        </Badge>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="p-2.5 sm:p-3 bg-muted rounded-lg mb-3 sm:mb-4">
-                    <p className="text-[10px] sm:text-xs text-muted-foreground mb-0.5 sm:mb-1">Items</p>
-                    <p className="text-xl sm:text-2xl font-bold text-foreground">{category.itemCount}</p>
-                  </div>
-
-                  <div className="flex gap-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="flex-1 h-9 text-xs sm:text-sm"
-                      onClick={() => router.push(`/admin/categories/${category.id}`)}
-                    >
-                      <Eye className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                      <span className="hidden xs:inline">View</span>
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="h-9 px-3"
-                      onClick={() => router.push(`/admin/categories/${category.id}/edit`)}
-                    >
-                      <Edit className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20 h-9 px-3"
-                      onClick={() => handleDelete(category.id, category.name)}
-                      disabled={deleteCategoryMutation.isPending}
-                    >
-                      <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+              <TransactionCard
+                key={category.id}
+                id={category.id}
+                icon={Folder}
+                layout="vertical"
+                primaryBadge={{
+                  label: `${category.itemCount} items`,
+                  variant: 'outline',
+                }}
+                statusBadge={{
+                  label: category.status === 'active' ? 'Active' : 'Inactive',
+                  className: '',
+                }}
+                title={category.name}
+                subtitle={`${category.itemCount} items`}
+                infoBoxes={[
+                  {
+                    icon: CheckCircle,
+                    label: 'Items',
+                    value: category.itemCount,
+                  },
+                ]}
+                actionButtons={[
+                  {
+                    label: 'View',
+                    icon: Eye,
+                    onClick: () => router.push(`/admin/categories/${category.id}`),
+                    hideTextOnMobile: true,
+                  },
+                  {
+                    label: '',
+                    icon: Edit,
+                    onClick: () => router.push(`/admin/categories/${category.id}/edit`),
+                    className: 'flex-initial px-3',
+                  },
+                  {
+                    label: '',
+                    icon: Trash2,
+                    onClick: () => handleDelete(category.id, category.name),
+                    disabled: deleteCategoryMutation.isPending,
+                    className: 'text-destructive hover:bg-destructive/10 flex-initial px-3',
+                  },
+                ]}
+              />
             ))}
           </div>
           )}

@@ -222,23 +222,24 @@ export function ExportButton({
           disabled={isExporting || data.length === 0}
           className={className}
         >
-          <Download className="mr-2 h-4 w-4" />
-          Export
-          <ChevronDown className="ml-2 h-4 w-4" />
+          <Download className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+          <span className="hidden sm:inline">Export</span>
+          <span className="sm:hidden">Export</span>
+          <ChevronDown className="ml-1.5 sm:ml-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48">
-        <DropdownMenuItem onClick={() => handleExport('csv')} className="cursor-pointer">
-          <FileText className="mr-2 h-4 w-4" />
+      <DropdownMenuContent align="end" className="w-44 sm:w-48 force-sheet-bg border-2 border-border">
+        <DropdownMenuItem onClick={() => handleExport('csv')} className="cursor-pointer text-xs sm:text-sm">
+          <FileText className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Export as CSV
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => handleExport('excel')} className="cursor-pointer">
-          <FileSpreadsheet className="mr-2 h-4 w-4" />
+        <DropdownMenuItem onClick={() => handleExport('excel')} className="cursor-pointer text-xs sm:text-sm">
+          <FileSpreadsheet className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Export as Excel
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => handleExport('pdf')} className="cursor-pointer">
-          <FileText className="mr-2 h-4 w-4" />
+        <DropdownMenuItem onClick={() => handleExport('pdf')} className="cursor-pointer text-xs sm:text-sm">
+          <FileText className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Export as PDF
         </DropdownMenuItem>
       </DropdownMenuContent>

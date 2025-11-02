@@ -54,75 +54,78 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
   };
 
   return (
-    <div className="max-w-2xl space-y-6">
+    <div className="max-w-2xl space-y-4 sm:space-y-6 pb-6">
       {/* Header */}
       <div>
-        <Button variant="ghost" onClick={() => router.push(`/admin/staff/${id}`)} className="cursor-pointer">
-          <ArrowLeft className="mr-2 h-4 w-4" />
+        <Button variant="ghost" onClick={() => router.push(`/admin/staff/${id}`)} className="w-fit h-9 sm:h-10 text-xs sm:text-sm cursor-pointer border-2 -ml-2">
+          <ArrowLeft className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Back to Staff Details
         </Button>
       </div>
 
       {/* Form */}
-      <Card className="border-2">
-        <CardHeader>
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-primary/10 rounded-xl">
-              <Save className="h-6 w-6 text-primary" />
+      <Card className="border-2 border-border rounded-lg sm:rounded-xl">
+        <CardHeader className="pb-3 sm:pb-4">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="p-2 sm:p-2.5 md:p-3 bg-primary/10 rounded-lg sm:rounded-xl border-2 border-primary/20 flex-shrink-0">
+              <Save className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
             </div>
-            <div>
-              <CardTitle>Edit Staff Member</CardTitle>
-              <p className="text-sm text-muted-foreground mt-1">Staff ID: {id}</p>
+            <div className="min-w-0">
+              <CardTitle className="text-base sm:text-lg md:text-xl">Edit Staff Member</CardTitle>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1">Staff ID: {id}</p>
             </div>
           </div>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6">
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label htmlFor="name" className="text-xs sm:text-sm">Full Name</Label>
               <Input
                 id="name"
                 placeholder="e.g., Rahul Kumar"
+                className="h-9 sm:h-10 text-xs sm:text-sm"
                 {...register('name')}
               />
               {errors.name && (
-                <p className="text-xs text-red-600 dark:text-red-400">{errors.name.message}</p>
+                <p className="text-[10px] sm:text-xs text-red-600 dark:text-red-400">{errors.name.message}</p>
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="phone">Phone Number</Label>
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label htmlFor="phone" className="text-xs sm:text-sm">Phone Number</Label>
               <Input
                 id="phone"
                 placeholder="9876543210"
+                className="h-9 sm:h-10 text-xs sm:text-sm"
                 {...register('phone')}
               />
               {errors.phone && (
-                <p className="text-xs text-red-600 dark:text-red-400">{errors.phone.message}</p>
+                <p className="text-[10px] sm:text-xs text-red-600 dark:text-red-400">{errors.phone.message}</p>
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="email">Email <span className="text-xs text-muted-foreground">(Optional)</span></Label>
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label htmlFor="email" className="text-xs sm:text-sm">Email <span className="text-[10px] sm:text-xs text-muted-foreground">(Optional)</span></Label>
               <Input
                 id="email"
                 type="email"
                 placeholder="rahul@example.com"
+                className="h-9 sm:h-10 text-xs sm:text-sm"
                 {...register('email')}
               />
               {errors.email && (
-                <p className="text-xs text-red-600 dark:text-red-400">{errors.email.message}</p>
+                <p className="text-[10px] sm:text-xs text-red-600 dark:text-red-400">{errors.email.message}</p>
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="role">Role</Label>
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label htmlFor="role" className="text-xs sm:text-sm">Role</Label>
               <Controller
                 name="role"
                 control={control}
                 render={({ field }) => (
                   <Select onValueChange={field.onChange} value={field.value}>
-                    <SelectTrigger id="role">
+                    <SelectTrigger id="role" className="h-9 sm:h-10 text-xs sm:text-sm">
                       <SelectValue placeholder="Select role" />
                     </SelectTrigger>
                     <SelectContent>
@@ -134,26 +137,27 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
                 )}
               />
               {errors.role && (
-                <p className="text-xs text-red-600 dark:text-red-400">{errors.role.message}</p>
+                <p className="text-[10px] sm:text-xs text-red-600 dark:text-red-400">{errors.role.message}</p>
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="serviceArea">Service Area</Label>
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label htmlFor="serviceArea" className="text-xs sm:text-sm">Service Area</Label>
               <Input
                 id="serviceArea"
                 placeholder="e.g., Bandra, Khar"
+                className="h-9 sm:h-10 text-xs sm:text-sm"
                 {...register('serviceArea')}
               />
               {errors.serviceArea && (
-                <p className="text-xs text-red-600 dark:text-red-400">{errors.serviceArea.message}</p>
+                <p className="text-[10px] sm:text-xs text-red-600 dark:text-red-400">{errors.serviceArea.message}</p>
               )}
             </div>
 
-            <div className="flex items-center justify-between p-4 bg-muted rounded-xl">
-              <div>
-                <Label htmlFor="active" className="cursor-pointer">Active Status</Label>
-                <p className="text-xs text-muted-foreground mt-1">Staff member can receive jobs</p>
+            <div className="flex items-center justify-between p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl border-2 border-border">
+              <div className="min-w-0 flex-1 mr-3">
+                <Label htmlFor="active" className="cursor-pointer text-xs sm:text-sm">Active Status</Label>
+                <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">Staff member can receive jobs</p>
               </div>
               <Controller
                 name="active"
@@ -163,22 +167,23 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
                     id="active"
                     checked={field.value}
                     onCheckedChange={field.onChange}
+                    className="flex-shrink-0"
                   />
                 )}
               />
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3">
               <Button 
                 type="button" 
                 variant="outline" 
-                className="flex-1"
+                className="flex-1 h-9 sm:h-10 text-xs sm:text-sm border-2"
                 onClick={() => router.push('/admin/staff')}
               >
                 Cancel
               </Button>
-              <Button type="submit" className="flex-1 shadow-lg" disabled={isSubmitting}>
-                <Save className="mr-2 h-5 w-5" />
+              <Button type="submit" className="flex-1 shadow-lg h-10 sm:h-11 text-xs sm:text-sm border-2" disabled={isSubmitting}>
+                <Save className="mr-1.5 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                 {isSubmitting ? 'Updating...' : 'Update Staff Member'}
               </Button>
             </div>

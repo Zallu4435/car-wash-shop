@@ -3,7 +3,6 @@
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { 
   Tag, 
   Plus, 
@@ -23,8 +22,10 @@ import { SearchFilter } from '@/components/admin/SearchFilter';
 import { Pagination } from '@/components/admin/Pagination';
 import { AdminRoutes } from '@/lib/constants/routes';
 import { StatCard } from '@/components/admin/StatCard';
+import { TransactionCard } from '@/components/admin/TransactionCard';
 import { useConfirmation } from '@/hooks/useConfirmation';
 import { toast } from 'sonner';
+import { Calendar, Users, Target } from 'lucide-react';
 
 export default function CouponsPage() {
   const router = useRouter();
@@ -95,14 +96,14 @@ export default function CouponsPage() {
             Manage discount coupons and promotions
           </p>
         </div>
-        <Button onClick={() => router.push(AdminRoutes.COUPON_NEW)} className="w-full md:w-auto h-9 sm:h-10 text-xs sm:text-sm">
+        <Button onClick={() => router.push(AdminRoutes.COUPON_NEW)} className="w-full md:w-auto h-9 sm:h-10 text-xs sm:text-sm border-2">
           <Plus className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Create Coupon
         </Button>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         <StatCard
           icon={Tag}
           label="Total Coupons"
@@ -129,18 +130,16 @@ export default function CouponsPage() {
           change="+24.3%"
           trend="up"
           description="All time usage"
-          className="sm:col-span-2 md:col-span-1"
+          className="xs:col-span-2 lg:col-span-1"
         />
       </div>
 
       {/* Coupon List */}
-      <Card className="border-2">
+      <Card className="border-2 border-border rounded-lg sm:rounded-xl">
         <CardHeader className="pb-3 sm:pb-4">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
-              <Tag className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-            </div>
-            <CardTitle className="text-base sm:text-lg">All Coupons</CardTitle>
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <Tag className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+            <CardTitle className="text-sm sm:text-base lg:text-lg">All Coupons</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
@@ -180,99 +179,64 @@ export default function CouponsPage() {
             />
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
-              {filteredCoupons.map((coupon) => (
-              <Card key={coupon.id} className="border-2 hover:shadow-lg transition-all">
-                <CardContent className="p-4 sm:p-5">
-                  <div className="flex items-start justify-between gap-2 mb-3 sm:mb-4">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 mb-1.5 sm:mb-2">
-                        <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg flex-shrink-0">
-                          {coupon.type === 'percentage' ? (
-                            <Percent className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-                          ) : (
-                            <IndianRupee className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-                          )}
-                        </div>
-                        <h3 className="font-mono font-bold text-lg sm:text-xl text-foreground truncate">
-                          {coupon.code}
-                        </h3>
-                      </div>
-                      <p className="text-xs sm:text-sm text-muted-foreground">
-                        {coupon.type === 'percentage' ? `${coupon.value}% Off` : `₹${coupon.value} Off`}
-                      </p>
-                    </div>
-                    <Badge variant={coupon.status === 'active' ? 'default' : 'secondary'} className="text-xs flex-shrink-0">
-                      {coupon.status === 'active' ? 'Active' : 'Expired'}
-                    </Badge>
-                  </div>
-
-                  <div className="space-y-2.5 sm:space-y-3 mb-3 sm:mb-4">
-                    <div className="p-2.5 sm:p-3 bg-muted rounded-lg">
-                      <p className="text-[10px] sm:text-xs text-muted-foreground mb-0.5 sm:mb-1">
-                        Min Order Value
-                      </p>
-                      <p className="font-semibold text-sm sm:text-base text-foreground">
-                        ₹{coupon.minOrderValue}
-                      </p>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                      <div className="p-2.5 sm:p-3 bg-muted rounded-lg">
-                        <p className="text-[10px] sm:text-xs text-muted-foreground mb-0.5 sm:mb-1">Used</p>
-                        <p className="font-semibold text-sm sm:text-base text-foreground">
-                          {coupon.usedCount}
-                        </p>
-                      </div>
-                      <div className="p-2.5 sm:p-3 bg-muted rounded-lg">
-                        <p className="text-[10px] sm:text-xs text-muted-foreground mb-0.5 sm:mb-1">Limit</p>
-                        <p className="font-semibold text-sm sm:text-base text-foreground">
-                          {coupon.usageLimit}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="p-2.5 sm:p-3 bg-muted rounded-lg">
-                      <p className="text-[10px] sm:text-xs text-muted-foreground mb-0.5 sm:mb-1">
-                        Valid Until
-                      </p>
-                      <p className="font-semibold text-sm sm:text-base text-foreground">
-                        {coupon.validUntil}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="flex-1 h-9 text-xs sm:text-sm"
-                      onClick={() => router.push(AdminRoutes.COUPON_DETAIL(coupon.id))}
-                    >
-                      <Eye className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                      <span className="hidden xs:inline">View</span>
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="flex-1 h-9 text-xs sm:text-sm"
-                      onClick={() => router.push(AdminRoutes.COUPON_EDIT(coupon.id))}
-                    >
-                      <Edit className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                      <span className="hidden xs:inline">Edit</span>
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20 h-9 px-3"
-                      onClick={() => handleDelete(coupon.id, coupon.code)}
-                      disabled={deleteCouponMutation.isPending}
-                    >
-                      <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-              ))}
+              {filteredCoupons.map((coupon) => {
+                const discountIcon = coupon.type === 'percentage' ? Percent : IndianRupee;
+                const discountValue = coupon.type === 'percentage' ? `${coupon.value}% Off` : `₹${coupon.value} Off`;
+                
+                return (
+                  <TransactionCard
+                    key={coupon.id}
+                    id={coupon.id}
+                    icon={discountIcon}
+                    layout="vertical"
+                    primaryBadge={{
+                      label: coupon.code,
+                      variant: 'outline',
+                      className: 'font-mono',
+                    }}
+                    statusBadge={{
+                      label: coupon.status === 'active' ? 'Active' : 'Expired',
+                      className: '',
+                    }}
+                    title={coupon.code}
+                    subtitle={discountValue}
+                    description={`Min Order: ₹${coupon.minOrderValue} | Valid Until: ${coupon.validUntil}`}
+                    infoBoxes={[
+                      {
+                        icon: Users,
+                        label: 'Used',
+                        value: coupon.usedCount,
+                      },
+                      {
+                        icon: Target,
+                        label: 'Limit',
+                        value: coupon.usageLimit,
+                      },
+                    ]}
+                    actionButtons={[
+                      {
+                        label: 'View',
+                        icon: Eye,
+                        onClick: () => router.push(AdminRoutes.COUPON_DETAIL(coupon.id)),
+                        hideTextOnMobile: true,
+                      },
+                      {
+                        label: 'Edit',
+                        icon: Edit,
+                        onClick: () => router.push(AdminRoutes.COUPON_EDIT(coupon.id)),
+                        hideTextOnMobile: true,
+                      },
+                      {
+                        label: '',
+                        icon: Trash2,
+                        onClick: () => handleDelete(coupon.id, coupon.code),
+                        disabled: deleteCouponMutation.isPending,
+                        className: 'text-destructive hover:bg-destructive/10 flex-initial px-3',
+                      },
+                    ]}
+                  />
+                );
+              })}
             </div>
           )}
           

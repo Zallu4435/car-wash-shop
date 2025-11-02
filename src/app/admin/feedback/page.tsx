@@ -22,6 +22,7 @@ import { EmptyState } from '@/components/shared/display/EmptyState';
 import { SearchFilter } from '@/components/admin/SearchFilter';
 import { StatCard } from '@/components/admin/StatCard';
 import { Pagination } from '@/components/admin/Pagination';
+import { TransactionCard } from '@/components/admin/TransactionCard';
 import { useConfirmation } from '@/hooks/useConfirmation';
 import { toast } from 'sonner';
 
@@ -155,38 +156,41 @@ export default function AdminFeedbackPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 border-b border-border">
+      <div className="flex flex-wrap gap-2 border-b border-border">
         <Button
           variant={activeTab === 'all' ? 'default' : 'ghost'}
           size="sm"
           onClick={() => setActiveTab('all')}
-          className="rounded-b-none"
+          className="rounded-b-none h-9 sm:h-10 text-xs sm:text-sm border-2"
         >
-          <MessageSquare className="mr-2 h-4 w-4" />
-          All Feedback
+          <MessageSquare className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+          <span className="hidden xs:inline">All Feedback</span>
+          <span className="xs:hidden">All</span>
         </Button>
         <Button
           variant={activeTab === 'services' ? 'default' : 'ghost'}
           size="sm"
           onClick={() => setActiveTab('services')}
-          className="rounded-b-none"
+          className="rounded-b-none h-9 sm:h-10 text-xs sm:text-sm border-2"
         >
-          <ShoppingBag className="mr-2 h-4 w-4" />
-          Service Reviews
+          <ShoppingBag className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+          <span className="hidden xs:inline">Service Reviews</span>
+          <span className="xs:hidden">Services</span>
         </Button>
         <Button
           variant={activeTab === 'products' ? 'default' : 'ghost'}
           size="sm"
           onClick={() => setActiveTab('products')}
-          className="rounded-b-none"
+          className="rounded-b-none h-9 sm:h-10 text-xs sm:text-sm border-2"
         >
-          <Package className="mr-2 h-4 w-4" />
-          Product Reviews
+          <Package className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+          <span className="hidden xs:inline">Product Reviews</span>
+          <span className="xs:hidden">Products</span>
         </Button>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <StatCard
           icon={MessageSquare}
           label="Total Feedback"
@@ -226,13 +230,11 @@ export default function AdminFeedbackPage() {
       </div>
 
       {/* Feedback List */}
-      <Card className="border-2 border-border">
+      <Card className="border-2 border-border rounded-lg sm:rounded-xl">
         <CardHeader className="pb-3 sm:pb-4">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 sm:p-2 rounded-lg" style={{ backgroundColor: 'hsl(var(--primary) / 0.1)' }}>
-              <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5" style={{ color: 'hsl(var(--primary))' }} />
-            </div>
-            <CardTitle className="text-base sm:text-lg">Recent Feedback</CardTitle>
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+            <CardTitle className="text-sm sm:text-base lg:text-lg">Recent Feedback</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
@@ -264,143 +266,79 @@ export default function AdminFeedbackPage() {
               description={search ? "Try adjusting your search or filters" : "No feedback received yet"}
             />
           ) : (
-            <div className="space-y-2.5 sm:space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               {filteredFeedback.map((item) => {
                 const isBlocked = blockedFeedback.has(item.id);
+                const feedbackIcon = item.feedbackType === 'product' ? Package : ShoppingBag;
+                const feedbackDate = new Date(item.createdAt).toLocaleDateString('en-US', { 
+                  year: 'numeric', 
+                  month: 'short', 
+                  day: 'numeric' 
+                });
+                const starRating = Array.from({ length: 5 }).map((_, i) => (
+                  i < item.rating ? '⭐' : '☆'
+                )).join('');
+                
                 return (
-                  <Card key={item.id} className={`border-2 hover:shadow-lg transition-all ${isBlocked ? 'border-destructive/50 bg-destructive/5' : 'border-border'}`}>
-                    <CardContent className="p-4 sm:p-5">
-                      {/* Header with User Info and Badges */}
-                      <div className="flex items-start justify-between mb-3 gap-3">
-                        <div className="flex items-start gap-3 min-w-0 flex-1">
-                          <div 
-                            className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center flex-shrink-0 bg-primary/10"
-                          >
-                            <Users className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <p className="font-bold text-sm sm:text-base text-foreground">{item.customerName}</p>
-                              {isBlocked && (
-                                <Badge variant="error" className="text-[10px] gap-1">
-                                  <Ban className="h-2.5 w-2.5" />
-                                  Blocked
-                                </Badge>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <Badge variant="outline" className="text-[10px] gap-1">
-                                {item.feedbackType === 'product' ? (
-                                  <>
-                                    <Package className="h-2.5 w-2.5" />
-                                    Product
-                                  </>
-                                ) : (
-                                  <>
-                                    <ShoppingBag className="h-2.5 w-2.5" />
-                                    Service
-                                  </>
-                                )}
-                              </Badge>
-                              <span className="text-[10px] sm:text-xs text-muted-foreground">
-                                {new Date(item.createdAt).toLocaleDateString('en-US', { 
-                                  year: 'numeric', 
-                                  month: 'short', 
-                                  day: 'numeric' 
-                                })}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Rating */}
-                      <div className="flex items-center gap-2 mb-3">
-                        <div className="flex items-center gap-0.5">
-                          {Array.from({ length: 5 }).map((_, i) => (
-                            <Star 
-                              key={i} 
-                              className="h-4 w-4"
-                              fill={i < item.rating ? '#FFA500' : 'transparent'}
-                              color={i < item.rating ? '#FFA500' : '#D1D5DB'}
-                            />
-                          ))}
-                        </div>
-                        <span className="text-sm font-bold text-foreground">{item.rating}.0</span>
-                        <Badge variant="secondary" className="text-[10px]">
-                          {item.status}
-                        </Badge>
-                      </div>
-
-                      {/* Review Text */}
-                      <p className="text-sm text-foreground mb-4 leading-relaxed">
-                        {item.comment || 'No comment provided'}
-                      </p>
-
-                      {/* Booking Reference */}
-                      {item.bookingId && (
-                        <p className="text-xs text-muted-foreground mb-4">
-                          Booking: <span className="font-medium">#{item.bookingId}</span>
-                        </p>
-                      )}
-
-                      {/* Action Buttons */}
-                      <div className="flex items-center gap-2 pt-3 border-t border-border flex-wrap">
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className="h-8 text-xs gap-1.5"
-                          onClick={() => handleMarkHelpful(item.id)}
-                        >
-                          <ThumbsUp className="h-3.5 w-3.5" />
-                          Helpful
-                        </Button>
-                        
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className="h-8 text-xs gap-1.5"
-                          onClick={() => handleReportFeedback(item.id, item.customerName)}
-                        >
-                          <Flag className="h-3.5 w-3.5" />
-                          Report
-                        </Button>
-
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className="h-8 text-xs gap-1.5"
-                        >
-                          <MessageSquare className="h-3.5 w-3.5" />
-                          Reply
-                        </Button>
-
-                        <div className="ml-auto flex gap-2">
-                          {isBlocked ? (
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="h-8 text-xs gap-1.5 text-green-600 hover:text-green-600 hover:bg-green-50"
-                              onClick={() => handleUnblockFeedback(item.id, item.customerName)}
-                            >
-                              <CheckCircle className="h-3.5 w-3.5" />
-                              Unblock
-                            </Button>
-                          ) : (
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="h-8 text-xs gap-1.5 text-destructive hover:text-destructive hover:bg-destructive/10"
-                              onClick={() => handleBlockFeedback(item.id, item.customerName)}
-                            >
-                              <Ban className="h-3.5 w-3.5" />
-                              Block
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <TransactionCard
+                    key={item.id}
+                    id={item.id}
+                    icon={Users}
+                    layout="vertical"
+                    primaryBadge={{
+                      label: item.feedbackType === 'product' ? 'Product' : 'Service',
+                      variant: 'outline',
+                    }}
+                    statusBadge={{
+                      label: isBlocked ? 'Blocked' : item.status,
+                      className: isBlocked ? 'border-2 text-destructive' : '',
+                    }}
+                    title={item.customerName}
+                    subtitle={`${starRating} ${item.rating}.0 | ${feedbackDate}`}
+                    description={item.comment || 'No comment provided'}
+                    infoBoxes={[
+                      {
+                        icon: Star,
+                        label: 'Rating',
+                        value: `${item.rating}.0`,
+                        valueClassName: 'text-orange-500',
+                      },
+                    ]}
+                    actionButtons={[
+                      {
+                        label: 'Helpful',
+                        icon: ThumbsUp,
+                        onClick: () => handleMarkHelpful(item.id),
+                        variant: 'outline',
+                        hideTextOnMobile: true,
+                      },
+                      {
+                        label: 'Report',
+                        icon: Flag,
+                        onClick: () => handleReportFeedback(item.id, item.customerName),
+                        variant: 'outline',
+                        hideTextOnMobile: true,
+                      },
+                      {
+                        label: 'Reply',
+                        icon: MessageSquare,
+                        onClick: () => {},
+                        variant: 'outline',
+                        hideTextOnMobile: true,
+                      },
+                      {
+                        label: isBlocked ? 'Unblock' : 'Block',
+                        icon: isBlocked ? CheckCircle : Ban,
+                        onClick: () => isBlocked 
+                          ? handleUnblockFeedback(item.id, item.customerName)
+                          : handleBlockFeedback(item.id, item.customerName),
+                        className: isBlocked 
+                          ? 'text-green-600 hover:bg-green-50 dark:hover:bg-green-950/20' 
+                          : 'text-destructive hover:bg-destructive/10',
+                        hideTextOnMobile: true,
+                      },
+                    ]}
+                  />
                 );
               })}
             </div>

@@ -48,60 +48,63 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 pb-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <Button variant="ghost" onClick={() => router.push('/admin/services')} className="cursor-pointer">
-          <ArrowLeft className="mr-2 h-4 w-4" />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+        <Button variant="ghost" onClick={() => router.push('/admin/services')} className="w-fit h-9 sm:h-10 text-xs sm:text-sm cursor-pointer border-2 -ml-2">
+          <ArrowLeft className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Back to Services
         </Button>
-        <Button onClick={() => router.push(`/admin/services/${id}/edit`)}>
-          <Edit className="mr-2 h-4 w-4" />
+        <Button onClick={() => router.push(`/admin/services/${id}/edit`)} className="h-9 sm:h-10 text-xs sm:text-sm border-2">
+          <Edit className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Edit Service
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6 items-start">
         {/* Service Details */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="xl:col-span-2 space-y-4 sm:space-y-6">
           {/* Main Info */}
-          <Card className="border-2">
-            <CardContent className="p-6">
-              <div className="flex gap-6">
-                {/* Service Icon */}
-                <div className="w-32 h-32 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0 border-2 border-primary/20">
-                  <Car className="h-16 w-16 text-primary" />
-                </div>
-
-                {/* Service Info */}
-                <div className="flex-1">
-                  <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <h1 className="text-3xl font-bold text-foreground mb-2">{service.name}</h1>
-                      <Badge variant="outline" className="text-xs">{service.category}</Badge>
-                    </div>
-                    <Badge variant={service.active ? 'default' : 'secondary'}>
-                      {service.active ? 'Active' : 'Inactive'}
-                    </Badge>
+          <Card className="border-2 border-border rounded-lg sm:rounded-xl">
+            <CardContent className="p-4 sm:p-5 lg:p-6">
+              <div className="space-y-4 sm:space-y-5">
+                {/* Header Section */}
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                  {/* Service Icon */}
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 bg-primary/10 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0 border-2 border-primary/20 mx-auto sm:mx-0">
+                    <Car className="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 text-primary" />
                   </div>
 
-                  <p className="text-muted-foreground mb-4">{service.description}</p>
+                  {/* Service Info */}
+                  <div className="flex-1 min-w-0 text-center sm:text-left">
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 mb-2 sm:mb-3">
+                      <div className="min-w-0">
+                        <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-foreground mb-1.5 sm:mb-2">{service.name}</h1>
+                        <Badge variant="outline" className="text-xs sm:text-sm">{service.category}</Badge>
+                      </div>
+                      <Badge variant={service.active ? 'default' : 'secondary'} className="text-xs sm:text-sm mx-auto sm:mx-0 w-fit">
+                        {service.active ? 'Active' : 'Inactive'}
+                      </Badge>
+                    </div>
+                    <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 sm:line-clamp-3">{service.description}</p>
+                  </div>
+                </div>
 
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 bg-primary/10 rounded-lg">
-                      <div className="flex items-center gap-2 mb-1">
-                        <IndianRupee className="h-4 w-4 text-primary" />
-                        <p className="text-xs text-muted-foreground">Price</p>
-                      </div>
-                      <p className="text-2xl font-bold text-primary">₹{service.price}</p>
+                {/* Price and Duration */}
+                <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                  <div className="p-3 sm:p-3.5 md:p-4 bg-primary/10 rounded-lg sm:rounded-xl border-2 border-primary/20">
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <IndianRupee className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary flex-shrink-0" />
+                      <p className="text-[10px] sm:text-xs text-muted-foreground">Price</p>
                     </div>
-                    <div className="p-3 bg-muted rounded-lg">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Clock className="h-4 w-4 text-muted-foreground" />
-                        <p className="text-xs text-muted-foreground">Duration</p>
-                      </div>
-                      <p className="text-xl font-bold text-foreground">{service.duration} min</p>
+                    <p className="text-lg sm:text-xl md:text-2xl font-bold text-primary">₹{service.price}</p>
+                  </div>
+                  <div className="p-3 sm:p-3.5 md:p-4 bg-muted rounded-lg sm:rounded-xl border-2 border-border">
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
+                      <p className="text-[10px] sm:text-xs text-muted-foreground">Duration</p>
                     </div>
+                    <p className="text-lg sm:text-xl md:text-2xl font-bold text-foreground">{service.duration} min</p>
                   </div>
                 </div>
               </div>
@@ -109,47 +112,45 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
           </Card>
 
           {/* Performance Metrics */}
-          <Card className="border-2">
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <div className="p-2 bg-primary/10 rounded-lg">
-                  <TrendingUp className="h-5 w-5 text-primary" />
-                </div>
-                <CardTitle>Performance Metrics</CardTitle>
+          <Card className="border-2 border-border rounded-lg sm:rounded-xl">
+            <CardHeader className="pb-3 sm:pb-4">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+                <CardTitle className="text-sm sm:text-base lg:text-lg">Performance Metrics</CardTitle>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="p-4 bg-muted rounded-xl">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <p className="text-xs text-muted-foreground uppercase tracking-wide">Total Bookings</p>
+              <div className="grid grid-cols-2 gap-2.5 sm:gap-3 md:gap-4">
+                <div className="p-3 sm:p-3.5 md:p-4 bg-muted rounded-lg sm:rounded-xl border-2 border-border">
+                  <div className="flex items-center gap-1 sm:gap-1.5 mb-1">
+                    <Calendar className="h-3 w-3 sm:h-3.5 sm:w-3.5 md:h-4 md:w-4 text-muted-foreground flex-shrink-0" />
+                    <p className="text-[9px] sm:text-[10px] md:text-xs text-muted-foreground uppercase tracking-wide">Bookings</p>
                   </div>
-                  <p className="text-3xl font-bold text-foreground">{service.bookings}</p>
+                  <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-foreground">{service.bookings}</p>
                 </div>
 
-                <div className="p-4 bg-green-50 dark:bg-green-950/20 rounded-xl border-2 border-green-200 dark:border-green-800">
-                  <div className="flex items-center gap-2 mb-2">
-                    <IndianRupee className="h-4 w-4 text-green-600 dark:text-green-400" />
-                    <p className="text-xs text-green-900 dark:text-green-100 uppercase tracking-wide">Revenue</p>
+                <div className="p-3 sm:p-3.5 md:p-4 bg-primary/10 rounded-lg sm:rounded-xl border-2 border-primary/20">
+                  <div className="flex items-center gap-1 sm:gap-1.5 mb-1">
+                    <IndianRupee className="h-3 w-3 sm:h-3.5 sm:w-3.5 md:h-4 md:w-4 text-primary flex-shrink-0" />
+                    <p className="text-[9px] sm:text-[10px] md:text-xs text-muted-foreground uppercase tracking-wide">Revenue</p>
                   </div>
-                  <p className="text-3xl font-bold text-foreground">₹{service.revenue.toLocaleString()}</p>
+                  <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-primary">₹{service.revenue.toLocaleString()}</p>
                 </div>
 
-                <div className="p-4 bg-muted rounded-xl">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Users className="h-4 w-4 text-muted-foreground" />
-                    <p className="text-xs text-muted-foreground uppercase tracking-wide">Reviews</p>
+                <div className="p-3 sm:p-3.5 md:p-4 bg-muted rounded-lg sm:rounded-xl border-2 border-border">
+                  <div className="flex items-center gap-1 sm:gap-1.5 mb-1">
+                    <Users className="h-3 w-3 sm:h-3.5 sm:w-3.5 md:h-4 md:w-4 text-muted-foreground flex-shrink-0" />
+                    <p className="text-[9px] sm:text-[10px] md:text-xs text-muted-foreground uppercase tracking-wide">Reviews</p>
                   </div>
-                  <p className="text-3xl font-bold text-foreground">{service.reviews}</p>
+                  <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-foreground">{service.reviews}</p>
                 </div>
 
-                <div className="p-4 bg-muted rounded-xl">
-                  <div className="flex items-center gap-2 mb-2">
-                    <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                    <p className="text-xs text-muted-foreground uppercase tracking-wide">Avg Rating</p>
+                <div className="p-3 sm:p-3.5 md:p-4 bg-muted rounded-lg sm:rounded-xl border-2 border-border">
+                  <div className="flex items-center gap-1 sm:gap-1.5 mb-1">
+                    <TrendingUp className="h-3 w-3 sm:h-3.5 sm:w-3.5 md:h-4 md:w-4 text-muted-foreground flex-shrink-0" />
+                    <p className="text-[9px] sm:text-[10px] md:text-xs text-muted-foreground uppercase tracking-wide">Rating</p>
                   </div>
-                  <p className="text-3xl font-bold text-foreground">⭐ {service.rating}</p>
+                  <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-foreground">⭐ {service.rating}</p>
                 </div>
               </div>
             </CardContent>
@@ -157,32 +158,32 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
         </div>
 
         {/* Sidebar */}
-        <div className="lg:col-span-1 space-y-6">
+        <div className="xl:col-span-1 space-y-4 sm:space-y-6">
           {/* Quick Stats */}
-          <Card className="border-2">
-            <CardHeader>
-              <CardTitle>Quick Stats</CardTitle>
+          <Card className="border-2 border-border rounded-lg sm:rounded-xl xl:sticky xl:top-6 xl:max-h-[calc(100vh-8rem)] xl:overflow-auto">
+            <CardHeader className="pb-3 sm:pb-4">
+              <CardTitle className="text-sm sm:text-base lg:text-lg">Quick Stats</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="p-4 bg-primary/10 rounded-xl border-2 border-primary/20">
-                <p className="text-xs text-muted-foreground mb-1">Avg Revenue per Booking</p>
-                <p className="text-3xl font-bold text-primary">₹{service.price}</p>
+            <CardContent className="space-y-3 sm:space-y-4">
+              <div className="p-3 sm:p-4 bg-primary/10 rounded-lg sm:rounded-xl border-2 border-primary/20">
+                <p className="text-xs sm:text-sm text-muted-foreground mb-1">Avg Revenue per Booking</p>
+                <p className="text-2xl sm:text-3xl font-bold text-primary">₹{service.price}</p>
               </div>
 
               <Separator />
 
-              <div className="space-y-3">
-                <div className="flex justify-between text-sm">
+              <div className="space-y-2 sm:space-y-3">
+                <div className="flex justify-between gap-2 text-xs sm:text-sm">
                   <span className="text-muted-foreground">Completion Rate</span>
-                  <span className="font-semibold text-foreground">98%</span>
+                  <span className="font-semibold text-foreground flex-shrink-0">98%</span>
                 </div>
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between gap-2 text-xs sm:text-sm">
                   <span className="text-muted-foreground">Customer Satisfaction</span>
-                  <span className="font-semibold text-green-600 dark:text-green-400">96%</span>
+                  <span className="font-semibold text-green-600 dark:text-green-400 flex-shrink-0">96%</span>
                 </div>
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between gap-2 text-xs sm:text-sm">
                   <span className="text-muted-foreground">Repeat Customers</span>
-                  <span className="font-semibold text-foreground">64%</span>
+                  <span className="font-semibold text-foreground flex-shrink-0">64%</span>
                 </div>
               </div>
             </CardContent>
