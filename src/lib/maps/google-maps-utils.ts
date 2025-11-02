@@ -92,7 +92,7 @@ export const getCurrentPosition = (): Promise<{ lat: number; lng: number }> => {
         });
       },
       (error) => {
-        let errorMessage = MAP_ERROR_MESSAGES.UNKNOWN;
+        let errorMessage: string = MAP_ERROR_MESSAGES.UNKNOWN;
         
         switch (error.code) {
           case 1: // PERMISSION_DENIED

@@ -34,14 +34,14 @@ export const adminVehiclesFetchers = {
     }
 
     const { data } = await apiClient.get<ApiResponse<VehicleBrand[]>>(
-      AdminRoutes.VEHICLE_BRANDS
+      AdminRoutes.VEHICLE_BRANDS_API
     );
     return data.data!;
   },
 
   async createVehicleBrand(input: CreateVehicleBrandInput): Promise<VehicleBrand> {
     const { data } = await apiClient.post<ApiResponse<VehicleBrand>>(
-      AdminRoutes.VEHICLE_BRANDS,
+      AdminRoutes.VEHICLE_BRANDS_API,
       input
     );
     return data.data!;
@@ -52,7 +52,7 @@ export const adminVehiclesFetchers = {
     input: Partial<CreateVehicleBrandInput>
   ): Promise<VehicleBrand> {
     const { data } = await apiClient.patch<ApiResponse<VehicleBrand>>(
-      `${AdminRoutes.VEHICLE_BRANDS}/${brandId}`,
+      `${AdminRoutes.VEHICLE_BRANDS_API}/${brandId}`,
       input
     );
     return data.data!;
@@ -60,7 +60,7 @@ export const adminVehiclesFetchers = {
 
   async deleteVehicleBrand(brandId: string): Promise<{ message: string }> {
     const { data } = await apiClient.delete<ApiResponse<{ message: string }>>(
-      `${AdminRoutes.VEHICLE_BRANDS}/${brandId}`
+      `${AdminRoutes.VEHICLE_BRANDS_API}/${brandId}`
     );
     return data.data!;
   },
@@ -73,14 +73,14 @@ export const adminVehiclesFetchers = {
     }
 
     const { data } = await apiClient.get<ApiResponse<VehicleModel[]>>(
-      AdminRoutes.VEHICLE_MODELS
+      AdminRoutes.VEHICLE_MODELS_API
     );
     return data.data!;
   },
 
   async createVehicleModel(input: CreateVehicleModelInput): Promise<VehicleModel> {
     const { data } = await apiClient.post<ApiResponse<VehicleModel>>(
-      AdminRoutes.VEHICLE_MODELS,
+      AdminRoutes.VEHICLE_MODELS_API,
       input
     );
     return data.data!;
@@ -91,7 +91,7 @@ export const adminVehiclesFetchers = {
     input: Partial<CreateVehicleModelInput>
   ): Promise<VehicleModel> {
     const { data } = await apiClient.patch<ApiResponse<VehicleModel>>(
-      `${AdminRoutes.VEHICLE_MODELS}/${modelId}`,
+      `${AdminRoutes.VEHICLE_MODELS_API}/${modelId}`,
       input
     );
     return data.data!;
@@ -99,7 +99,7 @@ export const adminVehiclesFetchers = {
 
   async deleteVehicleModel(modelId: string): Promise<{ message: string }> {
     const { data } = await apiClient.delete<ApiResponse<{ message: string }>>(
-      `${AdminRoutes.VEHICLE_MODELS}/${modelId}`
+      `${AdminRoutes.VEHICLE_MODELS_API}/${modelId}`
     );
     return data.data!;
   },

@@ -59,7 +59,7 @@ export default function VehiclesHomePage() {
       description: 'Manage specific vehicle models',
       icon: Car,
       count: models?.length || 0,
-      href: AdminRoutes.VEHICLE_MODELS_PAGE,
+      href: AdminRoutes.VEHICLE_MODELS,
     },
   ];
 
@@ -186,7 +186,7 @@ export default function VehiclesHomePage() {
               <Star className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
               <CardTitle className="text-sm sm:text-base lg:text-lg truncate">Popular Vehicles</CardTitle>
             </div>
-            <Button variant="ghost" size="sm" onClick={() => router.push(AdminRoutes.VEHICLE_MODELS_PAGE)} className="text-xs sm:text-sm h-8 sm:h-9 flex-shrink-0 border-2">
+            <Button variant="ghost" size="sm" onClick={() => router.push(AdminRoutes.VEHICLE_MODELS)} className="text-xs sm:text-sm h-8 sm:h-9 flex-shrink-0 border-2">
               View All
             </Button>
           </div>

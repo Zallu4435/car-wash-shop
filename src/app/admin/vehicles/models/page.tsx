@@ -205,7 +205,7 @@ export default function VehicleModelsPage() {
                     {
                       label: 'View',
                       icon: Eye,
-                      onClick: () => router.push(AdminRoutes.VEHICLE_MODEL_DETAILS(vehicle.id)),
+                      onClick: () => router.push(AdminRoutes.VEHICLE_MODEL_DETAIL(vehicle.id)),
                       hideTextOnMobile: true,
                     },
                     {
