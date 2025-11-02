@@ -11,9 +11,10 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { ArrowLeft, Plus, Package, Image as ImageIcon, X } from 'lucide-react';
+import { ArrowLeft, Plus, Image as ImageIcon, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { productSchema, ProductFormInput } from '@/schemas/admin/product';
+import { AdminRoutes } from '@/lib/constants/routes';
 
 export default function NewProductPage() {
   const router = useRouter();
@@ -58,7 +59,7 @@ export default function NewProductPage() {
     try {
       console.log('Product data:', data);
       toast.success('Product added successfully!');
-      router.push('/admin/products');
+      router.push(AdminRoutes.PRODUCTS);
     } catch (error) {
       toast.error('Failed to add product');
     }
@@ -68,7 +69,7 @@ export default function NewProductPage() {
     <div className="max-w-2xl space-y-4 sm:space-y-6">
       {/* Header */}
       <div>
-        <Button variant="ghost" onClick={() => router.push('/admin/products')} className="h-9 sm:h-10 text-xs sm:text-sm cursor-pointer border-2">
+        <Button variant="ghost" onClick={() => router.push(AdminRoutes.PRODUCTS)} className="h-9 sm:h-10 text-xs sm:text-sm cursor-pointer border-2">
           <ArrowLeft className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Back to Products
         </Button>

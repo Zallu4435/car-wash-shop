@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { ArrowLeft, Plus, Layers } from 'lucide-react';
 import { toast } from 'sonner';
+import { AdminRoutes } from '@/lib/constants/routes';
 import { vehicleBodyTypeSchema, VehicleBodyTypeFormInput } from '@/schemas/admin/vehicle-body-type';
 
 export default function NewBodyTypePage() {
@@ -33,7 +34,7 @@ export default function NewBodyTypePage() {
     try {
       console.log('Body type data:', data);
       toast.success('Body type created successfully!');
-      router.push('/admin/vehicles/body-types');
+      router.push(AdminRoutes.VEHICLE_BODY_TYPES);
     } catch (error) {
       toast.error('Failed to create body type');
     }
@@ -43,7 +44,7 @@ export default function NewBodyTypePage() {
     <div className="max-w-2xl space-y-4 sm:space-y-6 pb-6">
       {/* Header */}
       <div>
-        <Button variant="ghost" onClick={() => router.push('/admin/vehicles/body-types')} className="w-fit h-9 sm:h-10 text-xs sm:text-sm cursor-pointer border-2 -ml-2">
+        <Button variant="ghost" onClick={() => router.push(AdminRoutes.VEHICLE_BODY_TYPES)} className="w-fit h-9 sm:h-10 text-xs sm:text-sm cursor-pointer border-2 -ml-2">
           <ArrowLeft className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Back to Body Types
         </Button>

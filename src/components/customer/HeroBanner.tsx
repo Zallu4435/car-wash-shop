@@ -77,7 +77,7 @@ export function HeroBanner() {
                     <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                       <Button
                         size="lg"
-                        className="bg-primary-foreground text-primary hover:bg-primary-foreground/90 shadow-2xl text-base sm:text-lg px-6 sm:px-10 py-5 sm:py-7 h-auto group font-semibold rounded-xl transition-all w-full sm:w-auto"
+                        className="bg-primary-foreground text-primary hover:bg-primary-foreground/90 shadow-2xl text-base sm:text-lg px-6 sm:px-10 py-5 sm:py-7 h-auto group font-semibold rounded-xl transition-all w-full sm:w-auto border-2 border-primary-foreground/20"
                       >
                         <span>{banner.cta.text}</span>
                         <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5 group-hover:translate-x-1 transition-transform" />
@@ -86,7 +86,7 @@ export function HeroBanner() {
                       <Button
                         size="lg"
                         variant="outline"
-                        className="border-2 border-white/30 text-primary-foreground hover:bg-white/10 hover:border-white/50 text-base sm:text-lg px-6 sm:px-10 py-5 sm:py-7 h-auto backdrop-blur-md rounded-xl font-semibold w-full sm:w-auto"
+                        className="border-2 border-primary-foreground/20 text-primary-foreground hover:bg-white/10 hover:border-primary-foreground/30 text-base sm:text-lg px-6 sm:px-10 py-5 sm:py-7 h-auto backdrop-blur-md rounded-xl font-semibold w-full sm:w-auto"
                       >
                         <Play className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                         <span>Watch Demo</span>

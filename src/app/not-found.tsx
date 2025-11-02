@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { CustomerRoutes } from '@/lib/constants/routes';
 import { FileQuestion, Home, Search } from 'lucide-react';
 
 export default function NotFound() {
@@ -39,7 +40,7 @@ export default function NotFound() {
               className="w-full shadow-lg h-11 sm:h-12 text-sm sm:text-base" 
               size="lg"
             >
-              <Link href="/">
+              <Link href={CustomerRoutes.HOME}>
                 <Home className="mr-2 h-4 w-4" />
                 Go to Homepage
               </Link>
@@ -50,7 +51,7 @@ export default function NotFound() {
               className="w-full h-11 sm:h-12 text-sm sm:text-base"
               size="lg"
             >
-              <Link href="/products">
+              <Link href={CustomerRoutes.PRODUCTS}>
                 <Search className="mr-2 h-4 w-4" />
                 Browse Products
               </Link>
@@ -64,16 +65,16 @@ export default function NotFound() {
             </p>
             <div className="flex flex-wrap gap-1.5 sm:gap-2 justify-center">
               <Button asChild variant="ghost" size="sm" className="text-xs sm:text-sm h-8 sm:h-9">
-                <Link href="/services">Services</Link>
+                <Link href={CustomerRoutes.SERVICES}>Services</Link>
               </Button>
               <Button asChild variant="ghost" size="sm" className="text-xs sm:text-sm h-8 sm:h-9">
-                <Link href="/products">Products</Link>
+                <Link href={CustomerRoutes.PRODUCTS}>Products</Link>
               </Button>
               <Button asChild variant="ghost" size="sm" className="text-xs sm:text-sm h-8 sm:h-9">
-                <Link href="/support">Support</Link>
+                <Link href={CustomerRoutes.SUPPORT}>Support</Link>
               </Button>
               <Button asChild variant="ghost" size="sm" className="text-xs sm:text-sm h-8 sm:h-9">
-                <Link href="/auth/login">Login</Link>
+                <Link href={CustomerRoutes.LOGIN}>Login</Link>
               </Button>
             </div>
           </div>

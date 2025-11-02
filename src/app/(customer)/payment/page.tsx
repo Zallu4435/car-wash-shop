@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { CustomerRoutes } from '@/lib/constants/routes';
 import { Loader2, Lock, Shield } from 'lucide-react';
 
 export default function PaymentPage() {
@@ -10,7 +11,7 @@ export default function PaymentPage() {
   useEffect(() => {
     // Simulate payment processing
     const timer = setTimeout(() => {
-      router.push(`/customer/payment/receipt?orderId=ORD${Date.now()}&service=true`);
+      router.push(`${CustomerRoutes.PAYMENT_RECEIPT}?orderId=ORD${Date.now()}&service=true`);
     }, 3000);
     return () => clearTimeout(timer);
   }, [router]);

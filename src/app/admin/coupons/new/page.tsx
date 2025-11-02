@@ -10,8 +10,9 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { ArrowLeft, Plus, Tag } from 'lucide-react';
+import { ArrowLeft, Plus } from 'lucide-react';
 import { toast } from 'sonner';
+import { AdminRoutes } from '@/lib/constants/routes';
 import { adminCouponSchema, AdminCouponFormInput } from '@/schemas/admin/coupon';
 
 export default function NewCouponPage() {
@@ -33,7 +34,7 @@ export default function NewCouponPage() {
     try {
       console.log('Coupon data:', data);
       toast.success('Coupon created successfully!');
-      router.push('/admin/coupons');
+      router.push(AdminRoutes.COUPONS);
     } catch (error) {
       toast.error('Failed to create coupon');
     }
@@ -43,7 +44,7 @@ export default function NewCouponPage() {
     <div className="max-w-2xl space-y-4 sm:space-y-6 pb-6">
       {/* Header */}
       <div>
-        <Button variant="ghost" onClick={() => router.push('/admin/coupons')} className="w-fit h-9 sm:h-10 text-xs sm:text-sm cursor-pointer border-2 -ml-2">
+        <Button variant="ghost" onClick={() => router.push(AdminRoutes.COUPONS)} className="w-fit h-9 sm:h-10 text-xs sm:text-sm cursor-pointer border-2 -ml-2">
           <ArrowLeft className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Back to Coupons
         </Button>

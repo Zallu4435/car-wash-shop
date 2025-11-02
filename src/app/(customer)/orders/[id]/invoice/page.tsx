@@ -4,6 +4,7 @@ import { use } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Download, FileText, Building2, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { CustomerRoutes } from '@/lib/constants/routes';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 
@@ -15,7 +16,7 @@ export default function InvoicePage({ params }: { params: Promise<{ id: string }
       {/* Header */}
       <section className="bg-gradient-to-br from-primary/5 to-background border-b border-border">
         <div className="container-custom py-8">
-          <Link href={`/orders/${id}`}>
+          <Link href={CustomerRoutes.ORDER_DETAIL(id)}>
             <Button variant="ghost" className="mb-4 hover:bg-muted">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Order

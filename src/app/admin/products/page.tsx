@@ -24,6 +24,7 @@ import { StatCard } from '@/components/admin/StatCard';
 import { TransactionCard } from '@/components/admin/TransactionCard';
 import { useConfirmation } from '@/hooks/useConfirmation';
 import { toast } from 'sonner';
+import { AdminRoutes } from '@/lib/constants/routes';
 
 export default function ProductsPage() {
   const router = useRouter();
@@ -95,7 +96,7 @@ export default function ProductsPage() {
             Manage your product inventory
           </p>
         </div>
-        <Button onClick={() => router.push('/admin/products/new')} className="w-full md:w-auto h-9 sm:h-10 text-xs sm:text-sm border-2">
+        <Button onClick={() => router.push(AdminRoutes.PRODUCT_NEW)} className="w-full md:w-auto h-9 sm:h-10 text-xs sm:text-sm border-2">
           <Plus className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Add Product
         </Button>
@@ -198,7 +199,7 @@ export default function ProductsPage() {
               description={search ? "Try adjusting your search or filters" : "No products available"}
               action={
                 !search && (
-                  <Button onClick={() => router.push('/admin/products/new')}>
+                  <Button onClick={() => router.push(AdminRoutes.PRODUCT_NEW)}>
                     <Plus className="mr-2 h-4 w-4" />
                     Add Product
                   </Button>
@@ -249,13 +250,13 @@ export default function ProductsPage() {
                       {
                         label: 'View',
                         icon: Eye,
-                        onClick: () => router.push(`/admin/products/${product.id}`),
+                        onClick: () => router.push(AdminRoutes.PRODUCT_DETAIL(product.id)),
                         hideTextOnMobile: true,
                       },
                       {
                         label: 'Edit',
                         icon: Edit,
-                        onClick: () => router.push(`/admin/products/${product.id}/edit`),
+                        onClick: () => router.push(AdminRoutes.PRODUCT_EDIT(product.id)),
                         hideTextOnMobile: true,
                       },
                       {

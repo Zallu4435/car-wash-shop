@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { ArrowLeft, Save, Tag } from 'lucide-react';
 import { toast } from 'sonner';
+import { AdminRoutes } from '@/lib/constants/routes';
 import { adminCouponSchema, AdminCouponFormInput } from '@/schemas/admin/coupon';
 
 // Mock data - replace with actual data fetching
@@ -66,7 +67,7 @@ export default function EditCouponPage({ params }: { params: Promise<{ id: strin
     try {
       console.log('Updating coupon:', id, data);
       toast.success('Coupon updated successfully!');
-      router.push('/admin/coupons');
+      router.push(AdminRoutes.COUPONS);
     } catch (error) {
       toast.error('Failed to update coupon');
     }
@@ -76,7 +77,7 @@ export default function EditCouponPage({ params }: { params: Promise<{ id: strin
     <div className="max-w-2xl space-y-4 sm:space-y-6 pb-6">
       {/* Header */}
       <div>
-        <Button variant="ghost" onClick={() => router.push(`/admin/coupons/${id}`)} className="w-fit h-9 sm:h-10 text-xs sm:text-sm cursor-pointer border-2 -ml-2">
+        <Button variant="ghost" onClick={() => router.push(AdminRoutes.COUPON_DETAIL(id))} className="w-fit h-9 sm:h-10 text-xs sm:text-sm cursor-pointer border-2 -ml-2">
           <ArrowLeft className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Back to Coupon Details
         </Button>
@@ -277,7 +278,7 @@ export default function EditCouponPage({ params }: { params: Promise<{ id: strin
                 type="button" 
                 variant="outline" 
                 className="flex-1 h-9 sm:h-10 text-xs sm:text-sm border-2"
-                onClick={() => router.push(`/admin/coupons/${id}`)}
+                onClick={() => router.push(AdminRoutes.COUPON_DETAIL(id))}
               >
                 Cancel
               </Button>

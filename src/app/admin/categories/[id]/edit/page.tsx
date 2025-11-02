@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { FormBuilder } from '@/components/shared/crud/FormBuilder';
 import { toast } from 'sonner';
 import { categorySchema } from '@/schemas/admin/category';
+import { AdminRoutes } from '@/lib/constants/routes';
 
 export default function EditCategoryPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -34,13 +35,13 @@ export default function EditCategoryPage({ params }: { params: Promise<{ id: str
   const handleSubmit = (data: any) => {
     console.log('Updating category:', id, data);
     toast.success('Category updated successfully!');
-    router.push('/admin/categories');
+    router.push(AdminRoutes.CATEGORIES);
   };
 
   return (
     <div className="max-w-2xl space-y-4 sm:space-y-6 pb-6">
       <div>
-        <Link href="/admin/categories">
+        <Link href={AdminRoutes.CATEGORIES}>
           <Button variant="ghost" className="w-fit h-9 sm:h-10 text-xs sm:text-sm cursor-pointer border-2 -ml-2">
             <ArrowLeft className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
             Back to Categories

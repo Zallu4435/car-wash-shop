@@ -12,6 +12,7 @@ import { useValidateCoupon } from '@/api/domains/orders/queries';
 import Loading from '@/components/shared/display/Loading';
 import { EmptyState } from '@/components/shared/display/EmptyState';
 import { toast } from 'sonner';
+import { CustomerRoutes } from '@/lib/constants/routes';
 
 export default function CartPage() {
   const router = useRouter();
@@ -205,7 +206,7 @@ export default function CartPage() {
                   subtotal={subtotal}
                   discount={discount}
                   total={total}
-                  onCheckout={() => router.push('/checkout')}
+                  onCheckout={() => router.push(CustomerRoutes.CHECKOUT)}
                 />
               </div>
             </div>
@@ -215,7 +216,7 @@ export default function CartPage() {
               title="Your cart is empty"
               description="Add items to your cart to get started"
               action={
-                <Button onClick={() => router.push('/products')} size="lg" className="h-10 sm:h-11 border-2">
+                <Button onClick={() => router.push(CustomerRoutes.PRODUCTS)} size="lg" className="h-10 sm:h-11 border-2">
                   <span className="text-xs sm:text-sm lg:text-base">Browse Products</span>
                 </Button>
               }

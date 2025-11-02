@@ -24,6 +24,7 @@ import { Pagination } from '@/components/admin/Pagination';
 import { TransactionCard } from '@/components/admin/TransactionCard';
 import { useConfirmation } from '@/hooks/useConfirmation';
 import { toast } from 'sonner';
+import { AdminRoutes } from '@/lib/constants/routes';
 
 export default function ServicesPage() {
   const router = useRouter();
@@ -96,7 +97,7 @@ export default function ServicesPage() {
             Manage your service offerings
           </p>
         </div>
-        <Button onClick={() => router.push('/admin/services/new')} className="w-full md:w-auto h-9 sm:h-10 text-xs sm:text-sm border-2">
+        <Button onClick={() => router.push(AdminRoutes.SERVICE_NEW)} className="w-full md:w-auto h-9 sm:h-10 text-xs sm:text-sm border-2">
           <Plus className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Add Service
         </Button>
@@ -181,7 +182,7 @@ export default function ServicesPage() {
               description={search ? "Try adjusting your search or filters" : "No services available"}
               action={
                 !search && (
-                  <Button onClick={() => router.push('/admin/services/new')}>
+                  <Button onClick={() => router.push(AdminRoutes.SERVICE_NEW)}>
                     <Plus className="mr-2 h-4 w-4" />
                     Add Service
                   </Button>
@@ -224,13 +225,13 @@ export default function ServicesPage() {
                     {
                       label: 'View',
                       icon: Eye,
-                      onClick: () => router.push(`/admin/services/${service.id}`),
+                      onClick: () => router.push(`${AdminRoutes.SERVICES}/${service.id}`), // TODO: Add SERVICE_DETAIL constant
                       hideTextOnMobile: true,
                     },
                     {
                       label: 'Edit',
                       icon: Edit,
-                      onClick: () => router.push(`/admin/services/${service.id}/edit`),
+                      onClick: () => router.push(AdminRoutes.SERVICE_EDIT(service.id)),
                       hideTextOnMobile: true,
                     },
                     {

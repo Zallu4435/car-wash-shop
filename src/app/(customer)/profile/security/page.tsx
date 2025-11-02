@@ -26,7 +26,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { changePasswordSchema, ChangePasswordInput } from '@/schemas/customer/profile';
 import { useConfirmation } from '@/hooks/useConfirmation';
-import { ROUTES } from '@/lib/constants/routes';
+import { CustomerRoutes } from '@/lib/constants/routes';
 import { DangerZone } from '@/components/admin/DangerZone';
 
 export default function SecurityPage() {
@@ -132,7 +132,7 @@ export default function SecurityPage() {
       <section className="bg-gradient-to-br from-primary/5 to-background border-b border-border">
         <div className="container-custom py-6 sm:py-8 lg:py-12">
           <Button asChild variant="ghost" className="mb-3 sm:mb-4 h-9 sm:h-10">
-            <Link href={ROUTES.CUSTOMER.PROFILE}>
+            <Link href={CustomerRoutes.PROFILE}>
               <ArrowLeft className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
               <span className="text-xs sm:text-sm">Back to Profile</span>
             </Link>

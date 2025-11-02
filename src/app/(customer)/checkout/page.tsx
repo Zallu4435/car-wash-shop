@@ -20,6 +20,7 @@ import { useConfirmation } from '@/hooks/useConfirmation';
 import { AddressSelectionModal } from '@/components/customer/AddressSelectionModal';
 import { CouponInput } from '@/components/shared/forms/CouponInput';
 import { useRazorpay } from '@/hooks/useRazorpay';
+import { CustomerRoutes } from '@/lib/constants/routes';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -50,7 +51,7 @@ export default function CheckoutPage() {
       try {
         // TODO: Save payment details to database
         toast.success('Payment successful!');
-        router.push(`/payment/receipt?orderId=${response.razorpay_order_id}&paymentId=${response.razorpay_payment_id}`);
+        router.push(`${CustomerRoutes.PAYMENT_RECEIPT}?orderId=${response.razorpay_order_id}&paymentId=${response.razorpay_payment_id}`);
       } catch (error) {
         toast.error('Failed to process order');
       } finally {
@@ -113,7 +114,7 @@ export default function CheckoutPage() {
     // Comprehensive validation checks
     if (!cart || cart.items.length === 0) {
       toast.error('Your cart is empty');
-      router.push('/cart');
+      router.push(CustomerRoutes.CART);
       return;
     }
 
@@ -175,7 +176,7 @@ export default function CheckoutPage() {
         createCheckoutSessionMutation.mutate(checkoutData, {
           onSuccess: (data) => {
             toast.success('Order placed successfully!');
-            router.push(`/payment/receipt?orderId=${data.bookingId || tempBookingId}&paymentMethod=cod`);
+            router.push(`${CustomerRoutes.PAYMENT_RECEIPT}?orderId=${data.bookingId || tempBookingId}&paymentMethod=cod`);
           },
           onError: (error: any) => {
             toast.error(error?.message || 'Failed to place order. Please try again.');
@@ -251,7 +252,7 @@ export default function CheckoutPage() {
   // Redirect if cart is empty
   if (!cart || cart.items.length === 0) {
     toast.error('Your cart is empty');
-    router.push('/cart');
+    router.push(CustomerRoutes.CART);
     return null;
   }
 
@@ -385,7 +386,7 @@ export default function CheckoutPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => router.push('/services')}
+                          onClick={() => router.push(CustomerRoutes.SERVICES)}
                           className="mt-3 h-9 text-xs border-orange-300 dark:border-orange-800 hover:bg-orange-100 dark:hover:bg-orange-900/40"
                         >
                           Continue Shopping

@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { phoneOnlySchema, otpOnlySchema, resetPasswordSchema } from '@/schemas/customer/auth';
+import { CustomerRoutes } from '@/lib/constants/routes';
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
@@ -85,7 +86,7 @@ export default function ForgotPasswordPage() {
       <div className="w-full max-w-md">
         <Card className="border-2 relative">
           <CardHeader className="text-center space-y-1.5 sm:space-y-2 pb-4 sm:pb-6">
-            <Link href="/auth/login">
+            <Link href={CustomerRoutes.LOGIN}>
               <Button variant="ghost" size="sm" className="absolute top-3 sm:top-4 left-3 sm:left-4 h-8 sm:h-9">
                 <ArrowLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
                 <span className="text-xs sm:text-sm">Back</span>

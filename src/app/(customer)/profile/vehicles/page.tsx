@@ -15,7 +15,7 @@ import { AddVehicleModal } from '@/components/shared/forms/AddVehicleModal';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
 import type { Vehicle } from '@/types/vehicle';
-import { ROUTES } from '@/lib/constants/routes';
+import { CustomerRoutes } from '@/lib/constants/routes';
 
 export default function VehiclesPage() {
   const router = useRouter();
@@ -222,7 +222,7 @@ export default function VehiclesPage() {
         <div className="container-custom py-6 sm:py-8 lg:py-12">
           <Button
             variant="ghost"
-            onClick={() => router.push(ROUTES.CUSTOMER.PROFILE)}
+            onClick={() => router.push(CustomerRoutes.PROFILE)}
             className="mb-3 sm:mb-4 hover:bg-muted h-9 sm:h-10"
           >
             <ArrowLeft className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />

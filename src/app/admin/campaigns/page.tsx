@@ -232,7 +232,7 @@ export default function CampaignsPage() {
                     {
                       label: 'Edit',
                       icon: Edit,
-                      onClick: () => router.push(`${AdminRoutes.CAMPAIGNS}/${campaign.id}/edit`),
+                      onClick: () => router.push(AdminRoutes.CAMPAIGN_EDIT(campaign.id)),
                       hideTextOnMobile: true,
                     },
                     {

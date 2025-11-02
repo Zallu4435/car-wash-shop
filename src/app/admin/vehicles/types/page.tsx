@@ -4,12 +4,12 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { TransactionCard } from '@/components/admin/TransactionCard';
 import { Car, Bike, Plus, Search, Edit, Trash2, Move, ArrowLeft } from 'lucide-react';
 import { useConfirmation } from '@/hooks/useConfirmation';
 import { toast } from 'sonner';
+import { AdminRoutes } from '@/lib/constants/routes';
 
 // Updated vehicle types structure
 const vehicleTypes = [
@@ -49,7 +49,7 @@ export default function VehicleTypesPage() {
       <div className="flex flex-col gap-3 sm:gap-4">
         <Button 
           variant="ghost" 
-          onClick={() => router.push('/admin/vehicles')} 
+          onClick={() => router.push(AdminRoutes.VEHICLES)} 
           className="w-fit h-9 sm:h-10 text-xs sm:text-sm -ml-2"
         >
           <ArrowLeft className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -64,7 +64,7 @@ export default function VehicleTypesPage() {
               Manage available vehicle categories (4-Wheeler, 2-Wheeler)
             </p>
           </div>
-          <Button onClick={() => router.push('/admin/vehicles/types/new')} className="w-full md:w-auto h-9 sm:h-10 text-xs sm:text-sm border-2">
+          <Button onClick={() => router.push(AdminRoutes.VEHICLE_TYPE_NEW)} className="w-full md:w-auto h-9 sm:h-10 text-xs sm:text-sm border-2">
             <Plus className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
             Add Vehicle Type
           </Button>
@@ -144,7 +144,7 @@ export default function VehicleTypesPage() {
                     {
                       label: 'Edit',
                       icon: Edit,
-                      onClick: () => router.push(`/admin/vehicles/types/${type.id}/edit`),
+                      onClick: () => router.push(AdminRoutes.VEHICLE_TYPE_EDIT(type.id)),
                       hideTextOnMobile: true,
                     },
                     {

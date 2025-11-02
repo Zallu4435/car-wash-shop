@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { StaffRoutes } from '@/lib/constants/routes';
 import { Separator } from '@/components/ui/separator';
 import { 
   ArrowLeft, 
@@ -165,7 +166,7 @@ export default function PaymentDetailPage({ params }: { params: Promise<{ id: st
           <Button 
             variant="outline" 
             className="flex-1 h-10 sm:h-11 text-xs sm:text-sm border-2"
-            onClick={() => router.push(`/staff/jobs/${payment.jobId}`)}
+            onClick={() => router.push(StaffRoutes.JOB_DETAIL(payment.jobId))}
           >
             <Briefcase className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
             View Job Details

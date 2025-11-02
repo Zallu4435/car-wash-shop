@@ -6,6 +6,7 @@ import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { FormBuilder } from '@/components/shared/crud/FormBuilder';
 import { toast } from 'sonner';
+import { AdminRoutes } from '@/lib/constants/routes';
 import { vehicleTypeSchema } from '@/schemas/admin/vehicle-type';
 
 export default function EditVehicleTypePage() {
@@ -24,13 +25,13 @@ export default function EditVehicleTypePage() {
   const handleSubmit = (data: any) => {
     console.log('Updating vehicle type:', id, data);
     toast.success('Vehicle type updated successfully!');
-    router.push('/admin/vehicles/types');
+    router.push(AdminRoutes.VEHICLE_TYPES);
   };
 
   return (
     <div className="max-w-2xl space-y-4 sm:space-y-6 pb-6">
       <div>
-        <Link href="/admin/vehicles/types">
+        <Link href={AdminRoutes.VEHICLE_TYPES}>
           <Button variant="ghost" className="w-fit h-9 sm:h-10 text-xs sm:text-sm cursor-pointer border-2 -ml-2">
             <ArrowLeft className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
             Back to Vehicle Types

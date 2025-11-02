@@ -14,7 +14,7 @@ import { Pagination } from '@/components/admin/Pagination';
 import { Package, Calendar, ChevronRight, ShoppingBag, Car, Bike, Home, ArrowLeft, Search, Filter, SlidersHorizontal } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { EmptyState } from '@/components/shared/display/EmptyState';
-import { ROUTES } from '@/lib/constants/routes';
+import { CustomerRoutes } from '@/lib/constants/routes';
 
 export default function ServiceOrdersPage() {
   const { data: bookingsResponse } = useBookings();
@@ -129,7 +129,7 @@ export default function ServiceOrdersPage() {
       <section className="border-b border-border">
         <div className="container-custom py-6 sm:py-8 lg:py-12">
           <Button asChild variant="ghost" className="mb-3 sm:mb-4 h-9 sm:h-10">
-            <Link href={ROUTES.CUSTOMER.ORDERS}>
+            <Link href={CustomerRoutes.ORDERS}>
               <ArrowLeft className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
               <span className="text-xs sm:text-sm">Back to Orders</span>
             </Link>
@@ -147,7 +147,7 @@ export default function ServiceOrdersPage() {
           </div>
 
           <Button asChild variant="outline" className="border-2 mt-3 sm:mt-4 h-9 sm:h-10" size="sm">
-            <Link href={ROUTES.CUSTOMER.ORDERS_PRODUCTS} className="text-xs sm:text-sm">
+            <Link href={CustomerRoutes.ORDERS_PRODUCTS} className="text-xs sm:text-sm">
               <ShoppingBag className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
               View Product Orders
             </Link>
@@ -263,7 +263,7 @@ export default function ServiceOrdersPage() {
                           <p className="text-xl sm:text-2xl font-bold text-primary">₹{order.amount || order.totalAmount || 0}</p>
                         </div>
                         <Button asChild variant="outline" className="border-2 group w-full sm:w-auto h-9 sm:h-10" size="sm">
-                          <Link href={`${ROUTES.CUSTOMER.ORDERS}/${order.id}`} className="text-xs sm:text-sm">
+                          <Link href={CustomerRoutes.ORDER_DETAIL(order.id)} className="text-xs sm:text-sm">
                             View Details
                             <ChevronRight className="ml-1 h-3.5 w-3.5 sm:h-4 sm:w-4 group-hover:translate-x-1 transition-transform" />
                           </Link>
@@ -299,7 +299,7 @@ export default function ServiceOrdersPage() {
                 : 'Book a service to see your orders here'}
               action={
                 <Button asChild size="lg" className="border-2 h-10 sm:h-11">
-                  <Link href={ROUTES.CUSTOMER.SERVICES} className="text-sm sm:text-base">Browse Services</Link>
+                  <Link href={CustomerRoutes.SERVICES} className="text-sm sm:text-base">Browse Services</Link>
                 </Button>
               }
             />

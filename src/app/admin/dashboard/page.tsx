@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { AdminRoutes } from '@/lib/constants/routes';
 import { Badge } from '@/components/ui/badge';
 import { IndianRupee, ShoppingBag, Users, Calendar, TrendingUp, Clock, CheckCircle, BarChart3, PieChart } from 'lucide-react';
 import { useAdminDashboard } from '@/api/domains/admin-dashboard/queries';
@@ -42,7 +43,7 @@ export default function AdminDashboardPage() {
         </div>
         <Button 
           className="w-full sm:w-auto h-9 sm:h-10 text-xs sm:text-sm"
-          onClick={() => router.push('/admin/reports')}
+          onClick={() => router.push(AdminRoutes.REPORTS)}
         >
           <TrendingUp className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           View Reports

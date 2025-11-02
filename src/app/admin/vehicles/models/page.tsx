@@ -11,6 +11,7 @@ import { TransactionCard } from '@/components/admin/TransactionCard';
 import { EmptyState } from '@/components/shared/display/EmptyState';
 import { useConfirmation } from '@/hooks/useConfirmation';
 import { toast } from 'sonner';
+import { AdminRoutes } from '@/lib/constants/routes';
 import { useVehicleModels } from '@/api/domains/admin-vehicles/queries';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
@@ -83,7 +84,7 @@ export default function VehicleModelsPage() {
       <div className="flex flex-col gap-3 sm:gap-4">
         <Button 
           variant="ghost" 
-          onClick={() => router.push('/admin/vehicles')} 
+          onClick={() => router.push(AdminRoutes.VEHICLES)} 
           className="w-fit h-9 sm:h-10 text-xs sm:text-sm -ml-2"
         >
           <ArrowLeft className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -98,7 +99,7 @@ export default function VehicleModelsPage() {
               Manage specific vehicle models and variants
             </p>
           </div>
-          <Button onClick={() => router.push('/admin/vehicles/models/new')} className="w-full md:w-auto h-9 sm:h-10 text-xs sm:text-sm border-2">
+          <Button onClick={() => router.push(AdminRoutes.VEHICLE_MODEL_NEW)} className="w-full md:w-auto h-9 sm:h-10 text-xs sm:text-sm border-2">
             <Plus className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
             Add Vehicle
           </Button>
@@ -204,13 +205,13 @@ export default function VehicleModelsPage() {
                     {
                       label: 'View',
                       icon: Eye,
-                      onClick: () => router.push(`/admin/vehicles/models/${vehicle.id}`),
+                      onClick: () => router.push(AdminRoutes.VEHICLE_MODEL_DETAILS(vehicle.id)),
                       hideTextOnMobile: true,
                     },
                     {
                       label: 'Edit',
                       icon: Edit,
-                      onClick: () => router.push(`/admin/vehicles/models/${vehicle.id}/edit`),
+                      onClick: () => router.push(AdminRoutes.VEHICLE_MODEL_EDIT(vehicle.id)),
                       hideTextOnMobile: true,
                     },
                     {

@@ -12,6 +12,7 @@ import { TransactionCard } from '@/components/admin/TransactionCard';
 import { EmptyState } from '@/components/shared/display/EmptyState';
 import { useConfirmation } from '@/hooks/useConfirmation';
 import { toast } from 'sonner';
+import { AdminRoutes } from '@/lib/constants/routes';
 
 // Body types data
 const bodyTypes = [
@@ -79,7 +80,7 @@ export default function BodyTypesPage() {
       <div className="flex flex-col gap-3 sm:gap-4">
         <Button 
           variant="ghost" 
-          onClick={() => router.push('/admin/vehicles')} 
+          onClick={() => router.push(AdminRoutes.VEHICLES)} 
           className="w-fit h-9 sm:h-10 text-xs sm:text-sm -ml-2"
         >
           <ArrowLeft className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -94,7 +95,7 @@ export default function BodyTypesPage() {
               Manage vehicle body types and categories
             </p>
           </div>
-          <Button onClick={() => router.push('/admin/vehicles/body-types/new')} className="w-full md:w-auto h-9 sm:h-10 text-xs sm:text-sm border-2">
+          <Button onClick={() => router.push(AdminRoutes.VEHICLE_BODY_TYPE_NEW)} className="w-full md:w-auto h-9 sm:h-10 text-xs sm:text-sm border-2">
             <Plus className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
             Add Body Type
           </Button>
@@ -192,7 +193,7 @@ export default function BodyTypesPage() {
                     {
                       label: 'Edit',
                       icon: Edit,
-                      onClick: () => router.push(`/admin/vehicles/body-types/${type.id}/edit`),
+                      onClick: () => router.push(AdminRoutes.VEHICLE_BODY_TYPE_EDIT(type.id)),
                       hideTextOnMobile: true,
                     },
                     {
@@ -250,7 +251,7 @@ export default function BodyTypesPage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => router.push(`/admin/vehicles/body-types/${type.id}/edit`)}
+                      onClick={() => router.push(AdminRoutes.VEHICLE_BODY_TYPE_EDIT(type.id))}
                       className="h-7 w-7 sm:h-8 sm:w-8 p-0"
                     >
                       <Edit className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -292,7 +293,7 @@ export default function BodyTypesPage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => router.push(`/admin/vehicles/body-types/${type.id}/edit`)}
+                      onClick={() => router.push(AdminRoutes.VEHICLE_BODY_TYPE_EDIT(type.id))}
                       className="h-7 w-7 sm:h-8 sm:w-8 p-0"
                     >
                       <Edit className="h-3.5 w-3.5 sm:h-4 sm:w-4" />

@@ -16,7 +16,7 @@ import { useUpdateProfile } from '@/api/domains/profile/queries';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { profileEditSchema, ProfileEditInput } from '@/schemas/customer/profile';
-import { ROUTES } from '@/lib/constants/routes';
+import { CustomerRoutes } from '@/lib/constants/routes';
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -109,7 +109,7 @@ export default function ProfilePage() {
               <Button
                 variant="outline"
                 className="h-auto py-3 sm:py-4 w-full flex flex-col items-center justify-center gap-1.5 sm:gap-2"
-                onClick={() => router.push(ROUTES.CUSTOMER.ADDRESSES)}
+                onClick={() => router.push(CustomerRoutes.ADDRESSES)}
               >
                 <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                 <span className="text-[10px] sm:text-xs md:text-sm">Addresses</span>
@@ -117,7 +117,7 @@ export default function ProfilePage() {
               <Button
                 variant="outline"
                 className="h-auto py-3 sm:py-4 w-full flex flex-col items-center justify-center gap-1.5 sm:gap-2"
-                onClick={() => router.push(ROUTES.CUSTOMER.VEHICLES)}
+                onClick={() => router.push(CustomerRoutes.VEHICLES)}
               >
                 <Car className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                 <span className="text-[10px] sm:text-xs md:text-sm">Vehicles</span>
@@ -125,7 +125,7 @@ export default function ProfilePage() {
               <Button
                 variant="outline"
                 className="h-auto py-3 sm:py-4 w-full flex flex-col items-center justify-center gap-1.5 sm:gap-2"
-                onClick={() => router.push(ROUTES.CUSTOMER.PROFILE_SECURITY)}
+                onClick={() => router.push(CustomerRoutes.PROFILE_SECURITY)}
               >
                 <Shield className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                 <span className="text-[10px] sm:text-xs md:text-sm">Security</span>
@@ -224,7 +224,7 @@ export default function ProfilePage() {
               className="w-full text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20 border-2 h-11 sm:h-12 text-sm sm:text-base"
               onClick={() => {
                 toast.success('Logged out successfully');
-                router.push(ROUTES.CUSTOMER.LOGIN);
+                router.push(CustomerRoutes.LOGIN);
               }}
             >
               <LogOut className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />

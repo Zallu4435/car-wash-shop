@@ -12,6 +12,7 @@ import { Switch } from '@/components/ui/switch';
 import { ArrowLeft, UserPlus } from 'lucide-react';
 import { toast } from 'sonner';
 import { staffSchema, StaffFormInput } from '@/schemas/admin/staff';
+import { AdminRoutes } from '@/lib/constants/routes';
 
 export default function NewStaffPage() {
   const router = useRouter();
@@ -32,7 +33,7 @@ export default function NewStaffPage() {
     try {
       console.log('Staff data:', data);
       toast.success('Staff member added successfully!');
-      router.push('/admin/staff');
+      router.push(AdminRoutes.STAFF);
     } catch (error) {
       toast.error('Failed to add staff member');
     }
@@ -42,7 +43,7 @@ export default function NewStaffPage() {
     <div className="max-w-2xl space-y-4 sm:space-y-6 pb-6">
       {/* Header */}
       <div>
-        <Button variant="ghost" onClick={() => router.push('/admin/staff')} className="w-fit h-9 sm:h-10 text-xs sm:text-sm cursor-pointer border-2 -ml-2">
+        <Button variant="ghost" onClick={() => router.push(AdminRoutes.STAFF)} className="w-fit h-9 sm:h-10 text-xs sm:text-sm cursor-pointer border-2 -ml-2">
           <ArrowLeft className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Back to Staff
         </Button>

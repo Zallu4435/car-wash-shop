@@ -24,6 +24,7 @@ import { StatCard } from '@/components/admin/StatCard';
 import { TransactionCard } from '@/components/admin/TransactionCard';
 import { useConfirmation } from '@/hooks/useConfirmation';
 import { toast } from 'sonner';
+import { AdminRoutes } from '@/lib/constants/routes';
 
 export default function CategoriesPage() {
   const router = useRouter();
@@ -93,7 +94,7 @@ export default function CategoriesPage() {
             Organize services and products
           </p>
         </div>
-        <Button onClick={() => router.push('/admin/categories/new')} className="w-full md:w-auto h-9 sm:h-10 text-xs sm:text-sm border-2">
+        <Button onClick={() => router.push(AdminRoutes.CATEGORY_NEW)} className="w-full md:w-auto h-9 sm:h-10 text-xs sm:text-sm border-2">
           <Plus className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Add Category
         </Button>
@@ -169,7 +170,7 @@ export default function CategoriesPage() {
               description={search ? "Try adjusting your search or filters" : "No categories available"}
               action={
                 !search && (
-                  <Button onClick={() => router.push('/admin/categories/new')}>
+                  <Button onClick={() => router.push(AdminRoutes.CATEGORY_NEW)}>
                     <Plus className="mr-2 h-4 w-4" />
                     Add Category
                   </Button>
@@ -205,13 +206,13 @@ export default function CategoriesPage() {
                   {
                     label: 'View',
                     icon: Eye,
-                    onClick: () => router.push(`/admin/categories/${category.id}`),
+                    onClick: () => router.push(AdminRoutes.CATEGORY_DETAIL(category.id)),
                     hideTextOnMobile: true,
                   },
                   {
                     label: '',
                     icon: Edit,
-                    onClick: () => router.push(`/admin/categories/${category.id}/edit`),
+                    onClick: () => router.push(AdminRoutes.CATEGORY_EDIT(category.id)),
                     className: 'flex-initial px-3',
                   },
                   {

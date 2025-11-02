@@ -14,6 +14,7 @@ import { Switch } from '@/components/ui/switch';
 import { ArrowLeft, Save, Car, Clock, IndianRupee, Image as ImageIcon, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { serviceSchema, ServiceFormInput } from '@/schemas/admin/service';
+import { AdminRoutes } from '@/lib/constants/routes';
 
 // Mock data
 const mockService = {
@@ -78,7 +79,7 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
     try {
       console.log('Updating service:', id, data);
       toast.success('Service updated successfully!');
-      router.push('/admin/services');
+      router.push(AdminRoutes.SERVICES);
     } catch (error) {
       toast.error('Failed to update service');
     }
@@ -88,7 +89,7 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
     <div className="max-w-2xl space-y-4 sm:space-y-6 pb-6">
       {/* Header */}
       <div>
-        <Button variant="ghost" onClick={() => router.push('/admin/services')} className="w-fit h-9 sm:h-10 text-xs sm:text-sm cursor-pointer border-2 -ml-2">
+        <Button variant="ghost" onClick={() => router.push(AdminRoutes.SERVICES)} className="w-fit h-9 sm:h-10 text-xs sm:text-sm cursor-pointer border-2 -ml-2">
           <ArrowLeft className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Back to Services
         </Button>
@@ -293,7 +294,7 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
                 type="button" 
                 variant="outline" 
                 className="flex-1 h-9 sm:h-10 text-xs sm:text-sm border-2"
-                onClick={() => router.push('/admin/services')}
+                onClick={() => router.push(AdminRoutes.SERVICES)}
               >
                 Cancel
               </Button>

@@ -14,6 +14,7 @@ import { Separator } from '@/components/ui/separator';
 import { User, Phone, Mail, Lock, Eye, EyeOff, UserPlus, Droplet, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { useRegister } from '@/api/domains/auth/queries';
+import { CustomerRoutes } from '@/lib/constants/routes';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -33,7 +34,7 @@ export default function RegisterPage() {
     registerMutation.mutate(data, {
       onSuccess: () => {
         toast.success('Registration successful!');
-        router.push('/');
+        router.push(CustomerRoutes.HOME);
       },
       onError: (err: any) => {
         toast.error(err?.message || 'Registration failed');
@@ -206,7 +207,7 @@ export default function RegisterPage() {
             <Separator />
             <div className="text-center text-xs sm:text-sm">
               <span className="text-muted-foreground">Already have an account? </span>
-              <Link href="/auth/login" className="text-primary hover:underline font-semibold">
+              <Link href={CustomerRoutes.LOGIN} className="text-primary hover:underline font-semibold">
                 Login
               </Link>
             </div>

@@ -10,7 +10,7 @@ import { Separator } from '@/components/ui/separator';
 import { useTicket } from '@/api/domains/support/queries';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
-import { ROUTES } from '@/lib/constants/routes';
+import { CustomerRoutes } from '@/lib/constants/routes';
 
 export default function ComplaintDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -51,7 +51,7 @@ export default function ComplaintDetailPage({ params }: { params: Promise<{ id: 
       {/* Header */}
       <section className="bg-gradient-to-br from-primary/5 to-background border-b border-border">
         <div className="container-custom py-6 sm:py-8">
-          <Link href={ROUTES.CUSTOMER.SUPPORT_TICKETS}>
+          <Link href={CustomerRoutes.COMPLAINTS_LIST}>
             <Button variant="ghost" className="mb-3 sm:mb-4 hover:bg-muted h-9 sm:h-10">
               <ArrowLeft className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
               <span className="text-xs sm:text-sm">Back to My Complaints</span>
@@ -224,10 +224,10 @@ export default function ComplaintDetailPage({ params }: { params: Promise<{ id: 
                     </p>
                     <div className="flex flex-wrap gap-3">
                       <Button variant="outline" size="sm" className="border-2 h-9 text-xs sm:text-sm" asChild>
-                        <Link href={ROUTES.CUSTOMER.SUPPORT}>Contact Support</Link>
+                        <Link href={CustomerRoutes.SUPPORT}>Contact Support</Link>
                       </Button>
                       <Button variant="ghost" size="sm" className="h-9 text-xs sm:text-sm" asChild>
-                        <Link href={ROUTES.CUSTOMER.SUPPORT_TICKETS}>View All Complaints</Link>
+                        <Link href={CustomerRoutes.COMPLAINTS_LIST}>View All Complaints</Link>
                       </Button>
                     </div>
                   </div>

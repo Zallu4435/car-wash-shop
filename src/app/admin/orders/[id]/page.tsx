@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { AdminRoutes } from '@/lib/constants/routes';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 
@@ -51,7 +52,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
     <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <div>
-        <Button variant="ghost" onClick={() => router.push('/admin/orders')} className="h-9 sm:h-10 text-xs sm:text-sm cursor-pointer border-2">
+        <Button variant="ghost" onClick={() => router.push(AdminRoutes.ORDERS)} className="h-9 sm:h-10 text-xs sm:text-sm cursor-pointer border-2">
           <ArrowLeft className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Back to Orders
         </Button>
@@ -208,7 +209,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                 <Button 
                   variant="outline" 
                   className="w-full h-9 sm:h-10 text-xs sm:text-sm border-2 rounded-lg"
-                  onClick={() => router.push(`/admin/orders/${id}/invoice`)}
+                  onClick={() => router.push(AdminRoutes.ORDER_INVOICE(id))}
                 >
                   <FileText className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   Generate Invoice

@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { MessageSquare, Phone, Mail, FileQuestion, AlertCircle, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ROUTES } from '@/lib/constants/routes';
+import { CustomerRoutes } from '@/lib/constants/routes';
 
 export default function SupportPage() {
   return (
@@ -45,10 +45,10 @@ export default function SupportPage() {
                   </p>
                   <div className="flex flex-col gap-2">
                     <Button asChild className="w-full shadow-lg border-2 h-9 sm:h-10">
-                      <Link href={ROUTES.CUSTOMER.COMPLAINTS} className="text-xs sm:text-sm">Submit Complaint</Link>
+                      <Link href={CustomerRoutes.COMPLAINTS} className="text-xs sm:text-sm">Submit Complaint</Link>
                     </Button>
                     <Button asChild variant="outline" className="w-full border-2 h-9 sm:h-10">
-                      <Link href="/support/complaints/list" className="text-xs sm:text-sm">View My Complaints</Link>
+                      <Link href={CustomerRoutes.COMPLAINTS_LIST} className="text-xs sm:text-sm">View My Complaints</Link>
                     </Button>
                   </div>
                 </CardContent>
@@ -69,7 +69,7 @@ export default function SupportPage() {
                     Find quick answers to commonly asked questions about our services.
                   </p>
                   <Button asChild variant="outline" className="w-full border-2 h-9 sm:h-10">
-                    <Link href="/support/faq" className="text-xs sm:text-sm">View FAQs</Link>
+                    <Link href={CustomerRoutes.SUPPORT_FAQ} className="text-xs sm:text-sm">View FAQs</Link>
                   </Button>
                 </CardContent>
               </Card>

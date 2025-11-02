@@ -4,6 +4,7 @@ import { use } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Download, FileText, Building, User, Phone, Mail, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { AdminRoutes } from '@/lib/constants/routes';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 
@@ -49,7 +50,7 @@ export default function AdminOrderInvoicePage({ params }: { params: Promise<{ id
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       {/* Header Actions */}
       <div className="flex items-center justify-between mb-6">
-        <Button variant="ghost" onClick={() => router.push(`/admin/orders/${id}`)} className="cursor-pointer">
+        <Button variant="ghost" onClick={() => router.push(AdminRoutes.ORDER_DETAIL(id))} className="cursor-pointer">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Order
         </Button>

@@ -163,7 +163,7 @@ export default function StaffDashboardPage() {
                     <Button 
                       size="sm" 
                       className="flex-shrink-0 h-9 text-xs sm:text-sm cursor-pointer"
-                      onClick={() => router.push(`${StaffRoutes.JOBS}/${job.id}`)}
+                      onClick={() => router.push(StaffRoutes.JOB_DETAIL(job.id))}
                     >
                       View Details
                     </Button>
@@ -198,7 +198,7 @@ export default function StaffDashboardPage() {
                     <Button 
                       size="sm" 
                       className="w-full h-9 text-xs cursor-pointer"
-                      onClick={() => router.push(`${StaffRoutes.JOBS}/${job.id}`)}
+                      onClick={() => router.push(StaffRoutes.JOB_DETAIL(job.id))}
                     >
                       View Details
                     </Button>

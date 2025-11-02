@@ -15,7 +15,7 @@ import { useCreateTicket } from '@/api/domains/support/queries';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { complaintSchema, ComplaintInput } from '@/schemas/customer/support';
-import { ROUTES } from '@/lib/constants/routes';
+import { CustomerRoutes } from '@/lib/constants/routes';
 
 export default function ComplaintsPage() {
   const router = useRouter();
@@ -62,7 +62,7 @@ export default function ComplaintsPage() {
       {
         onSuccess: () => {
           toast.success('Complaint submitted successfully! We will get back to you soon.');
-          router.push(ROUTES.CUSTOMER.SUPPORT_TICKETS);
+          router.push(CustomerRoutes.SUPPORT_TICKETS);
         },
         onError: (error: any) => {
           toast.error(error?.message || 'Failed to submit complaint');
@@ -76,7 +76,7 @@ export default function ComplaintsPage() {
       {/* Header - Responsive */}
       <section className="bg-gradient-to-br from-primary/5 to-background border-b border-border">
         <div className="container-custom py-6 sm:py-8">
-          <Link href={ROUTES.CUSTOMER.SUPPORT}>
+          <Link href={CustomerRoutes.SUPPORT}>
             <Button variant="ghost" className="mb-3 sm:mb-4 hover:bg-muted h-9 sm:h-10">
               <ArrowLeft className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
               <span className="text-xs sm:text-sm">Back to Support</span>

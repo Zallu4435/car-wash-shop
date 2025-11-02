@@ -17,6 +17,7 @@ import { SearchFilter } from '@/components/admin/SearchFilter';
 import { Pagination } from '@/components/admin/Pagination';
 import { StatCard } from '@/components/admin/StatCard';
 import { TransactionCard } from '@/components/admin/TransactionCard';
+import { AdminRoutes } from '@/lib/constants/routes';
 
 export default function RequestsPage() {
   const router = useRouter();
@@ -185,7 +186,7 @@ export default function RequestsPage() {
                   }}
                   title={booking.customer}
                   subtitle={booking.service}
-                  onView={() => router.push(`/admin/requests/${booking.id}`)}
+                  onView={() => router.push(AdminRoutes.REQUEST_DETAIL(booking.id))}
                   viewButtonText="View Details"
                   additionalContent={
                     <div className="mt-2 pt-2 border-t border-border md:hidden">

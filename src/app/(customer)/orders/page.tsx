@@ -11,7 +11,7 @@ import { EmptyState } from '@/components/shared/display/EmptyState';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
 import { useMemo } from 'react';
-import { ROUTES } from '@/lib/constants/routes';
+import { CustomerRoutes } from '@/lib/constants/routes';
 
 export default function OrdersLandingPage() {
   // API calls - fetch both orders and bookings
@@ -63,7 +63,7 @@ export default function OrdersLandingPage() {
       count: allServiceOrders.length,
       color: 'bg-blue-50 dark:bg-blue-950/20',
       iconColor: 'text-blue-600 dark:text-blue-400',
-      href: ROUTES.CUSTOMER.ORDERS_SERVICES,
+      href: CustomerRoutes.ORDERS_SERVICES,
     },
     {
       id: 'products',
@@ -73,7 +73,7 @@ export default function OrdersLandingPage() {
       count: allProductOrders.length,
       color: 'bg-purple-50 dark:bg-purple-950/20',
       iconColor: 'text-purple-600 dark:text-purple-400',
-      href: ROUTES.CUSTOMER.ORDERS_PRODUCTS,
+      href: CustomerRoutes.ORDERS_PRODUCTS,
     },
   ];
 
@@ -182,7 +182,7 @@ export default function OrdersLandingPage() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
               <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground">Recent Orders</h2>
               <Button asChild variant="outline" size="sm" className="border-2 w-full sm:w-auto h-9 sm:h-10">
-                <Link href={ROUTES.CUSTOMER.ORDERS_ALL} className="text-xs sm:text-sm">View All Orders</Link>
+                <Link href={CustomerRoutes.ORDERS_ALL} className="text-xs sm:text-sm">View All Orders</Link>
               </Button>
             </div>
 
@@ -235,7 +235,7 @@ export default function OrdersLandingPage() {
                             <p className="text-xl sm:text-2xl font-bold text-primary">₹{(order as any).amount || order.totalAmount || 0}</p>
                           </div>
                           <Button asChild variant="outline" className="border-2 group w-full sm:w-auto h-9 sm:h-10" size="sm">
-                            <Link href={`${ROUTES.CUSTOMER.ORDERS}/${order.id}`} className="text-xs sm:text-sm">
+                            <Link href={CustomerRoutes.ORDER_DETAIL(order.id)} className="text-xs sm:text-sm">
                               View Details
                               <ChevronRight className="ml-1 h-3.5 w-3.5 sm:h-4 sm:w-4 group-hover:translate-x-1 transition-transform" />
                             </Link>
@@ -254,10 +254,10 @@ export default function OrdersLandingPage() {
                 action={
                   <div className="flex flex-col sm:flex-row gap-3 justify-center px-4">
                     <Button asChild className="border-2 w-full sm:w-auto h-10 sm:h-11">
-                      <Link href={ROUTES.CUSTOMER.SERVICES} className="text-sm sm:text-base">Browse Services</Link>
+                      <Link href={CustomerRoutes.SERVICES} className="text-sm sm:text-base">Browse Services</Link>
                     </Button>
                     <Button asChild variant="outline" className="border-2 w-full sm:w-auto h-10 sm:h-11">
-                      <Link href={ROUTES.CUSTOMER.PRODUCTS} className="text-sm sm:text-base">Browse Products</Link>
+                      <Link href={CustomerRoutes.PRODUCTS} className="text-sm sm:text-base">Browse Products</Link>
                     </Button>
                   </div>
                 }

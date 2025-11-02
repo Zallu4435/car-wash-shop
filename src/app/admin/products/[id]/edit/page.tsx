@@ -11,9 +11,10 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { ArrowLeft, Save, Package, Image as ImageIcon, X } from 'lucide-react';
+import { ArrowLeft, Save, Image as ImageIcon, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { productSchema, ProductFormInput } from '@/schemas/admin/product';
+import { AdminRoutes } from '@/lib/constants/routes';
 
 // Mock data
 const mockProduct = {
@@ -90,7 +91,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     try {
       console.log('Updating product:', id, data);
       toast.success('Product updated successfully!');
-      router.push('/admin/products');
+      router.push(AdminRoutes.PRODUCTS);
     } catch (error) {
       toast.error('Failed to update product');
     }
@@ -100,7 +101,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     <div className="max-w-2xl space-y-4 sm:space-y-6">
       {/* Header */}
       <div>
-        <Button variant="ghost" onClick={() => router.push('/admin/products')} className="h-9 sm:h-10 text-xs sm:text-sm cursor-pointer border-2">
+        <Button variant="ghost" onClick={() => router.push(AdminRoutes.PRODUCTS)} className="h-9 sm:h-10 text-xs sm:text-sm cursor-pointer border-2">
           <ArrowLeft className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Back to Products
         </Button>
@@ -271,7 +272,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                 type="button" 
                 variant="outline" 
                 className="flex-1 h-9 sm:h-10 text-xs sm:text-sm border-2 rounded-lg"
-                onClick={() => router.push('/admin/products')}
+                onClick={() => router.push(AdminRoutes.PRODUCTS)}
               >
                 Cancel
               </Button>

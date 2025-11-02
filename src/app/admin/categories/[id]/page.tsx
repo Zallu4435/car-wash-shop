@@ -15,6 +15,7 @@ import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
 import Link from 'next/link';
 import { DangerZone } from '@/components/admin/DangerZone';
+import { AdminRoutes } from '@/lib/constants/routes';
 
 export default function CategoryDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -56,7 +57,7 @@ export default function CategoryDetailPage({ params }: { params: Promise<{ id: s
 
     if (confirmed) {
       deleteCategoryMutation.mutate(id);
-      router.push('/admin/categories');
+      router.push(AdminRoutes.CATEGORIES);
     }
   };
 
@@ -80,11 +81,11 @@ export default function CategoryDetailPage({ params }: { params: Promise<{ id: s
     <div className="space-y-4 sm:space-y-6 pb-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
-        <Button variant="ghost" onClick={() => router.push('/admin/categories')} className="w-fit h-9 sm:h-10 text-xs sm:text-sm cursor-pointer border-2 -ml-2">
+        <Button variant="ghost" onClick={() => router.push(AdminRoutes.CATEGORIES)} className="w-fit h-9 sm:h-10 text-xs sm:text-sm cursor-pointer border-2 -ml-2">
           <ArrowLeft className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Back to Categories
         </Button>
-        <Button onClick={() => router.push(`/admin/categories/${id}/edit`)} className="h-9 sm:h-10 text-xs sm:text-sm border-2">
+        <Button onClick={() => router.push(AdminRoutes.CATEGORY_EDIT(id))} className="h-9 sm:h-10 text-xs sm:text-sm border-2">
           <Edit className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Edit Category
         </Button>
@@ -170,7 +171,7 @@ export default function CategoryDetailPage({ params }: { params: Promise<{ id: s
                 {products.map((product) => (
                   <Link
                     key={product.id}
-                    href={`/admin/products/${product.id}`}
+                    href={AdminRoutes.PRODUCT_DETAIL(product.id)}
                     className="flex flex-col xs:flex-row items-start xs:items-center justify-between gap-2 xs:gap-3 p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl hover:shadow-md hover:bg-accent transition-all cursor-pointer group border-2 border-transparent hover:border-primary/20"
                   >
                     <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0 w-full xs:w-auto">

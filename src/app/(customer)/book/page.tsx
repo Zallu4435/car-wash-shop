@@ -11,6 +11,7 @@ import { DynamicAddOnSelector } from '@/components/customer/DynamicAddOnSelector
 import { PaymentOptionSelector } from '@/components/shared/pricing/PaymentOptionSelector';
 import { AddressSelector } from '@/components/customer/AddressSelector';
 import { toast } from 'sonner';
+import { CustomerRoutes } from '@/lib/constants/routes';
 import { useServices, useServiceCategories } from '@/api/domains/services/queries';
 import { useVehicles } from '@/api/domains/vehicles/queries';
 import { useAddresses } from '@/api/domains/addresses/queries';
@@ -58,7 +59,7 @@ export default function BookingPage() {
   const { processPayment, isLoading: isRazorpayLoading } = useRazorpay({
     onSuccess: (response) => {
       toast.success('Payment successful!');
-      router.push(`/payment/receipt?bookingId=${response.razorpay_order_id}&paymentId=${response.razorpay_payment_id}`);
+      router.push(`${CustomerRoutes.PAYMENT_RECEIPT}?bookingId=${response.razorpay_order_id}&paymentId=${response.razorpay_payment_id}`);
       setIsProcessingPayment(false);
     },
     onFailure: () => {
@@ -235,7 +236,7 @@ export default function BookingPage() {
           }, {
             onSuccess: () => {
               toast.success('Booking confirmed!');
-              router.push('/orders/services');
+              router.push(CustomerRoutes.ORDERS_SERVICES);
             },
             onError: (error: any) => {
               toast.error(error?.message || 'Failed to create booking');

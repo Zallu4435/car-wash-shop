@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { AdminRoutes } from '@/lib/constants/routes';
 
 // Mock payment data
 const paymentData = {
@@ -53,7 +54,7 @@ export default function PaymentDetailPage({ params }: { params: Promise<{ id: st
     <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
-        <Button variant="ghost" onClick={() => router.push('/admin/payments')} className="w-fit h-9 sm:h-10 text-xs sm:text-sm cursor-pointer border-2 -ml-2">
+        <Button variant="ghost" onClick={() => router.push(AdminRoutes.PAYMENTS)} className="w-fit h-9 sm:h-10 text-xs sm:text-sm cursor-pointer border-2 -ml-2">
           <ArrowLeft className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Back to Payments
         </Button>
@@ -230,7 +231,7 @@ export default function PaymentDetailPage({ params }: { params: Promise<{ id: st
                 <Button 
                   variant="outline" 
                   className="w-full h-9 sm:h-10 text-xs sm:text-sm border-2 rounded-lg"
-                  onClick={() => router.push(`/admin/orders/${paymentData.orderId}`)}
+                  onClick={() => router.push(AdminRoutes.ORDER_DETAIL(paymentData.orderId))}
                 >
                   <FileText className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   View Order

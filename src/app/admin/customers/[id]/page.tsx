@@ -12,6 +12,7 @@ import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
 import { toast } from 'sonner';
 import { DangerZone } from '@/components/admin/DangerZone';
+import { AdminRoutes } from '@/lib/constants/routes';
 
 export default function CustomerDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -57,7 +58,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
     if (confirmed) {
       // TODO: Implement delete customer API
       toast.success(`Customer ${customer.name} has been deleted`);
-      router.push('/admin/customers');
+      router.push(AdminRoutes.CUSTOMERS);
     }
   };
 
@@ -81,7 +82,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
     <div className="space-y-4 sm:space-y-6 pb-6">
       {/* Header */}
       <div>
-        <Button variant="ghost" onClick={() => router.push('/admin/customers')} className="w-fit h-9 sm:h-10 text-xs sm:text-sm cursor-pointer border-2 -ml-2">
+        <Button variant="ghost" onClick={() => router.push(AdminRoutes.CUSTOMERS)} className="w-fit h-9 sm:h-10 text-xs sm:text-sm cursor-pointer border-2 -ml-2">
           <ArrowLeft className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Back to Customers
         </Button>

@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { AdminRoutes } from '@/lib/constants/routes';
 import { toast } from 'sonner';
 
 const ticket = {
@@ -59,7 +60,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
     <div className="space-y-4 sm:space-y-6 pb-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
-        <Button variant="ghost" onClick={() => router.push('/admin/tickets')} className="w-fit h-9 sm:h-10 text-xs sm:text-sm cursor-pointer border-2 -ml-2">
+        <Button variant="ghost" onClick={() => router.push(AdminRoutes.TICKETS)} className="w-fit h-9 sm:h-10 text-xs sm:text-sm cursor-pointer border-2 -ml-2">
           <ArrowLeft className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Back to Tickets
         </Button>

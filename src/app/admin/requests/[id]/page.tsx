@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { useConfirmation } from '@/hooks/useConfirmation';
+import { AdminRoutes } from '@/lib/constants/routes';
 import { DangerZone } from '@/components/admin/DangerZone';
 import { AssignStaffModal } from '@/components/admin/AssignStaffModal';
 
@@ -83,7 +84,7 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
     if (confirmed) {
       // TODO: Call API to cancel request
       toast.success('Request has been cancelled and customer notified');
-      router.push('/admin/requests');
+      router.push(AdminRoutes.REQUESTS);
     }
   };
 
@@ -100,7 +101,7 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
     if (confirmed) {
       // TODO: Call API to delete request
       toast.success('Request has been deleted');
-      router.push('/admin/requests');
+      router.push(AdminRoutes.REQUESTS);
     }
   };
 
@@ -108,7 +109,7 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
     <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 lg:gap-4">
-        <Button variant="ghost" onClick={() => router.push('/admin/requests')} className="h-9 sm:h-10 text-xs sm:text-sm cursor-pointer border-2">
+        <Button variant="ghost" onClick={() => router.push(AdminRoutes.REQUESTS)} className="h-9 sm:h-10 text-xs sm:text-sm cursor-pointer border-2">
           <ArrowLeft className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Back to Requests
         </Button>

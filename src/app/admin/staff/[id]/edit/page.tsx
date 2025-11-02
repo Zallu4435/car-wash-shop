@@ -13,6 +13,7 @@ import { Switch } from '@/components/ui/switch';
 import { ArrowLeft, Save } from 'lucide-react';
 import { toast } from 'sonner';
 import { staffEditSchema, StaffEditFormInput } from '@/schemas/admin/staff';
+import { AdminRoutes } from '@/lib/constants/routes';
 
 export default function EditStaffPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -47,7 +48,7 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
     try {
       console.log('Updating staff:', id, data);
       toast.success('Staff updated successfully!');
-      router.push('/admin/staff');
+      router.push(AdminRoutes.STAFF);
     } catch (error) {
       toast.error('Failed to update staff');
     }
@@ -57,7 +58,7 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
     <div className="max-w-2xl space-y-4 sm:space-y-6 pb-6">
       {/* Header */}
       <div>
-        <Button variant="ghost" onClick={() => router.push(`/admin/staff/${id}`)} className="w-fit h-9 sm:h-10 text-xs sm:text-sm cursor-pointer border-2 -ml-2">
+        <Button variant="ghost" onClick={() => router.push(AdminRoutes.STAFF_DETAIL(id))} className="w-fit h-9 sm:h-10 text-xs sm:text-sm cursor-pointer border-2 -ml-2">
           <ArrowLeft className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Back to Staff Details
         </Button>
@@ -178,7 +179,7 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
                 type="button" 
                 variant="outline" 
                 className="flex-1 h-9 sm:h-10 text-xs sm:text-sm border-2"
-                onClick={() => router.push('/admin/staff')}
+                onClick={() => router.push(AdminRoutes.STAFF)}
               >
                 Cancel
               </Button>

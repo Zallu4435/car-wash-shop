@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
-import { ROUTES } from '@/lib/constants/routes';
+import { CustomerRoutes } from '@/lib/constants/routes';
 
 export default function Error({
   error,
@@ -64,7 +64,7 @@ export default function Error({
               size="sm"
               className="text-xs sm:text-sm text-muted-foreground hover:text-foreground"
             >
-              <a href={ROUTES.CUSTOMER.HOME}>Go to Homepage</a>
+              <a href={CustomerRoutes.HOME}>Go to Homepage</a>
             </Button>
           </div>
         </CardContent>

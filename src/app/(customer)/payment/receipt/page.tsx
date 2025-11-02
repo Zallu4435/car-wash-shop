@@ -3,7 +3,7 @@
 import Confirmation from '@/components/shared/display/Confirmation';
 import { CheckCircle } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
-import { ROUTES } from '@/lib/constants/routes';
+import { CustomerRoutes } from '@/lib/constants/routes';
 
 export default function PaymentReceiptPage() {
   const searchParams = useSearchParams();
@@ -25,11 +25,11 @@ export default function PaymentReceiptPage() {
       details={displayId ? `${isService ? 'Booking' : 'Order'} ID: ${displayId}` : undefined}
       primaryAction={{
         label: isService ? 'View My Bookings' : 'Track Order',
-        href: ROUTES.CUSTOMER.ORDERS,
+        href: CustomerRoutes.ORDERS,
       }}
       secondaryAction={{
         label: 'Go Home',
-        href: ROUTES.CUSTOMER.HOME,
+        href: CustomerRoutes.HOME,
       }}
     />
   );

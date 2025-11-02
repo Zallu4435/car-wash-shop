@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, AlertCircle, Clock, CheckCircle2, FileText, Search, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -13,6 +13,7 @@ import { useTickets } from '@/api/domains/support/queries';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
 import { EmptyState } from '@/components/shared/display/EmptyState';
+import { CustomerRoutes } from '@/lib/constants/routes';
 
 export default function ComplaintsListPage() {
   const router = useRouter();
@@ -67,7 +68,7 @@ export default function ComplaintsListPage() {
       {/* Header */}
       <section className="bg-gradient-to-br from-primary/5 to-background border-b border-border">
         <div className="container-custom py-6 sm:py-8">
-          <Link href="/support">
+          <Link href={CustomerRoutes.SUPPORT}>
             <Button variant="ghost" className="mb-3 sm:mb-4 hover:bg-muted h-9 sm:h-10">
               <ArrowLeft className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
               <span className="text-xs sm:text-sm">Back to Support</span>
@@ -88,7 +89,7 @@ export default function ComplaintsListPage() {
               </div>
             </div>
             <Button asChild className="shadow-md h-9 sm:h-10 text-xs sm:text-sm flex-shrink-0">
-              <Link href="/support/complaints">
+              <Link href={CustomerRoutes.COMPLAINTS}>
                 <AlertCircle className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 New Complaint
               </Link>
@@ -149,7 +150,7 @@ export default function ComplaintsListPage() {
                   action={
                     !searchQuery && statusFilter === 'all' ? (
                       <Button asChild>
-                        <Link href="/support/complaints">Submit a Complaint</Link>
+                        <Link href={CustomerRoutes.COMPLAINTS}>Submit a Complaint</Link>
                       </Button>
                     ) : undefined
                   }
@@ -166,7 +167,7 @@ export default function ComplaintsListPage() {
                   <Card 
                     key={complaint.id} 
                     className="border-2 hover:border-primary/50 transition-all cursor-pointer"
-                    onClick={() => router.push(`/support/complaints/${complaint.id}`)}
+                    onClick={() => router.push(CustomerRoutes.COMPLAINT_DETAIL(complaint.id))}
                   >
                     <CardContent className="p-4 sm:p-6">
                       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4">

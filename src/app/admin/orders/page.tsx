@@ -1,11 +1,10 @@
 'use client';
 
+import { AdminRoutes } from '@/lib/constants/routes';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
   ShoppingBag, 
-  Search, 
-  Eye,
   IndianRupee,
   Package,
   CheckCircle
@@ -184,7 +183,7 @@ export default function OrdersPage() {
                   subtitle={order.createdAt}
                   amount={order.total}
                   amountLabel="Amount"
-                  onView={() => router.push(`/admin/orders/${order.id}`)}
+                  onView={() => router.push(AdminRoutes.ORDER_DETAIL(order.id))}
                   viewButtonText="View"
                 />
               );

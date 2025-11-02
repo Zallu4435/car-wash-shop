@@ -8,6 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
+import { CustomerRoutes } from '@/lib/constants/routes';
 import { useProduct } from '@/api/domains/products/queries';
 import { useAddToCart } from '@/api/domains/cart/queries';
 import { useReviewsByProduct } from '@/api/domains/reviews/queries';
@@ -41,7 +42,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     return (
       <Error 
         message="Product Not Found" 
-        onRetry={() => router.push('/products')} 
+        onRetry={() => router.push(CustomerRoutes.PRODUCTS)} 
         details="The product you're looking for doesn't exist." 
       />
     );
@@ -63,7 +64,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     }, {
       onSuccess: () => {
         toast.success('Redirecting to checkout...');
-        router.push('/checkout');
+        router.push(CustomerRoutes.CHECKOUT);
       }
     });
   };
@@ -73,7 +74,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
       {/* Header */}
       <section className="bg-gradient-to-br from-primary/5 to-background border-b border-border">
         <div className="container-custom py-8">
-          <Link href="/products">
+          <Link href={CustomerRoutes.PRODUCTS}>
             <Button variant="ghost" className="mb-4 hover:bg-muted">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Products

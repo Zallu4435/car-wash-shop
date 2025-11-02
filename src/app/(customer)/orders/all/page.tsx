@@ -15,6 +15,7 @@ import { Package, Calendar, ChevronRight, ShoppingBag, ArrowLeft, Search, Filter
 import { useState, useEffect, useMemo } from 'react';
 import Loading from '@/components/shared/display/Loading';
 import { EmptyState } from '@/components/shared/display/EmptyState';
+import { CustomerRoutes } from '@/lib/constants/routes';
 
 export default function AllOrdersPage() {
   // Fetch both orders and bookings
@@ -134,7 +135,7 @@ export default function AllOrdersPage() {
       <section className="border-b border-border">
         <div className="container-custom py-6 sm:py-8 lg:py-12">
           <Button asChild variant="ghost" className="mb-3 sm:mb-4 h-9 sm:h-10">
-            <Link href="/orders">
+            <Link href={CustomerRoutes.ORDERS}>
               <ArrowLeft className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
               <span className="text-xs sm:text-sm">Back to Orders</span>
             </Link>
@@ -263,7 +264,7 @@ export default function AllOrdersPage() {
                             <p className="text-xl sm:text-2xl font-bold text-primary">₹{(order as any).amount || order.totalAmount || 0}</p>
                           </div>
                           <Button asChild variant="outline" className="group w-full sm:w-auto h-9 sm:h-10" size="sm">
-                            <Link href={`/orders/${order.id}`} className="text-xs sm:text-sm">
+                            <Link href={CustomerRoutes.ORDER_DETAIL(order.id)} className="text-xs sm:text-sm">
                               View Details
                               <ChevronRight className="ml-1 h-3.5 w-3.5 sm:h-4 sm:w-4 group-hover:translate-x-1 transition-transform" />
                             </Link>
@@ -303,10 +304,10 @@ export default function AllOrdersPage() {
                 ) : (
                   <div className="flex flex-col sm:flex-row gap-3 justify-center px-4">
                     <Button asChild className="h-10 sm:h-11">
-                      <Link href="/services" className="text-sm sm:text-base">Browse Services</Link>
+                      <Link href={CustomerRoutes.SERVICES} className="text-sm sm:text-base">Browse Services</Link>
                     </Button>
                     <Button asChild variant="outline" className="h-10 sm:h-11">
-                      <Link href="/products" className="text-sm sm:text-base">Browse Products</Link>
+                      <Link href={CustomerRoutes.PRODUCTS} className="text-sm sm:text-base">Browse Products</Link>
                     </Button>
                   </div>
                 )

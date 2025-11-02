@@ -2,7 +2,7 @@
 
 import { use } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Edit, Tag, Percent, IndianRupee, Calendar, TrendingUp, Trash2 } from 'lucide-react';
+import { ArrowLeft, Edit, Percent, IndianRupee, Calendar, TrendingUp, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -11,6 +11,7 @@ import { Progress } from '@/components/ui/progress';
 import { useConfirmation } from '@/hooks/useConfirmation';
 import { toast } from 'sonner';
 import { DangerZone } from '@/components/admin/DangerZone';
+import { AdminRoutes } from '@/lib/constants/routes';
 
 const coupon = {
   id: 'coupon_001',
@@ -44,7 +45,7 @@ export default function CouponDetailPage({ params }: { params: Promise<{ id: str
     if (confirmed) {
       // TODO: Implement delete coupon API
       toast.success(`Coupon "${coupon.code}" has been deleted`);
-      router.push('/admin/coupons');
+      router.push(AdminRoutes.COUPONS);
     }
   };
 
@@ -52,11 +53,11 @@ export default function CouponDetailPage({ params }: { params: Promise<{ id: str
     <div className="space-y-4 sm:space-y-6 pb-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
-        <Button variant="ghost" onClick={() => router.push('/admin/coupons')} className="w-fit h-9 sm:h-10 text-xs sm:text-sm cursor-pointer border-2 -ml-2">
+        <Button variant="ghost" onClick={() => router.push(AdminRoutes.COUPONS)} className="w-fit h-9 sm:h-10 text-xs sm:text-sm cursor-pointer border-2 -ml-2">
           <ArrowLeft className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Back to Coupons
         </Button>
-        <Button onClick={() => router.push(`/admin/coupons/${id}/edit`)} className="h-9 sm:h-10 text-xs sm:text-sm border-2">
+        <Button onClick={() => router.push(AdminRoutes.COUPON_EDIT(id))} className="h-9 sm:h-10 text-xs sm:text-sm border-2">
           <Edit className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Edit Coupon
         </Button>

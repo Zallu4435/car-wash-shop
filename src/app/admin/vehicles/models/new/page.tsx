@@ -13,6 +13,7 @@ import { Switch } from '@/components/ui/switch';
 import { ArrowLeft, Plus, Car, Image as ImageIcon, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { vehicleModelSchema, VehicleModelFormInput } from '@/schemas/admin/vehicle-model';
+import { AdminRoutes } from '@/lib/constants/routes';
 
 export default function NewVehicleModelPage() {
   const router = useRouter();
@@ -56,7 +57,7 @@ export default function NewVehicleModelPage() {
     try {
       console.log('Model data:', data);
       toast.success('Vehicle model created successfully!');
-      router.push('/admin/vehicles/models');
+      router.push(AdminRoutes.VEHICLE_MODELS);
     } catch (error) {
       toast.error('Failed to create vehicle model');
     }
@@ -66,7 +67,7 @@ export default function NewVehicleModelPage() {
     <div className="max-w-2xl space-y-4 sm:space-y-6 pb-6">
       {/* Header */}
       <div>
-        <Button variant="ghost" onClick={() => router.push('/admin/vehicles/models')} className="w-fit h-9 sm:h-10 text-xs sm:text-sm cursor-pointer border-2 -ml-2">
+        <Button variant="ghost" onClick={() => router.push(AdminRoutes.VEHICLE_MODELS)} className="w-fit h-9 sm:h-10 text-xs sm:text-sm cursor-pointer border-2 -ml-2">
           <ArrowLeft className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Back to Models
         </Button>

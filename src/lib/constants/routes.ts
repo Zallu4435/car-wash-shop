@@ -53,10 +53,16 @@ export const ROUTES = {
     // Support
     FEEDBACK: '/feedback',
     SUPPORT: '/support',
+    SUPPORT_FAQ: '/support/faq',
     COMPLAINTS: '/support/complaints',
+    COMPLAINTS_LIST: '/support/complaints/list',
     COMPLAINT_DETAIL: (id: string) => `/support/complaints/${id}`,
     SUPPORT_TICKETS: '/support/tickets',
     SUPPORT_TOPICS: '/support/topics',
+    
+    // Legal
+    TERMS: '/terms',
+    PRIVACY: '/privacy',
     
     // Notifications (Page)
     NOTIFICATIONS_PAGE: '/notifications',
@@ -121,10 +127,12 @@ export const ROUTES = {
     
     PRODUCTS: '/admin/products',
     PRODUCT_NEW: '/admin/products/new',
+    PRODUCT_DETAIL: (id: string) => `/admin/products/${id}`,
     PRODUCT_EDIT: (id: string) => `/admin/products/${id}/edit`,
     
     CATEGORIES: '/admin/categories',
     CATEGORY_NEW: '/admin/categories/new',
+    CATEGORY_DETAIL: (id: string) => `/admin/categories/${id}`,
     CATEGORY_EDIT: (id: string) => `/admin/categories/${id}/edit`,
     
     // Staff Management
@@ -176,6 +184,7 @@ export const ROUTES = {
     
     CAMPAIGNS: '/admin/campaigns',
     CAMPAIGN_NEW: '/admin/campaigns/new',
+    CAMPAIGN_EDIT: (id: string) => `/admin/campaigns/${id}/edit`,
     
     // Coupons
     COUPONS: '/admin/coupons',
@@ -185,6 +194,7 @@ export const ROUTES = {
     
     // Payment Management
     PAYMENTS: '/admin/payments',
+    PAYMENT_DETAIL: (id: string) => `/admin/payments/${id}`,
     COD_REPORTS: '/admin/payments/cod/reports',
     
     // Cancellations

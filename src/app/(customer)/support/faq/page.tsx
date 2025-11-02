@@ -11,7 +11,7 @@ import { EmptyState } from '@/components/shared/display/EmptyState';
 import { useFAQCategories, useFAQs } from '@/api/domains/faq/queries';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
-import { ROUTES } from '@/lib/constants/routes';
+import { CustomerRoutes } from '@/lib/constants/routes';
 
 export default function FAQPage() {
   const [searchInput, setSearchInput] = useState('');
@@ -83,7 +83,7 @@ export default function FAQPage() {
       {/* Header */}
       <section className="bg-gradient-to-br from-primary/5 to-background border-b border-border">
         <div className="container-custom py-6 sm:py-8">
-          <Link href={ROUTES.CUSTOMER.SUPPORT}>
+          <Link href={CustomerRoutes.SUPPORT}>
             <Button variant="ghost" className="mb-3 sm:mb-4 hover:bg-muted h-9 sm:h-10">
               <ArrowLeft className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
               <span className="text-xs sm:text-sm">Back to Support</span>
@@ -135,7 +135,7 @@ export default function FAQPage() {
                     description="Try different keywords or contact our support team"
                     action={
                       <Button asChild variant="outline" className="border-2">
-                        <Link href={ROUTES.CUSTOMER.SUPPORT}>Contact Support</Link>
+                        <Link href={CustomerRoutes.SUPPORT}>Contact Support</Link>
                       </Button>
                     }
                   />
@@ -217,10 +217,10 @@ export default function FAQPage() {
                   </p>
                   <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 justify-center">
                     <Button asChild className="shadow-lg border-2 h-9 sm:h-10">
-                      <Link href={ROUTES.CUSTOMER.SUPPORT}>Contact Support</Link>
+                      <Link href={CustomerRoutes.SUPPORT}>Contact Support</Link>
                     </Button>
                     <Button asChild variant="outline" className="border-2 h-9 sm:h-10">
-                      <Link href={ROUTES.CUSTOMER.COMPLAINTS}>Submit Complaint</Link>
+                      <Link href={CustomerRoutes.COMPLAINTS}>Submit Complaint</Link>
                     </Button>
                   </div>
                 </div>

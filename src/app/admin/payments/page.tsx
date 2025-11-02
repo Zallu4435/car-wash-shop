@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { IndianRupee, CreditCard, Wallet, PieChart, Smartphone, Building2 } from 'lucide-react';
+import { AdminRoutes } from '@/lib/constants/routes';
 import { useRouter } from 'next/navigation';
 import { usePaymentTransactions, usePaymentReport } from '@/api/domains/admin-payments/queries';
 import Loading from '@/components/shared/display/Loading';
@@ -274,7 +275,7 @@ export default function PaymentReportsPage() {
                   subtitle={`${txn.method} • ${txn.date}`}
                   amount={txn.amount.toLocaleString()}
                   amountLabel="Amount"
-                  onView={() => router.push(`/admin/payments/${txn.id}`)}
+                  onView={() => router.push(AdminRoutes.PAYMENT_DETAIL(txn.id))}
                   viewButtonText="View"
                 />
               );

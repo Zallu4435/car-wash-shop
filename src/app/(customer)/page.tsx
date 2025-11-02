@@ -7,6 +7,7 @@ import { PromoCarousel } from '@/components/customer/PromoCarousel';
 import { PosterSection } from '@/components/customer/PosterSection';
 import { Testimonials } from '@/components/customer/Testimonials';
 import { Button } from '@/components/ui/button';
+import { CustomerRoutes } from '@/lib/constants/routes';
 import Link from 'next/link';
 import { useServices } from '@/api/domains/services/queries';
 import { useProducts } from '@/api/domains/products/queries';
@@ -96,7 +97,7 @@ export default function HomePage() {
               </p>
             </div>
             <Button asChild size="lg" variant="outline" className="group shrink-0">
-              <Link href="/services" className="flex items-center gap-2">
+              <Link href={CustomerRoutes.SERVICES} className="flex items-center gap-2">
                 <span className="text-sm sm:text-base">View All Services</span>
                 <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </Link>
@@ -190,7 +191,7 @@ export default function HomePage() {
               </p>
             </div>
             <Button asChild size="lg" variant="outline" className="group shrink-0">
-              <Link href="/products" className="flex items-center gap-2">
+              <Link href={CustomerRoutes.PRODUCTS} className="flex items-center gap-2">
                 <span className="text-sm sm:text-base">Shop All Products</span>
                 <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </Link>

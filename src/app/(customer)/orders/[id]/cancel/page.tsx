@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import { CustomerRoutes } from '@/lib/constants/routes';
 import { useCancelOrder } from '@/api/domains/orders/queries';
 import { useCancelBooking } from '@/api/domains/bookings/queries';
 import { useForm } from 'react-hook-form';
@@ -43,7 +44,7 @@ export default function CancelOrderPage({ params }: { params: Promise<{ id: stri
       cancelBookingMutation.mutate(id, {
         onSuccess: () => {
           toast.success('Booking cancelled successfully');
-          router.push('/orders');
+          router.push(CustomerRoutes.ORDERS);
         },
         onError: (error: any) => {
           toast.error(error?.message || 'Failed to cancel booking');
@@ -53,7 +54,7 @@ export default function CancelOrderPage({ params }: { params: Promise<{ id: stri
       cancelOrderMutation.mutate(id, {
         onSuccess: () => {
           toast.success('Order cancelled successfully');
-          router.push('/orders');
+          router.push(CustomerRoutes.ORDERS);
         },
         onError: (error: any) => {
           toast.error(error?.message || 'Failed to cancel order');
@@ -67,7 +68,7 @@ export default function CancelOrderPage({ params }: { params: Promise<{ id: stri
       {/* Header */}
       <section className="bg-gradient-to-br from-red-50 to-background dark:from-red-950/20 border-b border-border">
         <div className="container-custom py-8">
-          <Link href={`/orders/${id}`}>
+          <Link href={CustomerRoutes.ORDER_DETAIL(id)}>
             <Button variant="ghost" className="mb-4 hover:bg-muted">
               <ArrowLeft className="mr-2 h-4 w-4" />
               {isBooking ? 'Back to Booking' : 'Back to Order'}

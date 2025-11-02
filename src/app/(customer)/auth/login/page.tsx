@@ -17,13 +17,12 @@ import { phoneOnlySchema, otpOnlySchema } from '@/schemas/customer/auth';
 import { useSendOtp, useLogin } from '@/api/domains/auth/queries';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
+import { CustomerRoutes } from '@/lib/constants/routes';
 
 export default function LoginPage() {
   const router = useRouter();
   const [step, setStep] = useState<'phone' | 'otp'>('phone');
-  const [isLoading, setIsLoading] = useState(false);
   const [showVehicleModal, setShowVehicleModal] = useState(false);
-  const [userVehicles, setUserVehicles] = useState<any[]>([]);
 
   // Phone Form
   const {
@@ -41,7 +40,6 @@ export default function LoginPage() {
     register: otpRegister,
     handleSubmit: handleOtpSubmit,
     formState: { errors: otpErrors },
-    getValues: getOtpValue,
     reset: resetOtpForm,
   } = useForm<{ otp: string }>({
     resolver: zodResolver(otpOnlySchema),
@@ -70,7 +68,7 @@ export default function LoginPage() {
     }, {
       onSuccess: () => {
         toast.success('Login successful!');
-        router.push('/');
+        router.push(CustomerRoutes.HOME);
       },
       onError: (err: any) => {
         toast.error(err?.message || 'Invalid OTP');
@@ -81,13 +79,13 @@ export default function LoginPage() {
   const handleVehicleSelect = (_vehicle: any) => {
     toast.success('Vehicle added successfully!');
     setShowVehicleModal(false);
-    router.push('/');
+    router.push(CustomerRoutes.HOME);
   };
 
   const handleSkipVehicle = () => {
     toast.info('You can add your vehicle later from your profile');
     setShowVehicleModal(false);
-    router.push('/');
+    router.push(CustomerRoutes.HOME);
   };
 
   // Loading: show global page spinner if OTP or Login is pending
@@ -233,7 +231,7 @@ export default function LoginPage() {
               <div>
                 <span className="text-muted-foreground">Don't have an account? </span>
                 <Link 
-                  href="/auth/register" 
+                  href={CustomerRoutes.REGISTER} 
                   className="text-primary hover:underline font-semibold"
                 >
                   Register Now
@@ -241,7 +239,7 @@ export default function LoginPage() {
               </div>
               <div>
                 <Link 
-                  href="/auth/forgot-password" 
+                  href={CustomerRoutes.AUTH_FORGOT_PASSWORD} 
                   className="text-muted-foreground hover:text-foreground underline text-[10px] sm:text-xs"
                 >
                   Forgot Password?
@@ -255,11 +253,11 @@ export default function LoginPage() {
         <div className="mt-4 sm:mt-6 text-center">
           <p className="text-[10px] sm:text-xs text-muted-foreground px-4">
             By continuing, you agree to our{' '}
-            <Link href="/terms" className="text-primary hover:underline">
+            <Link href={CustomerRoutes.TERMS} className="text-primary hover:underline">
               Terms of Service
             </Link>{' '}
             and{' '}
-            <Link href="/privacy" className="text-primary hover:underline">
+            <Link href={CustomerRoutes.PRIVACY} className="text-primary hover:underline">
               Privacy Policy
             </Link>
           </p>

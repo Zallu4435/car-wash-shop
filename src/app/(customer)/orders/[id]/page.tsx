@@ -3,6 +3,7 @@
 import { use, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Download, Package, MapPin, CreditCard, Calendar, FileText, XCircle, Wrench, Star, Edit } from 'lucide-react';
+import { CustomerRoutes } from '@/lib/constants/routes';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { OrderTracker } from '@/components/customer/OrderTracker';
@@ -80,7 +81,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
       {/* Header - Responsive */}
       <section className="border-b border-border">
         <div className="container-custom py-6 sm:py-8 lg:py-12">
-          <Link href="/orders">
+          <Link href={CustomerRoutes.ORDERS}>
             <Button variant="ghost" className="mb-3 sm:mb-4 h-9 sm:h-10">
               <ArrowLeft className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
               <span className="text-xs sm:text-sm">Back to Orders</span>
@@ -332,7 +333,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
               <div className="flex flex-col sm:flex-row gap-3">
                 {!isService && (
                   <Button asChild variant="outline" className="flex-1 h-10 sm:h-11">
-                    <Link href={`/orders/${id}/invoice`} className="text-xs sm:text-sm">
+                    <Link href={CustomerRoutes.ORDER_INVOICE(id)} className="text-xs sm:text-sm">
                       <Download className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                       Download Invoice
                     </Link>
@@ -344,7 +345,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                     variant="outline" 
                     className={`${!isService ? 'flex-1' : 'w-full'} h-10 sm:h-11 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20`}
                   >
-                    <Link href={`/orders/${id}/cancel`} className="text-xs sm:text-sm">
+                    <Link href={CustomerRoutes.ORDER_CANCEL(id)} className="text-xs sm:text-sm">
                       <XCircle className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                       {isService ? 'Cancel Booking' : 'Cancel Order'}
                     </Link>

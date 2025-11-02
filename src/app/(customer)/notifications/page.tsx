@@ -14,12 +14,12 @@ import {
   Clock,
   Trash2,
   SlidersHorizontal,
-  X,
   CheckCheck
 } from 'lucide-react';
 import { useInfiniteNotifications, useMarkAsRead, useMarkAllAsRead } from '@/api/domains/notifications/queries';
 import { EmptyState } from '@/components/shared/display/EmptyState';
 import Loading from '@/components/shared/display/Loading';
+import { FilterSheet } from '@/components/shared/filters/FilterSheet';
 
 export default function NotificationsPage() {
   const [filter, setFilter] = useState<string>('all');
@@ -81,12 +81,9 @@ export default function NotificationsPage() {
     markAsRead(id);
   };
 
-  // Lock body scroll when mobile filter is open
-  React.useEffect(() => {
-    if (showFilters) document.body.style.overflow = 'hidden';
-    else document.body.style.overflow = 'unset';
-    return () => { document.body.style.overflow = 'unset'; };
-  }, [showFilters]);
+  const handleClearAllFilters = () => {
+    setFilter('all');
+  };
 
   // Loading state
   if (notificationsLoading) {
@@ -116,7 +113,7 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-32 lg:pb-8">
       {/* Header */}
       <section className="bg-gradient-to-br from-primary/5 to-background border-b border-border">
         <div className="container-custom py-6 sm:py-8 lg:py-12">
@@ -134,17 +131,6 @@ export default function NotificationsPage() {
                 </p>
               </div>
             </div>
-            {unreadCount > 0 && (
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={markAllAsRead}
-                className="hidden sm:flex h-9 text-xs sm:text-sm"
-              >
-                <CheckCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
-                Mark all as read
-              </Button>
-            )}
           </div>
         </div>
       </section>
@@ -153,7 +139,42 @@ export default function NotificationsPage() {
       <section className="py-6 sm:py-8 lg:py-12">
         <div className="container-custom">
           <div className="max-w-4xl mx-auto">
-            {/* Filter bar removed; using the mobile sheet trigger below */}
+            {/* Desktop Filter Bar */}
+            <div className="hidden lg:flex items-center justify-between gap-4 mb-6">
+              <div className="flex items-center gap-2">
+                <h3 className="font-semibold text-sm text-foreground">Status:</h3>
+                <div className="flex gap-2">
+                  {[
+                    { id: 'all', label: 'All' },
+                    { id: 'unread', label: 'Unread' },
+                    { id: 'read', label: 'Read' },
+                  ].map(opt => (
+                    <button
+                      key={opt.id}
+                      onClick={() => setFilter(opt.id)}
+                      className={`px-4 py-2 rounded-lg border-2 text-sm font-medium transition-all ${
+                        filter === opt.id 
+                          ? 'border-primary text-primary bg-primary/10 shadow-sm' 
+                          : 'border-border text-foreground hover:border-primary/50 hover:bg-accent'
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {unreadCount > 0 && (
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={markAllAsRead}
+                  className="border-2 h-9 text-xs sm:text-sm"
+                >
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  Mark all as read
+                </Button>
+              )}
+            </div>
 
             {/* Notifications List */}
             {notifications.length > 0 ? (
@@ -231,7 +252,7 @@ export default function NotificationsPage() {
                                     variant="ghost"
                                     size="sm"
                                     onClick={() => markAsRead(notif.id)}
-                                    className="text-[10px] sm:text-xs h-7 sm:h-8 px-2 sm:px-3 flex-1 xs:flex-initial"
+                                    className="text-[10px] sm:text-xs h-7 sm:h-8 px-2 sm:px-3 flex-1 xs:flex-initial border-2"
                                   >
                                     Mark as read
                                   </Button>
@@ -240,7 +261,7 @@ export default function NotificationsPage() {
                                   variant="ghost"
                                   size="sm"
                                   onClick={() => deleteNotification(notif.id)}
-                                  className="text-[10px] sm:text-xs h-7 sm:h-8 px-2 sm:px-3 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20"
+                                  className="text-[10px] sm:text-xs h-7 sm:h-8 px-2 sm:px-3 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20 border-2"
                                 >
                                   <Trash2 className="h-3 w-3" />
                                   <span className="xs:hidden ml-1.5">Delete</span>
@@ -307,7 +328,7 @@ export default function NotificationsPage() {
           <Button
             variant="default"
             size="lg"
-            className="w-full shadow-md h-12 text-sm font-semibold"
+            className="w-full shadow-md h-12 text-sm font-semibold border-2"
             onClick={() => setShowFilters(true)}
           >
             <SlidersHorizontal className="h-4 w-4 mr-2" />
@@ -321,72 +342,36 @@ export default function NotificationsPage() {
         </div>
       </div>
 
-      {/* Mobile Filter Modal */}
-      {showFilters && (
-        <>
-          <div 
-            className="lg:hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" 
-            onClick={() => setShowFilters(false)}
-          />
-          <div className="lg:hidden fixed inset-x-0 bottom-0 z-50 rounded-t-2xl shadow-2xl border-t-2 border-border max-h-[88vh] flex flex-col force-sheet-bg">
-            {/* Header */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-border flex-shrink-0 vehicle-modal-bg">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-primary/10 rounded-lg">
-                  <SlidersHorizontal className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <h2 className="text-base font-bold text-foreground">Filters</h2>
-                  <p className="text-xs text-muted-foreground">{totalCount} total</p>
-                </div>
-              </div>
-              <Button variant="ghost" size="icon" onClick={() => setShowFilters(false)} className="rounded-full h-9 w-9">
-                <X className="h-5 w-5" />
-              </Button>
-            </div>
-
-            {/* Content */}
-            <div className="overflow-y-auto flex-1 px-5 py-5 space-y-3 vehicle-modal-bg">
-              <div className="grid grid-cols-3 gap-2">
-                {[
-                  { id: 'all', label: 'All' },
-                  { id: 'unread', label: 'Unread' },
-                  { id: 'read', label: 'Read' },
-                ].map(opt => (
-                  <button
-                    key={opt.id}
-                    onClick={() => setFilter(opt.id)}
-                    className={`px-3 py-2 rounded-lg border-2 text-sm font-medium transition-colors ${
-                      filter === opt.id ? 'border-primary text-primary bg-primary/10' : 'border-border text-foreground hover:border-primary/50 hover:bg-accent'
-                    }`}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Footer */}
-            <div className="px-5 py-4 border-t border-border vehicle-modal-bg flex-shrink-0">
-              <div className="flex gap-3">
-                <Button
-                  variant="outline"
-                  className="flex-1 h-11 font-semibold text-sm"
-                  onClick={() => setFilter('all')}
-                >
-                  Clear
-                </Button>
-                <Button
-                  className="flex-1 h-11 font-semibold text-sm shadow-md"
-                  onClick={() => setShowFilters(false)}
-                >
-                  Show {totalCount}
-                </Button>
-              </div>
-            </div>
+      {/* Mobile Filter Sheet */}
+      <FilterSheet
+        isOpen={showFilters}
+        onClose={() => setShowFilters(false)}
+        onClearAll={handleClearAllFilters}
+        resultCount={totalCount}
+      >
+        <div>
+          <h3 className="font-semibold text-sm mb-3 text-foreground">Status</h3>
+          <div className="grid grid-cols-3 gap-2">
+            {[
+              { id: 'all', label: 'All' },
+              { id: 'unread', label: 'Unread' },
+              { id: 'read', label: 'Read' },
+            ].map(opt => (
+              <button
+                key={opt.id}
+                onClick={() => setFilter(opt.id)}
+                className={`px-3 py-2.5 rounded-lg border-2 text-sm font-medium transition-all ${
+                  filter === opt.id 
+                    ? 'border-primary text-primary bg-primary/10 shadow-sm' 
+                    : 'border-border text-foreground hover:border-primary/50 hover:bg-accent'
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
           </div>
-        </>
-      )}
+        </div>
+      </FilterSheet>
     </div>
   );
 }

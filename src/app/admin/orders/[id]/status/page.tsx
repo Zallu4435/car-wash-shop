@@ -5,12 +5,12 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, Save, Truck, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { toast } from 'sonner';
+import { AdminRoutes } from '@/lib/constants/routes';
 
 const statusOptions = [
   { value: 'processing', label: 'Processing', color: 'bg-blue-100 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400', icon: '⏳' },
@@ -31,14 +31,14 @@ export default function OrderStatusPage({ params }: { params: Promise<{ id: stri
 
   const handleUpdate = () => {
     toast.success('Order status updated successfully!');
-    router.push(`/admin/orders/${id}`);
+    router.push(AdminRoutes.ORDER_DETAIL(id));
   };
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       {/* Header */}
       <div>
-        <Button variant="ghost" onClick={() => router.push(`/admin/orders/${id}`)} className="cursor-pointer">
+        <Button variant="ghost" onClick={() => router.push(AdminRoutes.ORDER_DETAIL(id))} className="cursor-pointer">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Order
         </Button>
@@ -134,7 +134,7 @@ export default function OrderStatusPage({ params }: { params: Promise<{ id: stri
               type="button" 
               variant="outline" 
               className="flex-1"
-              onClick={() => router.push(`/admin/orders/${id}`)}
+              onClick={() => router.push(AdminRoutes.ORDER_DETAIL(id))}
             >
               Cancel
             </Button>
