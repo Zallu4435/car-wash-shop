@@ -17,10 +17,18 @@ export function middleware(request: NextRequest) {
   const logged = isLogged(request);
   const role = getRole(request);
 
-  const isAuthRoute = pathname.startsWith('/auth');
+  const isCustomerAuthRoute = pathname.startsWith('/auth');
+  const isAdminAuthRoute = pathname.startsWith('/admin/auth');
+  const isStaffAuthRoute = pathname.startsWith('/staff/auth');
+  const isAuthRoute = isCustomerAuthRoute || isAdminAuthRoute || isStaffAuthRoute;
   const isAdminRoute = pathname.startsWith('/admin');
   const isStaffRoute = pathname.startsWith('/staff');
-  const isProtected = isAdminRoute || isStaffRoute || pathname.startsWith('/account') || pathname.startsWith('/orders');
+  // Do not treat auth routes themselves as protected to avoid loops
+  const isProtected =
+    (isAdminRoute && !isAdminAuthRoute) ||
+    (isStaffRoute && !isStaffAuthRoute) ||
+    pathname.startsWith('/account') ||
+    pathname.startsWith('/orders');
 
   // If logged in, prevent access to auth pages
   if (logged && isAuthRoute) {
@@ -32,13 +40,20 @@ export function middleware(request: NextRequest) {
   // If not logged in and hitting protected pages, go to login
   if (!logged && isProtected) {
     const url = request.nextUrl.clone();
-    url.pathname = '/auth/login';
+    if (isAdminRoute) {
+      url.pathname = '/admin/auth/login';
+    } else if (isStaffRoute) {
+      url.pathname = '/staff/auth/login';
+    } else {
+      url.pathname = '/auth/login';
+    }
     url.searchParams.set('redirect', pathname);
     return NextResponse.redirect(url);
   }
 
   // Role gates
-  if (isAdminRoute) {
+  // Role gates (skip on auth routes to allow login pages)
+  if (isAdminRoute && !isAdminAuthRoute) {
     if (role !== 'admin') {
       const url = request.nextUrl.clone();
       url.pathname = '/';
@@ -46,7 +61,7 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  if (isStaffRoute) {
+  if (isStaffRoute && !isStaffAuthRoute) {
     if (role !== 'staff' && role !== 'admin') {
       const url = request.nextUrl.clone();
       url.pathname = '/';

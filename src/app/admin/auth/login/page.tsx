@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Phone, KeyRound } from 'lucide-react';
 import { toast } from 'sonner';
-import { useLogin } from '@/api/domains/auth/queries';
+import { useVerifyOtp } from '@/api/domains/auth/queries';
 import { AdminRoutes } from '@/lib/constants/routes';
 
 export default function AdminLoginPage() {
@@ -16,7 +16,7 @@ export default function AdminLoginPage() {
   const searchParams = useSearchParams();
   const [phone, setPhone] = useState('');
   const [otp, setOtp] = useState('');
-  const loginMutation = useLogin();
+  const loginMutation = useVerifyOtp();
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();

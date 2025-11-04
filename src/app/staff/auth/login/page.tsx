@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Phone, KeyRound } from 'lucide-react';
 import { toast } from 'sonner';
-import { useLogin } from '@/api/domains/auth/queries';
+import { useVerifyOtp } from '@/api/domains/auth/queries';
 import { StaffRoutes } from '@/lib/constants/routes';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -17,7 +17,7 @@ import { staffLoginSchema, StaffLoginInput } from '@/schemas/staff/auth';
 export default function StaffLoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const loginMutation = useLogin();
+  const loginMutation = useVerifyOtp();
 
   const {
     register,

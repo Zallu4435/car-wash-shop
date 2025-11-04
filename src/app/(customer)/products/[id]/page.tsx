@@ -49,17 +49,19 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   }
 
   const handleAddToCart = () => {
+    const pid = (product as any)?._id ?? product.id ?? id;
     addToCartMutation.mutate({
       type: 'product',
-      itemId: product.id,
+      itemId: pid,
       quantity: quantity,
     });
   };
 
   const handleBuyNow = () => {
+    const pid = (product as any)?._id ?? product.id ?? id;
     addToCartMutation.mutate({
       type: 'product',
-      itemId: product.id,
+      itemId: pid,
       quantity: quantity,
     }, {
       onSuccess: () => {

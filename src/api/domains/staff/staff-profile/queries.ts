@@ -3,7 +3,7 @@ import { staffProfileFetchers } from './fetchers';
 import type { UpdateStaffProfileInput } from '@/types/staff';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { tokenManager } from '@/api/client';
+import { setAccessToken } from '@/state/authState';
 import { StaffRoutes } from '@/lib/constants/routes';
 
 export const staffProfileKeys = {
@@ -40,7 +40,7 @@ export const useStaffLogout = () => {
   return useMutation({
     mutationFn: staffProfileFetchers.logout,
     onSuccess: () => {
-      tokenManager.clearTokens();
+      setAccessToken(null);
       queryClient.clear();
       toast.success('Logged out successfully');
       router.push(StaffRoutes.LOGIN);

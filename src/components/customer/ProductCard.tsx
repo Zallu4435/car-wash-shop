@@ -36,16 +36,17 @@ export function ProductCard({ product }: ProductCardProps) {
     e.preventDefault();
     e.stopPropagation();
     
+    const pid = (product as any)._id ?? product.id;
     addToCartMutation.mutate({
       type: 'product',
-      itemId: product.id,
+      itemId: pid,
       quantity: 1,
     });
   };
 
   return (
     <Card className="group hover:shadow-lg transition-all duration-300 h-full overflow-hidden">
-      <Link href={`/products/${product.id}`}>
+      <Link href={`/products/${(product as any)._id ?? product.id}`}>
         {/* Image Container */}
         <div className="relative h-48 sm:h-56 md:h-64 bg-gradient-to-br from-muted to-muted/50 overflow-hidden">
           <div className="absolute inset-0 flex items-center justify-center">
@@ -75,7 +76,7 @@ export function ProductCard({ product }: ProductCardProps) {
       </Link>
 
       <CardContent className="p-4 sm:p-5 md:p-6 flex-1 flex flex-col">
-        <Link href={`/products/${product.id}`}>
+        <Link href={`/products/${(product as any)._id ?? product.id}`}>
           {/* Title */}
           <h3 className="font-semibold text-sm sm:text-base md:text-lg mb-1.5 sm:mb-2 line-clamp-2 text-foreground group-hover:text-primary transition-colors min-h-[2.5rem] sm:min-h-[3rem] leading-tight">
             {product.name}

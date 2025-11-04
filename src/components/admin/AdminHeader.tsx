@@ -18,7 +18,7 @@ import { Input } from '@/components/ui/input';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useTheme } from '@/context/ThemeContext';
-import { useAdminLogout } from '@/api/domains/auth/queries';
+import { useAdminLogout } from '@/api/domains/admin-settings/queries';
 import { AdminRoutes } from '@/lib/constants/routes';
 import { NotificationPanel } from '@/components/shared/notification/NotificationPanel';
 import { useInfiniteNotifications } from '@/api/domains/notifications/queries';

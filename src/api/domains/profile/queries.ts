@@ -3,7 +3,7 @@ import { profileFetchers } from './fetchers';
 import type { UpdateProfileInput, ChangePasswordInput } from '@/types/profile';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { tokenManager } from '@/api/client';
+import { setAccessToken } from '@/state/authState';
 
 export const profileKeys = {
   all: ['profile'] as const,
@@ -52,7 +52,7 @@ export const useDeleteAccount = () => {
   return useMutation({
     mutationFn: profileFetchers.deleteAccount,
     onSuccess: () => {
-      tokenManager.clearTokens();
+      setAccessToken(null);
       queryClient.clear();
       toast.success('Account deleted successfully');
       router.push('/');

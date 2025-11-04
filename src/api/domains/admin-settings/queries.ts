@@ -7,7 +7,7 @@ import type {
 } from '@/types/admin';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { tokenManager } from '@/api/client';
+import { setAccessToken } from '@/state/authState';
 import { AdminRoutes } from '@/lib/constants/routes';
 
 export const adminSettingsKeys = {
@@ -93,7 +93,7 @@ export const useAdminLogout = () => {
   return useMutation({
     mutationFn: adminSettingsFetchers.logout,
     onSuccess: () => {
-      tokenManager.clearTokens();
+      setAccessToken(null);
       queryClient.clear();
       toast.success('Logged out successfully');
       router.push(AdminRoutes.LOGIN);
