@@ -24,7 +24,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     logout: () => logoutMutation.mutate(),
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth() {

@@ -14,7 +14,7 @@ import { VehicleSelectionModal } from '@/components/shared/selectors/VehicleSele
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { phoneOnlySchema, otpOnlySchema } from '@/schemas/customer/auth';
-import { useSendOtp, useLogin } from '@/api/domains/auth/queries';
+import { useSendOtp, useVerifyOtp } from '@/api/domains/auth/queries';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
 import { CustomerRoutes } from '@/lib/constants/routes';
@@ -24,7 +24,6 @@ export default function LoginPage() {
   const [step, setStep] = useState<'phone' | 'otp'>('phone');
   const [showVehicleModal, setShowVehicleModal] = useState(false);
 
-  // Phone Form
   const {
     register: phoneRegister,
     handleSubmit: handlePhoneSubmit,
@@ -35,7 +34,7 @@ export default function LoginPage() {
     resolver: zodResolver(phoneOnlySchema),
     defaultValues: { phone: '' },
   });
-  // OTP Form
+
   const {
     register: otpRegister,
     handleSubmit: handleOtpSubmit,
@@ -47,7 +46,7 @@ export default function LoginPage() {
   });
 
   const sendOtpMutation = useSendOtp();
-  const loginMutation = useLogin();
+  const verifyOtpMutation = useVerifyOtp(); // ← Changed from useLogin
 
   const onSendOtp = ({ phone }: { phone: string }) => {
     sendOtpMutation.mutate(phone, {
@@ -62,18 +61,18 @@ export default function LoginPage() {
   };
 
   const onVerifyOtp = ({ otp }: { otp: string }) => {
-    loginMutation.mutate({ 
-      phone: getPhoneValue('phone'), 
-      otp 
-    }, {
-      onSuccess: () => {
-        toast.success('Login successful!');
-        router.push(CustomerRoutes.HOME);
-      },
-      onError: (err: any) => {
-        toast.error(err?.message || 'Invalid OTP');
-      },
-    });
+    verifyOtpMutation.mutate(
+      { phone: getPhoneValue('phone'), otp },
+      {
+        onSuccess: () => {
+          toast.success('Login successful!');
+          // Redirect handled in useVerifyOtp onSuccess
+        },
+        onError: (err: any) => {
+          toast.error(err?.message || 'Invalid OTP');
+        },
+      }
+    );
   };
 
   const handleVehicleSelect = (_vehicle: any) => {
@@ -88,28 +87,35 @@ export default function LoginPage() {
     router.push(CustomerRoutes.HOME);
   };
 
-  // Loading: show global page spinner if OTP or Login is pending
-  if (sendOtpMutation.isPending || loginMutation.isPending) {
+  if (sendOtpMutation.isPending || verifyOtpMutation.isPending) {
     return <Loading text={sendOtpMutation.isPending ? 'Sending OTP...' : 'Verifying...'} />;
   }
-  // Error: show page-level error for failed OTP send or login
+
   if (sendOtpMutation.isError) {
-    return <Error message={sendOtpMutation.error?.message || 'Failed to send OTP'} onRetry={() => {
-      // re-attempt submit with last entered phone
-      handlePhoneSubmit(onSendOtp)();
-    }} />;
+    return (
+      <Error
+        message={sendOtpMutation.error?.message || 'Failed to send OTP'}
+        onRetry={() => {
+          handlePhoneSubmit(onSendOtp)();
+        }}
+      />
+    );
   }
-  if (loginMutation.isError) {
-    return <Error message={loginMutation.error?.message || 'Invalid OTP'} onRetry={() => {
-      // re-attempt submit with last entered OTP
-      handleOtpSubmit(onVerifyOtp)();
-    }} />;
+
+  if (verifyOtpMutation.isError) {
+    return (
+      <Error
+        message={verifyOtpMutation.error?.message || 'Invalid OTP'}
+        onRetry={() => {
+          handleOtpSubmit(onVerifyOtp)();
+        }}
+      />
+    );
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background py-8 sm:py-12 px-4">
       <div className="w-full max-w-md">
-        {/* Logo/Brand */}
         <div className="text-center mb-6 sm:mb-8">
           <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 bg-primary rounded-xl sm:rounded-2xl mb-3 sm:mb-4">
             <Droplet className="h-7 w-7 sm:h-8 sm:w-8 text-primary-foreground" />
@@ -129,8 +135,8 @@ export default function LoginPage() {
               <CardTitle className="text-xl sm:text-2xl">Welcome Back</CardTitle>
             </div>
             <CardDescription className="text-xs sm:text-sm px-2">
-              {step === 'phone' 
-                ? 'Enter your phone number to continue' 
+              {step === 'phone'
+                ? 'Enter your phone number to continue'
                 : `Enter OTP sent to +91 ${getPhoneValue('phone')}`}
             </CardDescription>
           </CardHeader>
@@ -139,7 +145,9 @@ export default function LoginPage() {
             {step === 'phone' ? (
               <form onSubmit={handlePhoneSubmit(onSendOtp)} className="space-y-4 sm:space-y-5">
                 <div className="space-y-1.5 sm:space-y-2">
-                  <Label htmlFor="phone" className="text-xs sm:text-sm">Phone Number</Label>
+                  <Label htmlFor="phone" className="text-xs sm:text-sm">
+                    Phone Number
+                  </Label>
                   <div className="relative">
                     <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
                     <Input
@@ -154,13 +162,15 @@ export default function LoginPage() {
                   <p className="text-[10px] sm:text-xs text-muted-foreground">
                     We'll send you a 6-digit OTP
                   </p>
-                  {phoneErrors.phone && <p className="text-xs text-red-500">{phoneErrors.phone.message}</p>}
+                  {phoneErrors.phone && (
+                    <p className="text-xs text-red-500">{phoneErrors.phone.message}</p>
+                  )}
                 </div>
 
-                <Button 
-                  type="submit" 
-                  className="w-full shadow-lg h-11 sm:h-12 text-sm sm:text-base border-2" 
-                  size="lg" 
+                <Button
+                  type="submit"
+                  className="w-full shadow-lg h-11 sm:h-12 text-sm sm:text-base border-2"
+                  size="lg"
                   disabled={sendOtpMutation.isPending}
                 >
                   {sendOtpMutation.isPending ? 'Sending OTP...' : 'Send OTP'}
@@ -169,7 +179,9 @@ export default function LoginPage() {
             ) : (
               <form onSubmit={handleOtpSubmit(onVerifyOtp)} className="space-y-4 sm:space-y-5">
                 <div className="space-y-1.5 sm:space-y-2">
-                  <Label htmlFor="otp" className="text-xs sm:text-sm">Enter OTP</Label>
+                  <Label htmlFor="otp" className="text-xs sm:text-sm">
+                    Enter OTP
+                  </Label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
                     <Input
@@ -196,17 +208,19 @@ export default function LoginPage() {
                       Resend OTP
                     </Button>
                   </div>
-                  {otpErrors.otp && <p className="text-xs text-red-500">{otpErrors.otp.message}</p>}
+                  {otpErrors.otp && (
+                    <p className="text-xs text-red-500">{otpErrors.otp.message}</p>
+                  )}
                 </div>
 
                 <div className="space-y-2 sm:space-y-3">
-                  <Button 
-                    type="submit" 
-                    className="w-full shadow-lg h-11 sm:h-12 text-sm sm:text-base border-2" 
-                    size="lg" 
-                    disabled={loginMutation.isPending}
+                  <Button
+                    type="submit"
+                    className="w-full shadow-lg h-11 sm:h-12 text-sm sm:text-base border-2"
+                    size="lg"
+                    disabled={verifyOtpMutation.isPending}
                   >
-                    {loginMutation.isPending ? 'Verifying...' : 'Verify & Login'}
+                    {verifyOtpMutation.isPending ? 'Verifying...' : 'Verify & Login'}
                   </Button>
 
                   <Button
@@ -230,16 +244,16 @@ export default function LoginPage() {
             <div className="text-center text-xs sm:text-sm space-y-2">
               <div>
                 <span className="text-muted-foreground">Don't have an account? </span>
-                <Link 
-                  href={CustomerRoutes.REGISTER} 
+                <Link
+                  href={CustomerRoutes.REGISTER}
                   className="text-primary hover:underline font-semibold"
                 >
                   Register Now
                 </Link>
               </div>
               <div>
-                <Link 
-                  href={CustomerRoutes.AUTH_FORGOT_PASSWORD} 
+                <Link
+                  href={CustomerRoutes.AUTH_FORGOT_PASSWORD}
                   className="text-muted-foreground hover:text-foreground underline text-[10px] sm:text-xs"
                 >
                   Forgot Password?
@@ -249,7 +263,6 @@ export default function LoginPage() {
           </CardFooter>
         </Card>
 
-        {/* Additional Info */}
         <div className="mt-4 sm:mt-6 text-center">
           <p className="text-[10px] sm:text-xs text-muted-foreground px-4">
             By continuing, you agree to our{' '}
@@ -263,6 +276,7 @@ export default function LoginPage() {
           </p>
         </div>
       </div>
+
       <VehicleSelectionModal
         isOpen={showVehicleModal}
         onClose={handleSkipVehicle}

@@ -1,5 +1,6 @@
 export interface Product {
-  id: string;
+  _id: string;
+
   name: string;
   description: string;
   image: string;
@@ -15,10 +16,9 @@ export interface Product {
   updatedAt?: string;
 }
 
-export interface ProductCategory {
-  id: string;
-  name: string;
-}
+// Categories are just strings, not objects
+export type ProductCategory = string;
+
 
 export interface ProductFilters {
   category?: string;

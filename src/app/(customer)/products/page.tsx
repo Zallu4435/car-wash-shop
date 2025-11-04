@@ -86,11 +86,13 @@ export default function ProductsPage() {
   };
 
   // Convert categories to the expected format
-  const categoryFilters = categories.map(cat => ({
-    id: cat.id,
-    name: cat.name,
-    count: products.filter(p => p.category === cat.id).length,
-  }));
+// Convert categories to the expected format
+const categoryFilters = categories.map(cat => ({
+  id: cat,  // category is just a string
+  name: cat,
+  count: products.filter(p => p.category === cat).length,
+}));
+
 
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = startIndex + pageSize;
@@ -191,7 +193,7 @@ export default function ProductsPage() {
                 <>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
                     {products.map((product) => (
-                      <ProductCard key={product.id} product={product as any} />
+<ProductCard key={product._id} product={product as any} />
                     ))}
                   </div>
 
