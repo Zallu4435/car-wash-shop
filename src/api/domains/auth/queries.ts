@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { authFetchers } from './fetchers';
-import { tokenManager } from '@/api/client';
+import { getAccessToken, setAccessToken as setGlobalAccessToken } from '@/state/authState';
 import type { RegisterInput } from '@/types/auth';
 import { useRouter } from 'next/navigation';
 import { CustomerRoutes } from '@/lib/constants/routes';
@@ -14,7 +14,7 @@ export const useCurrentUser = () => {
   return useQuery({
     queryKey: authKeys.currentUser(),
     queryFn: authFetchers.getCurrentUser,
-    enabled: !!tokenManager.getToken(),
+    enabled: !!getAccessToken(),
     staleTime: 5 * 60 * 1000,
     retry: false,
   });
@@ -34,7 +34,7 @@ export const useVerifyOtp = () => {
     mutationFn: ({ phone, otp }: { phone: string; otp: string }) =>
       authFetchers.verifyOtp(phone, otp),
     onSuccess: (data) => {
-      tokenManager.setToken(data.token);
+      setGlobalAccessToken(data.token);
       queryClient.setQueryData(authKeys.currentUser(), data.user);
       router.push(CustomerRoutes.HOME);
     },
@@ -48,7 +48,7 @@ export const useRegister = () => {
   return useMutation({
     mutationFn: (input: RegisterInput) => authFetchers.register(input),
     onSuccess: (data) => {
-      tokenManager.setToken(data.token);
+      setGlobalAccessToken(data.token);
       queryClient.setQueryData(authKeys.currentUser(), data.user);
       router.push(CustomerRoutes.HOME);
     },
@@ -62,7 +62,7 @@ export const useLogout = () => {
   return useMutation({
     mutationFn: () => authFetchers.logout(),
     onSuccess: () => {
-      tokenManager.clearToken();
+      setGlobalAccessToken(null);
       queryClient.clear();
       router.push(CustomerRoutes.LOGIN);
     },
