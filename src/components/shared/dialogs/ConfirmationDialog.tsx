@@ -17,6 +17,7 @@ interface ConfirmationDialogProps {
   type?: ConfirmationType;
   isLoading?: boolean;
   itemName?: string;
+  minimal?: boolean;
 }
 
 const typeConfig = {
@@ -68,6 +69,7 @@ export function ConfirmationDialog({
   type = 'warning',
   isLoading = false,
   itemName,
+  minimal = false,
 }: ConfirmationDialogProps) {
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -110,42 +112,40 @@ export function ConfirmationDialog({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in">
-      {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
         onClick={!loading ? onClose : undefined}
       />
 
-      {/* Modal */}
       <div className={`relative w-full max-w-md rounded-xl sm:rounded-2xl shadow-2xl border-2 animate-scale-in force-sheet-bg ${config.borderColor}`}>
-        {/* Close Button */}
-        <button
-          onClick={onClose}
-          disabled={loading}
-          className="absolute top-3 right-3 sm:top-4 sm:right-4 p-2 hover:bg-muted rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <X className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
-        </button>
+        {!minimal && (
+          <button
+            onClick={onClose}
+            disabled={loading}
+            className="absolute top-3 right-3 sm:top-4 sm:right-4 p-2 hover:bg-muted rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <X className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
+          </button>
+        )}
 
-        {/* Content */}
         <div className="p-6 sm:p-8">
-          {/* Icon */}
-          <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-full ${config.iconBg} flex items-center justify-center mx-auto mb-4 sm:mb-6`}>
-            <Icon className={`h-7 w-7 sm:h-8 sm:w-8 ${config.iconColor}`} />
-          </div>
+          {!minimal && (
+            <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-full ${config.iconBg} flex items-center justify-center mx-auto mb-4 sm:mb-6`}>
+              <Icon className={`h-7 w-7 sm:h-8 sm:w-8 ${config.iconColor}`} />
+            </div>
+          )}
 
-          {/* Title */}
-          <h2 className="text-xl sm:text-2xl font-bold text-center text-foreground mb-3 sm:mb-4">
+          <h2 className={`text-center text-foreground font-bold ${minimal ? 'text-lg sm:text-xl mb-6' : 'text-xl sm:text-2xl mb-3 sm:mb-4'}`}>
             {title}
           </h2>
 
-          {/* Description */}
-          <p className="text-sm sm:text-base text-center text-muted-foreground leading-relaxed mb-6 sm:mb-8">
-            {description}
-          </p>
+          {!minimal && description && (
+            <p className="text-sm sm:text-base text-center text-muted-foreground leading-relaxed mb-6 sm:mb-8">
+              {description}
+            </p>
+          )}
 
-          {/* Item Name (if provided) */}
-          {itemName && (
+          {!minimal && itemName && (
             <div className="mb-6 sm:mb-8 p-3 sm:p-4 bg-muted rounded-lg border border-border">
               <p className="text-xs sm:text-sm text-muted-foreground text-center mb-1">
                 {type === 'delete' ? 'Item to be deleted:' : 'Target:'}
@@ -156,8 +156,7 @@ export function ConfirmationDialog({
             </div>
           )}
 
-          {/* Warning Message */}
-          {(type === 'delete' || type === 'danger') && (
+          {!minimal && (type === 'delete' || type === 'danger') && (
             <div className={`mb-6 sm:mb-8 p-3 sm:p-4 rounded-lg border ${config.borderColor} ${config.iconBg}`}>
               <div className="flex items-start gap-2 sm:gap-3">
                 <AlertTriangle className={`h-4 w-4 sm:h-5 sm:w-5 ${config.iconColor} flex-shrink-0 mt-0.5`} />
@@ -173,7 +172,6 @@ export function ConfirmationDialog({
             </div>
           )}
 
-          {/* Action Buttons */}
           <div className="flex flex-col-reverse sm:flex-row gap-3">
             <Button
               variant="outline"
@@ -186,7 +184,7 @@ export function ConfirmationDialog({
             <Button
               onClick={handleConfirm}
               disabled={loading}
-              className={`flex-1 border-2 h-11 sm:h-12 text-sm sm:text-base font-semibold text-white shadow-lg ${config.confirmBg}`}
+              className={`flex-1 border-2 h-11 sm:h-12 text-sm sm:text-base font-semibold ${minimal ? 'text-destructive border-destructive/40 hover:bg-destructive/10' : 'text-white shadow-lg'} ${config.confirmBg}`}
             >
               {loading ? (
                 <>

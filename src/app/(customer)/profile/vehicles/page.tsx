@@ -12,6 +12,7 @@ import { useVehicleContext } from '@/context/VehicleContext';
 import { useVehicles, useDeleteVehicle, useUpdateVehicle } from '@/api/domains/vehicles/queries';
 import { EmptyState } from '@/components/shared/display/EmptyState';
 import { AddVehicleModal } from '@/components/shared/forms/AddVehicleModal';
+import { EditVehicleDialog } from '@/components/shared/dialogs/EditVehicleDialog';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
 import type { Vehicle } from '@/types/vehicle';
@@ -25,6 +26,7 @@ export default function VehiclesPage() {
   const updateVehicleMutation = useUpdateVehicle();
   const [deleteVehicleId, setDeleteVehicleId] = useState<string | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [editVehicle, setEditVehicle] = useState<Vehicle | null>(null);
 
   const vehicles = vehiclesData || [];
 
@@ -50,8 +52,7 @@ export default function VehiclesPage() {
   };
 
   const handleEdit = (vehicle: Vehicle) => {
-    toast.info('Edit functionality coming soon');
-    // TODO: Open edit modal with vehicle data
+    setEditVehicle(vehicle);
   };
 
   const handleAddVehicle = () => {
@@ -66,12 +67,13 @@ export default function VehiclesPage() {
     return <Error message="Failed to load vehicles" />;
   }
 
-  const carVehicles = vehicles.filter(v => v.type === 'car');
+  const carVehicles = vehicles.filter(v => ['car', 'hatchback', 'sedan', 'suv'].includes(v.type));
   const bikeVehicles = vehicles.filter(v => v.type === 'bike');
 
   const VehicleCard = ({ vehicle }: { vehicle: Vehicle }) => {
-    const Icon = vehicle.type === 'car' ? Car : Bike;
-    const vehicleImage = vehicle.type === 'car' 
+    const isCarType = ['car', 'hatchback', 'sedan', 'suv'].includes(vehicle.type);
+    const Icon = isCarType ? Car : Bike;
+    const vehicleImage = isCarType
       ? '/images/vehicles/car-placeholder.svg' 
       : '/images/vehicles/bike-placeholder.svg';
     
@@ -217,38 +219,35 @@ export default function VehiclesPage() {
 
   return (
     <div className="min-h-screen bg-background pb-32 lg:pb-8">
-      {/* Header - Responsive */}
-      <section className="bg-gradient-to-br from-primary/5 to-background border-b border-border">
-        <div className="container-custom py-6 sm:py-8 lg:py-12">
+      {/* Header Section */}
+      <section className="sticky top-0 z-10 border-b border-border/40 bg-background/80 backdrop-blur-sm">
+        <div className="container-custom py-4 sm:py-6">
           <Button
             variant="ghost"
             onClick={() => router.push(CustomerRoutes.PROFILE)}
-            className="mb-3 sm:mb-4 hover:bg-muted h-9 sm:h-10"
+            className="mb-4 h-9 px-3 text-sm hover:bg-muted/80 transition-colors"
           >
-            <ArrowLeft className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span className="text-xs sm:text-sm">Back to Profile</span>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
           </Button>
-          <div className="flex items-start sm:items-center justify-between gap-3 sm:gap-4 flex-wrap">
-            <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-              <div className="p-2 sm:p-3 bg-primary/10 rounded-lg sm:rounded-xl flex-shrink-0">
-                <Car className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary" />
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-lg bg-primary/10 text-primary">
+                <Car className="h-6 w-6" />
               </div>
-              <div className="min-w-0 flex-1">
-                <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-foreground truncate">
-                  My Vehicles
-                </h1>
-                <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1 truncate">
+              <div>
+                <h1 className="text-3xl font-bold tracking-tight">My Vehicles</h1>
+                <p className="text-sm text-muted-foreground mt-0.5">
                   {vehicles.length} vehicle{vehicles.length !== 1 ? 's' : ''} registered
                 </p>
               </div>
             </div>
             <Button 
-              className="shadow-lg border-2 h-9 sm:h-10 flex-shrink-0"
-              size="sm"
               onClick={handleAddVehicle}
+              className="h-11 px-6 gap-2 whitespace-nowrap font-semibold"
             >
-              <Plus className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline text-xs sm:text-sm">Add Vehicle</span>
+              <Plus className="h-5 w-5" />
+              <span className="hidden sm:inline">Add New</span>
             </Button>
           </div>
         </div>
@@ -319,6 +318,13 @@ export default function VehiclesPage() {
       <AddVehicleModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
+      />
+
+      {/* Edit Vehicle Dialog */}
+      <EditVehicleDialog
+        open={!!editVehicle}
+        onOpenChange={(open) => !open && setEditVehicle(null)}
+        vehicle={editVehicle}
       />
 
       {/* Delete Confirmation Dialog */}

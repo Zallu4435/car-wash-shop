@@ -80,24 +80,22 @@ export default function FAQPage() {
 
   return (
     <div className="min-h-screen bg-background pb-32 lg:pb-8">
-      {/* Header */}
-      <section className="bg-gradient-to-br from-primary/5 to-background border-b border-border">
-        <div className="container-custom py-6 sm:py-8">
+      {/* Header Section */}
+      <section className="sticky top-0 z-10 border-b border-border/40 bg-background/80 backdrop-blur-sm">
+        <div className="container-custom py-4 sm:py-6">
           <Link href={CustomerRoutes.SUPPORT}>
-            <Button variant="ghost" className="mb-3 sm:mb-4 hover:bg-muted h-9 sm:h-10">
-              <ArrowLeft className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              <span className="text-xs sm:text-sm">Back to Support</span>
+            <Button variant="ghost" className="mb-4 h-9 px-3 text-sm hover:bg-muted/80 transition-colors">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back
             </Button>
           </Link>
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="p-2 sm:p-3 bg-primary/10 rounded-lg sm:rounded-xl flex-shrink-0">
-              <FileQuestion className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary" />
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-lg bg-primary/10 text-primary">
+              <FileQuestion className="h-6 w-6" />
             </div>
-            <div className="min-w-0 flex-1">
-              <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-foreground truncate">
-                Frequently Asked Questions
-              </h1>
-              <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1 truncate">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">Frequently Asked Questions</h1>
+              <p className="text-sm text-muted-foreground mt-0.5">
                 Find quick answers to common questions
               </p>
             </div>
@@ -216,7 +214,7 @@ export default function FAQPage() {
                     Can't find what you're looking for? Our support team is here to help!
                   </p>
                   <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 justify-center">
-                    <Button asChild className="shadow-lg border-2 h-9 sm:h-10">
+                    <Button asChild className="border-2 h-9 sm:h-10">
                       <Link href={CustomerRoutes.SUPPORT}>Contact Support</Link>
                     </Button>
                     <Button asChild variant="outline" className="border-2 h-9 sm:h-10">

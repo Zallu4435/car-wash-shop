@@ -125,7 +125,7 @@ export function FormBuilder({
             </div>
           ))}
 
-          <Button type="submit" disabled={isLoading} className="w-full shadow-lg h-10 sm:h-11 text-xs sm:text-sm border-2">
+          <Button type="submit" disabled={isLoading} className="w-full h-10 sm:h-11 text-xs sm:text-sm border-2">
             {isLoading ? 'Saving...' : submitLabel}
           </Button>
         </form>

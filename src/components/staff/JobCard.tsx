@@ -106,7 +106,7 @@ export function JobCard({ job }: JobCardProps) {
 
         {/* Actions */}
         <div className="flex gap-2">
-          <Button className="flex-1 shadow-md" asChild>
+          <Button className="flex-1" asChild>
             <Link href={`/staff/jobs/${job.id}`}>
               View Details
             </Link>

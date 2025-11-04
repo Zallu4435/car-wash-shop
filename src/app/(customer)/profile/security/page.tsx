@@ -128,24 +128,22 @@ export default function SecurityPage() {
 
   return (
     <div className="min-h-screen bg-background pb-32 lg:pb-8">
-      {/* Header - Responsive */}
-      <section className="bg-gradient-to-br from-primary/5 to-background border-b border-border">
-        <div className="container-custom py-6 sm:py-8 lg:py-12">
-          <Button asChild variant="ghost" className="mb-3 sm:mb-4 h-9 sm:h-10">
+      {/* Header Section */}
+      <section className="sticky top-0 z-10 border-b border-border/40 bg-background/80 backdrop-blur-sm">
+        <div className="container-custom py-4 sm:py-6">
+          <Button asChild variant="ghost" className="mb-4 h-9 px-3 text-sm hover:bg-muted/80 transition-colors">
             <Link href={CustomerRoutes.PROFILE}>
-              <ArrowLeft className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              <span className="text-xs sm:text-sm">Back to Profile</span>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back
             </Link>
           </Button>
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="p-2 sm:p-3 bg-primary/10 rounded-lg sm:rounded-xl flex-shrink-0">
-              <Shield className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary" />
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-lg bg-primary/10 text-primary">
+              <Shield className="h-6 w-6" />
             </div>
-            <div className="min-w-0 flex-1">
-              <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-foreground truncate">
-                Security Settings
-              </h1>
-              <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1 truncate">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">Security Settings</h1>
+              <p className="text-sm text-muted-foreground mt-0.5">
                 Manage your account security and privacy
               </p>
             </div>
@@ -248,7 +246,7 @@ export default function SecurityPage() {
                     )}
                   </div>
 
-                  <Button type="submit" className="w-full shadow-lg border-2 h-10 sm:h-11 text-xs sm:text-sm">
+                  <Button type="submit" className="w-full border-2 h-10 sm:h-11 text-xs sm:text-sm">
                     <Key className="mr-2 h-4 w-4" />
                     Change Password
                   </Button>

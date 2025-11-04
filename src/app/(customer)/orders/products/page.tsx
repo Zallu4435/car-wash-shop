@@ -80,28 +80,33 @@ export default function ProductOrdersPage() {
 
   return (
     <div className="min-h-screen bg-background pb-32 lg:pb-8">
-      {/* Header - Responsive */}
-      <section className="border-b border-border">
-        <div className="container-custom py-6 sm:py-8 lg:py-12">
-          <Button asChild variant="ghost" className="mb-3 sm:mb-4 h-9 sm:h-10">
+      {/* Header Section */}
+      <section className="sticky top-0 z-10 border-b border-border/40 bg-background/80 backdrop-blur-sm">
+        <div className="container-custom py-4 sm:py-6">
+          <Button asChild variant="ghost" className="mb-4 h-9 px-3 text-sm hover:bg-muted/80 transition-colors">
             <Link href={CustomerRoutes.ORDERS}>
-              <ArrowLeft className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              <span className="text-xs sm:text-sm">Back to Orders</span>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back
             </Link>
           </Button>
-          <div className="flex items-center gap-2 sm:gap-3">
-            <ShoppingBag className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-purple-600 dark:text-purple-400 flex-shrink-0" />
-            <div className="min-w-0 flex-1">
-              <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-foreground truncate">
-                Product Orders
-              </h1>
-              <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1 truncate">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400">
+              <ShoppingBag className="h-6 w-6" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">Product Orders</h1>
+              <p className="text-sm text-muted-foreground mt-0.5">
                 {filteredOrders.length} product {filteredOrders.length === 1 ? 'order' : 'orders'}
               </p>
             </div>
           </div>
+        </div>
+      </section>
 
-          <Button asChild variant="outline" className="border-2 mt-3 sm:mt-4 h-9 sm:h-10" size="sm">
+      {/* Additional Button */}
+      <section className="border-b border-border bg-muted/30">
+        <div className="container-custom py-3">
+          <Button asChild variant="outline" className="border-2 h-9" size="sm">
             <Link href={CustomerRoutes.ORDERS_SERVICES} className="text-xs sm:text-sm">
               <Car className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
               View Service Orders

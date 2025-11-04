@@ -9,6 +9,7 @@ interface ConfirmationOptions {
   cancelText?: string;
   type?: ConfirmationType;
   itemName?: string;
+  minimal?: boolean;
 }
 
 export function useConfirmation() {
@@ -56,6 +57,7 @@ export function useConfirmation() {
         confirmText={options.confirmText}
         cancelText={options.cancelText}
         itemName={options.itemName}
+        minimal={options.minimal}
       />
     );
   };

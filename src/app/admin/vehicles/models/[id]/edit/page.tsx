@@ -330,7 +330,7 @@ export default function EditVehicleModelPage() {
               >
                 Cancel
               </Button>
-              <Button type="submit" className="flex-1 shadow-lg h-10 sm:h-11 text-xs sm:text-sm border-2" disabled={isSubmitting}>
+              <Button type="submit" className="flex-1 h-10 sm:h-11 text-xs sm:text-sm border-2" disabled={isSubmitting}>
                 <Save className="mr-1.5 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                 {isSubmitting ? 'Saving...' : 'Save Changes'}
               </Button>

@@ -29,7 +29,7 @@ export default function Error({ message = 'Something went wrong', onRetry, detai
             </div>
           )}
           {onRetry && (
-            <Button onClick={onRetry} className="w-full shadow-lg border-2 h-11 sm:h-12 text-sm sm:text-base" size="lg">
+            <Button onClick={onRetry} className="w-full border-2 h-11 sm:h-12 text-sm sm:text-base" size="lg">
               <RefreshCw className="mr-2 h-4 w-4" />
               Try Again
             </Button>

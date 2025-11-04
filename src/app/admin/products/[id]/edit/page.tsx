@@ -276,7 +276,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
               >
                 Cancel
               </Button>
-              <Button type="submit" className="flex-1 h-9 sm:h-10 text-xs sm:text-sm shadow-lg border-2 rounded-lg" disabled={isSubmitting}>
+              <Button type="submit" className="flex-1 h-9 sm:h-10 text-xs sm:text-sm border-2 rounded-lg" disabled={isSubmitting}>
                 <Save className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                 {isSubmitting ? 'Updating...' : 'Update Product'}
               </Button>

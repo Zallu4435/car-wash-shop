@@ -81,18 +81,16 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-background pb-32 lg:pb-8">
-      {/* Header - Responsive */}
-      <section className="bg-gradient-to-br from-primary/5 to-background border-b border-border">
-        <div className="container-custom py-6 sm:py-8 lg:py-12">
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="p-2 sm:p-3 bg-primary/10 rounded-lg sm:rounded-xl flex-shrink-0">
-              <User className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-primary" />
+      {/* Header Section */}
+      <section className="sticky top-0 z-10 border-b border-border/40 bg-background/80 backdrop-blur-sm">
+        <div className="container-custom py-4 sm:py-6">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-lg bg-primary/10 text-primary">
+              <User className="h-6 w-6" />
             </div>
-            <div className="min-w-0 flex-1">
-              <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-foreground truncate">
-                My Profile
-              </h1>
-              <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1 truncate">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">My Profile</h1>
+              <p className="text-sm text-muted-foreground mt-0.5">
                 Manage your account information
               </p>
             </div>

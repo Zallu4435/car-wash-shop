@@ -290,7 +290,7 @@ export function AddAddressDialog({ open, onOpenChange, onAddressAdded }: AddAddr
             </Button>
             <Button 
               type="submit" 
-              className="flex-1 h-9 sm:h-10 lg:h-11 text-xs sm:text-sm shadow-md border-2" 
+              className="flex-1 h-9 sm:h-10 lg:h-11 text-xs sm:text-sm border-2" 
               disabled={createAddressMutation.isPending}
             >
               {createAddressMutation.isPending ? 'Adding...' : 'Add Address'}

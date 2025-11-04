@@ -244,7 +244,7 @@ export default function EditPosterPage({ params }: { params: Promise<{ id: strin
             )}
 
             {/* Submit Button */}
-            <Button type="submit" className="w-full shadow-lg h-10 sm:h-11 text-xs sm:text-sm border-2" disabled={isSubmitting}>
+            <Button type="submit" className="w-full h-10 sm:h-11 text-xs sm:text-sm border-2" disabled={isSubmitting}>
               <Save className="mr-1.5 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5" />
               {isSubmitting ? 'Updating...' : 'Update Poster'}
             </Button>

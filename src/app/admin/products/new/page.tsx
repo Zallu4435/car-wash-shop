@@ -286,7 +286,7 @@ export default function NewProductPage() {
             )}
 
             {/* Submit Button */}
-            <Button type="submit" className="w-full h-10 sm:h-11 text-sm sm:text-base shadow-lg border-2 rounded-lg" disabled={isSubmitting}>
+            <Button type="submit" className="w-full h-10 sm:h-11 text-sm sm:text-base border-2 rounded-lg" disabled={isSubmitting}>
               <Plus className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
               {isSubmitting ? 'Adding...' : 'Add Product'}
             </Button>

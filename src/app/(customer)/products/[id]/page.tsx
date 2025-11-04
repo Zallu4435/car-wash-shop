@@ -241,7 +241,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                   <div className="space-y-3">
                     <Button 
                       size="lg" 
-                      className="w-full shadow-lg h-12" 
+                      className="w-full h-12" 
                       onClick={handleAddToCart}
                       disabled={!product.isAvailable || addToCartMutation.isPending}
                     >

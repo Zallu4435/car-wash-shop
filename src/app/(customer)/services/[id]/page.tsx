@@ -272,7 +272,7 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
                 </div>
 
                 {/* Book Button */}
-                <Button asChild className="w-full shadow-lg border-2 h-11 sm:h-12 text-sm sm:text-base" size="lg">
+                <Button asChild className="w-full border-2 h-11 sm:h-12 text-sm sm:text-base" size="lg">
                   <Link href={`${CustomerRoutes.BOOK}?serviceId=${service.id}&addOns=${selectedAddOns.join(',')}`}>
                     Book Now - ₹{calculateTotal()}
                   </Link>
@@ -315,7 +315,7 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
                     <p className="text-sm font-semibold text-foreground">{calculateDuration()} mins</p>
                   </div>
                 </div>
-                <Button asChild className="w-full shadow-lg border-2 h-12 text-sm font-semibold" size="lg">
+                <Button asChild className="w-full border-2 h-12 text-sm font-semibold" size="lg">
                   <Link href={`${CustomerRoutes.BOOK}?serviceId=${service.id}&addOns=${selectedAddOns.join(',')}`}>
                     Book Now - ₹{calculateTotal()}
                   </Link>

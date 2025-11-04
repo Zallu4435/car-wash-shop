@@ -65,33 +65,31 @@ export default function ComplaintsListPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <section className="bg-gradient-to-br from-primary/5 to-background border-b border-border">
-        <div className="container-custom py-6 sm:py-8">
+      {/* Header Section */}
+      <section className="sticky top-0 z-10 border-b border-border/40 bg-background/80 backdrop-blur-sm">
+        <div className="container-custom py-4 sm:py-6">
           <Link href={CustomerRoutes.SUPPORT}>
-            <Button variant="ghost" className="mb-3 sm:mb-4 hover:bg-muted h-9 sm:h-10">
-              <ArrowLeft className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              <span className="text-xs sm:text-sm">Back to Support</span>
+            <Button variant="ghost" className="mb-4 h-9 px-3 text-sm hover:bg-muted/80 transition-colors">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back
             </Button>
           </Link>
           <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-              <div className="p-2 sm:p-3 bg-red-50 dark:bg-red-950/30 rounded-lg sm:rounded-xl flex-shrink-0">
-                <FileText className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-red-600 dark:text-red-400" />
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-lg bg-red-500/10 text-red-600 dark:text-red-400">
+                <FileText className="h-6 w-6" />
               </div>
-              <div className="min-w-0 flex-1">
-                <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-foreground truncate">
-                  My Complaints
-                </h1>
-                <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1 truncate">
+              <div>
+                <h1 className="text-3xl font-bold tracking-tight">My Complaints</h1>
+                <p className="text-sm text-muted-foreground mt-0.5">
                   Track and manage your complaints
                 </p>
               </div>
             </div>
-            <Button asChild className="shadow-md h-9 sm:h-10 text-xs sm:text-sm flex-shrink-0">
+            <Button asChild className="h-11 px-6 gap-2 whitespace-nowrap font-semibold">
               <Link href={CustomerRoutes.COMPLAINTS}>
-                <AlertCircle className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                New Complaint
+                <AlertCircle className="h-5 w-5" />
+                <span className="hidden sm:inline">New Complaint</span>
               </Link>
             </Button>
           </div>

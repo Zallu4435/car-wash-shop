@@ -47,7 +47,7 @@ export default function InvoicePage({ params }: { params: Promise<{ id: string }
                     <p className="text-muted-foreground">Invoice #INV-{id}</p>
                     <p className="text-sm text-muted-foreground mt-1">Date: Oct 24, 2025</p>
                   </div>
-                  <Button className="shadow-lg">
+                  <Button className="">
                     <Download className="mr-2 h-4 w-4" />
                     Download PDF
                   </Button>

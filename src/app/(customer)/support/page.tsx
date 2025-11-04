@@ -44,7 +44,7 @@ export default function SupportPage() {
                     Had an issue with your service or order? Let us know and we'll resolve it quickly.
                   </p>
                   <div className="flex flex-col gap-2">
-                    <Button asChild className="w-full shadow-lg border-2 h-9 sm:h-10">
+                    <Button asChild className="w-full border-2 h-9 sm:h-10">
                       <Link href={CustomerRoutes.COMPLAINTS} className="text-xs sm:text-sm">Submit Complaint</Link>
                     </Button>
                     <Button asChild variant="outline" className="w-full border-2 h-9 sm:h-10">
