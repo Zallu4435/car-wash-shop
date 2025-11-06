@@ -28,7 +28,11 @@ export function middleware(request: NextRequest) {
     (isAdminRoute && !isAdminAuthRoute) ||
     (isStaffRoute && !isStaffAuthRoute) ||
     pathname.startsWith('/account') ||
-    pathname.startsWith('/orders');
+    pathname.startsWith('/orders') ||
+    pathname.startsWith('/cart') ||
+    pathname.startsWith('/checkout')||
+    pathname.startsWith('/profile') ||
+    pathname.startsWith('/notifications') 
 
   // If logged in, prevent access to auth pages
   if (logged && isAuthRoute) {

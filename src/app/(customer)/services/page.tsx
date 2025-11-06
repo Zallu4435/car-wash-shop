@@ -65,7 +65,10 @@ export default function ServicesPage() {
     id: cat.id,
     name: cat.name,
     vehicleTypeId: 'car', // Default to car for now
-    count: allServices.filter((s: any) => s.category === cat.id).length,
+    count: allServices.filter((s: any) => {
+      // Match by category ID (normalized) or category name (raw)
+      return s.category?.id === cat.id || s.categoryId === cat.name || (typeof s.category === 'string' && s.category === cat.name);
+    }).length,
   }));
 
   const getFilteredCategories = () => {
@@ -134,8 +137,10 @@ export default function ServicesPage() {
     const matchesVehicleType = selectedVehicleTypes.length === 0 || 
       selectedVehicleTypes.includes(service.vehicleType);
     
+    // Match by category ID (normalized) or category name (raw)
+    const serviceCategoryId = service.category?.id || service.categoryId || (typeof service.category === 'string' ? service.category : '');
     const matchesCategory = selectedCategories.length === 0 || 
-      selectedCategories.includes(service.category);
+      selectedCategories.includes(serviceCategoryId);
     
     return matchesVehicleType && matchesCategory;
   });

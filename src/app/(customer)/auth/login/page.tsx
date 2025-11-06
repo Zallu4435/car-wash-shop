@@ -114,19 +114,13 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background py-8 sm:py-12 px-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-6 sm:mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 bg-primary rounded-xl sm:rounded-2xl mb-3 sm:mb-4">
-            <Droplet className="h-7 w-7 sm:h-8 sm:w-8 text-primary-foreground" />
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">CarWash App</h1>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-1 sm:mt-2">
-            Your trusted car care partner
-          </p>
-        </div>
+    <div className="flex items-center justify-center bg-background py-8 sm:py-12 px-4" style={{ height: 'calc(100vh - 64px)' }}>
 
-        <Card className="border-2">
+      <div className="w-full max-w-md">
+    
+
+
+<Card className="border-2  shadow-none hover:shadow-none">
           <CardHeader className="text-center space-y-1.5 sm:space-y-2 pb-4 sm:pb-6">
             <div className="flex items-center justify-center gap-2">
               <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">

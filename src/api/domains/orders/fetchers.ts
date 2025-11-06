@@ -7,35 +7,10 @@ import type {
   CouponValidation,
 } from '@/types/order';
 import { CustomerRoutes } from '@/lib/constants/routes';
-import { mockOrders } from '@/mocks/data/customer-mock-data';
-
-const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true';
+// Mocks removed; always hit API for orders endpoints
 
 export const orderFetchers = {
   async getOrders(filters?: OrderFilters): Promise<PaginatedResponse<Order>> {
-    if (USE_MOCK_DATA) {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      let filteredOrders = [...mockOrders];
-      
-      if (filters?.status) {
-        filteredOrders = filteredOrders.filter(o => o.status === filters.status);
-      }
-      
-      const page = filters?.page || 1;
-      const limit = filters?.limit || 10;
-      const startIndex = (page - 1) * limit;
-      const paginatedOrders = filteredOrders.slice(startIndex, startIndex + limit);
-      
-      return {
-        data: paginatedOrders as any,
-        total: filteredOrders.length,
-        page,
-        limit,
-        totalPages: Math.ceil(filteredOrders.length / limit),
-      };
-    }
-    
     const { data } = await apiClient.get<ApiResponse<PaginatedResponse<Order>>>(
       CustomerRoutes.ORDERS,
       { params: filters }
@@ -44,13 +19,6 @@ export const orderFetchers = {
   },
 
   async getOrderById(orderId: string): Promise<Order> {
-    if (USE_MOCK_DATA) {
-      await new Promise(resolve => setTimeout(resolve, 300));
-      const order = mockOrders.find(o => o.id === orderId);
-      if (!order) throw new Error('Order not found');
-      return order as any;
-    }
-    
     const { data } = await apiClient.get<ApiResponse<Order>>(
       `${CustomerRoutes.ORDERS}/${orderId}`
     );
@@ -65,11 +33,6 @@ export const orderFetchers = {
   },
 
   async cancelOrder(orderId: string): Promise<{ message: string }> {
-    if (USE_MOCK_DATA) {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      return { message: 'Order cancelled successfully' };
-    }
-    
     const { data } = await apiClient.post<ApiResponse<{ message: string }>>(
       `${CustomerRoutes.ORDERS}/${orderId}/cancel`
     );

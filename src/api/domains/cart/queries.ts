@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { cartFetchers } from './fetchers';
 import type { AddToCartInput, UpdateCartItemInput } from '@/types/cart';
 import { toast } from 'sonner';
+import { useAuth } from '@/context/AuthContext';
 
 export const cartKeys = {
   all: ['cart'] as const,
@@ -9,10 +10,14 @@ export const cartKeys = {
 };
 
 export const useCart = () => {
+  const { isAuthenticated } = useAuth();
+  
   return useQuery({
     queryKey: cartKeys.detail(),
     queryFn: cartFetchers.getCart,
+    enabled: isAuthenticated, // Only fetch when user is authenticated (reactive)
     staleTime: 30 * 1000, // 30 seconds
+    refetchOnMount: true, // Always refetch when component mounts (helps after login)
   });
 };
 

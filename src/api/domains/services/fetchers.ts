@@ -7,82 +7,70 @@ import type {
   ServiceListResponse,
 } from '@/types/service';
 import { CustomerRoutes } from '@/lib/constants/routes';
-import { mockServices } from '@/mocks/data/customer-mock-data';
-
-// Use mock data for testing
-const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true';
 
 export const serviceFetchers = {
   async getServices(filters?: ServiceFilters): Promise<ServiceListResponse> {
-    if (USE_MOCK_DATA) {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      let filteredServices = [...mockServices];
-      
-      if (filters?.category) {
-        filteredServices = filteredServices.filter(s => s.category === filters.category);
-      }
-      if (filters?.search) {
-        filteredServices = filteredServices.filter(s => 
-          s.name.toLowerCase().includes(filters.search!.toLowerCase()) ||
-          s.description.toLowerCase().includes(filters.search!.toLowerCase())
-        );
-      }
-      if (filters?.isAvailable !== undefined) {
-        filteredServices = filteredServices.filter(s => s.isAvailable === filters.isAvailable);
-      }
-      
-      const page = filters?.page || 1;
-      const limit = filters?.limit || 10;
-      const startIndex = (page - 1) * limit;
-      const endIndex = startIndex + limit;
-      const paginatedServices = filteredServices.slice(startIndex, endIndex);
-      
-      return {
-        data: paginatedServices,
-        total: filteredServices.length,
-        page,
-        limit,
-        totalPages: Math.ceil(filteredServices.length / limit),
-      };
-    }
-    
-    const { data } = await apiClient.get<ApiResponse<ServiceListResponse>>(
-      CustomerRoutes.SERVICES,
-      { params: filters }
-    );
-    return data.data!;
+    const { data } = await apiClient.get<ApiResponse<{
+      data: any[];
+      total: number;
+      page: number;
+      limit: number;
+      totalPages: number;
+    }>>(CustomerRoutes.SERVICES, { params: filters });
+
+    const resp = data.data!;
+    const mapped = resp.data.map((p: any) => ({
+      id: p._id || p.id,
+      name: p.name,
+      description: p.description,
+      price: p.price,
+      // default duration (minutes) if none provided by backend
+      duration: typeof p.duration === 'number' ? p.duration : 60,
+      rating: typeof p.rating === 'number' ? p.rating : 0,
+      reviewCount: typeof p.reviewCount === 'number' ? p.reviewCount : 0,
+      imageUrl: p.image,
+      categoryId: p.category,
+      category: p.category ? { id: String(p.category).toLowerCase().replace(/\s+/g, '-'), name: p.category } : undefined,
+      // optional fields for other parts of UI
+      vehicleType: p.vehicleType || 'car',
+      isAvailable: typeof p.isAvailable === 'boolean' ? p.isAvailable : true,
+    }));
+
+    return {
+      data: mapped as unknown as Service[],
+      total: resp.total,
+      page: resp.page,
+      limit: resp.limit,
+      totalPages: resp.totalPages,
+    };
   },
 
   async getServiceById(serviceId: string): Promise<Service> {
-    if (USE_MOCK_DATA) {
-      await new Promise(resolve => setTimeout(resolve, 300));
-      const service = mockServices.find(s => s.id === serviceId);
-      if (!service) throw new Error('Service not found');
-      return service;
-    }
-    
-    const { data } = await apiClient.get<ApiResponse<Service>>(
+    const { data } = await apiClient.get<ApiResponse<any>>(
       `${CustomerRoutes.SERVICES}/${serviceId}`
     );
-    return data.data!;
+    const p = data.data!;
+    return {
+      id: p._id || p.id,
+      name: p.name,
+      description: p.description,
+      price: p.price,
+      duration: typeof p.duration === 'number' ? p.duration : 60,
+      rating: typeof p.rating === 'number' ? p.rating : 0,
+      reviewCount: typeof p.reviewCount === 'number' ? p.reviewCount : 0,
+      imageUrl: p.image,
+      categoryId: p.category,
+      category: p.category ? { id: String(p.category).toLowerCase().replace(/\s+/g, '-'), name: p.category } : undefined,
+      vehicleType: p.vehicleType || 'car',
+      isAvailable: typeof p.isAvailable === 'boolean' ? p.isAvailable : true,
+    } as unknown as Service;
   },
 
   async getServiceCategories(): Promise<ServiceCategory[]> {
-    if (USE_MOCK_DATA) {
-      await new Promise(resolve => setTimeout(resolve, 300));
-      const categories = Array.from(new Set(mockServices.map(s => s.category)));
-      return categories.map(cat => ({
-        id: cat.toLowerCase().replace(/\s+/g, '-'),
-        name: cat,
-        count: mockServices.filter(s => s.category === cat).length,
-      }));
-    }
-    
-    const { data } = await apiClient.get<ApiResponse<ServiceCategory[]>>(
+    const { data } = await apiClient.get<ApiResponse<string[]>>(
       CustomerRoutes.SERVICES_CATEGORIES
     );
-    return data.data!;
+    const categories = data.data || [];
+    return categories.map((name: string) => ({ id: name.toLowerCase().replace(/\s+/g, '-'), name }));
   },
 };

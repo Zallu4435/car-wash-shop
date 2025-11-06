@@ -102,7 +102,7 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
             {/* Service Info */}
             <div>
               <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3 flex-wrap">
-                <Badge variant="default" className="text-xs sm:text-sm">{service.category}</Badge>
+                <Badge variant="default" className="text-xs sm:text-sm">{service.category?.name || service.categoryId || ''}</Badge>
                 <div className="flex items-center text-xs sm:text-sm text-muted-foreground">
                   <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1" />
                   30 mins

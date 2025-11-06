@@ -54,9 +54,9 @@ apiClient.interceptors.response.use(
     // On unauthorized (after failed refresh), clear token and redirect to login
     if (error.response?.status === 401) {
       setGlobalAccessToken(null);
-      if (typeof window !== 'undefined') {
-        window.location.href = '/auth/login';
-      }
+  if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/auth')) {
+    window.location.href = '/auth/login';
+  }
     }
 
     const errorMessage =

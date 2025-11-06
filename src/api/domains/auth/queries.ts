@@ -4,6 +4,7 @@ import { getAccessToken, setAccessToken as setGlobalAccessToken } from '@/state/
 import type { RegisterInput } from '@/types/auth';
 import { useRouter } from 'next/navigation';
 import { CustomerRoutes } from '@/lib/constants/routes';
+import { cartKeys } from '../cart/queries';
 
 export const authKeys = {
   all: ['auth'] as const,
@@ -36,6 +37,12 @@ export const useVerifyOtp = () => {
     onSuccess: (data) => {
       setGlobalAccessToken(data.token);
       queryClient.setQueryData(authKeys.currentUser(), data.user);
+      // Invalidate and refetch cart query with new auth token
+      // Using setTimeout to ensure auth context updates first
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: cartKeys.detail() });
+        queryClient.refetchQueries({ queryKey: cartKeys.detail() });
+      }, 0);
       router.push(CustomerRoutes.HOME);
     },
   });
@@ -50,6 +57,12 @@ export const useRegister = () => {
     onSuccess: (data) => {
       setGlobalAccessToken(data.token);
       queryClient.setQueryData(authKeys.currentUser(), data.user);
+      // Invalidate and refetch cart query with new auth token
+      // Using setTimeout to ensure auth context updates first
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: cartKeys.detail() });
+        queryClient.refetchQueries({ queryKey: cartKeys.detail() });
+      }, 0);
       router.push(CustomerRoutes.HOME);
     },
   });

@@ -28,6 +28,7 @@ import { changePasswordSchema, ChangePasswordInput } from '@/schemas/customer/pr
 import { useConfirmation } from '@/hooks/useConfirmation';
 import { CustomerRoutes } from '@/lib/constants/routes';
 import { DangerZone } from '@/components/admin/DangerZone';
+import { useChangePassword, useDeleteAccount } from '@/api/domains/profile/queries';
 
 export default function SecurityPage() {
   const router = useRouter();
@@ -36,12 +37,15 @@ export default function SecurityPage() {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loginAlertsEnabled, setLoginAlertsEnabled] = useState(true);
+  
+  const changePasswordMutation = useChangePassword();
+  const deleteAccountMutation = useDeleteAccount();
 
   // Password change form
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
     reset,
   } = useForm<ChangePasswordInput>({
     resolver: zodResolver(changePasswordSchema),
@@ -74,11 +78,13 @@ export default function SecurityPage() {
     },
   ]);
 
-  const onPasswordChange = (data: ChangePasswordInput) => {
-    // TODO: Call API to change password
-    console.log('Password change data:', data);
-    toast.success('Password changed successfully!');
-    reset();
+  const onPasswordChange = async (data: ChangePasswordInput) => {
+    try {
+      await changePasswordMutation.mutateAsync(data);
+      reset();
+    } catch (error) {
+      // Error handling is done in the hook
+    }
   };
 
   const handleLogoutSession = async (sessionId: string) => {
@@ -121,8 +127,11 @@ export default function SecurityPage() {
     });
 
     if (confirmed) {
-      // TODO: Call API to delete account
-      toast.error('Account deletion initiated. Please check your email.');
+      try {
+        await deleteAccountMutation.mutateAsync();
+      } catch (_) {
+        // toast handled in hook
+      }
     }
   };
 
@@ -246,9 +255,13 @@ export default function SecurityPage() {
                     )}
                   </div>
 
-                  <Button type="submit" className="w-full border-2 h-10 sm:h-11 text-xs sm:text-sm">
+                  <Button 
+                    type="submit" 
+                    className="w-full border-2 h-10 sm:h-11 text-xs sm:text-sm"
+                    disabled={isSubmitting || changePasswordMutation.isPending}
+                  >
                     <Key className="mr-2 h-4 w-4" />
-                    Change Password
+                    {isSubmitting || changePasswordMutation.isPending ? 'Changing Password...' : 'Change Password'}
                   </Button>
                 </form>
               </CardContent>

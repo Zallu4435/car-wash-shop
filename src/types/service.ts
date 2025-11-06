@@ -3,12 +3,14 @@ export interface Service {
   name: string;
   description: string;
   price: number;
-  duration: string; // e.g., '30 minutes'
+  duration: number | string; // number in minutes, or string like '30 minutes'
   vehicleType: 'car' | 'bike';
-  category: string;
-  features: string[];
+  category?: ServiceCategory | string; // Can be object with id/name or string
+  categoryId?: string; // Raw category ID/name from backend
+  features?: string[];
   isAvailable: boolean;
   image?: string;
+  imageUrl?: string;
   rating?: number;
   reviewCount?: number;
   popular?: boolean;

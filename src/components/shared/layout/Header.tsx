@@ -20,7 +20,6 @@ const navigation = [
   { name: 'Support', href: '/support' },
 ];
 
-// Default avatar for users without profile picture
 const DEFAULT_AVATAR = '/images/avatars/default-avatar.svg';
 
 export default function EnhancedHeader() {
@@ -39,13 +38,9 @@ export default function EnhancedHeader() {
   const { selectedVehicle, selectVehicle, clearVehicle, hasVehicles } = useVehicleContext();
   const updateVehicleMutation = useUpdateVehicle();
   
-  // Fetch cart data
   const { data: cartData } = useCart();
-  
-  // Calculate cart count
   const cartCount = cartData?.items?.length || 0;
 
-  // Reset avatar error when user changes
   useEffect(() => {
     setAvatarError(false);
   }, [user?.avatar]);
@@ -58,17 +53,16 @@ export default function EnhancedHeader() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Prevent body scroll when mobile menu is open
   useEffect(() => {
-    if (mobileMenuOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-    return () => {
-      document.body.style.overflow = 'unset';
+    const handleScroll = () => {
+      if (mobileMenuOpen) {
+        setMobileMenuOpen(false);
+      }
     };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, [mobileMenuOpen]);
+  
 
   const handleNavigation = (href: string) => {
     router.push(href);
@@ -82,15 +76,11 @@ export default function EnhancedHeader() {
   };
 
   const handleVehicleClick = () => {
-    // Always show modal to allow vehicle switching
     setShowVehicleModal(true);
   };
 
   const handleVehicleSelect = (vehicle: Vehicle) => {
-    // Update context immediately for instant UI feedback
     selectVehicle(vehicle.id);
-    
-    // Set as primary vehicle in the background
     updateVehicleMutation.mutate({
       id: vehicle.id,
       input: { isPrimary: true }
@@ -104,6 +94,14 @@ export default function EnhancedHeader() {
     });
   };
 
+  const handleUserIconClick = () => {
+    if (isAuthenticated) {
+      setShowUserMenu(!showUserMenu);
+    } else {
+      handleNavigation('/auth/login');
+    }
+  };
+
   const themeOptions = [
     { value: 'light' as const, label: 'Light', icon: Sun },
     { value: 'dark' as const, label: 'Dark', icon: Moon },
@@ -112,16 +110,6 @@ export default function EnhancedHeader() {
 
   const unreadCount = 3;
 
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map(n => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  };
-
-  // Get avatar source with fallback
   const getAvatarSrc = () => {
     if (avatarError || !user?.avatar) {
       return DEFAULT_AVATAR;
@@ -129,7 +117,6 @@ export default function EnhancedHeader() {
     return user.avatar;
   };
 
-  // Handle avatar load error
   const handleAvatarError = () => {
     setAvatarError(true);
   };
@@ -145,7 +132,7 @@ export default function EnhancedHeader() {
       >
         <nav className="container-custom">
           <div className="flex items-center justify-between h-16 sm:h-20">
-            {/* Logo Section - Responsive */}
+            {/* Logo Section */}
             <button onClick={() => handleNavigation('/')} className="flex items-center gap-2 sm:gap-3 group cursor-pointer">
               <div className="relative">
                 <div className="absolute inset-0 bg-primary rounded-lg sm:rounded-xl blur-md sm:blur-lg opacity-40 group-hover:opacity-60 transition-all"></div>
@@ -166,14 +153,16 @@ export default function EnhancedHeader() {
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-1 lg:gap-2">
               {navigation.map((item) => {
-                const isActive = pathname === item.href;
+                const isActive = item.href === '/' 
+                  ? pathname === '/' || pathname === ''
+                  : pathname === item.href || pathname.startsWith(item.href + '/');
                 return (
                   <button
                     key={item.name}
                     onClick={() => handleNavigation(item.href)}
                     className={`relative px-3 lg:px-5 py-2 lg:py-2.5 text-sm font-medium transition-all rounded-lg lg:rounded-xl cursor-pointer ${
                       isActive
-                        ? 'text-primary bg-primary/10'
+                        ? 'text-primary bg-primary/15 font-semibold'
                         : 'text-foreground hover:text-primary hover:bg-muted'
                     }`}
                   >
@@ -186,7 +175,7 @@ export default function EnhancedHeader() {
               })}
             </div>
 
-            {/* Right Actions - Responsive */}
+            {/* Right Actions */}
             <div className="flex items-center gap-1 sm:gap-2">
               {/* Vehicle Selector */}
               {isAuthenticated && (
@@ -201,7 +190,6 @@ export default function EnhancedHeader() {
                     )}
                   </button>
                   
-                  {/* Vehicle Tooltip */}
                   {selectedVehicle && (
                     <div className="absolute top-full right-0 mt-2 px-3 py-2 bg-card border border-border rounded-lg shadow-lg opacity-0 invisible group-hover/vehicle:opacity-100 group-hover/vehicle:visible transition-all duration-200 whitespace-nowrap z-50">
                       <p className="text-xs font-medium text-foreground">{selectedVehicle.brand} {selectedVehicle.model}</p>
@@ -244,8 +232,8 @@ export default function EnhancedHeader() {
                               setTheme(option.value);
                               setShowThemeMenu(false);
                             }}
-                            className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors cursor-pointer ${
-                              isActive ? 'text-primary bg-primary/10' : 'text-foreground hover:bg-muted'
+                            className={`px-3 lg:px-5 py-2 lg:py-2.5 text-sm font-medium rounded-lg flex items-center gap-2 ${
+                              isActive ? 'text-blue-600 bg-blue-100' : 'text-gray-600 hover:bg-gray-100'
                             }`}
                           >
                             <Icon className="h-4 w-4" />
@@ -266,7 +254,7 @@ export default function EnhancedHeader() {
                   className="relative p-2 sm:p-2.5 rounded-lg sm:rounded-xl hover:bg-muted transition-colors group cursor-pointer"
                 >
                   <Bell className="h-4 w-4 sm:h-5 sm:w-5 text-foreground group-hover:text-primary" />
-                  {unreadCount > 0 && (
+                  {isAuthenticated && unreadCount > 0 && (
                     <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] sm:text-xs font-bold rounded-full h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center">
                       {unreadCount}
                     </span>
@@ -293,77 +281,73 @@ export default function EnhancedHeader() {
                 )}
               </button>
               
-              {/* User Menu */}
-              {isAuthenticated && user ? (
-                <div className="relative hidden md:block">
-                  <button
-                    onClick={() => setShowUserMenu(!showUserMenu)}
-                    className="flex items-center gap-2 px-2 lg:px-3 py-2 rounded-lg lg:rounded-xl hover:bg-muted transition-colors group cursor-pointer"
-                  >
-                    <img 
-                      src={getAvatarSrc()} 
-                      alt={user.name}
-                      onError={handleAvatarError}
-                      className="h-7 w-7 sm:h-8 sm:w-8 rounded-full object-cover ring-2 ring-primary/20"
-                    />
-                    <ChevronDown className={`h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground transition-transform ${showUserMenu ? 'rotate-180' : ''}`} />
-                  </button>
-
-                  {showUserMenu && (
-                    <>
-                      <div className="fixed inset-0 z-40" onClick={() => setShowUserMenu(false)} />
-                      <div className="absolute right-0 mt-2 w-64 force-sheet-bg rounded-lg sm:rounded-xl shadow-lg border border-border overflow-hidden z-50">
-                        <div className="px-4 py-3 bg-muted/30 border-b border-border">
-                          <p className="text-sm font-semibold text-foreground truncate">{user?.name}</p>
-                          <p className="text-xs text-muted-foreground mt-0.5 truncate">{user?.email || user?.phone}</p>
-                        </div>
-
-                        <div className="py-2">
-                          <button
-                            onClick={() => {
-                              handleNavigation('/profile');
-                              setShowUserMenu(false);
-                            }}
-                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-muted cursor-pointer"
-                          >
-                            <UserCircle className="h-4 w-4 text-muted-foreground" />
-                            <span>My Profile</span>
-                          </button>
-
-                          <button
-                            onClick={() => {
-                              handleNavigation('/orders');
-                              setShowUserMenu(false);
-                            }}
-                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-muted cursor-pointer"
-                          >
-                            <Package className="h-4 w-4 text-muted-foreground" />
-                            <span>Orders & Bookings</span>
-                          </button>
-
-                          <div className="h-px bg-border my-2"></div>
-
-                          <button
-                            onClick={handleLogout}
-                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 cursor-pointer"
-                          >
-                            <LogOut className="h-4 w-4" />
-                            <span>Logout</span>
-                          </button>
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </div>
-              ) : (
+              {/* User Menu - Always visible */}
+              <div className="relative hidden md:block">
                 <button
-                  onClick={() => handleNavigation('/auth/login')}
-                  className="hidden md:flex items-center gap-2 px-4 lg:px-5 py-2 lg:py-2.5 rounded-lg lg:rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:opacity-90 transition-all shadow-md hover:shadow-xl hover:scale-105 cursor-pointer"
+                  onClick={handleUserIconClick}
+                  className="flex items-center gap-2 px-2 lg:px-3 py-2 rounded-lg lg:rounded-xl hover:bg-muted transition-colors group cursor-pointer"
                 >
-                  <User className="h-4 w-4" />
-                  <span>Login</span>
+                  {isAuthenticated && user ? (
+                    <>
+                      <img 
+                        src={getAvatarSrc()} 
+                        alt={user.name}
+                        onError={handleAvatarError}
+                        className="h-7 w-7 sm:h-8 sm:w-8 rounded-full object-cover ring-2 ring-primary/20"
+                      />
+                      <ChevronDown className={`h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground transition-transform ${showUserMenu ? 'rotate-180' : ''}`} />
+                    </>
+                  ) : (
+                    <User className="h-5 w-5 sm:h-6 sm:w-6 text-foreground group-hover:text-primary" />
+                  )}
                 </button>
-              )}
+
+                {isAuthenticated && user && showUserMenu && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setShowUserMenu(false)} />
+                    <div className="absolute right-0 mt-2 w-64 force-sheet-bg rounded-lg sm:rounded-xl shadow-lg border border-border overflow-hidden z-50">
+                      <div className="px-4 py-3 bg-muted/30 border-b border-border">
+                        <p className="text-sm font-semibold text-foreground truncate">{user?.name}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5 truncate">{user?.email || user?.phone}</p>
+                      </div>
+
+                      <div className="py-2">
+                        <button
+                          onClick={() => {
+                            handleNavigation('/profile');
+                            setShowUserMenu(false);
+                          }}
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-muted cursor-pointer"
+                        >
+                          <UserCircle className="h-4 w-4 text-muted-foreground" />
+                          <span>My Profile</span>
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            handleNavigation('/orders');
+                            setShowUserMenu(false);
+                          }}
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-muted cursor-pointer"
+                        >
+                          <Package className="h-4 w-4 text-muted-foreground" />
+                          <span>Orders & Bookings</span>
+                        </button>
+
+                        <div className="h-px bg-border my-2"></div>
+
+                        <button
+                          onClick={handleLogout}
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 cursor-pointer"
+                        >
+                          <LogOut className="h-4 w-4" />
+                          <span>Logout</span>
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
 
               {/* Mobile Menu Toggle */}
               <button
@@ -394,9 +378,9 @@ export default function EnhancedHeader() {
                 : 'max-h-0 opacity-0'
             }`}
           >
-            <div className="py-3 sm:py-4 space-y-2 overflow-y-auto max-h-[calc(100vh-6rem)] pb-6 scroll-smooth [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-muted-foreground/40">
-              {/* User Info */}
-              {isAuthenticated && user && (
+<div className="py-3 sm:py-4 space-y-2 overflow-y-auto overflow-x-hidden max-h-[calc(100vh-6rem)] pb-6 scroll-smooth...">
+{/* User Info / Login Prompt */}
+              {isAuthenticated && user ? (
                 <div className="px-3 sm:px-4 py-2.5 sm:py-3 mb-3 sm:mb-4 bg-muted/50 rounded-lg sm:rounded-xl border border-border">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
@@ -431,11 +415,24 @@ export default function EnhancedHeader() {
                     </div>
                   )}
                 </div>
+              ) : (
+                <div className="mx-3 sm:mx-4 mb-3 sm:mb-4">
+                <button
+                  onClick={() => handleNavigation('/auth/login')}
+                  className="w-full flex items-center justify-center gap-2.5 px-5 py-2.5 rounded-lg sm:rounded-xl bg-primary text-primary-foreground text-sm font-semibold cursor-pointer group relative transition-all duration-300 active:translate-y-0 border border-primary/50"
+                >
+                  <User className="h-4 w-4 relative z-10" />
+                  <span className="relative z-10">Sign In</span>
+                </button>
+              </div>
+              
               )}
 
               {/* Navigation */}
               {navigation.map((item, index) => {
-                const isActive = pathname === item.href;
+                const isActive = item.href === '/' 
+                  ? pathname === '/' || pathname === ''
+                  : pathname === item.href || pathname.startsWith(item.href + '/');
                 return (
                   <button
                     key={item.name}
@@ -445,16 +442,17 @@ export default function EnhancedHeader() {
                       mobileMenuOpen ? 'animate-slide-up' : ''
                     } ${
                       isActive
-                        ? 'bg-primary/10 text-primary border-l-4 border-primary'
+                        ? 'border-1 border-grey font-bold bg-[rgb(211,192,255)]'
                         : 'text-foreground hover:bg-muted'
                     }`}
+                    
                   >
                     {item.name}
                   </button>
                 );
               })}
 
-              {/* Account Section */}
+              {/* Account Section - Only for authenticated users */}
               {isAuthenticated && (
                 <div className="pt-2 border-t border-border mt-2">
                   <p className="px-3 sm:px-4 py-2 text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider">
@@ -535,17 +533,6 @@ export default function EnhancedHeader() {
                   })}
                 </div>
               </div>
-
-              {/* Login Button */}
-              {!isAuthenticated && (
-                <button
-                  onClick={() => handleNavigation('/auth/login')}
-                  className="flex items-center justify-center gap-2 w-full mt-3 sm:mt-4 px-4 sm:px-5 py-3 sm:py-3.5 rounded-lg sm:rounded-xl bg-primary text-primary-foreground text-xs sm:text-sm font-semibold hover:opacity-90 transition-all shadow-md cursor-pointer"
-                >
-                  <User className="h-4 w-4" />
-                  <span>Login</span>
-                </button>
-              )}
             </div>
           </div>
         </nav>
