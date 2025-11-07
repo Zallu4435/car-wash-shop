@@ -1,69 +1,352 @@
-// app/book/page.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { BookingWizard } from '@/components/customer/BookingWizard';
-import { ServiceTypeSelector } from '@/components/customer/ServiceTypeSelector';
-import { DynamicVehicleSelector } from '@/components/customer/DynamicVehicleSelector';
-import { DateTimePicker } from '@/components/customer/DateTimePicker';
-import { DynamicAddOnSelector } from '@/components/customer/DynamicAddOnSelector';
-import { PaymentOptionSelector } from '@/components/shared/pricing/PaymentOptionSelector';
-import { AddressSelector } from '@/components/customer/AddressSelector';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { format } from 'date-fns';
+import {
+  ArrowLeft,
+  Bike,
+  CalendarDays,
+  Car,
+  CheckCircle,
+  ChevronRight,
+  Clock,
+  CreditCard,
+  Loader2,
+  MapPin,
+  ShieldCheck,
+  Sparkles,
+  Wallet,
+} from 'lucide-react';
 import { toast } from 'sonner';
-import { CustomerRoutes } from '@/lib/constants/routes';
-import { useServices, useServiceCategories } from '@/api/domains/services/queries';
-import { useVehicles } from '@/api/domains/vehicles/queries';
-import { useAddresses } from '@/api/domains/addresses/queries';
-import { useCreateBooking } from '@/api/domains/bookings/queries';
-import { DynamicServiceSelector } from '@/components/customer/DynamicServiceSelector';
-import type { Service, ServiceCategory } from '@/types/service';
-import type { Vehicle } from '@/types/vehicle';
-import type { Address } from '@/types/address';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { Calendar } from '@/components/ui/calendar';
 import Loading from '@/components/shared/display/Loading';
-import { mockServiceTypes, mockAddOns } from '@/mocks/data/customer-mock-data';
-import { createBookingSchema, CreateBookingInput } from '@/schemas/customer/booking';
+import Error from '@/components/shared/display/Error';
+import { MapPicker } from '@/components/shared/selectors/MapPicker';
+import { AddressSelectionModal } from '@/components/customer/AddressSelectionModal';
+import { useService } from '@/api/domains/services/queries';
+import { useAvailableSlots, bookingKeys } from '@/api/domains/bookings/queries';
+import { bookingFetchers } from '@/api/domains/bookings/fetchers';
+import { useVehicleContext } from '@/context/VehicleContext';
+import { useAddresses } from '@/api/domains/addresses/queries';
+import { useQueryClient, useMutation } from '@tanstack/react-query';
+import { useAuth } from '@/context/AuthContext';
+import { CustomerRoutes } from '@/lib/constants/routes';
+import { mockAddOns } from '@/mocks/data/customer-mock-data';
+import type { Vehicle } from '@/types/vehicle';
+import type { Booking, BookingInput, TimeSlot } from '@/types/booking';
+import type { Location as MapLocation } from '@/lib/maps';
+import { geocodeAddress, getCurrentPosition, reverseGeocode } from '@/lib/maps/leaflet-utils';
+import { cn } from '@/lib/utils/cn';
 import { useRazorpay } from '@/hooks/useRazorpay';
 
-export default function BookingPage() {
+type Step = 'vehicle' | 'address' | 'schedule' | 'review' | 'confirmation';
+
+interface StepConfig {
+  id: Step;
+  title: string;
+  description: string;
+  icon: React.ComponentType<{ className?: string }>;
+}
+
+const CAR_TYPE_KEYWORDS = ['car', 'sedan', 'suv', 'hatchback', 'crossover', 'mpv', 'pickup'];
+const BIKE_TYPE_KEYWORDS = ['bike', 'motorcycle', 'scooter'];
+const DEPOSIT_PERCENTAGE = 0.3;
+
+const stepsConfig: StepConfig[] = [
+  {
+    id: 'vehicle',
+    title: 'Select Vehicle',
+    description: 'Choose the vehicle for this service',
+    icon: Car,
+  },
+  {
+    id: 'address',
+    title: 'Confirm Address',
+    description: 'Pin your location on the map',
+    icon: MapPin,
+  },
+  {
+    id: 'schedule',
+    title: 'Pick Slot',
+    description: 'Select date and time',
+    icon: CalendarDays,
+  },
+  {
+    id: 'review',
+    title: 'Review & Pay',
+    description: 'Pay refundable deposit',
+    icon: Wallet,
+  },
+  {
+    id: 'confirmation',
+    title: 'Booking Confirmed',
+    description: 'We are all set',
+    icon: ShieldCheck,
+  },
+];
+
+function normalizeVehicleCategory(type: string): 'car' | 'bike' | 'other' {
+  const normalized = type.toLowerCase();
+  if (normalized === 'bike') return 'bike';
+  if (normalized === 'car') return 'car';
+  if (BIKE_TYPE_KEYWORDS.some((keyword) => normalized.includes(keyword))) return 'bike';
+  if (CAR_TYPE_KEYWORDS.some((keyword) => normalized.includes(keyword))) return 'car';
+  return 'other';
+}
+
+function getPriceForVehicle(servicePricing: Array<{ vehicleType: string; price: number }> | undefined, vehicle: Vehicle | null): number | null {
+  if (!servicePricing || !servicePricing.length || !vehicle) return null;
+  const normalizedVehicleType = vehicle.type?.toLowerCase();
+
+  const directMatch = servicePricing.find((p) => String(p.vehicleType).toLowerCase() === normalizedVehicleType);
+  if (directMatch) return Number(directMatch.price) || null;
+
+  const category = normalizeVehicleCategory(vehicle.type || '');
+  if (category === 'bike') {
+    const bikeMatch = servicePricing.find((p) => BIKE_TYPE_KEYWORDS.some((keyword) => String(p.vehicleType).toLowerCase().includes(keyword)));
+    if (bikeMatch) return Number(bikeMatch.price) || null;
+  }
+
+  if (category === 'car') {
+    const carMatch = servicePricing.find((p) => CAR_TYPE_KEYWORDS.some((keyword) => String(p.vehicleType).toLowerCase().includes(keyword)));
+    if (carMatch) return Number(carMatch.price) || null;
+  }
+
+  const genericMatch = servicePricing.find((p) => String(p.vehicleType).toLowerCase().includes('car') || String(p.vehicleType).toLowerCase().includes('bike'));
+  if (genericMatch) return Number(genericMatch.price) || null;
+
+  return Number(servicePricing[0]?.price) || null;
+}
+
+function safeFormatDate(date: Date | null, formatString: string): string {
+  if (!date) return '';
+  try {
+    return format(date, formatString);
+  } catch (error) {
+    return '';
+  }
+}
+
+function combineDateAndTime(date: Date, time: string): Date {
+  const result = new Date(date);
+  const trimmed = time.trim();
+  const [timePart, meridiemPart] = trimmed.split(/\s+/);
+  const [hourString, minuteString = '0'] = timePart.split(':');
+
+  let hours = Number(hourString);
+  const minutes = Number(minuteString);
+
+  if (Number.isNaN(hours) || Number.isNaN(minutes)) {
+    return result;
+  }
+
+  if (meridiemPart) {
+    const meridiem = meridiemPart.toLowerCase();
+    if (meridiem === 'pm' && hours < 12) {
+      hours += 12;
+    }
+    if (meridiem === 'am' && hours === 12) {
+      hours = 0;
+    }
+  }
+
+  result.setHours(hours, minutes, 0, 0);
+  return result;
+}
+
+function isPastDate(date: Date): boolean {
+  const reference = new Date();
+  reference.setHours(0, 0, 0, 0);
+  const candidate = new Date(date);
+  candidate.setHours(0, 0, 0, 0);
+  return candidate < reference;
+}
+
+function formatCurrency(amount: number | null | undefined): string {
+  if (!amount || Number.isNaN(amount)) return '₹0';
+  return `₹${amount.toLocaleString('en-IN')}`;
+}
+
+export default function BookServicePage() {
   const router = useRouter();
-  const [currentStep, setCurrentStep] = useState(1);
-  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const searchParams = useSearchParams();
+  const queryServiceId = searchParams.get('serviceId') || '';
+  const addOnsParam = searchParams.get('addOns');
+
+  const selectedAddOnIds = useMemo(() => {
+    if (!addOnsParam) return [] as string[];
+    return addOnsParam
+      .split(',')
+      .map((id) => id.trim())
+      .filter((id) => id.length > 0);
+  }, [addOnsParam]);
+
+  const { data: service, isLoading: serviceLoading } = useService(queryServiceId);
+  const {
+    vehicles,
+    selectedVehicle: contextSelectedVehicle,
+    selectVehicle,
+    isLoading: vehiclesLoading,
+  } = useVehicleContext();
+  const queryClient = useQueryClient();
   
-  // Data from API
-  const [services, setServices] = useState<Service[]>([]);
-  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
-  const [addresses, setAddresses] = useState<Address[]>([]);
-  const addOns = mockAddOns; // Use mock add-ons
-  
-  // Selections
-  const [serviceType, setServiceType] = useState<string>('');
-  const [selectedService, setSelectedService] = useState('');
-  const [selectedVehicle, setSelectedVehicle] = useState('');
-  const [selectedAddress, setSelectedAddress] = useState('');
+  // Refetch vehicles when page mounts to ensure fresh data
+  useEffect(() => {
+    queryClient.invalidateQueries({ queryKey: ['vehicles'] });
+  }, [queryClient]);
+  const {
+    data: addresses = [],
+    isLoading: addressesLoading,
+  } = useAddresses();
+  const { user } = useAuth();
+
+  const [currentStep, setCurrentStep] = useState<Step>('vehicle');
+  const [selectedVehicleId, setSelectedVehicleId] = useState<string>('');
+  const [selectedAddressId, setSelectedAddressId] = useState<string>('');
+  const [showAddressModal, setShowAddressModal] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState<MapLocation | null>(null);
+  const [locationConfirmed, setLocationConfirmed] = useState(false);
+  const [hasAttemptedGeoLocate, setHasAttemptedGeoLocate] = useState(false);
+  const [geoLoading, setGeoLoading] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [selectedTime, setSelectedTime] = useState<string | null>(null);
-  const [selectedAddOns, setSelectedAddOns] = useState<string[]>([]);
-  const [paymentOption, setPaymentOption] = useState('online');
-  
-  // API hooks
-  const { data: servicesResponse, isLoading: servicesLoading, error: servicesError } = useServices({
-    vehicleType: serviceType ? serviceType as 'car' | 'bike' : undefined,
-  });
-  const { data: categories = [], isLoading: categoriesLoading } = useServiceCategories();
-  const { data: vehiclesData, isLoading: vehiclesLoading, error: vehiclesError } = useVehicles();
-  const { data: addressesData, isLoading: addressesLoading, error: addressesError } = useAddresses();
-  const createBookingMutation = useCreateBooking();
-  
-  // Razorpay integration
-  const { processPayment, isLoading: isRazorpayLoading } = useRazorpay({
-    onSuccess: (response) => {
-      toast.success('Payment successful!');
-      router.push(`${CustomerRoutes.PAYMENT_RECEIPT}?bookingId=${response.razorpay_order_id}&paymentId=${response.razorpay_payment_id}`);
+  const [selectedSlot, setSelectedSlot] = useState<TimeSlot | null>(null);
+  const [bookingConfirmation, setBookingConfirmation] = useState<Booking | null>(null);
+  const [depositInfo, setDepositInfo] = useState<{
+    amount: number;
+    paymentId: string;
+    orderId: string;
+  } | null>(null);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+
+  const addOnDetails = useMemo(() => {
+    return selectedAddOnIds
+      .map((id) => mockAddOns.find((addon) => addon.id === id))
+      .filter((addon): addon is typeof mockAddOns[number] => Boolean(addon));
+  }, [selectedAddOnIds]);
+
+  const baseServicePrice = useMemo(() => {
+    if (!service?.pricing || service.pricing.length === 0) return 0;
+    const prices = service.pricing.map((p) => Number(p.price) || 0).filter((price) => price > 0);
+    if (!prices.length) return 0;
+    return Math.min(...prices);
+  }, [service?.pricing]);
+
+  const serviceVehicleTypes = useMemo(() => {
+    if (!service?.pricing || service.pricing.length === 0) return [] as ('car' | 'bike')[];
+    const derivedTypes = service.pricing
+      .map((p) => {
+        const text = String(p.vehicleType || '').toLowerCase();
+        if (BIKE_TYPE_KEYWORDS.some((keyword) => text.includes(keyword))) return 'bike';
+        if (CAR_TYPE_KEYWORDS.some((keyword) => text.includes(keyword))) return 'car';
+        return null;
+      })
+      .filter((value): value is 'car' | 'bike' => value !== null);
+    return Array.from(new Set(derivedTypes));
+  }, [service?.pricing]);
+
+  const matchingVehicles = useMemo(() => {
+    if (!vehicles.length) return [] as Vehicle[];
+    if (!serviceVehicleTypes.length) return vehicles;
+
+    return vehicles.filter((vehicle) => {
+      const category = normalizeVehicleCategory(vehicle.type || '');
+      if (category === 'other') return false;
+      return serviceVehicleTypes.includes(category);
+    });
+  }, [vehicles, serviceVehicleTypes]);
+
+  const selectedVehicle = useMemo(() => {
+    return vehicles.find((vehicle) => vehicle.id === selectedVehicleId) || null;
+  }, [vehicles, selectedVehicleId]);
+
+  const selectedVehiclePrice = useMemo(() => {
+    return getPriceForVehicle(service?.pricing, selectedVehicle) ?? baseServicePrice;
+  }, [service?.pricing, selectedVehicle, baseServicePrice]);
+
+  const addOnsTotal = useMemo(() => {
+    return addOnDetails.reduce((sum, addon) => sum + (addon.price || 0), 0);
+  }, [addOnDetails]);
+
+  const totalAmount = useMemo(() => {
+    return (selectedVehiclePrice || 0) + addOnsTotal;
+  }, [selectedVehiclePrice, addOnsTotal]);
+
+  const depositAmount = useMemo(() => {
+    const raw = Math.round(totalAmount * DEPOSIT_PERCENTAGE);
+    return raw > 0 ? raw : totalAmount;
+  }, [totalAmount]);
+
+  const baseDuration = useMemo(() => {
+    if (typeof service?.duration === 'number') {
+      return service.duration;
+    }
+    const parsed = Number(service?.duration);
+    return Number.isNaN(parsed) ? 60 : parsed;
+  }, [service?.duration]);
+
+  const totalDuration = useMemo(() => {
+    const addOnDuration = addOnDetails.reduce((sum, addon) => sum + (addon.duration || 0), 0);
+    return baseDuration + addOnDuration;
+  }, [baseDuration, addOnDetails]);
+
+  const createBookingMutation = useMutation({
+    mutationFn: (input: BookingInput) => bookingFetchers.createBooking(input),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: bookingKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: bookingKeys.all });
+      setBookingConfirmation(data);
+      setCurrentStep('confirmation');
+      toast.success('Booking confirmed!');
+    },
+    onError: (error: any) => {
+      toast.error(error?.message || 'Failed to confirm booking');
+    },
+    onSettled: () => {
       setIsProcessingPayment(false);
     },
+  });
+
+  const handleFinalizeBooking = async (paymentId: string, orderId: string) => {
+    if (!service || !selectedVehicle || !selectedDate || !selectedSlot || !selectedAddressId) {
+      toast.error('Missing booking details. Please try again.');
+      setIsProcessingPayment(false);
+      return;
+    }
+
+    const scheduledDateTime = combineDateAndTime(selectedDate, selectedSlot.startTime);
+
+    const bookingPayload: BookingInput = {
+      serviceId: service.id,
+      vehicleId: selectedVehicle.id,
+      scheduledAt: scheduledDateTime.toISOString(),
+      addressId: selectedAddressId,
+      addOns: selectedAddOnIds,
+      paymentType: 'advance',
+      notes: `Deposit payment captured via Razorpay. paymentId=${paymentId}, orderId=${orderId}`,
+    };
+
+    setDepositInfo({
+      amount: depositAmount,
+      paymentId,
+      orderId,
+    });
+
+    createBookingMutation.mutate(bookingPayload);
+  };
+
+  const { processPayment, isLoading: razorpayLoading } = useRazorpay({
+    onSuccess: async (response) => {
+      setIsProcessingPayment(true);
+      await handleFinalizeBooking(response.razorpay_payment_id, response.razorpay_order_id);
+    },
     onFailure: () => {
-      toast.error('Payment failed. Please try again.');
+      toast.error('Deposit payment failed. Please try again.');
       setIsProcessingPayment(false);
     },
     onDismiss: () => {
@@ -71,414 +354,871 @@ export default function BookingPage() {
     },
   });
 
-  // Service types from mock data
-  const serviceTypes = mockServiceTypes;
+  const serviceDateKey = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '';
+  const {
+    data: availableSlots,
+    isFetching: slotsFetching,
+  } = useAvailableSlots(service ? service.id : '', serviceDateKey);
 
-  // Load data when service type changes
-  useEffect(() => {
-    if (servicesResponse?.data) {
-      // Convert API services to component format
-      const convertedServices = servicesResponse.data.map(service => ({
-        id: service.id,
-        name: service.name,
-        description: service.description,
-        price: service.price,
-        duration: service.duration,
-        vehicleTypeId: service.vehicleType,
-        features: service.features,
-        popular: false,
-        image: service.image,
-      }));
-      setServices(convertedServices as any);
-    }
-  }, [servicesResponse]);
+  const currentStepIndex = stepsConfig.findIndex((step) => step.id === currentStep);
+
+  const selectedAddress = useMemo(() => {
+    return addresses.find((address) => address.id === selectedAddressId) || null;
+  }, [addresses, selectedAddressId]);
 
   useEffect(() => {
-    if (vehiclesData && Array.isArray(vehiclesData)) {
-      setVehicles(vehiclesData);
+    if (contextSelectedVehicle && matchingVehicles.some((vehicle) => vehicle.id === contextSelectedVehicle.id)) {
+      setSelectedVehicleId(contextSelectedVehicle.id);
+      return;
     }
-  }, [vehiclesData]);
+
+    if (!selectedVehicleId && matchingVehicles.length > 0) {
+      setSelectedVehicleId(matchingVehicles[0].id);
+    }
+  }, [contextSelectedVehicle, matchingVehicles, selectedVehicleId]);
 
   useEffect(() => {
-    if (addressesData && Array.isArray(addressesData)) {
-      setAddresses(addressesData);
-    }
-  }, [addressesData]);
+    if (addressesLoading) return;
+    if (selectedAddressId) return;
+    if (addresses.length === 0) return;
 
-  // Set default service type
+    const primary = addresses.find((address) => address.isPrimary);
+    setSelectedAddressId((primary || addresses[0]).id);
+  }, [addresses, addressesLoading, selectedAddressId]);
+
   useEffect(() => {
-    if (!serviceType && serviceTypes.length > 0) {
-      setServiceType(serviceTypes[0].id);
-    }
-  }, [serviceType, serviceTypes]);
+    if (!selectedAddress) return;
+    const addressString = [selectedAddress.line1, selectedAddress.line2, selectedAddress.city, selectedAddress.state, selectedAddress.pincode]
+      .filter(Boolean)
+      .join(', ');
 
-  const handleServiceTypeChange = (type: string) => {
-    setServiceType(type);
-    // Reset selections
-    setSelectedService('');
-    setSelectedVehicle('');
-    setSelectedAddress('');
-    setSelectedAddOns([]);
+    if (!addressString) return;
+
+    let isCancelled = false;
+
+    geocodeAddress(addressString)
+      .then((location) => {
+        if (isCancelled) return;
+        setSelectedLocation(location);
+        setLocationConfirmed(false);
+      })
+      .catch(() => {
+        /* silent failure */
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [selectedAddress]);
+
+  useEffect(() => {
+    if (currentStep !== 'address') {
+      // Reset geoLoading when leaving address step
+      setGeoLoading(false);
+      return;
+    }
+    if (hasAttemptedGeoLocate) return;
+
+    let isCancelled = false;
+    setGeoLoading(true);
+    setHasAttemptedGeoLocate(true);
+
+    getCurrentPosition()
+      .then(async ({ lat, lng }) => {
+        if (isCancelled) return;
+        try {
+          const address = await reverseGeocode(lat, lng);
+          if (isCancelled) return;
+          setSelectedLocation({ address, latitude: lat, longitude: lng });
+          setLocationConfirmed(false);
+        } catch (error) {
+          /* ignore */
+        }
+      })
+      .catch((error: any) => {
+        if (!isCancelled) {
+          toast.warning(error?.message || 'Unable to access your location.');
+        }
+      })
+      .finally(() => {
+        if (!isCancelled) {
+          setGeoLoading(false);
+        }
+      });
+
+    return () => {
+      isCancelled = true;
+      setGeoLoading(false);
+    };
+  }, [currentStep, hasAttemptedGeoLocate]);
+
+  const handleVehicleSelect = (vehicle: Vehicle) => {
+    setSelectedVehicleId(vehicle.id);
+    selectVehicle(vehicle.id);
   };
 
-  const handleVehicleAdded = () => {
-    // Vehicles will be automatically refetched by React Query
-    toast.success('Vehicle added successfully!');
+  const handleAddressSelect = (addressId: string) => {
+    setSelectedAddressId(addressId);
+    setShowAddressModal(false);
   };
 
   const handleAddressAdded = () => {
-    // Addresses will be automatically refetched by React Query
-    toast.success('Address added successfully!');
+    toast.success('Address added');
+    setShowAddressModal(false);
   };
 
-  const handleNext = async () => {
-    // Validation for each step
-    if (currentStep === 1 && !serviceType) {
-      toast.error('Please select a service type');
+  const handleDateSelect = (date: Date | undefined) => {
+    if (!date) return;
+    if (isPastDate(date)) {
+      toast.error('Please choose a future date for your service.');
       return;
     }
-    
-    if (currentStep === 2 && !selectedService) {
-      toast.error('Please select a service');
+    setSelectedDate(date);
+    setSelectedSlot(null);
+  };
+
+  const goToStep = (step: Step) => {
+    setCurrentStep(step);
+  };
+
+  const goToNextStep = () => {
+    if (currentStep === 'vehicle') {
+      if (!selectedVehicle) {
+        toast.error('Select a vehicle to continue.');
+        return;
+      }
+      goToStep('address');
       return;
     }
-    
-    if (currentStep === 3 && serviceType !== 'home' && !selectedVehicle) {
-      toast.error(`Please select a ${serviceType}`);
+
+    if (currentStep === 'address') {
+      if (!selectedAddress) {
+        toast.error('Select an address to continue.');
+        return;
+      }
+      if (!selectedLocation) {
+        toast.error('Confirm your location on the map.');
+        return;
+      }
+      if (!locationConfirmed) {
+        toast.warning('Confirm your pinned location before proceeding.');
+        return;
+      }
+      goToStep('schedule');
       return;
     }
-    
-    if (currentStep === 4 && !selectedAddress) {
-      toast.error('Please select a service address');
-      return;
-    }
-    
-    // Step 5: Date and Time validation with schema
-    if (currentStep === 5) {
+
+    if (currentStep === 'schedule') {
       if (!selectedDate) {
-        toast.error('Please select a date');
+        toast.error('Select a date for your service.');
         return;
       }
-      if (!selectedTime) {
-        toast.error('Please select a time');
+      if (!selectedSlot) {
+        toast.error('Select a time slot to continue.');
         return;
       }
-      
-      // Validate date is not in the past
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      if (selectedDate < today) {
-        toast.error('Date cannot be in the past');
-        return;
-      }
-      
-      // Validate date is not more than 90 days ahead
-      const maxDate = new Date();
-      maxDate.setDate(maxDate.getDate() + 90);
-      if (selectedDate > maxDate) {
-        toast.error('Cannot book more than 90 days in advance');
-        return;
-      }
-      
-      // Validate time format and business hours
-      const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
-      if (!timeRegex.test(selectedTime)) {
-        toast.error('Invalid time format');
-        return;
-      }
-      
-      const [hours, minutes] = selectedTime.split(':').map(Number);
-      const totalMinutes = hours * 60 + minutes;
-      const minTime = 8 * 60; // 8:00 AM
-      const maxTime = 20 * 60; // 8:00 PM
-      
-      if (totalMinutes < minTime || totalMinutes > maxTime) {
-        toast.error('Service hours are 8:00 AM to 8:00 PM');
-        return;
-      }
-    }
-
-    if (currentStep === 7) {
-      // Final step - complete booking with full validation
-      try {
-        setIsProcessingPayment(true);
-        
-        const bookingData: CreateBookingInput = {
-          serviceId: selectedService,
-          vehicleId: selectedVehicle,
-          addressId: selectedAddress,
-          scheduledDate: selectedDate!,
-          scheduledTime: selectedTime!,
-          addOns: selectedAddOns,
-          paymentType: paymentOption === 'online' ? 'full' : 'advance',
-          notes: '',
-        };
-        
-        // Validate with Zod schema
-        const validatedData = createBookingSchema.parse(bookingData);
-        
-        // Calculate total amount (you should get this from selected service + addons)
-        const selectedServiceData = services.find(s => s.id === selectedService);
-        const selectedAddOnsData = addOns.filter(a => selectedAddOns.includes(a.id));
-        const totalAmount = (selectedServiceData?.price || 0) + selectedAddOnsData.reduce((sum, addon) => sum + addon.price, 0);
-        
-        // Handle COD payment
-        if (paymentOption === 'cod') {
-          const scheduledAt = new Date(`${selectedDate!.toDateString()} ${selectedTime}`).toISOString();
-          
-          createBookingMutation.mutate({
-            serviceId: validatedData.serviceId,
-            vehicleId: validatedData.vehicleId,
-            addressId: validatedData.addressId,
-            scheduledAt,
-            addOns: validatedData.addOns,
-            paymentType: 'advance' as 'full' | 'advance',
-          }, {
-            onSuccess: () => {
-              toast.success('Booking confirmed!');
-              router.push(CustomerRoutes.ORDERS_SERVICES);
-            },
-            onError: (error: any) => {
-              toast.error(error?.message || 'Failed to create booking');
-            },
-            onSettled: () => {
-              setIsProcessingPayment(false);
-            },
-          });
-          return;
-        }
-        
-        // Handle Online and Advance payment with Razorpay
-        if (paymentOption === 'online' || paymentOption === 'advance') {
-          // Get user details (in real app, fetch from auth context)
-          const userEmail = 'customer@example.com'; // TODO: Get from auth
-          const userName = 'Customer'; // TODO: Get from auth
-          const userPhone = '+919876543210'; // TODO: Get from auth
-          
-          // Calculate amount: 30% for advance, full for online
-          const paymentAmount = paymentOption === 'advance' ? Math.round(totalAmount * 0.3) : totalAmount;
-          
-          // Build notes object
-          const paymentNotes: Record<string, string> = {
-            serviceId: selectedService,
-            vehicleId: selectedVehicle,
-            addressId: selectedAddress,
-            scheduledDate: selectedDate!.toISOString(),
-            scheduledTime: selectedTime!,
-            addOns: selectedAddOns.join(','),
-            paymentType: paymentOption,
-            totalAmount: totalAmount.toString(),
-          };
-          
-          if (paymentOption === 'advance') {
-            paymentNotes.advanceAmount = paymentAmount.toString();
-          }
-          
-          await processPayment({
-            amount: paymentAmount,
-            description: `${selectedServiceData?.name || 'Service'} Booking${paymentOption === 'advance' ? ' (30% Advance)' : ''}`,
-            bookingId: `BOOKING_${Date.now()}`,
-            userEmail,
-            userName,
-            userPhone,
-            notes: paymentNotes,
-          });
-        }
-      } catch (error: any) {
-        // Handle Zod validation errors
-        if (error.errors && error.errors.length > 0) {
-          toast.error(error.errors[0].message);
-        } else {
-          toast.error('Please fill in all required fields correctly');
-        }
-        setIsProcessingPayment(false);
-        return;
-      }
-    } else {
-      // Skip vehicle step for home service
-      if (currentStep === 2 && serviceType === 'home') {
-        setCurrentStep(4); // Skip step 3 (vehicle)
-      } else {
-        setCurrentStep(currentStep + 1);
-      }
+      goToStep('review');
     }
   };
 
-  const handlePrev = () => {
-    // Skip vehicle step when going back for home service
-    if (currentStep === 4 && serviceType === 'home') {
-      setCurrentStep(2); // Skip step 3 (vehicle)
-    } else {
-      setCurrentStep(Math.max(1, currentStep - 1));
+  const goToPreviousStep = () => {
+    if (currentStep === 'vehicle') return;
+    const order: Step[] = ['vehicle', 'address', 'schedule', 'review', 'confirmation'];
+    const index = order.indexOf(currentStep);
+    if (index > 0) {
+      setCurrentStep(order[index - 1]);
     }
   };
 
-  const toggleAddOn = (addOnId: string) => {
-    setSelectedAddOns(prev =>
-      prev.includes(addOnId)
-        ? prev.filter(id => id !== addOnId)
-        : [...prev, addOnId]
+  const handleConfirmLocation = () => {
+    if (!selectedLocation) {
+      toast.error('Pin your location on the map first.');
+      return;
+    }
+    setLocationConfirmed(true);
+    toast.success('Location confirmed.');
+  };
+
+  const handleDepositPayment = async () => {
+    if (!service || !selectedVehicle || !selectedDate || !selectedSlot || !selectedAddress || !selectedLocation) {
+      toast.error('Complete all previous steps before payment.');
+      return;
+    }
+
+    if (!depositAmount || depositAmount <= 0) {
+      toast.error('Unable to compute deposit amount.');
+      return;
+    }
+
+    const userName = user?.name || 'Customer';
+    const userEmail = user?.email || 'customer@example.com';
+    const userPhone = user?.phone || '+919999999999';
+
+    setIsProcessingPayment(true);
+
+    try {
+      await processPayment({
+        amount: depositAmount,
+        description: `Deposit for ${service.name}`,
+        orderId: `BOOK_${Date.now()}`,
+        userName,
+        userEmail,
+        userPhone,
+        notes: {
+          serviceId: service.id,
+          vehicleId: selectedVehicle.id,
+          scheduledDate: serviceDateKey,
+          slot: `${selectedSlot.startTime} - ${selectedSlot.endTime}`,
+          deposit: String(depositAmount),
+        },
+      });
+    } catch (error: any) {
+      setIsProcessingPayment(false);
+      toast.error(error?.message || 'Unable to process payment right now.');
+    }
+  };
+
+  if (!queryServiceId) {
+    return (
+      <Error
+        message="Service not specified"
+        onRetry={() => router.push(CustomerRoutes.SERVICES)}
+        details="Please select a service to continue with booking."
+      />
+    );
+  }
+
+  if (serviceLoading || vehiclesLoading) {
+    return <Loading text="Preparing booking wizard..." />;
+  }
+
+  if (!service) {
+    return (
+      <Error
+        message="Service unavailable"
+        onRetry={() => router.push(CustomerRoutes.SERVICES)}
+        details="We couldn't load this service. Please try again later."
+      />
+    );
+  }
+
+  const StepIcon = ({ step, index }: { step: StepConfig; index: number }) => {
+    const Icon = step.icon;
+    const isActive = currentStep === step.id;
+    const isCompleted = index < currentStepIndex;
+
+    return (
+      <div
+        className={cn(
+          'flex flex-col gap-2 rounded-xl border px-3 py-3 sm:px-4 sm:py-4 transition-all',
+          isActive
+            ? 'border-primary bg-primary/10 shadow-lg'
+            : isCompleted
+            ? 'border-green-500/60 bg-green-500/10'
+            : 'border-border bg-muted/30'
+        )}
+      >
+        <div className="flex items-center gap-2">
+          <div
+            className={cn(
+              'rounded-full p-2',
+              isActive ? 'bg-primary text-primary-foreground' : isCompleted ? 'bg-green-500 text-white' : 'bg-muted text-muted-foreground'
+            )}
+          >
+            <Icon className="h-4 w-4" />
+          </div>
+          <div className="min-w-0">
+            <p className={cn('text-sm font-semibold', isActive ? 'text-primary' : 'text-foreground')}>{step.title}</p>
+            <p className="text-xs text-muted-foreground line-clamp-2">{step.description}</p>
+          </div>
+        </div>
+      </div>
     );
   };
 
-  const isLoading = servicesLoading || categoriesLoading || vehiclesLoading || addressesLoading;
-
-  if (isLoading && serviceTypes.length === 0) {
-    return <Loading />;
-  }
-
-  return (
-    <div className="min-h-screen bg-background py-6 sm:py-8 lg:py-12">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
-        <BookingWizard
-          currentStep={currentStep}
-          totalSteps={7}
-          onNext={handleNext}
-          onPrev={handlePrev}
-          isBooking={isProcessingPayment || isRazorpayLoading || createBookingMutation.isPending}
-        >
-          {/* Step 1: Service Type Selection */}
-          {currentStep === 1 && (
-            <div className="space-y-4 sm:space-y-6">
-              <div className="text-center">
-                <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-1.5 sm:mb-2">
-                  Select Service Type
-                </h2>
-                <p className="text-sm sm:text-base text-muted-foreground">
-                  What would you like to book?
-                </p>
-              </div>
-              <ServiceTypeSelector
-                serviceTypes={serviceTypes}
-                selectedType={serviceType}
-                onTypeSelect={handleServiceTypeChange}
-              />
-            </div>
-          )}
-
-          {/* Step 2: Service Selection */}
-          {currentStep === 2 && (
-            <div className="space-y-4 sm:space-y-6">
-              <div className="text-center">
-                <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-1.5 sm:mb-2">
-                  Select Service
-                </h2>
-                <p className="text-sm sm:text-base text-muted-foreground">
-                  Choose the perfect {serviceType === 'home' ? 'cleaning' : serviceType} service
-                </p>
-              </div>
-              <DynamicServiceSelector
-                services={services as any}
-                selectedService={selectedService}
-                onServiceSelect={setSelectedService}
-                loading={servicesLoading}
-              />
-            </div>
-          )}
-
-          {/* Step 3: Vehicle Selection (Only for Car/Bike) */}
-          {currentStep === 3 && (
-            <div className="space-y-4 sm:space-y-6">
-              <div className="text-center">
-                <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-1.5 sm:mb-2">
-                  Choose {serviceType === 'car' ? 'Vehicle' : 'Bike'}
-                </h2>
-                <p className="text-sm sm:text-base text-muted-foreground px-4">
-                  Select which {serviceType} to service
-                </p>
-              </div>
-              <DynamicVehicleSelector
-                serviceType={serviceType}
-                vehicles={vehicles as any}
-                addresses={addresses as any}
-                selectedId={selectedVehicle}
-                onSelect={setSelectedVehicle}
-                onVehicleAdded={handleVehicleAdded}
-              />
-            </div>
-          )}
-
-          {/* Step 4: Service Address */}
-          {currentStep === 4 && (
-            <div className="space-y-4 sm:space-y-6">
-              <div className="text-center">
-                <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-1.5 sm:mb-2">
-                  Service Address
-                </h2>
-                <p className="text-sm sm:text-base text-muted-foreground px-4">
-                  Where should we provide the service?
-                </p>
-              </div>
-              <AddressSelector
-                addresses={addresses as any}
-                selectedId={selectedAddress}
-                onSelect={setSelectedAddress}
-                onAddressAdded={handleAddressAdded}
-              />
-            </div>
-          )}
-
-          {/* Step 5: Date & Time */}
-          {currentStep === 5 && (
-            <div className="space-y-4 sm:space-y-6">
-              <div className="text-center">
-                <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-1.5 sm:mb-2">
-                  Schedule Service
-                </h2>
-                <p className="text-sm sm:text-base text-muted-foreground">
-                  Pick a convenient date and time
-                </p>
-              </div>
-              <DateTimePicker
-                selectedDate={selectedDate}
-                selectedTime={selectedTime}
-                onDateSelect={setSelectedDate}
-                onTimeSelect={setSelectedTime}
-                serviceId={selectedService}
-              />
-            </div>
-          )}
-
-          {/* Step 6: Add-ons */}
-          {currentStep === 6 && (
-            <div className="space-y-4 sm:space-y-6">
-              <div className="text-center">
-                <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-1.5 sm:mb-2">
-                  Add-ons (Optional)
-                </h2>
-                <p className="text-sm sm:text-base text-muted-foreground">
-                  Enhance your service with extras
-                </p>
-              </div>
-              <DynamicAddOnSelector
-                addOns={addOns}
-                selectedAddOns={selectedAddOns}
-                onToggle={toggleAddOn}
-              />
-            </div>
-          )}
-
-          {/* Step 7: Payment */}
-          {currentStep === 7 && (
-            <div className="space-y-4 sm:space-y-6">
-              <div className="text-center">
-                <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-1.5 sm:mb-2">
-                  Payment Option
-                </h2>
-                <p className="text-sm sm:text-base text-muted-foreground">
-                  Choose how you'd like to pay
-                </p>
-              </div>
-              <PaymentOptionSelector
-                value={paymentOption}
-                onChange={setPaymentOption}
-                codFee={40}
-                isService={true}
-              />
-            </div>
-          )}
-        </BookingWizard>
+  const SummaryItem = ({
+    icon,
+    label,
+    value,
+    action,
+  }: {
+    icon: ReactNode;
+    label: string;
+    value: ReactNode;
+    action?: ReactNode;
+  }) => (
+    <div className="rounded-xl border-2 border-border bg-card p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            {icon}
+            <span>{label}</span>
+          </div>
+          <div className="mt-2 text-sm text-foreground">{value}</div>
+        </div>
+        {action}
       </div>
     </div>
   );
+
+  const mapKey = selectedLocation ? `${selectedLocation.latitude}-${selectedLocation.longitude}` : 'no-location';
+
+  return (
+    <div className="min-h-screen bg-background pb-32 lg:pb-16">
+      <div className="container-custom py-6 sm:py-8 lg:py-10">
+        <Button
+          variant="ghost"
+          className="mb-4 h-9 sm:h-10"
+          onClick={() => router.back()}
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back
+        </Button>
+
+        <div className="mb-6 flex flex-col gap-3 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
+            <div className="flex items-center gap-3">
+              <div className="rounded-2xl border-2 border-primary/30 bg-primary/5 p-3">
+                <Sparkles className="h-6 w-6 text-primary" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-foreground sm:text-2xl md:text-3xl">Book {service.name}</h1>
+                <p className="text-xs text-muted-foreground sm:text-sm">Complete the steps below to secure your slot</p>
+              </div>
+            </div>
+          </div>
+          <Badge variant="secondary" className="text-xs sm:text-sm">
+            Estimated {totalDuration} mins • Starting {formatCurrency(selectedVehiclePrice || baseServicePrice)}
+          </Badge>
+        </div>
+
+        <div className="grid gap-4 sm:gap-6 lg:gap-8 xl:grid-cols-[2.2fr_1fr]">
+          <div className="space-y-4 sm:space-y-5">
+            <div className="grid gap-3 sm:grid-cols-2">
+              {stepsConfig.map((step, index) => (
+                <StepIcon key={step.id} step={step} index={index} />
+              ))}
+            </div>
+
+            {currentStep === 'vehicle' && (
+              <Card className="border-2">
+                <CardHeader className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className="rounded-lg bg-primary/10 p-2">
+                      <Car className="h-5 w-5 text-primary" />
+                    </div>
+                    <CardTitle className="text-base sm:text-lg">Select Your Vehicle</CardTitle>
+                  </div>
+                  <p className="text-xs text-muted-foreground sm:text-sm">
+                    Choose a vehicle that matches this service. Pricing adjusts based on vehicle category.
+                  </p>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {matchingVehicles.length === 0 ? (
+                    <div className="rounded-xl border-2 border-dashed border-primary/40 bg-primary/5 p-6 text-center">
+                      <p className="text-sm font-semibold text-foreground">No matching vehicles found</p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Add a {serviceVehicleTypes.includes('bike') ? 'bike' : 'car'} to continue booking this service.
+                      </p>
+                      <Button asChild className="mt-4">
+                        <Link href={CustomerRoutes.VEHICLES}>Add Vehicle</Link>
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {matchingVehicles.map((vehicle) => {
+                        const price = getPriceForVehicle(service.pricing, vehicle) ?? baseServicePrice;
+                        const isActive = selectedVehicleId === vehicle.id;
+                        const vehicleCategory = normalizeVehicleCategory(vehicle.type || '');
+                        const Icon = vehicleCategory === 'bike' ? Bike : Car;
+                        return (
+                          <div
+                            key={vehicle.id}
+                            role="button"
+                            onClick={() => handleVehicleSelect(vehicle)}
+                            className={cn(
+                              'flex items-center justify-between gap-3 rounded-xl border-2 p-4 transition-all',
+                              isActive ? 'border-primary bg-primary/5 shadow-md' : 'border-border hover:border-primary/40'
+                            )}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className={cn('rounded-xl p-3', isActive ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground')}>
+                                <Icon className="h-5 w-5" />
+                              </div>
+                              <div>
+                                <p className="text-sm font-semibold text-foreground">
+                                  {vehicle.brand} {vehicle.model}
+                                </p>
+                                <p className="text-xs text-muted-foreground uppercase tracking-wide">
+                                  {vehicle.type} • {vehicle.year}
+                                </p>
+                                <p className="text-xs text-muted-foreground">{vehicle.plateNumber}</p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm font-bold text-primary">{formatCurrency(price)}</p>
+                              <p className="text-[10px] text-muted-foreground">Includes base pricing</p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  <div className="flex flex-col gap-2 pt-2 sm:flex-row sm:justify-between sm:items-center">
+                    <Button
+                      variant="outline"
+                      className="order-2 sm:order-1"
+                      onClick={() => router.push(CustomerRoutes.VEHICLES)}
+                    >
+                      Manage Vehicles
+                    </Button>
+                    <Button
+                      className="order-1 sm:order-2"
+                      onClick={goToNextStep}
+                      disabled={!selectedVehicle}
+                    >
+                      Continue
+                      <ChevronRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {currentStep === 'address' && (
+              <Card className="border-2">
+                <CardHeader className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className="rounded-lg bg-primary/10 p-2">
+                      <MapPin className="h-5 w-5 text-primary" />
+                    </div>
+                    <CardTitle className="text-base sm:text-lg">Confirm Service Location</CardTitle>
+                  </div>
+                  <p className="text-xs text-muted-foreground sm:text-sm">
+                    We’ll arrive at the pinned location. You can move the pin or use the map search to adjust the spot.
+                  </p>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <SummaryItem
+                    icon={<MapPin className="h-4 w-4" />}
+                    label="Delivery Address"
+                    value={selectedAddress ? (
+                      <div className="space-y-1 text-sm">
+                        <p className="font-semibold capitalize">{selectedAddress.label}</p>
+                        <p className="text-muted-foreground">
+                          {[selectedAddress.line1, selectedAddress.line2, selectedAddress.city].filter(Boolean).join(', ')}
+                        </p>
+                        <p className="text-muted-foreground">{selectedAddress.state} - {selectedAddress.pincode}</p>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">No address selected yet.</p>
+                    )}
+                    action={
+                      <Button variant="outline" size="sm" onClick={() => setShowAddressModal(true)}>
+                        Change
+                      </Button>
+                    }
+                  />
+
+                  <div className="rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 p-4">
+                    <p className="text-sm font-semibold text-primary">Tip</p>
+                    <p className="text-xs text-muted-foreground">
+                      Use the current location button or search to place the pin exactly where you want our team to arrive.
+                    </p>
+                  </div>
+
+                  <div className="rounded-xl border-2 border-border">
+                    <MapPicker
+                      key={mapKey}
+                      initialAddress={selectedLocation?.address}
+                      initialLatitude={selectedLocation?.latitude}
+                      initialLongitude={selectedLocation?.longitude}
+                      onLocationSelect={(location) => {
+                        setSelectedLocation(location);
+                        setLocationConfirmed(false);
+                      }}
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-2 pt-2 sm:flex-row sm:justify-between sm:items-center">
+                    <Button
+                      variant="outline"
+                      className="order-2 sm:order-1"
+                      onClick={goToPreviousStep}
+                    >
+                      Back
+                    </Button>
+                    <div className="order-1 flex flex-col gap-2 sm:order-2 sm:flex-row">
+                      <Button
+                        variant={locationConfirmed ? 'outline' : 'default'}
+                        onClick={handleConfirmLocation}
+                        disabled={!selectedLocation}
+                      >
+                        {locationConfirmed ? (
+                          <>
+                            <CheckCircle className="mr-2 h-4 w-4" />
+                            Location Confirmed
+                          </>
+                        ) : (
+                          'Confirm Location'
+                        )}
+                      </Button>
+                      <Button onClick={goToNextStep} disabled={!locationConfirmed || !selectedAddress}>
+                        Continue
+                        <ChevronRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {currentStep === 'schedule' && (
+              <Card className="border-2">
+                <CardHeader className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className="rounded-lg bg-primary/10 p-2">
+                      <CalendarDays className="h-5 w-5 text-primary" />
+                    </div>
+                    <CardTitle className="text-base sm:text-lg">Pick Date & Time</CardTitle>
+                  </div>
+                  <p className="text-xs text-muted-foreground sm:text-sm">
+                    Choose a convenient date. Available slots will appear once you select a day.
+                  </p>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="rounded-xl border-2 border-border p-3 sm:p-4">
+                    <Calendar
+                      selected={selectedDate || undefined}
+                      onSelect={handleDateSelect}
+                    />
+                  </div>
+
+                  <div className="space-y-3">
+                    <h3 className="text-sm font-semibold text-foreground">Available Time Slots</h3>
+                    {!selectedDate && (
+                      <p className="rounded-lg bg-muted/60 p-4 text-sm text-muted-foreground">
+                        Select a date to view available slots.
+                      </p>
+                    )}
+
+                    {selectedDate && slotsFetching && (
+                      <div className="rounded-lg border border-border bg-muted/40 p-4 text-center text-sm text-muted-foreground">
+                        <Loader2 className="mr-2 inline h-4 w-4 animate-spin" />
+                        Loading slots...
+                      </div>
+                    )}
+
+                    {selectedDate && !slotsFetching && (
+                      <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-3">
+                        {availableSlots?.slots?.length ? (
+                          availableSlots.slots.map((slot) => {
+                            const isUnavailable = slot.isAvailable === false;
+                            const isActive = selectedSlot?.startTime === slot.startTime && selectedSlot?.endTime === slot.endTime;
+                            return (
+                              <button
+                                key={`${slot.startTime}-${slot.endTime}`}
+                                type="button"
+                                disabled={isUnavailable}
+                                onClick={() => setSelectedSlot(slot)}
+                                className={cn(
+                                  'rounded-xl border-2 p-3 text-left transition-all',
+                                  isUnavailable && 'cursor-not-allowed border-dashed text-muted-foreground',
+                                  isActive && 'border-primary bg-primary/5 shadow-md',
+                                  !isActive && !isUnavailable && 'border-border hover:border-primary/50'
+                                )}
+                              >
+                                <div className="flex items-center justify-between text-sm font-semibold text-foreground">
+                                  <span>{slot.startTime}</span>
+                                  <Clock className="h-4 w-4 text-muted-foreground" />
+                                </div>
+                                <p className="mt-1 text-xs text-muted-foreground">Until {slot.endTime}</p>
+                                {isUnavailable && <p className="mt-2 text-xs font-medium text-red-500">Booked</p>}
+                              </button>
+                            );
+                          })
+                        ) : (
+                          <div className="col-span-full rounded-lg border border-border bg-muted/40 p-4 text-center text-sm text-muted-foreground">
+                            No slots available for this date. Please choose another day.
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex flex-col gap-2 pt-2 sm:flex-row sm:items-center sm:justify-between">
+                    <Button variant="outline" onClick={goToPreviousStep}>
+                      Back
+                    </Button>
+                    <Button onClick={goToNextStep} disabled={!selectedSlot || !selectedDate}>
+                      Continue
+                      <ChevronRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {currentStep === 'review' && (
+              <Card className="border-2">
+                <CardHeader className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className="rounded-lg bg-primary/10 p-2">
+                      <CreditCard className="h-5 w-5 text-primary" />
+                    </div>
+                    <CardTitle className="text-base sm:text-lg">Review & Pay Deposit</CardTitle>
+                  </div>
+                  <p className="text-xs text-muted-foreground sm:text-sm">
+                    Pay a small deposit to confirm your booking. This amount will be adjusted in the final invoice.
+                  </p>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-3 rounded-xl border-2 border-border bg-muted/40 p-4">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Service Price</span>
+                      <span className="font-semibold text-foreground">{formatCurrency(selectedVehiclePrice || baseServicePrice)}</span>
+                    </div>
+                    {addOnDetails.length > 0 && (
+                      <div className="space-y-2">
+                        <Separator />
+                        {addOnDetails.map((addon) => (
+                          <div key={addon.id} className="flex items-center justify-between text-sm">
+                            <span className="text-muted-foreground">{addon.name}</span>
+                            <span className="font-medium text-foreground">{formatCurrency(addon.price)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <Separator />
+                    <div className="flex items-center justify-between text-sm font-semibold">
+                      <span className="text-foreground">Total Estimate</span>
+                      <span className="text-primary">{formatCurrency(totalAmount)}</span>
+                    </div>
+                    <div className="flex items-center justify-between rounded-lg bg-primary/10 px-3 py-2 text-sm font-semibold text-primary">
+                      <span>Deposit (30%)</span>
+                      <span>{formatCurrency(depositAmount)}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <span>Pay on completion</span>
+                      <span>{formatCurrency(totalAmount - depositAmount)}</span>
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl border-2 border-orange-200 bg-orange-50 p-4 dark:border-orange-800/60 dark:bg-orange-950/30">
+                    <div className="flex items-start gap-3">
+                      <ShieldCheck className="mt-1 h-5 w-5 text-orange-500" />
+                      <div className="space-y-2">
+                        <p className="text-sm font-semibold text-orange-900 dark:text-orange-200">Cancellation Policy</p>
+                        <p className="text-xs text-orange-700 dark:text-orange-300">
+                          Upfront deposit required. If you cancel, this amount is forfeited. Deposit will be adjusted against your final service bill.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-2 pt-2 sm:flex-row sm:items-center sm:justify-between">
+                    <Button variant="outline" onClick={goToPreviousStep}>
+                      Back
+                    </Button>
+                    <Button
+                      onClick={handleDepositPayment}
+                      disabled={isProcessingPayment || razorpayLoading || createBookingMutation.isPending}
+                    >
+                      {(isProcessingPayment || razorpayLoading || createBookingMutation.isPending) && (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      )}
+                      Pay Deposit & Confirm ({formatCurrency(depositAmount)})
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {currentStep === 'confirmation' && bookingConfirmation && (
+              <Card className="border-2">
+                <CardHeader className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className="rounded-full bg-green-500/20 p-2">
+                      <CheckCircle className="h-6 w-6 text-green-600" />
+                    </div>
+                    <CardTitle className="text-base sm:text-lg">Booking Confirmed</CardTitle>
+                  </div>
+                  <p className="text-xs text-muted-foreground sm:text-sm">
+                    Your booking is locked in. We’ll send reminders as the service date approaches.
+                  </p>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="rounded-xl border-2 border-border bg-muted/40 p-4">
+                    <p className="text-sm font-semibold text-foreground">Booking ID</p>
+                    <p className="mt-1 text-sm text-muted-foreground">{bookingConfirmation.bookingNumber || bookingConfirmation.id}</p>
+                  </div>
+
+                  <SummaryItem
+                    icon={<Car className="h-4 w-4 text-primary" />}
+                    label="Vehicle"
+                    value={selectedVehicle ? (
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">
+                          {selectedVehicle.brand} {selectedVehicle.model}
+                        </p>
+                        <p className="text-xs text-muted-foreground uppercase tracking-wide">{selectedVehicle.type}</p>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">Vehicle details unavailable</p>
+                    )}
+                  />
+
+                  <SummaryItem
+                    icon={<CalendarDays className="h-4 w-4 text-primary" />}
+                    label="Schedule"
+                    value={
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">
+                          {safeFormatDate(selectedDate, 'EEEE, dd MMM yyyy')}
+                        </p>
+                        <p className="text-xs text-muted-foreground">{selectedSlot?.startTime} - {selectedSlot?.endTime}</p>
+                      </div>
+                    }
+                  />
+
+                  <SummaryItem
+                    icon={<MapPin className="h-4 w-4 text-primary" />}
+                    label="Service Location"
+                    value={
+                      <div className="text-sm text-muted-foreground">
+                        {selectedLocation?.address || 'Location confirmed'}
+                      </div>
+                    }
+                  />
+
+                  <SummaryItem
+                    icon={<CreditCard className="h-4 w-4 text-primary" />}
+                    label="Deposit"
+                    value={
+                      <div className="space-y-1 text-sm text-foreground">
+                        <p className="font-semibold">{formatCurrency(depositInfo?.amount || depositAmount)}</p>
+                        {depositInfo && (
+                          <p className="text-xs text-muted-foreground">
+                            Paid via Razorpay • Ref: {depositInfo.paymentId}
+                          </p>
+                        )}
+                      </div>
+                    }
+                  />
+
+                  <div className="rounded-xl border-2 border-primary/20 bg-primary/5 p-4">
+                    <p className="text-sm font-semibold text-primary">What happens next?</p>
+                    <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
+                      <li>• Our team will review your booking and assign staff.</li>
+                      <li>• You can manage this booking from your orders dashboard.</li>
+                      <li>• Remaining balance is payable after service completion.</li>
+                    </ul>
+                  </div>
+
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <Button variant="outline" onClick={() => router.push(CustomerRoutes.SERVICES)}>
+                      Book Another Service
+                    </Button>
+                    <Button onClick={() => router.push(CustomerRoutes.ORDERS_SERVICES)}>
+                      View My Bookings
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          <div className="space-y-4">
+            <Card className="border-2 border-border">
+              <CardHeader className="border-b border-border pb-3">
+                <CardTitle className="text-sm font-semibold text-foreground">Booking Summary</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 pt-4">
+                <div className="rounded-xl border border-border bg-muted/30 p-3">
+                  <p className="text-xs text-muted-foreground">Service</p>
+                  <p className="text-sm font-semibold text-foreground">{service.name}</p>
+                </div>
+
+                <SummaryItem
+                  icon={<Car className="h-4 w-4 text-primary" />}
+                  label="Vehicle"
+                  value={selectedVehicle ? (
+                    <div className="text-sm text-foreground">
+                      <p>{selectedVehicle.brand} {selectedVehicle.model}</p>
+                      <p className="text-xs text-muted-foreground">{selectedVehicle.plateNumber}</p>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">Pending selection</p>
+                  )}
+                />
+
+                <SummaryItem
+                  icon={<CalendarDays className="h-4 w-4 text-primary" />}
+                  label="Schedule"
+                  value={selectedDate && selectedSlot ? (
+                    <div>
+                      <p className="text-sm text-foreground">{safeFormatDate(selectedDate, 'dd MMM yyyy')}</p>
+                      <p className="text-xs text-muted-foreground">{selectedSlot.startTime} - {selectedSlot.endTime}</p>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">Pending selection</p>
+                  )}
+                />
+
+                <div className="rounded-xl border border-border bg-muted/30 p-3">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Estimate</span>
+                    <span className="font-semibold text-foreground">{formatCurrency(totalAmount)}</span>
+                  </div>
+                  <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
+                    <span>Deposit</span>
+                    <span>{formatCurrency(depositAmount)}</span>
+                  </div>
+                </div>
+
+                <div className="text-xs text-muted-foreground">
+                  <p className="font-semibold text-foreground">Add-ons</p>
+                  {addOnDetails.length ? (
+                    <ul className="mt-2 space-y-1">
+                      {addOnDetails.map((addon) => (
+                        <li key={addon.id} className="flex items-center justify-between">
+                          <span>{addon.name}</span>
+                          <span>{formatCurrency(addon.price)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="mt-2">No add-ons selected</p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-2 border-primary/40 bg-primary/5">
+              <CardContent className="space-y-3 p-4">
+                <p className="text-sm font-semibold text-primary">Need Support?</p>
+                <p className="text-xs text-primary/80">
+                  Have a question about this booking? Reach out to our support team and we will help you out.
+                </p>
+                <Button variant="outline" className="w-full" asChild>
+                  <Link href={CustomerRoutes.SUPPORT}>Contact Support</Link>
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+
+      <AddressSelectionModal
+        open={showAddressModal}
+        onOpenChange={setShowAddressModal}
+        addresses={addresses}
+        selectedAddressId={selectedAddressId}
+        onSelectAddress={handleAddressSelect}
+        onAddressAdded={handleAddressAdded}
+      />
+    </div>
+  );
 }
+

@@ -2,9 +2,8 @@ export interface Service {
   id: string;
   name: string;
   description: string;
-  price: number;
+  pricing: Array<{ vehicleType: string; price: number }>;
   duration: number | string; // number in minutes, or string like '30 minutes'
-  vehicleType: 'car' | 'bike';
   category?: ServiceCategory | string; // Can be object with id/name or string
   categoryId?: string; // Raw category ID/name from backend
   features?: string[];
@@ -24,15 +23,12 @@ export interface ServiceCategory {
 }
 
 export interface ServiceFilters {
-  vehicleType?: 'car' | 'bike';
   category?: string;
   search?: string;
-  minPrice?: number;
-  maxPrice?: number;
   isAvailable?: boolean;
   page?: number;
   limit?: number;
-  sortBy?: 'price' | 'name' | 'duration';
+  sortBy?: 'name' | 'duration';
   sortOrder?: 'asc' | 'desc';
 }
 

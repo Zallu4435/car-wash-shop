@@ -118,6 +118,7 @@ export const ROUTES = {
   // Admin Routes (with /admin prefix)
   ADMIN: {
     LOGIN: '/admin/auth/login',
+    FORGOT_PASSWORD: '/admin/auth/forgot-password',
     DASHBOARD: '/admin/dashboard',
     
     // Catalog Management

@@ -221,9 +221,10 @@ export default function ProductsPage() {
                     key={product.id}
                     id={product.id}
                     icon={Package}
+                    imageUrl={product.image}
                     layout="vertical"
                     primaryBadge={{
-                      label: product.category,
+                      label: typeof product.category === 'string' ? product.category : (product.category as any)?.name || 'N/A',
                       variant: 'outline',
                     }}
                     statusBadge={{
@@ -231,7 +232,7 @@ export default function ProductsPage() {
                       className: '',
                     }}
                     title={product.name}
-                    subtitle={product.category}
+                    subtitle={typeof product.category === 'string' ? product.category : (product.category as any)?.name || 'N/A'}
                     infoBoxes={[
                       {
                         icon: IndianRupee,

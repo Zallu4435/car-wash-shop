@@ -93,12 +93,20 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             <div className="lg:col-span-2 space-y-6">
               {/* Product Image */}
               <div className="relative h-[500px] bg-gradient-to-br from-primary/10 to-primary/5 rounded-2xl overflow-hidden border-2 border-border">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="text-9xl mb-4">🧴</div>
-                    <p className="text-muted-foreground">Product Image</p>
+                {product.image ? (
+                  <img 
+                    src={product.image}
+                    alt={product.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="text-center">
+                      <div className="text-9xl mb-4">🧴</div>
+                      <p className="text-muted-foreground">Product Image</p>
+                    </div>
                   </div>
-                </div>
+                )}
                 {!product.isAvailable && (
                   <Badge className="absolute top-4 left-4 bg-red-500 hover:bg-red-600 text-white shadow-lg">
                     Out of Stock
@@ -153,7 +161,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                   <h3 className="font-semibold text-lg text-foreground mb-4">Specifications</h3>
                   <div className="space-y-3">
                     {[
-                      { key: 'Category', value: product.category },
+                      { key: 'Category', value: typeof product.category === 'string' ? product.category : (product.category as any)?.name || 'N/A' },
                       { key: 'Brand', value: product.brand || 'Premium' },
                       { key: 'Availability', value: product.isAvailable ? 'In Stock' : 'Out of Stock' },
                       { key: 'Quality', value: 'Professional Grade' },
@@ -177,7 +185,9 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                 <CardContent className="p-6 space-y-6">
                   {/* Title & Category */}
                   <div>
-                    <Badge variant="default" className="mb-3">{product.category}</Badge>
+                    <Badge variant="default" className="mb-3">
+                      {typeof product.category === 'string' ? product.category : (product.category as any)?.name || 'N/A'}
+                    </Badge>
                     <h1 className="text-2xl font-bold text-foreground mb-3">{product.name}</h1>
                     
                     {/* Rating & Stock */}

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { 
   LayoutDashboard, 
   Car, 
@@ -31,6 +31,7 @@ import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils/cn';
 import { toast } from 'sonner';
 import { AdminRoutes } from '@/lib/constants/routes';
+import { useAdminLogout } from '@/api/domains/admin-settings/queries';
 
 const navigationGroups = [
   {
@@ -96,12 +97,22 @@ interface AdminSidebarProps {
 
 export function AdminSidebar({ sidebarOpen, setSidebarOpen }: AdminSidebarProps) {
   const pathname = usePathname();
-  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
+  const adminLogout = useAdminLogout();
 
   const handleLogout = () => {
-    toast.success('Logged out successfully');
-    router.push('/auth/login');
+    // Clear auth cookies eagerly to let middleware and guards react immediately
+    try {
+      document.cookie = 'auth_is_logged=; Max-Age=0; Path=/; SameSite=Lax';
+      document.cookie = 'auth_role=; Max-Age=0; Path=/; SameSite=Lax';
+    } catch (_) {}
+
+    adminLogout.mutate(undefined, {
+      onSuccess: () => {
+        // toast and redirect handled in hook as well, but keep feedback here
+        toast.success('Logged out successfully');
+      },
+    });
   };
 
   // Filter navigation items based on search

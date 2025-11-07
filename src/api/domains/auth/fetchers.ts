@@ -58,4 +58,28 @@ export const authFetchers = {
     );
     return data.data!;
   },
+
+  async loginWithCredentials(identifier: string, password: string): Promise<AuthResponse> {
+    const { data } = await apiClient.post<ApiResponse<AuthResponse>>(
+      '/auth/login',
+      { identifier, password }
+    );
+    return data.data!;
+  },
+
+  async sendPasswordResetOTP(identifier: string): Promise<OtpResponse> {
+    const { data } = await apiClient.post<ApiResponse<OtpResponse>>(
+      '/auth/password/reset/send-otp',
+      { identifier }
+    );
+    return data.data!;
+  },
+
+  async resetPasswordWithOTP(identifier: string, otp: string, newPassword: string): Promise<MessageResponse> {
+    const { data } = await apiClient.post<ApiResponse<MessageResponse>>(
+      '/auth/password/reset',
+      { identifier, otp, newPassword }
+    );
+    return data.data!;
+  },
 };

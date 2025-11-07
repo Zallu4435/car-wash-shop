@@ -73,9 +73,41 @@ export const resetPasswordSchema = z
     path: ['confirmPassword'],
   });
 
+// Email validation
+const emailValidation = z
+  .string()
+  .trim()
+  .email('Please enter a valid email address')
+  .max(100, 'Email is too long');
+
+// Identifier validation (email or phone) for forgot password
+export const forgotPasswordIdentifierSchema = z
+  .string()
+  .trim()
+  .min(1, 'Email or phone number is required')
+  .refine(
+    (val) => {
+      // Check if it's an email
+      if (val.includes('@')) {
+        return emailValidation.safeParse(val).success;
+      }
+      // Otherwise check if it's a valid phone
+      return phoneValidation.safeParse(val).success;
+    },
+    {
+      message: 'Please enter a valid email address or phone number',
+    }
+  );
+
+// Object schema used for form validation that expects an object with identifier
+export const forgotPasswordIdentifierObjectSchema = z.object({
+  identifier: forgotPasswordIdentifierSchema,
+});
+
 // Type exports
 export type LoginInput = z.infer<typeof loginSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type PhoneOnlyInput = z.infer<typeof phoneOnlySchema>;
 export type OtpOnlyInput = z.infer<typeof otpOnlySchema>;
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
+export type ForgotPasswordIdentifierInput = z.infer<typeof forgotPasswordIdentifierObjectSchema>;

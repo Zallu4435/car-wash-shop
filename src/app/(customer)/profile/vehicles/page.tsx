@@ -243,7 +243,8 @@ export default function VehiclesPage() {
               </div>
             </div>
             <Button 
-              onClick={handleAddVehicle}
+              type="button"
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleAddVehicle(); }}
               className="h-11 px-6 gap-2 whitespace-nowrap font-semibold"
             >
               <Plus className="h-5 w-5" />
@@ -263,8 +264,9 @@ export default function VehiclesPage() {
               description="Add your first vehicle to get started with quick bookings"
               action={
                 <Button 
+                  type="button"
                   size="lg" 
-                  onClick={handleAddVehicle}
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleAddVehicle(); }}
                   className="shadow-lg border-2 h-10 sm:h-11"
                 >
                   <Plus className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />

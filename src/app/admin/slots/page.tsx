@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -8,20 +8,18 @@ import { Calendar } from '@/components/ui/calendar';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Clock, Ban, CheckCircle, AlertTriangle, Plus, Users, Calendar as CalendarIcon } from 'lucide-react';
-import { useAdminSlots, useBlockSlot, useUnblockSlot } from '@/api/domains/admin-requests/queries';
+import { Clock, Ban, CheckCircle, AlertTriangle, Users, Calendar as CalendarIcon, Sparkles } from 'lucide-react';
+import {
+  useAdminSlots,
+  useGenerateSlots,
+  useUpdateSlotStatus,
+  useUpdateSlotsStatus,
+} from '@/api/domains/admin-requests/queries';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
 import { useConfirmation } from '@/hooks/useConfirmation';
 import { StatCard } from '@/components/admin/StatCard';
 import { CreateSlotModal } from '@/components/admin/CreateSlotModal';
-import { SlotFormInput } from '@/schemas/admin/slot';
-
-const timeSlots = [
-  '09:00 AM', '10:00 AM', '11:00 AM', '12:00 PM',
-  '01:00 PM', '02:00 PM', '03:00 PM', '04:00 PM',
-  '05:00 PM', '06:00 PM'
-];
 
 const staff = [
   { id: 'staff_001', name: 'Rahul Kumar', role: 'Senior Detailer' },
@@ -29,18 +27,33 @@ const staff = [
   { id: 'staff_003', name: 'Vijay Patel', role: 'Senior Detailer' },
 ];
 
-export default function SlotManagementPage() {
-  const blockAllConfirmation = useConfirmation();
-  const enableAllConfirmation = useConfirmation();
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const { data: slotsData, isLoading, error, refetch } = useAdminSlots();
-  const blockSlotMutation = useBlockSlot();
-  const unblockSlotMutation = useUnblockSlot();
-  const [staffLeaves, setStaffLeaves] = useState<string[]>(['staff_002']);
-  const [showCreateDialog, setShowCreateDialog] = useState(false);
+const formatTime = (time: string) => {
+  if (!time) return '';
+  const [hourString, minuteString = '00'] = time.split(':');
+  let hours = parseInt(hourString, 10);
+  const suffix = hours >= 12 ? 'PM' : 'AM';
+  if (hours === 0) hours = 12;
+  if (hours > 12) hours -= 12;
+  return `${hours}:${minuteString} ${suffix}`;
+};
 
-  // Use data from API
-  const blockedSlots = slotsData?.blockedSlots || [];
+export default function SlotManagementPage() {
+  const markUnavailableConfirmation = useConfirmation();
+  const markAvailableConfirmation = useConfirmation();
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [showGenerateModal, setShowGenerateModal] = useState(false);
+  const selectedDateISO = selectedDate ? selectedDate.toISOString().split('T')[0] : undefined;
+  const { data: slotsData, isLoading, error, refetch } = useAdminSlots(selectedDateISO);
+  const generateSlotsMutation = useGenerateSlots();
+  const updateSlotStatusMutation = useUpdateSlotStatus();
+  const updateSlotsStatusMutation = useUpdateSlotsStatus();
+  const [staffLeaves, setStaffLeaves] = useState<string[]>(['staff_002']);
+
+  const slots = useMemo(() => slotsData?.slots ?? [], [slotsData?.slots]);
+
+  const availableCount = useMemo(() => slots.filter((slot: any) => slot.status === 'available').length, [slots]);
+  const unavailableCount = useMemo(() => slots.filter((slot: any) => slot.status === 'unavailable').length, [slots]);
+  const bookedCount = useMemo(() => slots.filter((slot: any) => slot.booked).length, [slots]);
 
   if (isLoading) {
     return <Loading text="Loading slots..." />;
@@ -50,22 +63,21 @@ export default function SlotManagementPage() {
     return <Error message="Failed to load slots" details={(error as any)?.message} onRetry={() => refetch()} />;
   }
 
-  const toggleSlot = (slot: string) => {
-    const isCurrentlyBlocked = blockedSlots.includes(slot);
-    
-    if (isCurrentlyBlocked) {
-      unblockSlotMutation.mutate(slot, {
-        onSuccess: () => {
-          refetch();
-        },
-      });
-    } else {
-      blockSlotMutation.mutate(slot, {
-        onSuccess: () => {
-          refetch();
-        },
-      });
+  const toggleSlot = (slot: { id: string; status: 'available' | 'unavailable' }) => {
+    if (!selectedDateISO) {
+      toast.error('Please select a date first');
+      return;
     }
+
+    const nextStatus = slot.status === 'available' ? 'unavailable' : 'available';
+    updateSlotStatusMutation.mutate(
+      { slotId: slot.id, date: selectedDateISO, status: nextStatus },
+      {
+        onSuccess: () => {
+          refetch();
+        },
+      }
+    );
   };
 
   const toggleStaffLeave = (staffId: string) => {
@@ -78,67 +90,55 @@ export default function SlotManagementPage() {
     }
   };
 
-  const blockFullDay = async () => {
-    const confirmed = await blockAllConfirmation.confirm({
-      type: 'block',
-      title: 'Block Full Day?',
-      description: 'This will block all time slots for the selected date. Customers will not be able to book any appointments on this day.',
-      confirmText: 'Yes, Block Full Day',
+  const markDayStatus = async (status: 'available' | 'unavailable') => {
+    if (!selectedDateISO) {
+      toast.error('Please select a date first');
+      return;
+    }
+
+    const confirmation = status === 'unavailable' ? markUnavailableConfirmation : markAvailableConfirmation;
+
+    const confirmed = await confirmation.confirm({
+      type: status === 'unavailable' ? 'warning' : 'info',
+      title: status === 'unavailable' ? 'Mark all slots as unavailable?' : 'Enable all slots?',
+      description:
+        status === 'unavailable'
+          ? 'All slots for this date will be marked unavailable. Customers cannot book these slots.'
+          : 'All slots for this date will be marked available for booking.',
+      confirmText: status === 'unavailable' ? 'Mark Unavailable' : 'Mark Available',
       cancelText: 'Cancel',
-      itemName: selectedDate?.toLocaleDateString('en-IN', { 
-        weekday: 'long', 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
+      itemName: selectedDate?.toLocaleDateString('en-IN', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
       }),
     });
 
     if (confirmed) {
-      // Block all slots
-      timeSlots.forEach(slot => {
-        if (!blockedSlots.includes(slot)) {
-          blockSlotMutation.mutate(slot);
+      updateSlotsStatusMutation.mutate(
+        { date: selectedDateISO, status },
+        {
+          onSuccess: () => {
+            refetch();
+          },
         }
-      });
-      
-      toast.success('Full day blocked');
+      );
     }
   };
 
-  const unblockFullDay = async () => {
-    const confirmed = await enableAllConfirmation.confirm({
-      type: 'warning',
-      title: 'Enable All Slots?',
-      description: 'This will enable all blocked time slots for the selected date. Customers will be able to book appointments on this day.',
-      confirmText: 'Yes, Enable All Slots',
-      cancelText: 'Cancel',
-      itemName: selectedDate?.toLocaleDateString('en-IN', { 
-        weekday: 'long', 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
-      }),
+  const handleGenerateSlots = (formData: { date: string; startTime: string; endTime: string; capacity?: number }) => {
+    if (!formData.date) {
+      toast.error('Please select a date to generate slots');
+      return;
+    }
+
+    generateSlotsMutation.mutate(formData, {
+      onSuccess: () => {
+        setShowGenerateModal(false);
+        refetch();
+      },
     });
-
-    if (confirmed) {
-      // Unblock all slots
-      blockedSlots.forEach(slot => {
-        unblockSlotMutation.mutate(slot);
-      });
-      
-      toast.success('Full day enabled');
-    }
-  };
-
-  const handleCreateSlot = (data: SlotFormInput) => {
-    try {
-      // TODO: Call API to create slot
-      console.log('Creating slot:', data);
-      toast.success(`Slot created: ${data.time} (Capacity: ${data.capacity})`);
-      setShowCreateDialog(false);
-    } catch (error) {
-      toast.error('Failed to create slot');
-    }
   };
 
   return (
@@ -154,19 +154,39 @@ export default function SlotManagementPage() {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" onClick={blockFullDay} className="h-9 sm:h-10 text-xs sm:text-sm flex-1 sm:flex-initial border-2">
+          <Button
+            variant="outline"
+            onClick={() => markDayStatus('unavailable')}
+            className="h-9 sm:h-10 text-xs sm:text-sm flex-1 sm:flex-initial border-2"
+            disabled={!selectedDateISO || slots.length === 0 || updateSlotsStatusMutation.isPending}
+          >
             <Ban className="mr-0 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span className="hidden xs:inline">Block Full Day</span>
-            <span className="xs:hidden">Block All</span>
+            <span className="hidden xs:inline">Mark All Unavailable</span>
+            <span className="xs:hidden">Unavailable All</span>
           </Button>
-          <Button variant="outline" onClick={unblockFullDay} className="h-9 sm:h-10 text-xs sm:text-sm flex-1 sm:flex-initial border-2">
+          <Button
+            variant="outline"
+            onClick={() => markDayStatus('available')}
+            className="h-9 sm:h-10 text-xs sm:text-sm flex-1 sm:flex-initial border-2"
+            disabled={!selectedDateISO || slots.length === 0 || updateSlotsStatusMutation.isPending}
+          >
             <CheckCircle className="mr-0 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
             <span className="hidden xs:inline">Enable All</span>
             <span className="xs:hidden">Enable All</span>
           </Button>
-          <Button onClick={() => setShowCreateDialog(true)} className="h-9 sm:h-10 text-xs sm:text-sm w-full sm:w-auto border-2">
-            <Plus className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            Create Slot
+          <Button
+            onClick={() => {
+              if (!selectedDateISO) {
+                toast.error('Please select a date first');
+                return;
+              }
+              setShowGenerateModal(true);
+            }}
+            className="h-9 sm:h-10 text-xs sm:text-sm w-full sm:w-auto border-2"
+            disabled={!selectedDateISO}
+          >
+            <Sparkles className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            Generate Slots
           </Button>
         </div>
       </div>
@@ -176,7 +196,7 @@ export default function SlotManagementPage() {
         <StatCard
           icon={Clock}
           label="Total Slots"
-          value={timeSlots.length}
+          value={slots.length}
           change="+0%"
           trend="up"
           description="Daily slots"
@@ -185,7 +205,7 @@ export default function SlotManagementPage() {
         <StatCard
           icon={CheckCircle}
           label="Available"
-          value={timeSlots.length - blockedSlots.length}
+          value={availableCount}
           valueClassName="text-primary"
           change="+5.2%"
           trend="up"
@@ -194,11 +214,19 @@ export default function SlotManagementPage() {
         
         <StatCard
           icon={Ban}
-          label="Blocked"
-          value={blockedSlots.length}
+          label="Unavailable"
+          value={unavailableCount}
           change="-2.1%"
           trend="down"
           description="Unavailable slots"
+        />
+
+        <StatCard
+          icon={AlertTriangle}
+          label="Booked"
+          value={bookedCount}
+          valueClassName="text-primary"
+          description="Already assigned"
         />
         
         <StatCard
@@ -258,52 +286,66 @@ export default function SlotManagementPage() {
                 </Badge>
                 <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/20 text-xs">
                   <Ban className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-1" />
-                  Blocked
+                  Unavailable
                 </Badge>
               </div>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
-              {timeSlots.map((slot) => {
-                const isBlocked = blockedSlots.includes(slot);
-                const isProcessing = blockSlotMutation.isPending || unblockSlotMutation.isPending;
-                
-                return (
-                  <button
-                    key={slot}
-                    onClick={() => toggleSlot(slot)}
-                    disabled={isProcessing}
-                    className={`p-3 sm:p-4 rounded-lg sm:rounded-xl border-2 transition-all duration-300 hover:shadow-md active:scale-95 ${
-                      isBlocked
-                        ? 'border-destructive bg-destructive/10 hover:bg-destructive/15'
-                        : 'border-border bg-muted hover:bg-muted/80'
-                    } ${isProcessing ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-                  >
-                    <div className="flex items-center justify-between mb-1.5 sm:mb-2">
-                      <Clock className={`h-3.5 w-3.5 sm:h-4 sm:w-4 transition-colors ${isBlocked ? 'text-destructive' : 'text-foreground'}`} />
-                      {isBlocked ? (
-                        <Ban className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-destructive animate-in fade-in duration-300" />
-                      ) : (
-                        <CheckCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-600 dark:text-green-400 animate-in fade-in duration-300" />
-                      )}
-                    </div>
-                    <p className={`font-bold text-sm sm:text-base mb-1.5 sm:mb-2 transition-colors ${
-                      isBlocked ? 'text-destructive' : 'text-foreground'
-                    }`}>{slot}</p>
-                    <Badge 
-                      className={`text-xs transition-all ${
-                        isBlocked 
-                          ? 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300 border-red-200 dark:border-red-800' 
-                          : 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300 border-green-200 dark:border-green-800'
-                      }`}
+            {slots.length === 0 ? (
+              <div className="text-center py-10 border-2 border-dashed rounded-xl">
+                <p className="text-sm text-muted-foreground">No slots for this date. Generate slots to get started.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
+                {slots.map((slot: any) => {
+                  const isAvailable = slot.status === 'available';
+                  const isProcessing = updateSlotStatusMutation.isPending;
+
+                  return (
+                    <button
+                      key={slot.id}
+                      onClick={() => toggleSlot(slot)}
+                      disabled={isProcessing}
+                      className={`p-3 sm:p-4 rounded-lg sm:rounded-xl border-2 transition-all duration-300 hover:shadow-md active:scale-95 ${
+                        isAvailable
+                          ? 'border-green-300 bg-green-50 dark:bg-green-950/20 hover:bg-green-100/70'
+                          : 'border-destructive bg-destructive/10 hover:bg-destructive/15'
+                      } ${isProcessing ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                     >
-                      {isBlocked ? 'Blocked' : 'Available'}
-                    </Badge>
-                  </button>
-                );
-              })}
-            </div>
+                      <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+                        <Clock
+                          className={`h-3.5 w-3.5 sm:h-4 sm:w-4 transition-colors ${
+                            isAvailable ? 'text-green-600 dark:text-green-400' : 'text-destructive'
+                          }`}
+                        />
+                        {slot.booked && (
+                          <Badge variant="outline" className="text-[10px] bg-amber-100 text-amber-700 border-amber-200">
+                            Booked
+                          </Badge>
+                        )}
+                      </div>
+                      <p
+                        className={`font-bold text-sm sm:text-base mb-1.5 sm:mb-2 transition-colors ${
+                          isAvailable ? 'text-foreground' : 'text-destructive'
+                        }`}
+                      >
+                        {formatTime(slot.time)}
+                      </p>
+                      <Badge
+                        className={`text-xs transition-all ${
+                          isAvailable
+                            ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300 border-green-200 dark:border-green-800'
+                            : 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300 border-red-200 dark:border-red-800'
+                        }`}
+                      >
+                        {isAvailable ? 'Available' : 'Unavailable'}
+                      </Badge>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -374,16 +416,17 @@ export default function SlotManagementPage() {
         </CardContent>
       </Card>
 
-      {/* Create Slot Modal */}
+      {/* Generate Slots Modal */}
       <CreateSlotModal
-        isOpen={showCreateDialog}
-        onClose={() => setShowCreateDialog(false)}
-        onCreateSlot={handleCreateSlot}
+        isOpen={showGenerateModal}
+        selectedDate={selectedDateISO}
+        onClose={() => setShowGenerateModal(false)}
+        onGenerate={handleGenerateSlots}
       />
 
       {/* Confirmation Dialogs */}
-      <blockAllConfirmation.ConfirmDialog />
-      <enableAllConfirmation.ConfirmDialog />
+      <markUnavailableConfirmation.ConfirmDialog />
+      <markAvailableConfirmation.ConfirmDialog />
     </div>
   );
 }

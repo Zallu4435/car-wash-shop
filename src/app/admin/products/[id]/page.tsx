@@ -11,29 +11,17 @@ import { useConfirmation } from '@/hooks/useConfirmation';
 import { toast } from 'sonner';
 import { DangerZone } from '@/components/admin/DangerZone';
 import { AdminRoutes } from '@/lib/constants/routes';
+import { useAdminProductDetail } from '@/api/domains/admin-catalog/queries';
 
-const product = {
-  id: 'prod_001',
-  name: 'Premium Car Shampoo',
-  category: 'Cleaning Products',
-  description: 'Professional grade car shampoo with advanced cleaning formula. pH balanced and safe for all paint types. Creates rich foam for effective dirt removal.',
-  price: 299,
-  stock: 50,
-  active: true,
-  image: '',
-  sku: 'CS-PREM-001',
-  sales: 234,
-  revenue: 69966,
-  reviews: 45,
-  rating: 4.7,
-};
+// Removed mock; data fetched via hook
 
 export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
   const deleteConfirmation = useConfirmation();
+  const { data: product } = useAdminProductDetail(id) as any;
 
-  const stockStatus = product.stock > 20 ? 'good' : product.stock > 10 ? 'low' : 'critical';
+  const stockStatus = product && product.stock > 20 ? 'good' : product && product.stock > 10 ? 'low' : 'critical';
 
   const handleDeleteClick = async () => {
     const confirmed = await deleteConfirmation.confirm({
@@ -75,23 +63,29 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               <div className="space-y-4 sm:space-y-5">
                 {/* Header Section */}
                 <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-                  {/* Product Icon */}
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 bg-primary/10 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0 border-2 border-primary/20 mx-auto sm:mx-0">
-                    <Package className="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 text-primary" />
-                  </div>
+                  {/* Product Image */}
+                  {product?.image ? (
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-lg sm:rounded-xl overflow-hidden flex items-center justify-center flex-shrink-0 border-2 border-primary/20 mx-auto sm:mx-0">
+                      <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+                    </div>
+                  ) : (
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 bg-primary/10 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0 border-2 border-primary/20 mx-auto sm:mx-0">
+                      <Package className="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 text-primary" />
+                    </div>
+                  )}
 
                   {/* Product Info */}
                   <div className="flex-1 min-w-0 text-center sm:text-left">
                     <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 mb-2 sm:mb-3">
                       <div className="min-w-0">
-                        <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-foreground mb-1.5 sm:mb-2">{product.name}</h1>
-                        <Badge variant="outline" className="text-xs sm:text-sm">{product.category}</Badge>
+                        <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-foreground mb-1.5 sm:mb-2">{product?.name}</h1>
+                        <Badge variant="outline" className="text-xs sm:text-sm">{product?.category}</Badge>
                       </div>
-                      <Badge variant={product.active ? 'default' : 'secondary'} className="text-xs sm:text-sm mx-auto sm:mx-0 w-fit">
-                        {product.active ? 'Active' : 'Inactive'}
+                      <Badge variant={product?.active ? 'default' : 'secondary'} className="text-xs sm:text-sm mx-auto sm:mx-0 w-fit">
+                        {product?.active ? 'Active' : 'Inactive'}
                       </Badge>
                     </div>
-                    <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 sm:line-clamp-3">{product.description}</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 sm:line-clamp-3">{product?.description}</p>
                   </div>
                 </div>
 
@@ -102,14 +96,14 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                       <IndianRupee className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary flex-shrink-0" />
                       <p className="text-[10px] sm:text-xs text-muted-foreground">Price</p>
                     </div>
-                    <p className="text-lg sm:text-xl md:text-2xl font-bold text-primary">₹{product.price}</p>
+                    <p className="text-lg sm:text-xl md:text-2xl font-bold text-primary">₹{product?.price}</p>
                   </div>
                   <div className="p-3 sm:p-3.5 md:p-4 bg-muted rounded-lg sm:rounded-xl border-2 border-border">
                     <div className="flex items-center gap-1.5 mb-1">
                       <Package className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
                       <p className="text-[10px] sm:text-xs text-muted-foreground">SKU</p>
                     </div>
-                    <p className="text-lg sm:text-xl md:text-2xl font-bold text-foreground">{product.sku}</p>
+                    <p className="text-lg sm:text-xl md:text-2xl font-bold text-foreground">{product?.sku || '-'}</p>
                   </div>
                 </div>
               </div>
@@ -131,7 +125,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                     <ShoppingBag className="h-3 w-3 sm:h-3.5 sm:w-3.5 md:h-4 md:w-4 text-muted-foreground flex-shrink-0" />
                     <p className="text-[9px] sm:text-[10px] md:text-xs text-muted-foreground uppercase tracking-wide">Units Sold</p>
                   </div>
-                  <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-foreground">{product.sales}</p>
+                  <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-foreground">{(product as any)?.sales ?? '-'}</p>
                 </div>
 
                 <div className="p-3 sm:p-3.5 md:p-4 bg-primary/10 rounded-lg sm:rounded-xl border-2 border-primary/20">
@@ -139,7 +133,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                     <IndianRupee className="h-3 w-3 sm:h-3.5 sm:w-3.5 md:h-4 md:w-4 text-primary flex-shrink-0" />
                     <p className="text-[9px] sm:text-[10px] md:text-xs text-muted-foreground uppercase tracking-wide">Revenue</p>
                   </div>
-                  <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-primary">₹{product.revenue.toLocaleString()}</p>
+                  <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-primary">{(product as any)?.revenue !== undefined ? `₹${(product as any).revenue.toLocaleString()}` : '₹-'}</p>
                 </div>
 
                 <div className="p-3 sm:p-3.5 md:p-4 bg-muted rounded-lg sm:rounded-xl border-2 border-border">
@@ -147,7 +141,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                     <Users className="h-3 w-3 sm:h-3.5 sm:w-3.5 md:h-4 md:w-4 text-muted-foreground flex-shrink-0" />
                     <p className="text-[9px] sm:text-[10px] md:text-xs text-muted-foreground uppercase tracking-wide">Reviews</p>
                   </div>
-                  <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-foreground">{product.reviews}</p>
+                  <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-foreground">{(product as any)?.reviewCount ?? (product as any)?.reviews ?? 0}</p>
                 </div>
 
                 <div className="p-3 sm:p-3.5 md:p-4 bg-muted rounded-lg sm:rounded-xl border-2 border-border">
@@ -155,7 +149,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                     <TrendingUp className="h-3 w-3 sm:h-3.5 sm:w-3.5 md:h-4 md:w-4 text-muted-foreground flex-shrink-0" />
                     <p className="text-[9px] sm:text-[10px] md:text-xs text-muted-foreground uppercase tracking-wide">Rating</p>
                   </div>
-                  <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-foreground">⭐ {product.rating}</p>
+                  <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-foreground">⭐ {product?.rating ?? 0}</p>
                 </div>
               </div>
             </CardContent>
@@ -181,7 +175,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                   stockStatus === 'good' ? 'text-green-600 dark:text-green-400' :
                   stockStatus === 'low' ? 'text-orange-600 dark:text-orange-400' :
                   'text-red-600 dark:text-red-400'
-                }`}>{product.stock}</p>
+                }`}>{product?.stock ?? 0}</p>
                 <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                   {stockStatus === 'good' ? 'Healthy stock level' :
                    stockStatus === 'low' ? 'Low stock - consider reordering' :
@@ -200,7 +194,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
               <div className="p-3 sm:p-4 bg-primary/10 rounded-lg sm:rounded-xl border-2 border-primary/20">
                 <p className="text-xs sm:text-sm text-muted-foreground mb-1">Avg Revenue per Sale</p>
-                <p className="text-2xl sm:text-3xl font-bold text-primary">₹{product.price}</p>
+                <p className="text-2xl sm:text-3xl font-bold text-primary">₹{product?.price}</p>
               </div>
 
               <Separator />

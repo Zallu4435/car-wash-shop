@@ -49,11 +49,12 @@ export default function CategoriesPage() {
   const totalItems = categoriesResponse?.total || 0;
   const totalPages = categoriesResponse?.totalPages || 0;
 
-  const handleDelete = async (categoryId: string, categoryName: string) => {
+  const handleDelete = async (categoryId: string, categoryName: string, categoryType?: string) => {
+    const itemType = categoryType === 'product' ? 'products' : categoryType === 'service' ? 'services' : 'items';
     const confirmed = await deleteConfirmation.confirm({
       type: 'delete',
       title: 'Delete Category?',
-      description: 'This will permanently delete this category. Products in this category will need to be reassigned. This action cannot be undone.',
+      description: `This will permanently delete this category and all associated ${itemType}. All items in this category will be automatically deleted. This action cannot be undone.`,
       confirmText: 'Yes, Delete Category',
       cancelText: 'Cancel',
       itemName: categoryName,
@@ -218,7 +219,7 @@ export default function CategoriesPage() {
                   {
                     label: '',
                     icon: Trash2,
-                    onClick: () => handleDelete(category.id, category.name),
+                    onClick: () => handleDelete(category.id, category.name, category.type),
                     disabled: deleteCategoryMutation.isPending,
                     className: 'text-destructive hover:bg-destructive/10 flex-initial px-3',
                   },

@@ -17,7 +17,7 @@ interface Service {
     order?: number;
   };
   description: string;
-  price: number;
+  pricing: Array<{ vehicleType: string; price: number }>;
   duration: number;
   rating: number;
   reviewCount: number;
@@ -44,11 +44,19 @@ export function ServiceCard({
       <Link href={`/services/${service.id}`}>
         {/* Image Container */}
         <div className="relative h-44 sm:h-48 md:h-56 lg:h-64 bg-gradient-to-br from-primary/5 to-accent/5 overflow-hidden">
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl group-hover:scale-110 transition-transform duration-300">
-              🚗
-            </span>
-          </div>
+          {service.imageUrl ? (
+            <img 
+              src={service.imageUrl}
+              alt={service.name}
+              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl group-hover:scale-110 transition-transform duration-300">
+                🚗
+              </span>
+            </div>
+          )}
           
           {/* Category Badge */}
           {(service.category?.name || bodyTypeBadge) && (
@@ -93,38 +101,10 @@ export function ServiceCard({
             </div>
           </div>
 
-          {/* Price & CTA */}
+          {/* CTA */}
           <div className="flex items-center justify-between gap-2 sm:gap-3">
             <div className="flex flex-col min-w-0 flex-1">
-              {priceDisplay ? (
-                <>
-                  <span className="text-[10px] sm:text-xs text-muted-foreground mb-0.5">Price</span>
-                  <div className="flex items-baseline gap-1.5 sm:gap-2 flex-wrap">
-                    <span className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-primary transition-all duration-300 leading-none">
-                      {priceDisplay}
-                    </span>
-                    {pricingBadge && (
-                      <Badge variant="secondary" className="text-[9px] sm:text-[10px] font-semibold px-1.5 py-0.5 leading-none">
-                        {pricingBadge}
-                      </Badge>
-                    )}
-                  </div>
-                </>
-              ) : (
-                <>
-                  {showFromLabel && (
-                    <span className="text-[10px] sm:text-xs text-muted-foreground mb-0.5">From</span>
-                  )}
-                  <div className="flex flex-col xs:flex-row xs:items-baseline gap-1 xs:gap-2">
-                    <span className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-primary leading-none">
-                      ₹{service.price}
-                    </span>
-                    <Badge variant="outline" className="text-[9px] sm:text-[10px] px-1.5 py-0.5 w-fit">
-                      Select vehicle
-                    </Badge>
-                  </div>
-                </>
-              )}
+              <span className="text-[10px] sm:text-xs text-muted-foreground">Prices vary by vehicle type</span>
             </div>
             <Button size="sm" className="group/btn shrink-0 h-8 sm:h-9 px-3 sm:px-4 text-xs sm:text-sm border-2 border-primary/20">
               <span className="hidden xs:inline">Book Now</span>

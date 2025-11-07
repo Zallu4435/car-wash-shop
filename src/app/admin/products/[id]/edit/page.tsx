@@ -15,22 +15,18 @@ import { ArrowLeft, Save, Image as ImageIcon, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { productSchema, ProductFormInput } from '@/schemas/admin/product';
 import { AdminRoutes } from '@/lib/constants/routes';
+import { useAdminProductDetail, useUpdateProduct, useAdminCategoryList } from '@/api/domains/admin-catalog/queries';
 
-// Mock data
-const mockProduct = {
-  name: 'Car Shampoo',
-  categoryId: 'cat_clean',
-  description: 'Premium car shampoo with advanced cleaning formula',
-  price: 299,
-  stock: 50,
-  active: true,
-  image: '',
-};
+// Removed mocks; using real API via queries
 
 export default function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
   const [uploadedImage, setUploadedImage] = useState('');
+  const { data: productDetail } = useAdminProductDetail(id);
+  const updateProduct = useUpdateProduct();
+  const { data: categoriesResponse } = useAdminCategoryList({ type: 'product', status: 'active' });
+  const productCategories = categoriesResponse?.data || [];
   
   const {
     register,
@@ -48,24 +44,91 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
   });
 
   useEffect(() => {
-    // TODO: Fetch product data from API
-    const data = {
-      name: mockProduct.name,
-      category: mockProduct.categoryId,
-      description: mockProduct.description,
-      price: mockProduct.price,
-      stock: mockProduct.stock,
-      sku: 'SKU001',
-      comparePrice: 0,
-      active: mockProduct.active,
-      featured: false,
-      images: [],
-    };
-    reset(data);
-    if (mockProduct.image) {
-      setUploadedImage(mockProduct.image);
+    const product: any = productDetail;
+    if (product && product.id) {
+      // Extract category ID - handle both object and string formats
+      let categoryValue = '';
+      if (product.categoryId) {
+        // Handle if categoryId is an object
+        if (typeof product.categoryId === 'object' && product.categoryId !== null) {
+          categoryValue = product.categoryId._id || product.categoryId.id || '';
+        } else {
+          categoryValue = String(product.categoryId);
+        }
+      } else if (product.category) {
+        // Category might be an object with _id or id, or a string
+        if (typeof product.category === 'object' && product.category !== null) {
+          categoryValue = product.category._id || product.category.id || '';
+        } else {
+          categoryValue = String(product.category);
+        }
+      }
+      
+      // If categories are already loaded, try to map category name to ID
+      if (productCategories.length > 0 && categoryValue) {
+        // Check if categoryValue is already a valid ID
+        const foundById = productCategories.find(cat => cat.id === categoryValue);
+        if (!foundById) {
+          // If not found by ID, try to find by name (in case categoryValue is a name string)
+          const matchingCategory = productCategories.find(cat => cat.name === categoryValue);
+          if (matchingCategory) {
+            categoryValue = matchingCategory.id;
+          }
+        }
+      }
+      
+      // Set each field individually to ensure all fields update
+      if (product.name != null) setValue('name', product.name);
+      if (product.description != null) setValue('description', product.description);
+      if (categoryValue) setValue('category', categoryValue);
+      if (product.price != null) setValue('price', Number(product.price));
+      if (product.stock != null) setValue('stock', Number(product.stock));
+      if (product.sku != null) setValue('sku', product.sku);
+      if (product.comparePrice != null) setValue('comparePrice', Number(product.comparePrice));
+      if (product.isAvailable != null) {
+        setValue('active', Boolean(product.isAvailable));
+      } else if (product.active != null) {
+        setValue('active', Boolean(product.active));
+      }
+      if (product.featured != null) setValue('featured', Boolean(product.featured));
+      if (product.image) {
+        setValue('images', [product.image]);
+        setUploadedImage(product.image);
+      }
     }
-  }, [id, reset]);
+  }, [productDetail, setValue, productCategories]);
+
+  // Update category field when categories are loaded (if category wasn't set correctly initially)
+  useEffect(() => {
+    const product: any = productDetail;
+    if (product && productCategories.length > 0) {
+      // Extract category ID - handle both object and string formats
+      let categoryValue: string = '';
+      if (product.categoryId) {
+        categoryValue = product.categoryId;
+      } else if (product.category) {
+        if (typeof product.category === 'object' && product.category !== null) {
+          categoryValue = product.category._id || product.category.id || '';
+        } else {
+          categoryValue = product.category;
+        }
+      }
+      
+      // If category is a name string, try to find the matching category ID
+      if (categoryValue) {
+        const foundById = productCategories.find(cat => cat.id === categoryValue);
+        if (!foundById) {
+          const matchingCategory = productCategories.find(cat => cat.name === categoryValue);
+          if (matchingCategory) {
+            setValue('category', matchingCategory.id);
+          }
+        } else {
+          // Ensure the category is set even if it's already correct
+          setValue('category', categoryValue);
+        }
+      }
+    }
+  }, [productDetail, productCategories, setValue]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -89,11 +152,11 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
 
   const onSubmit = async (data: ProductFormInput) => {
     try {
-      console.log('Updating product:', id, data);
+      await updateProduct.mutateAsync({ productId: id, input: data as any });
       toast.success('Product updated successfully!');
       router.push(AdminRoutes.PRODUCTS);
-    } catch (error) {
-      toast.error('Failed to update product');
+    } catch (error: any) {
+      toast.error(error?.message || 'Failed to update product');
     }
   };
 
@@ -183,18 +246,23 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                 name="category"
                 control={control}
                 render={({ field }) => (
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value} disabled={productCategories.length === 0}>
                     <SelectTrigger id="category" className="h-9 sm:h-10 text-xs sm:text-sm border-2 rounded-lg">
-                      <SelectValue placeholder="Select category" />
+                      <SelectValue placeholder={productCategories.length === 0 ? "No categories available" : "Select category"} />
                     </SelectTrigger>
                     <SelectContent className="force-sheet-bg border-2 rounded-lg">
-                      <SelectItem value="cat_clean" className="text-xs sm:text-sm rounded-md">Cleaning Products</SelectItem>
-                      <SelectItem value="cat_care" className="text-xs sm:text-sm rounded-md">Car Care</SelectItem>
-                      <SelectItem value="cat_accessories" className="text-xs sm:text-sm rounded-md">Accessories</SelectItem>
+                      {productCategories.map((cat) => (
+                        <SelectItem key={cat.id} value={cat.id} className="text-xs sm:text-sm rounded-md">
+                          {cat.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 )}
               />
+              {productCategories.length === 0 && (
+                <p className="text-xs text-muted-foreground">Please create a category first before editing products.</p>
+              )}
               {errors.category && (
                 <p className="text-xs text-red-600 dark:text-red-400">{errors.category.message}</p>
               )}
@@ -276,9 +344,9 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
               >
                 Cancel
               </Button>
-              <Button type="submit" className="flex-1 h-9 sm:h-10 text-xs sm:text-sm border-2 rounded-lg" disabled={isSubmitting}>
+              <Button type="submit" className="flex-1 h-9 sm:h-10 text-xs sm:text-sm border-2 rounded-lg" disabled={isSubmitting || updateProduct.isPending}>
                 <Save className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                {isSubmitting ? 'Updating...' : 'Update Product'}
+                {isSubmitting || updateProduct.isPending ? 'Updating...' : 'Update Product'}
               </Button>
             </div>
           </form>

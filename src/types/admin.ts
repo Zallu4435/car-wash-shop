@@ -156,7 +156,7 @@ export interface AdminService {
   name: string;
   description: string;
   category: string;
-  price: number;
+  pricing: Array<{ vehicleType: string; price: number }>;
   duration: number;
   status: 'active' | 'inactive';
   image?: string;
@@ -169,23 +169,21 @@ export interface CreateServiceInput {
   name: string;
   description: string;
   categoryId: string;
-  price: number;
+  pricing: Array<{ vehicleType: string; price: number }>;
   duration: number;
   image?: string;
   features?: string[];
-  vehicleTypes?: string[];
 }
 
 export interface UpdateServiceInput {
   name?: string;
   description?: string;
   categoryId?: string;
-  price?: number;
+  pricing?: Array<{ vehicleType: string; price: number }>;
   duration?: number;
   status?: 'active' | 'inactive';
   image?: string;
   features?: string[];
-  vehicleTypes?: string[];
 }
 
 // Product Management Types
@@ -235,7 +233,6 @@ export interface AdminCategory {
   name: string;
   type: 'service' | 'product';
   description?: string;
-  icon?: string;
   status: 'active' | 'inactive';
   itemCount: number;
   createdAt: string;
@@ -247,13 +244,11 @@ export interface CreateCategoryInput {
   name: string;
   type: 'service' | 'product';
   description?: string;
-  icon?: string;
 }
 
 export interface UpdateCategoryInput {
   name?: string;
   description?: string;
-  icon?: string;
   status?: 'active' | 'inactive';
 }
 

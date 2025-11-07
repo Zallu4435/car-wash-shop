@@ -15,21 +15,14 @@ import { ArrowLeft, Save, Car, Clock, IndianRupee, Image as ImageIcon, X } from 
 import { toast } from 'sonner';
 import { serviceSchema, ServiceFormInput } from '@/schemas/admin/service';
 import { AdminRoutes } from '@/lib/constants/routes';
-
-// Mock data
-const mockService = {
-  name: 'Premium Wash',
-  categoryId: 'cat_ext',
-  description: 'Complete exterior wash with foam, high-pressure rinse, and tire cleaning',
-  price: 499,
-  duration: 30,
-  active: true,
-};
+import { useAdminServiceDetail, useUpdateService } from '@/api/domains/admin-catalog/queries';
 
 export default function EditServicePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
   const [uploadedImage, setUploadedImage] = useState<string>('');
+  const { data: serviceDetail } = useAdminServiceDetail(id);
+  const updateService = useUpdateService();
   
   const {
     register,
@@ -37,6 +30,7 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
     control,
     reset,
     setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<ServiceFormInput>({
     resolver: zodResolver(serviceSchema) as any,
@@ -45,6 +39,8 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
     },
   });
 
+  const category = watch('category');
+
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -52,6 +48,7 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
       reader.onloadend = () => {
         const imageUrl = reader.result as string;
         setUploadedImage(imageUrl);
+        setValue('image', imageUrl);
         toast.success('Image uploaded successfully');
       };
       reader.readAsDataURL(file);
@@ -60,28 +57,65 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
 
   const handleRemoveImage = () => {
     setUploadedImage('');
+    setValue('image', '');
     toast.success('Image removed');
   };
 
   useEffect(() => {
-    // TODO: Fetch service data from API
-    reset({
-      name: mockService.name,
-      category: mockService.categoryId,
-      description: mockService.description,
-      price: mockService.price,
-      duration: mockService.duration,
-      active: mockService.active,
-    });
-  }, [id, reset]);
+    const service: any = serviceDetail;
+    if (service && service.id) {
+      // Category is now just 'bike' or 'car' string
+      let categoryValue = '';
+      if (service.category) {
+        // Handle both object (legacy) and string formats
+        if (typeof service.category === 'object' && service.category !== null) {
+          // Legacy: try to extract from object, but prefer direct string
+          categoryValue = service.category.name || service.category._id || service.category.id || '';
+        } else {
+          categoryValue = String(service.category);
+        }
+        // Normalize to 'bike' or 'car'
+        if (categoryValue.toLowerCase().includes('bike')) {
+          categoryValue = 'bike';
+        } else if (categoryValue.toLowerCase().includes('car')) {
+          categoryValue = 'car';
+        }
+      }
+      
+      // Set each field individually to ensure all fields update
+      if (service.name != null) setValue('name', service.name);
+      if (service.description != null) setValue('description', service.description);
+      if (categoryValue && ['bike', 'car'].includes(categoryValue)) {
+        setValue('category', categoryValue as 'bike' | 'car');
+      }
+      if (service.price != null) setValue('price', Number(service.price));
+      if (service.duration != null) setValue('duration', Number(service.duration));
+      if (service.vehicleType != null) setValue('vehicleType', service.vehicleType);
+      if (service.isAvailable != null) {
+        setValue('active', Boolean(service.isAvailable));
+      } else if (service.active != null) {
+        setValue('active', Boolean(service.active));
+      }
+      if (service.image) {
+        setUploadedImage(service.image);
+        setValue('image', service.image);
+      }
+    }
+  }, [serviceDetail, setValue]);
 
   const onSubmit = async (data: ServiceFormInput) => {
     try {
-      console.log('Updating service:', id, data);
+      await updateService.mutateAsync({ 
+        serviceId: id, 
+        input: {
+          ...data,
+          image: data.image || uploadedImage, // Use form data or fallback to state
+        } as any 
+      });
       toast.success('Service updated successfully!');
       router.push(AdminRoutes.SERVICES);
-    } catch (error) {
-      toast.error('Failed to update service');
+    } catch (error: any) {
+      toast.error(error?.message || 'Failed to update service');
     }
   };
 
@@ -173,14 +207,20 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
                 name="category"
                 control={control}
                 render={({ field }) => (
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select 
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      // Reset vehicle type when category changes
+                      setValue('vehicleType', '');
+                    }} 
+                    value={field.value}
+                  >
                     <SelectTrigger id="category" className="h-9 sm:h-10 text-xs sm:text-sm">
-                      <SelectValue placeholder="Select category" />
+                      <SelectValue placeholder="Select category (Bike or Car)" />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="cat_ext">Exterior Wash</SelectItem>
-                      <SelectItem value="cat_int">Interior Detailing</SelectItem>
-                      <SelectItem value="cat_full">Complete Detailing</SelectItem>
+                    <SelectContent className="force-sheet-bg border-2 rounded-lg">
+                      <SelectItem value="bike" className="text-xs sm:text-sm rounded-md">Bike</SelectItem>
+                      <SelectItem value="car" className="text-xs sm:text-sm rounded-md">Car</SelectItem>
                     </SelectContent>
                   </Select>
                 )}
@@ -248,19 +288,39 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
                 name="vehicleType"
                 control={control}
                 render={({ field }) => (
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select 
+                    onValueChange={field.onChange} 
+                    value={field.value}
+                    disabled={!category}
+                  >
                     <SelectTrigger id="vehicleType" className="h-9 sm:h-10 text-xs sm:text-sm">
-                      <SelectValue placeholder="Select vehicle type" />
+                      <SelectValue placeholder={category ? "Select vehicle type" : "Select category first"} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="sedan">Sedan</SelectItem>
-                      <SelectItem value="suv">SUV</SelectItem>
-                      <SelectItem value="hatchback">Hatchback</SelectItem>
-                      <SelectItem value="luxury">Luxury</SelectItem>
+                      {category === 'bike' ? (
+                        <>
+                          <SelectItem value="super-bike">Super Bike</SelectItem>
+                          <SelectItem value="sports-bike">Sports Bike</SelectItem>
+                          <SelectItem value="cruiser">Cruiser</SelectItem>
+                          <SelectItem value="scooter">Scooter</SelectItem>
+                          <SelectItem value="scooty">Scooty</SelectItem>
+                          <SelectItem value="motorcycle">Motorcycle</SelectItem>
+                        </>
+                      ) : category === 'car' ? (
+                        <>
+                          <SelectItem value="sedan">Sedan</SelectItem>
+                          <SelectItem value="suv">SUV</SelectItem>
+                          <SelectItem value="hatchback">Hatchback</SelectItem>
+                          <SelectItem value="luxury">Luxury</SelectItem>
+                        </>
+                      ) : null}
                     </SelectContent>
                   </Select>
                 )}
               />
+              {!category && (
+                <p className="text-xs text-muted-foreground">Please select a category first to choose vehicle type</p>
+              )}
               {errors.vehicleType && (
                 <p className="text-[10px] sm:text-xs text-red-600 dark:text-red-400">{errors.vehicleType.message}</p>
               )}
@@ -298,9 +358,9 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
               >
                 Cancel
               </Button>
-              <Button type="submit" className="flex-1 h-10 sm:h-11 text-xs sm:text-sm border-2" disabled={isSubmitting}>
+              <Button type="submit" className="flex-1 h-10 sm:h-11 text-xs sm:text-sm border-2" disabled={isSubmitting || updateService.isPending}>
                 <Save className="mr-1.5 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                {isSubmitting ? 'Updating...' : 'Update Service'}
+                {isSubmitting || updateService.isPending ? 'Updating...' : 'Update Service'}
               </Button>
             </div>
           </form>

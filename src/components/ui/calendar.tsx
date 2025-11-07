@@ -128,7 +128,8 @@ export function Calendar({ mode = 'single', selected, onSelect, className }: Cal
               className={cn(
                 'aspect-square flex items-center justify-center rounded-xl text-sm font-medium transition-all',
                 'hover:bg-primary/10 hover:scale-105',
-                isSelectedDay && 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg scale-105',
+                isSelectedDay &&
+                  'bg-gradient-to-br from-primary to-primary/80 text-primary-foreground hover:from-primary/90 hover:to-primary/80 shadow-xl scale-110 ring-2 ring-primary/70',
                 isTodayDay && !isSelectedDay && 'bg-primary/20 font-bold ring-2 ring-primary',
                 !isSelectedDay && !isTodayDay && 'text-foreground hover:text-primary'
               )}

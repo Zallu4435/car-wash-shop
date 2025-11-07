@@ -11,10 +11,11 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { ArrowLeft, Plus, Car, Clock, IndianRupee, Image as ImageIcon, X } from 'lucide-react';
+import { ArrowLeft, Plus, Clock, IndianRupee, Image as ImageIcon, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { serviceSchema, ServiceFormInput } from '@/schemas/admin/service';
 import { AdminRoutes } from '@/lib/constants/routes';
+import { useCreateService } from '@/api/domains/admin-catalog/queries';
 
 export default function NewServicePage() {
   const router = useRouter();
@@ -25,6 +26,7 @@ export default function NewServicePage() {
     handleSubmit,
     control,
     setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<ServiceFormInput>({
     resolver: zodResolver(serviceSchema) as any,
@@ -33,6 +35,11 @@ export default function NewServicePage() {
     },
   });
 
+  const category = watch('category');
+  const pricing = watch('pricing');
+
+  const createService = useCreateService();
+
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -40,6 +47,7 @@ export default function NewServicePage() {
       reader.onloadend = () => {
         const imageUrl = reader.result as string;
         setUploadedImage(imageUrl);
+        setValue('image', imageUrl);
         toast.success('Image uploaded successfully');
       };
       reader.readAsDataURL(file);
@@ -48,16 +56,24 @@ export default function NewServicePage() {
 
   const handleRemoveImage = () => {
     setUploadedImage('');
+    setValue('image', '');
     toast.success('Image removed');
   };
 
   const onSubmit = async (data: ServiceFormInput) => {
     try {
-      console.log('Service data:', data);
+      await createService.mutateAsync({
+        name: data.name,
+        description: data.description,
+        category: data.category,
+        pricing: data.pricing,
+        duration: data.duration,
+        image: data.image || uploadedImage, // Use form data or fallback to state
+      } as any);
       toast.success('Service created successfully!');
       router.push(AdminRoutes.SERVICES);
-    } catch (error) {
-      toast.error('Failed to create service');
+    } catch (error: any) {
+      toast.error(error?.message || 'Failed to create service');
     }
   };
 
@@ -149,14 +165,20 @@ export default function NewServicePage() {
                 name="category"
                 control={control}
                 render={({ field }) => (
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select 
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      // Reset vehicle type when category changes
+                      setValue('vehicleType', '');
+                    }} 
+                    value={field.value}
+                  >
                     <SelectTrigger id="category" className="h-9 sm:h-10 text-xs sm:text-sm">
-                      <SelectValue placeholder="Select category" />
+                      <SelectValue placeholder="Select category (Bike or Car)" />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="cat_ext">Exterior Wash</SelectItem>
-                      <SelectItem value="cat_int">Interior Detailing</SelectItem>
-                      <SelectItem value="cat_full">Complete Detailing</SelectItem>
+                    <SelectContent className="force-sheet-bg border-2 rounded-lg">
+                      <SelectItem value="bike" className="text-xs sm:text-sm rounded-md">Bike</SelectItem>
+                      <SelectItem value="car" className="text-xs sm:text-sm rounded-md">Car</SelectItem>
                     </SelectContent>
                   </Select>
                 )}
@@ -181,24 +203,8 @@ export default function NewServicePage() {
               )}
             </div>
 
-            {/* Price & Duration */}
+            {/* Duration */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-              <div className="space-y-1.5 sm:space-y-2">
-                <Label htmlFor="price" className="text-xs sm:text-sm">Price (₹)</Label>
-                <div className="relative">
-                  <IndianRupee className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
-                  <Input
-                    id="price"
-                    type="number"
-                    placeholder="499"
-                    className="pl-9 sm:pl-10 h-9 sm:h-10 text-xs sm:text-sm"
-                    {...register('price', { valueAsNumber: true })}
-                  />
-                </div>
-                {errors.price && (
-                  <p className="text-[10px] sm:text-xs text-red-600 dark:text-red-400">{errors.price.message}</p>
-                )}
-              </div>
               <div className="space-y-1.5 sm:space-y-2">
                 <Label htmlFor="duration" className="text-xs sm:text-sm">Duration (minutes)</Label>
                 <div className="relative">
@@ -217,28 +223,49 @@ export default function NewServicePage() {
               </div>
             </div>
 
-            {/* Vehicle Type */}
-            <div className="space-y-1.5 sm:space-y-2">
-              <Label htmlFor="vehicleType" className="text-xs sm:text-sm">Vehicle Type</Label>
-              <Controller
-                name="vehicleType"
-                control={control}
-                render={({ field }) => (
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <SelectTrigger id="vehicleType" className="h-9 sm:h-10 text-xs sm:text-sm">
-                      <SelectValue placeholder="Select vehicle type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="sedan">Sedan</SelectItem>
-                      <SelectItem value="suv">SUV</SelectItem>
-                      <SelectItem value="hatchback">Hatchback</SelectItem>
-                      <SelectItem value="luxury">Luxury</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-              {errors.vehicleType && (
-                <p className="text-[10px] sm:text-xs text-red-600 dark:text-red-400">{errors.vehicleType.message}</p>
+            {/* Vehicle-wise Pricing */}
+            <div className="space-y-2 sm:space-y-3">
+              <Label className="text-xs sm:text-sm">Pricing by Vehicle Type</Label>
+              {!category && (
+                <p className="text-xs text-muted-foreground">Select a category to set prices for vehicle types</p>
+              )}
+              {category && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                  {(category === 'car'
+                    ? ['sedan', 'suv', 'hatchback', 'luxury']
+                    : ['super-bike', 'sports-bike', 'cruiser', 'scooter', 'scooty', 'motorcycle']
+                  ).map((vt, idx) => (
+                    <div key={vt} className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs sm:text-sm font-medium capitalize">{vt.replace('-', ' ')}</span>
+                      </div>
+                      <div className="relative">
+                        <IndianRupee className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
+                        <Input
+                          type="number"
+                          placeholder="499"
+                          className="pl-9 sm:pl-10 h-9 sm:h-10 text-xs sm:text-sm"
+                          value={pricing?.find((p: any) => p.vehicleType === vt)?.price ?? ''}
+                          onChange={(e) => {
+                            const value = Number(e.target.value);
+                            const current = pricing || [];
+                            const exists = current.findIndex((p: any) => p.vehicleType === vt);
+                            if (exists >= 0) {
+                              const next = [...current];
+                              next[exists] = { vehicleType: vt, price: value };
+                              setValue('pricing', next as any, { shouldValidate: true });
+                            } else {
+                              setValue('pricing', [...current, { vehicleType: vt, price: value }] as any, { shouldValidate: true });
+                            }
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {errors.pricing && (
+                <p className="text-[10px] sm:text-xs text-red-600 dark:text-red-400">{(errors as any).pricing?.message || 'Please set at least one price'}</p>
               )}
             </div>
 
@@ -263,9 +290,9 @@ export default function NewServicePage() {
             </div>
 
             {/* Submit Button */}
-            <Button type="submit" className="w-full h-10 sm:h-11 text-xs sm:text-sm border-2" disabled={isSubmitting}>
+            <Button type="submit" className="w-full h-10 sm:h-11 text-xs sm:text-sm border-2" disabled={isSubmitting || createService.isPending}>
               <Plus className="mr-1.5 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-              {isSubmitting ? 'Creating...' : 'Create Service'}
+              {isSubmitting || createService.isPending ? 'Creating...' : 'Create Service'}
             </Button>
           </form>
         </CardContent>

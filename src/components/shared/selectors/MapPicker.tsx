@@ -1,21 +1,24 @@
 'use client';
 
-/// <reference types="google.maps" />
-
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { MapPin, Search, Navigation, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { 
-  loadGoogleMapsScript, 
-  GOOGLE_MAPS_CONFIG, 
   geocodeAddress, 
-  reverseGeocode as reverseGeocodeUtil, 
+  reverseGeocode, 
   getCurrentPosition,
   type Location 
-} from '@/lib/maps';
+} from '@/lib/maps/leaflet-utils';
+
+// Dynamically import Leaflet to avoid SSR issues
+const MapContainer = dynamic(() => import('react-leaflet').then((mod) => mod.MapContainer), { ssr: false });
+const TileLayer = dynamic(() => import('react-leaflet').then((mod) => mod.TileLayer), { ssr: false });
+const Marker = dynamic(() => import('react-leaflet').then((mod) => mod.Marker), { ssr: false });
+const Popup = dynamic(() => import('react-leaflet').then((mod) => mod.Popup), { ssr: false });
 
 interface MapPickerProps {
   onLocationSelect: (location: Location) => void;
@@ -23,6 +26,10 @@ interface MapPickerProps {
   initialLatitude?: number;
   initialLongitude?: number;
 }
+
+// Default center (Mumbai, India)
+const DEFAULT_CENTER: [number, number] = [19.0760, 72.8777];
+const DEFAULT_ZOOM = 13;
 
 export function MapPicker({ 
   onLocationSelect, 
@@ -32,120 +39,49 @@ export function MapPicker({
 }: MapPickerProps) {
   const [address, setAddress] = useState(initialAddress);
   const [searching, setSearching] = useState(false);
-  const [isMapLoaded, setIsMapLoaded] = useState(false);
-  const [markerPosition, setMarkerPosition] = useState<{ lat: number; lng: number } | null>(
+  const [isMapReady, setIsMapReady] = useState(false);
+  const [markerPosition, setMarkerPosition] = useState<[number, number] | null>(
     initialLatitude && initialLongitude 
-      ? { lat: initialLatitude, lng: initialLongitude }
+      ? [initialLatitude, initialLongitude]
       : null
   );
+  const [isClient, setIsClient] = useState(false);
   
-  const mapRef = useRef<HTMLDivElement>(null);
-  const googleMapRef = useRef<google.maps.Map | null>(null);
-  const markerRef = useRef<google.maps.Marker | null>(null);
-  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  // Load Google Maps Script
+  // Initialize client-side rendering
   useEffect(() => {
-    loadGoogleMapsScript()
-      .then(() => {
-        setIsMapLoaded(true);
-        initializeMap();
-      })
-      .catch((error) => {
-        console.error('Failed to load Google Maps:', error);
-        toast.error(error.message || 'Failed to load Google Maps');
-      });
-  }, []);
-
-  const initializeMap = useCallback(() => {
-    if (!mapRef.current || !window.google?.maps) return;
-
-    const defaultCenter = markerPosition || GOOGLE_MAPS_CONFIG.defaultCenter;
-
-    // Initialize map
-    googleMapRef.current = new google.maps.Map(mapRef.current, {
-      center: defaultCenter,
-      zoom: GOOGLE_MAPS_CONFIG.defaultZoom,
-      ...GOOGLE_MAPS_CONFIG.mapOptions,
-    });
-
-    // Initialize marker
-    markerRef.current = new google.maps.Marker({
-      map: googleMapRef.current,
-      position: defaultCenter,
-      draggable: true,
-    });
-
-    // Add marker drag listener
-    markerRef.current.addListener('dragend', () => {
-      const position = markerRef.current?.getPosition();
-      if (position) {
-        const lat = position.lat();
-        const lng = position.lng();
-        setMarkerPosition({ lat, lng });
-        reverseGeocode(lat, lng);
-      }
-    });
-
-    // Add map click listener
-    googleMapRef.current.addListener('click', (e: google.maps.MapMouseEvent) => {
-      if (e.latLng) {
-        const lat = e.latLng.lat();
-        const lng = e.latLng.lng();
-        setMarkerPosition({ lat, lng });
-        markerRef.current?.setPosition({ lat, lng });
-        reverseGeocode(lat, lng);
-      }
-    });
-
-    // Initialize autocomplete
-    if (inputRef.current) {
-      autocompleteRef.current = new google.maps.places.Autocomplete(
-        inputRef.current,
-        GOOGLE_MAPS_CONFIG.autocompleteOptions
-      );
-
-      autocompleteRef.current.addListener('place_changed', () => {
-        const place = autocompleteRef.current?.getPlace();
-        if (place?.geometry?.location) {
-          const lat = place.geometry.location.lat();
-          const lng = place.geometry.location.lng();
-          const address = place.formatted_address || '';
-          
-          setAddress(address);
-          setMarkerPosition({ lat, lng });
-          markerRef.current?.setPosition({ lat, lng });
-          googleMapRef.current?.setCenter({ lat, lng });
-          
-          onLocationSelect({ address, latitude: lat, longitude: lng });
-        }
-      });
+    setIsClient(true);
+    if (initialLatitude && initialLongitude) {
+      setIsMapReady(true);
     }
-  }, [markerPosition, onLocationSelect]);
+  }, [initialLatitude, initialLongitude]);
 
-  const reverseGeocode = async (lat: number, lng: number) => {
+  const handleLocationChange = useCallback(async (lat: number, lng: number) => {
+    setMarkerPosition([lat, lng]);
     try {
-      const address = await reverseGeocodeUtil(lat, lng);
-      setAddress(address);
-      onLocationSelect({ address, latitude: lat, longitude: lng });
+      const addressText = await reverseGeocode(lat, lng);
+      setAddress(addressText);
+      onLocationSelect({ address: addressText, latitude: lat, longitude: lng });
     } catch (error) {
       console.error('Reverse geocode failed:', error);
+      onLocationSelect({ address: '', latitude: lat, longitude: lng });
     }
-  };
+  }, [onLocationSelect]);
+
+  const handleMapClick = useCallback((e: any) => {
+    const { lat, lng } = e.latlng;
+    handleLocationChange(lat, lng);
+  }, [handleLocationChange]);
 
   const handleSearch = async () => {
-    if (!address) return;
+    if (!address.trim()) return;
 
     setSearching(true);
     
     try {
       const location = await geocodeAddress(address);
       
-      setMarkerPosition({ lat: location.latitude, lng: location.longitude });
-      markerRef.current?.setPosition({ lat: location.latitude, lng: location.longitude });
-      googleMapRef.current?.setCenter({ lat: location.latitude, lng: location.longitude });
-      
+      setMarkerPosition([location.latitude, location.longitude]);
+      setAddress(location.address);
       onLocationSelect(location);
     } catch (error: any) {
       toast.error(error.message || 'Location not found');
@@ -160,11 +96,13 @@ export function MapPicker({
     try {
       const position = await getCurrentPosition();
       
-      setMarkerPosition(position);
-      markerRef.current?.setPosition(position);
-      googleMapRef.current?.setCenter(position);
+      setMarkerPosition([position.lat, position.lng]);
+      setIsMapReady(true);
       
-      await reverseGeocode(position.lat, position.lng);
+      const addressText = await reverseGeocode(position.lat, position.lng);
+      setAddress(addressText);
+      
+      onLocationSelect({ address: addressText, latitude: position.lat, longitude: position.lng });
       
       toast.dismiss();
       toast.success('Location detected');
@@ -173,6 +111,16 @@ export function MapPicker({
       toast.error(error.message);
     }
   };
+
+  // Set initial position when provided
+  useEffect(() => {
+    if (initialLatitude && initialLongitude && !markerPosition) {
+      setMarkerPosition([initialLatitude, initialLongitude]);
+      setIsMapReady(true);
+    }
+  }, [initialLatitude, initialLongitude, markerPosition]);
+
+  const currentCenter = markerPosition || DEFAULT_CENTER;
 
   return (
     <Card className="border-2">
@@ -186,18 +134,16 @@ export function MapPicker({
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground pointer-events-none" />
               <Input
-                ref={inputRef}
                 placeholder="Search address..."
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
                 className="pl-9 sm:pl-10 h-10 sm:h-11 text-xs sm:text-sm"
-                disabled={!isMapLoaded}
               />
             </div>
             <Button 
               onClick={handleSearch} 
-              disabled={!address || searching || !isMapLoaded}
+              disabled={!address.trim() || searching}
               className="h-10 sm:h-11 text-xs sm:text-sm w-full sm:w-auto px-4 sm:px-6"
             >
               {searching ? (
@@ -216,15 +162,14 @@ export function MapPicker({
           variant="outline"
           className="w-full h-10 sm:h-11 text-xs sm:text-sm"
           onClick={handleGetCurrentLocation}
-          disabled={!isMapLoaded}
         >
           <Navigation className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Use Current Location
         </Button>
 
-        {/* Google Map */}
+        {/* Leaflet Map */}
         <div className="h-48 sm:h-56 md:h-64 rounded-lg sm:rounded-xl border-2 border-border overflow-hidden relative">
-          {!isMapLoaded && (
+          {!isClient ? (
             <div className="absolute inset-0 bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center z-10">
               <div className="text-center px-4">
                 <Loader2 className="h-8 w-8 sm:h-10 sm:w-10 text-primary animate-spin mx-auto mb-2" />
@@ -233,12 +178,43 @@ export function MapPicker({
                 </p>
               </div>
             </div>
+          ) : (
+            <>
+              <MapContainer
+                center={currentCenter}
+                zoom={DEFAULT_ZOOM}
+                style={{ height: '100%', width: '100%', zIndex: 0 }}
+                scrollWheelZoom={true}
+                eventHandlers={{
+                  click: handleMapClick,
+                }}
+              >
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+                {markerPosition && (
+                  <Marker
+                    position={markerPosition}
+                    draggable={true}
+                    eventHandlers={{
+                      dragend: (e: any) => {
+                        const { lat, lng } = e.target.getLatLng();
+                        handleLocationChange(lat, lng);
+                      },
+                    }}
+                  >
+                    <Popup>
+                      <div className="text-sm">
+                        <p className="font-semibold">Selected Location</p>
+                        <p className="text-xs text-muted-foreground mt-1">{address || 'Drag to adjust'}</p>
+                      </div>
+                    </Popup>
+                  </Marker>
+                )}
+              </MapContainer>
+            </>
           )}
-          <div 
-            ref={mapRef} 
-            className="w-full h-full"
-            style={{ minHeight: '200px' }}
-          />
         </div>
 
         {markerPosition && (
@@ -246,7 +222,7 @@ export function MapPicker({
             <p className="text-muted-foreground mb-1">Selected Location:</p>
             <p className="font-medium text-foreground">{address || 'Fetching address...'}</p>
             <p className="text-xs text-muted-foreground mt-1">
-              Lat: {markerPosition.lat.toFixed(6)}, Lng: {markerPosition.lng.toFixed(6)}
+              Lat: {markerPosition[0].toFixed(6)}, Lng: {markerPosition[1].toFixed(6)}
             </p>
           </div>
         )}

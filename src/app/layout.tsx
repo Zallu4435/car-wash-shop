@@ -54,6 +54,12 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning className="scroll-smooth bg-background" data-scroll-behavior="smooth">
       <head>
         <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link
+          rel="stylesheet"
+          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossOrigin=""
+        />
         <script
           dangerouslySetInnerHTML={{
             __html: `!function(){try{var s=localStorage.getItem('carwash-theme')||'system';var r=s==='system'?(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):s;var e=document.documentElement;e.classList.remove('light','dark');e.classList.add(r);e.setAttribute('data-theme',r);}catch(e){}}();`,

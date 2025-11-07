@@ -26,6 +26,7 @@ interface ActionButton {
 interface TransactionCardProps {
   id: string;
   icon: LucideIcon;
+  imageUrl?: string;
   primaryBadge: {
     label: string;
     variant?: 'default' | 'outline' | 'secondary';
@@ -51,6 +52,7 @@ interface TransactionCardProps {
 export function TransactionCard({
   id,
   icon: Icon,
+  imageUrl,
   primaryBadge,
   statusBadge,
   title,
@@ -72,7 +74,11 @@ export function TransactionCard({
         <CardContent className="p-3 sm:p-4 lg:p-5">
           <div className="flex items-start justify-between mb-2 sm:mb-3 lg:mb-4 gap-2">
             <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-              <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-primary flex-shrink-0" />
+              {imageUrl ? (
+                <img src={imageUrl} alt="thumb" className="h-8 w-8 sm:h-10 sm:w-10 rounded-md object-cover border-2 border-border flex-shrink-0" />
+              ) : (
+                <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-primary flex-shrink-0" />
+              )}
               <div className="min-w-0 flex-1">
                 <h3 className="font-bold text-xs sm:text-sm lg:text-base text-foreground truncate">
                   {title}
@@ -149,7 +155,11 @@ export function TransactionCard({
         <div className="hidden md:flex items-center justify-between gap-4">
           {/* Left Section */}
           <div className="flex items-center gap-4 flex-1 min-w-0">
-            <Icon className="h-6 w-6 text-primary flex-shrink-0" />
+            {imageUrl ? (
+              <img src={imageUrl} alt="thumb" className="h-10 w-10 rounded-md object-cover border-2 border-border flex-shrink-0" />
+            ) : (
+              <Icon className="h-6 w-6 text-primary flex-shrink-0" />
+            )}
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 mb-1">
                 <Badge 
@@ -218,7 +228,11 @@ export function TransactionCard({
         {/* Mobile/Tablet Layout */}
         <div className="md:hidden space-y-3">
           <div className="flex items-start gap-3">
-            <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-primary flex-shrink-0" />
+            {imageUrl ? (
+              <img src={imageUrl} alt="thumb" className="h-8 w-8 rounded-md object-cover border-2 border-border flex-shrink-0" />
+            ) : (
+              <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-primary flex-shrink-0" />
+            )}
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-1">
                 <Badge 

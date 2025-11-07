@@ -35,8 +35,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { data: fetchedUser, isLoading } = useCurrentUser();
   const logoutMutation = useLogout();
 
-  const [accessToken, setAccessTokenState] = useState<string | null>(null);
+  // Initialize token from localStorage on mount
+  const [accessToken, setAccessTokenState] = useState<string | null>(() => {
+    if (typeof window === 'undefined') return null;
+    try {
+      return localStorage.getItem('auth_access_token');
+    } catch {
+      return null;
+    }
+  });
   const [user, setUser] = useState<AuthUser | undefined>(undefined);
+
+  // Initialize global token state from localStorage on mount
+  useEffect(() => {
+    if (accessToken) {
+      setAccessToken(accessToken);
+    }
+  }, []);
 
   // Keep user in sync with fetched user when not explicitly set via setAuth
   useEffect(() => {
@@ -86,6 +101,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(undefined);
       deleteCookie(COOKIE_IS_LOGGED);
       deleteCookie(COOKIE_ROLE);
+      // Clear token from localStorage
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.removeItem('auth_access_token');
+        } catch (error) {
+          console.error('Failed to clear token from localStorage:', error);
+        }
+      }
       logoutMutation.mutate();
     },
   }), [user, isLoading, isAuthenticated, accessToken, logoutMutation]);

@@ -15,10 +15,13 @@ import { ArrowLeft, Plus, Image as ImageIcon, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { productSchema, ProductFormInput } from '@/schemas/admin/product';
 import { AdminRoutes } from '@/lib/constants/routes';
+import { useCreateProduct, useAdminCategoryList } from '@/api/domains/admin-catalog/queries';
 
 export default function NewProductPage() {
   const router = useRouter();
   const [uploadedImage, setUploadedImage] = useState<string>('');
+  const { data: categoriesResponse } = useAdminCategoryList({ type: 'product', status: 'active' });
+  const productCategories = categoriesResponse?.data || [];
   
   const {
     register,
@@ -34,6 +37,8 @@ export default function NewProductPage() {
       images: [],
     },
   });
+
+  const createProduct = useCreateProduct();
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -57,11 +62,11 @@ export default function NewProductPage() {
 
   const onSubmit = async (data: ProductFormInput) => {
     try {
-      console.log('Product data:', data);
+      await createProduct.mutateAsync(data as any);
       toast.success('Product added successfully!');
       router.push(AdminRoutes.PRODUCTS);
-    } catch (error) {
-      toast.error('Failed to add product');
+    } catch (error: any) {
+      toast.error(error?.message || 'Failed to add product');
     }
   };
 
@@ -151,18 +156,23 @@ export default function NewProductPage() {
                 name="category"
                 control={control}
                 render={({ field }) => (
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value} disabled={productCategories.length === 0}>
                     <SelectTrigger id="category" className="h-9 sm:h-10 text-xs sm:text-sm border-2 rounded-lg">
-                      <SelectValue placeholder="Select category" />
+                      <SelectValue placeholder={productCategories.length === 0 ? "No categories available" : "Select category"} />
                     </SelectTrigger>
                     <SelectContent className="force-sheet-bg border-2 rounded-lg">
-                      <SelectItem value="cat_clean" className="text-xs sm:text-sm rounded-md">Cleaning Products</SelectItem>
-                      <SelectItem value="cat_care" className="text-xs sm:text-sm rounded-md">Car Care</SelectItem>
-                      <SelectItem value="cat_accessories" className="text-xs sm:text-sm rounded-md">Accessories</SelectItem>
+                      {productCategories.map((cat) => (
+                        <SelectItem key={cat.id} value={cat.id} className="text-xs sm:text-sm rounded-md">
+                          {cat.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 )}
               />
+              {productCategories.length === 0 && (
+                <p className="text-xs text-muted-foreground">Please create a category first before adding products.</p>
+              )}
               {errors.category && (
                 <p className="text-xs text-red-600 dark:text-red-400">{errors.category.message}</p>
               )}
@@ -286,9 +296,9 @@ export default function NewProductPage() {
             )}
 
             {/* Submit Button */}
-            <Button type="submit" className="w-full h-10 sm:h-11 text-sm sm:text-base border-2 rounded-lg" disabled={isSubmitting}>
+            <Button type="submit" className="w-full h-10 sm:h-11 text-sm sm:text-base border-2 rounded-lg" disabled={isSubmitting || createProduct.isPending}>
               <Plus className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-              {isSubmitting ? 'Adding...' : 'Add Product'}
+              {isSubmitting || createProduct.isPending ? 'Adding...' : 'Add Product'}
             </Button>
           </form>
         </CardContent>

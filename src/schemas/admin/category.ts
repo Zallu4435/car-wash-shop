@@ -17,19 +17,7 @@ export const categorySchema = z.object({
     .trim()
     .optional()
     .or(z.literal('')),
-  icon: z
-    .string()
-    .min(1, 'Please provide an icon name')
-    .trim()
-    .optional()
-    .or(z.literal('')),
   active: z.boolean().optional().default(true),
-  displayOrder: z
-    .number()
-    .int('Display order must be a whole number')
-    .min(0, 'Display order must be 0 or greater')
-    .max(100, 'Display order must not exceed 100')
-    .optional(),
 });
 
 export type CategoryFormInput = z.infer<typeof categorySchema>;

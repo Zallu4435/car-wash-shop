@@ -3,13 +3,12 @@
 import { useState, useEffect } from 'react';
 import { ServiceCard } from '@/components/customer/ServiceCard';
 import { VehicleTypeFilter } from '@/components/shared/selectors/VehicleTypeFilter';
-import { CategoryFilter } from '@/components/shared/selectors/CategoryFilter';
 import { Pagination } from '@/components/admin/Pagination';
 import { Search, SlidersHorizontal, X, Car, Bike } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { VehicleSelectionModal } from '@/components/shared/selectors/VehicleSelectionModal';
-import { useServices, useServiceCategories } from '@/api/domains/services/queries';
+import { useServices } from '@/api/domains/services/queries';
 import type { ServiceFilters } from '@/types/service';
 import Loading from '@/components/shared/display/Loading';
 import { useVehicleContext } from '@/context/VehicleContext';
@@ -17,7 +16,6 @@ import { mockServiceTypes } from '@/mocks/data/customer-mock-data';
 
 export default function ServicesPage() {
   const [selectedVehicleTypes, setSelectedVehicleTypes] = useState<string[]>([]);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [isOpening, setIsOpening] = useState(false);
@@ -39,46 +37,24 @@ export default function ServicesPage() {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // API filters
+  // API filters - category is now 'bike' or 'car' based on vehicle type
   const filters: ServiceFilters = {
-    vehicleType: selectedVehicleTypes.length > 0 ? selectedVehicleTypes[0] as 'car' | 'bike' : undefined,
-    category: selectedCategories.length > 0 ? selectedCategories[0] : undefined,
+    category: selectedVehicleTypes.length > 0 ? selectedVehicleTypes[0] as 'car' | 'bike' : undefined,
     search: debouncedSearch || undefined,
   };
 
   // API calls
   const { data: servicesResponse, isLoading: servicesLoading } = useServices(filters);
-  const { data: categories = [], isLoading: categoriesLoading } = useServiceCategories();
 
   const allServices = servicesResponse?.data || [];
 
-  // Vehicle types with actual counts from mock data
+  // Vehicle types with actual counts from services
   const vehicleTypes = mockServiceTypes.map(type => ({
     id: type.id,
     name: type.name,
     icon: type.icon,
-    count: allServices.filter((s: any) => s.vehicleType === type.id).length,
+    count: allServices.filter((s: any) => s.category === type.id).length,
   }));
-
-  // All categories from API
-  const allCategories = categories.map(cat => ({
-    id: cat.id,
-    name: cat.name,
-    vehicleTypeId: 'car', // Default to car for now
-    count: allServices.filter((s: any) => {
-      // Match by category ID (normalized) or category name (raw)
-      return s.category?.id === cat.id || s.categoryId === cat.name || (typeof s.category === 'string' && s.category === cat.name);
-    }).length,
-  }));
-
-  const getFilteredCategories = () => {
-    if (selectedVehicleTypes.length === 0) {
-      return allCategories;
-    }
-    return allCategories.filter(cat => selectedVehicleTypes.includes(cat.vehicleTypeId));
-  };
-
-  const filteredCategories = getFilteredCategories();
 
   const handleOpenFilters = () => {
     setShowFilters(true);
@@ -110,39 +86,20 @@ export default function ServicesPage() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedVehicleTypes, selectedCategories, debouncedSearch]);
+  }, [selectedVehicleTypes, debouncedSearch]);
 
   const toggleVehicleType = (typeId: string) => {
     setSelectedVehicleTypes(prev => {
       const newSelection = prev.includes(typeId)
         ? prev.filter(id => id !== typeId)
-        : [...prev, typeId];
-      
-      if (!prev.includes(typeId)) {
-        setSelectedCategories([]);
-      }
+        : [typeId]; // Only allow one selection at a time
       return newSelection;
     });
   };
 
-  const toggleCategory = (categoryId: string) => {
-    setSelectedCategories(prev =>
-      prev.includes(categoryId)
-        ? prev.filter(id => id !== categoryId)
-        : [...prev, categoryId]
-    );
-  };
-
   const filteredServices = allServices.filter((service: any) => {
-    const matchesVehicleType = selectedVehicleTypes.length === 0 || 
-      selectedVehicleTypes.includes(service.vehicleType);
-    
-    // Match by category ID (normalized) or category name (raw)
-    const serviceCategoryId = service.category?.id || service.categoryId || (typeof service.category === 'string' ? service.category : '');
-    const matchesCategory = selectedCategories.length === 0 || 
-      selectedCategories.includes(serviceCategoryId);
-    
-    return matchesVehicleType && matchesCategory;
+    if (selectedVehicleTypes.length === 0) return true;
+    return selectedVehicleTypes.includes(service.category);
   });
 
   const totalItems = filteredServices.length;
@@ -153,53 +110,17 @@ export default function ServicesPage() {
 
   const clearAllFilters = () => {
     setSelectedVehicleTypes([]);
-    setSelectedCategories([]);
     setSearchQuery('');
   };
 
-  const totalActiveFilters = selectedVehicleTypes.length + selectedCategories.length + (debouncedSearch ? 1 : 0);
+  const totalActiveFilters = selectedVehicleTypes.length + (debouncedSearch ? 1 : 0);
 
   // Loading state
-  if (servicesLoading || categoriesLoading) {
+  if (servicesLoading) {
     return <Loading text="Loading services..." />;
   }
 
-  // Pricing multipliers
-  const vehiclePriceDelta: Record<string, number> = {
-    suv: 200,
-    sedan: 100,
-    hatchback: 0,
-    luxury: 500,
-    bike: -150,
-    motorcycle: -150,
-    scooter: -200,
-    scooty: -200,
-  };
-
-  const computeDynamicPrice = (basePrice: number, serviceVehicleType: string) => {
-    if (!selectedVehicle) {
-      return null;
-    }
-    
-    // Only apply when service type matches selected vehicle type
-    const isCarService = serviceVehicleType === 'car';
-    const isBikeService = serviceVehicleType === 'bike';
-    
-    if ((selectedVehicle.type === 'car' && !isCarService) || (selectedVehicle.type === 'bike' && !isBikeService)) {
-      return null;
-    }
-
-    // For vehicles from context, we don't have category, so use a default pricing
-    // You can enhance this by adding vehicle category to the Vehicle type
-    const vehicleType = selectedVehicle.type;
-    const delta = vehicleType === 'bike' ? -150 : 0; // Default: bikes get discount, cars use base price
-    
-    const price = Math.max(0, basePrice + delta);
-    const badgeLabel = `${selectedVehicle.brand} ${selectedVehicle.model}`;
-    const bodyTypeBadge = vehicleType.toUpperCase();
-    
-    return { price, badgeLabel, bodyTypeBadge };
-  };
+  // No price shown on list view as pricing varies by vehicle type
 
   return (
     <div className="min-h-screen bg-background pb-32 lg:pb-8">
@@ -282,18 +203,8 @@ export default function ServicesPage() {
                   onToggle={toggleVehicleType}
                   onClearAll={() => {
                     setSelectedVehicleTypes([]);
-                    setSelectedCategories([]);
                   }}
                 />
-
-                {filteredCategories.length > 0 && (
-                  <CategoryFilter
-                    categories={filteredCategories}
-                    selectedCategories={selectedCategories}
-                    onToggle={toggleCategory}
-                    onClearAll={() => setSelectedCategories([])}
-                  />
-                )}
               </div>
             </aside>
 
@@ -329,21 +240,6 @@ export default function ServicesPage() {
                       </Badge>
                     );
                   })}
-
-                  {selectedCategories.map((categoryId) => {
-                    const category = categories.find(c => c.id === categoryId);
-                    return (
-                      <Badge
-                        key={categoryId}
-                        variant="secondary"
-                        className="cursor-pointer hover:opacity-80 transition-opacity text-xs"
-                        onClick={() => toggleCategory(categoryId)}
-                      >
-                        {category?.name}
-                        <X className="h-3 w-3 ml-1" />
-                      </Badge>
-                    );
-                  })}
                   
                   <Button
                     variant="ghost"
@@ -369,22 +265,12 @@ export default function ServicesPage() {
               {paginatedServices.length > 0 ? (
                 <>
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
-                    {paginatedServices.map((service: any) => {
-                      const dynamic = computeDynamicPrice(service.price, service.vehicleType);
-                      const priceDisplay = dynamic ? `₹${dynamic.price}` : undefined;
-                      const pricingBadge = dynamic ? `(${dynamic.badgeLabel})` : undefined;
-                      const bodyTypeBadge = dynamic ? dynamic.bodyTypeBadge : undefined;
-                      return (
-                        <ServiceCard
-                          key={service.id}
-                          service={service}
-                          priceDisplay={priceDisplay}
-                          pricingBadge={pricingBadge}
-                          bodyTypeBadge={bodyTypeBadge}
-                          showFromLabel={!dynamic}
-                        />
-                      );
-                    })}
+                    {paginatedServices.map((service: any) => (
+                      <ServiceCard
+                        key={service.id}
+                        service={service}
+                      />
+                    ))}
                   </div>
 
                   {/* Pagination */}
@@ -516,18 +402,8 @@ export default function ServicesPage() {
                 onToggle={toggleVehicleType}
                 onClearAll={() => {
                   setSelectedVehicleTypes([]);
-                  setSelectedCategories([]);
                 }}
               />
-
-              {filteredCategories.length > 0 && (
-                <CategoryFilter
-                  categories={filteredCategories}
-                  selectedCategories={selectedCategories}
-                  onToggle={toggleCategory}
-                  onClearAll={() => setSelectedCategories([])}
-                />
-              )}
             </div>
 
             {/* Modal Footer */}

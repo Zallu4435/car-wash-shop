@@ -1,19 +1,27 @@
 import { z } from 'zod';
 
-export const slotSchema = z.object({
-  time: z
-    .string()
-    .min(1, 'Please select a time')
-    .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time format'),
-  capacity: z
-    .number()
-    .int('Capacity must be a whole number')
-    .min(1, 'Capacity must be at least 1')
-    .max(50, 'Capacity must not exceed 50'),
-  date: z
-    .string()
-    .optional(),
-  active: z.boolean().optional().default(true),
-});
+export const slotRangeSchema = z
+  .object({
+    date: z.string().min(1, 'Please select a date'),
+    startTime: z
+      .string()
+      .min(1, 'Start time is required')
+      .regex(/^([0-1][0-9]|2[0-3]):00$/, 'Use hour-based 24h format (e.g., 06:00)'),
+    endTime: z
+      .string()
+      .min(1, 'End time is required')
+      .regex(/^([0-1][0-9]|2[0-3]):00$/, 'Use hour-based 24h format (e.g., 18:00)'),
+    capacity: z
+      .number()
+      .int('Capacity must be a whole number')
+      .min(1, 'Capacity must be at least 1')
+      .max(50, 'Capacity must not exceed 50')
+      .optional()
+      .default(1),
+  })
+  .refine(({ startTime, endTime }) => startTime < endTime, {
+    message: 'End time must be later than start time',
+    path: ['endTime'],
+  });
 
-export type SlotFormInput = z.infer<typeof slotSchema>;
+export type SlotRangeFormInput = z.infer<typeof slotRangeSchema>;

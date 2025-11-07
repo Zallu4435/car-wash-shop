@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useState, useMemo } from 'react';
+import { use, useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Edit, Package, Trash2, TrendingUp, IndianRupee, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -28,6 +28,11 @@ export default function CategoryDetailPage({ params }: { params: Promise<{ id: s
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(6);
 
+  // Reset page to 1 when search or filters change
+  useEffect(() => {
+    setPage(1);
+  }, [search, filterValues]);
+
   // API calls
   const { data: category, isLoading: categoryLoading, error: categoryError } = useAdminCategoryDetail(id);
   const { data: productsResponse, isLoading: productsLoading } = useAdminProductList({
@@ -49,7 +54,7 @@ export default function CategoryDetailPage({ params }: { params: Promise<{ id: s
     const confirmed = await deleteConfirmation.confirm({
       type: 'delete',
       title: 'Delete Category?',
-      description: 'This will permanently delete this category. Products in this category will need to be reassigned. This action cannot be undone.',
+      description: `This will permanently delete this category and all associated ${category.type === 'product' ? 'products' : 'services'}. All items in this category will be automatically deleted. This action cannot be undone.`,
       confirmText: 'Yes, Delete Category',
       cancelText: 'Cancel',
       itemName: category.name,
@@ -175,7 +180,17 @@ export default function CategoryDetailPage({ params }: { params: Promise<{ id: s
                     className="flex flex-col xs:flex-row items-start xs:items-center justify-between gap-2 xs:gap-3 p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl hover:shadow-md hover:bg-accent transition-all cursor-pointer group border-2 border-transparent hover:border-primary/20"
                   >
                     <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0 w-full xs:w-auto">
-                      <div className="text-2xl sm:text-3xl md:text-4xl flex-shrink-0">{product.image || '📦'}</div>
+                      {product.image ? (
+                        <img 
+                          src={product.image} 
+                          alt={product.name}
+                          className="h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14 rounded-md object-cover border-2 border-border flex-shrink-0"
+                        />
+                      ) : (
+                        <div className="h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14 flex items-center justify-center bg-muted rounded-md border-2 border-border flex-shrink-0">
+                          <span className="text-xl sm:text-2xl md:text-3xl">📦</span>
+                        </div>
+                      )}
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-0.5 sm:mb-1">
                           <p className="font-semibold text-xs sm:text-sm text-foreground group-hover:text-primary transition-colors truncate">
@@ -190,7 +205,9 @@ export default function CategoryDetailPage({ params }: { params: Promise<{ id: s
                           <span className="hidden xs:inline">•</span>
                           <span>⭐ {product.rating.toFixed(1)}</span>
                           <span className="hidden sm:inline">•</span>
-                          <span className="hidden sm:inline truncate">{product.category}</span>
+                          <span className="hidden sm:inline truncate">
+                            {typeof product.category === 'string' ? product.category : (product.category as any)?.name || 'N/A'}
+                          </span>
                         </div>
                       </div>
                     </div>

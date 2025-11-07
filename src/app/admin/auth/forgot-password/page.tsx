@@ -11,13 +11,16 @@ import { Mail, Phone, Lock, ArrowLeft, KeyRound, Eye, EyeOff } from 'lucide-reac
 import { toast } from 'sonner';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { forgotPasswordIdentifierSchema, otpOnlySchema, resetPasswordSchema } from '@/schemas/customer/auth';
-import { z } from 'zod';
+import {
+  forgotPasswordIdentifierSchema,
+  forgotPasswordOtpSchema,
+  resetPasswordSchema,
+} from '@/schemas/admin/auth';
 import { useSendPasswordResetOTP, useResetPasswordWithOTP } from '@/api/domains/auth/queries';
-import { CustomerRoutes } from '@/lib/constants/routes';
+import { AdminRoutes } from '@/lib/constants/routes';
 import Loading from '@/components/shared/display/Loading';
 
-export default function ForgotPasswordPage() {
+export default function AdminForgotPasswordPage() {
   const router = useRouter();
   const [step, setStep] = useState<'identifier' | 'otp' | 'reset'>('identifier');
   const [showPassword, setShowPassword] = useState(false);
@@ -32,7 +35,7 @@ export default function ForgotPasswordPage() {
     getValues: getIdentifier,
     reset: resetIdentifier,
   } = useForm<{ identifier: string }>({
-    resolver: zodResolver(z.object({ identifier: forgotPasswordIdentifierSchema })),
+    resolver: zodResolver(forgotPasswordIdentifierSchema),
     defaultValues: { identifier: '' },
   });
 
@@ -43,7 +46,7 @@ export default function ForgotPasswordPage() {
     getValues: getOtp,
     reset: resetOtp,
   } = useForm<{ otp: string }>({
-    resolver: zodResolver(otpOnlySchema),
+    resolver: zodResolver(forgotPasswordOtpSchema),
     defaultValues: { otp: '' },
   });
 
@@ -71,9 +74,12 @@ export default function ForgotPasswordPage() {
         setStep('otp');
       },
       onError: (err: any) => {
+        console.log('trigger error');
+        
         const errorMsg = err?.data?.message || 'Failed to send OTP';
         // Surface specific errors inline
         const lower = errorMsg.toLowerCase();
+        console.log(lower);
         if (
           lower.includes('password not set') ||
           lower.includes('alternative login') ||
@@ -120,7 +126,7 @@ export default function ForgotPasswordPage() {
       {
         onSuccess: () => {
           toast.success('Password reset successful! Please login.');
-          router.push(CustomerRoutes.LOGIN);
+          router.push(AdminRoutes.LOGIN);
         },
         onError: (err: any) => {
           const errorMsg = err?.message || 'Failed to reset password';
@@ -215,7 +221,9 @@ export default function ForgotPasswordPage() {
             {step === 'otp' && (
               <form onSubmit={handleOtpSubmit(onVerifyOtp)} className="space-y-4 sm:space-y-5">
                 <div className="space-y-1.5 sm:space-y-2">
-                  <Label htmlFor="otp" className="text-xs sm:text-sm">Enter OTP</Label>
+                  <Label htmlFor="otp" className="text-xs sm:text-sm">
+                    Enter OTP
+                  </Label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
                     <Input
@@ -247,6 +255,7 @@ export default function ForgotPasswordPage() {
                       className="text-[10px] sm:text-xs h-auto p-0"
                       onClick={() => {
                         handleIdentifierSubmit(onSendOtp)();
+                        toast.success('OTP resent!');
                       }}
                     >
                       Resend OTP
@@ -282,7 +291,9 @@ export default function ForgotPasswordPage() {
             {step === 'reset' && (
               <form onSubmit={handleResetSubmit(onResetPassword)} className="space-y-3.5 sm:space-y-4">
                 <div className="space-y-1.5 sm:space-y-2">
-                  <Label htmlFor="newPassword" className="text-xs sm:text-sm">New Password</Label>
+                  <Label htmlFor="newPassword" className="text-xs sm:text-sm">
+                    New Password
+                  </Label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
                     <Input
@@ -298,14 +309,22 @@ export default function ForgotPasswordPage() {
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
                     >
-                      {showPassword ? <EyeOff className="h-4 w-4 sm:h-5 sm:w-5" /> : <Eye className="h-4 w-4 sm:h-5 sm:w-5" />}
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4 sm:h-5 sm:w-5" />
+                      ) : (
+                        <Eye className="h-4 w-4 sm:h-5 sm:w-5" />
+                      )}
                     </button>
                   </div>
-                  {resetErrors.password && <p className="text-xs text-red-500">{resetErrors.password.message}</p>}
+                  {resetErrors.password && (
+                    <p className="text-xs text-red-500">{resetErrors.password.message}</p>
+                  )}
                 </div>
 
                 <div className="space-y-1.5 sm:space-y-2">
-                  <Label htmlFor="confirmPassword" className="text-xs sm:text-sm">Confirm Password</Label>
+                  <Label htmlFor="confirmPassword" className="text-xs sm:text-sm">
+                    Confirm Password
+                  </Label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
                     <Input
@@ -320,10 +339,16 @@ export default function ForgotPasswordPage() {
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                       className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
                     >
-                      {showConfirmPassword ? <EyeOff className="h-4 w-4 sm:h-5 sm:w-5" /> : <Eye className="h-4 w-4 sm:h-5 sm:w-5" />}
+                      {showConfirmPassword ? (
+                        <EyeOff className="h-4 w-4 sm:h-5 sm:w-5" />
+                      ) : (
+                        <Eye className="h-4 w-4 sm:h-5 sm:w-5" />
+                      )}
                     </button>
                   </div>
-                  {resetErrors.confirmPassword && <p className="text-xs text-red-500">{resetErrors.confirmPassword.message}</p>}
+                  {resetErrors.confirmPassword && (
+                    <p className="text-xs text-red-500">{resetErrors.confirmPassword.message}</p>
+                  )}
                 </div>
 
                 {errorMessage && (
@@ -350,3 +375,4 @@ export default function ForgotPasswordPage() {
     </div>
   );
 }
+

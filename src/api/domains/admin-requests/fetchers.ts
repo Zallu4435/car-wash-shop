@@ -10,8 +10,7 @@ import { AdminRoutes } from '@/lib/constants/routes';
 
 const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true';
 
-// Mock data for slots (mutable state)
-let mockBlockedSlots: string[] = ['02:00 PM', '03:00 PM'];
+// Removed local mock state for slots; using API-only for admin slot management
 
 // Mock data
 const mockBookings: AdminBooking[] = [
@@ -242,43 +241,65 @@ export const adminRequestsFetchers = {
   },
 
   // Slots Management
-  async getSlots(): Promise<{ blockedSlots: string[] }> {
-    if (USE_MOCK_DATA) {
-      await new Promise(resolve => setTimeout(resolve, 300));
-      return { blockedSlots: [...mockBlockedSlots] };
-    }
-
-    const { data } = await apiClient.get<ApiResponse<{ blockedSlots: string[] }>>(
-      `${AdminRoutes.REQUESTS}/slots`
+  async getSlots(date: string): Promise<{ slots: Array<{ id: string; time: string; status: 'available' | 'unavailable'; booked: boolean; capacity?: number }> }> {
+    const { data } = await apiClient.get<ApiResponse<{ slots: Array<any> }>>(
+      `${AdminRoutes.REQUESTS}/slots`,
+      { params: { date } }
     );
-    return data.data!;
+    const slots = (data.data?.slots || []).map((slot: any) => ({
+      id: slot._id || slot.id,
+      time: slot.time,
+      status: slot.status || 'unavailable',
+      booked: Boolean(slot.booked),
+      capacity: slot.capacity,
+    }));
+    return { slots };
   },
 
-  async blockSlot(slotId: string): Promise<{ message: string }> {
-    if (USE_MOCK_DATA) {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      if (!mockBlockedSlots.includes(slotId)) {
-        mockBlockedSlots.push(slotId);
-      }
-      return { message: 'Slot blocked successfully' };
-    }
-
-    const { data } = await apiClient.post<ApiResponse<{ message: string }>>(
-      `${AdminRoutes.REQUESTS}/slots/${slotId}/block`
+  async createSlots(input: { date: string; startTime: string; endTime: string; capacity?: number }): Promise<{ slots: Array<any> }> {
+    const { data } = await apiClient.post<ApiResponse<{ slots: Array<any> }>>(
+      `${AdminRoutes.REQUESTS}/slots`,
+      input
     );
-    return data.data!;
+    const slots = (data.data?.slots || []).map((slot: any) => ({
+      id: slot._id || slot.id,
+      time: slot.time,
+      status: slot.status || 'unavailable',
+      booked: Boolean(slot.booked),
+      capacity: slot.capacity,
+    }));
+    return { slots };
   },
 
-  async unblockSlot(slotId: string): Promise<{ message: string }> {
-    if (USE_MOCK_DATA) {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      mockBlockedSlots = mockBlockedSlots.filter(slot => slot !== slotId);
-      return { message: 'Slot unblocked successfully' };
-    }
-
-    const { data } = await apiClient.post<ApiResponse<{ message: string }>>(
-      `${AdminRoutes.REQUESTS}/slots/${slotId}/unblock`
+  async updateSlot(slotId: string, input: { status?: 'available' | 'unavailable'; booked?: boolean }): Promise<{ slot: any }> {
+    const { data } = await apiClient.patch<ApiResponse<any>>(
+      `${AdminRoutes.REQUESTS}/slots/${slotId}`,
+      input
     );
-    return data.data!;
+    const slot = data.data;
+    return {
+      slot: {
+        id: slot._id || slot.id,
+        time: slot.time,
+        status: slot.status || 'unavailable',
+        booked: Boolean(slot.booked),
+        capacity: slot.capacity,
+      },
+    };
+  },
+
+  async updateSlotsStatus(input: { date: string; status: 'available' | 'unavailable' }): Promise<{ slots: Array<any> }> {
+    const { data } = await apiClient.post<ApiResponse<{ slots: Array<any> }>>(
+      `${AdminRoutes.REQUESTS}/slots/bulk-status`,
+      input
+    );
+    const slots = (data.data?.slots || []).map((slot: any) => ({
+      id: slot._id || slot.id,
+      time: slot.time,
+      status: slot.status || 'unavailable',
+      booked: Boolean(slot.booked),
+      capacity: slot.capacity,
+    }));
+    return { slots };
   },
 };

@@ -78,6 +78,12 @@ export function AdminHeader({ setSidebarOpen }: AdminHeaderProps) {
   };
 
   const handleLogout = () => {
+    // Clear auth cookies eagerly similar to customer header behavior
+    try {
+      document.cookie = 'auth_is_logged=; Max-Age=0; Path=/; SameSite=Lax';
+      document.cookie = 'auth_role=; Max-Age=0; Path=/; SameSite=Lax';
+    } catch (_) {}
+
     logoutMutation.mutate(undefined, {
       onSuccess: () => {
         toast.success('Logged out successfully');

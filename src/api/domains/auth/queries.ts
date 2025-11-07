@@ -15,7 +15,6 @@ export const useCurrentUser = () => {
   return useQuery({
     queryKey: authKeys.currentUser(),
     queryFn: authFetchers.getCurrentUser,
-    enabled: !!getAccessToken(),
     staleTime: 5 * 60 * 1000,
     retry: false,
   });
@@ -78,6 +77,44 @@ export const useLogout = () => {
       setGlobalAccessToken(null);
       queryClient.clear();
       router.push(CustomerRoutes.LOGIN);
+    },
+  });
+};
+
+export const useLoginWithCredentials = () => {
+  const queryClient = useQueryClient();
+  const router = useRouter();
+
+  return useMutation({
+    mutationFn: ({ identifier, password }: { identifier: string; password: string }) =>
+      authFetchers.loginWithCredentials(identifier, password),
+    onSuccess: (data) => {
+      setGlobalAccessToken(data.token);
+      queryClient.setQueryData(authKeys.currentUser(), data.user);
+      // Invalidate and refetch cart query with new auth token
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: cartKeys.detail() });
+        queryClient.refetchQueries({ queryKey: cartKeys.detail() });
+      }, 0);
+    },
+  });
+};
+
+export const useSendPasswordResetOTP = () => {
+  return useMutation({
+    mutationFn: (identifier: string) => authFetchers.sendPasswordResetOTP(identifier),
+  });
+};
+
+export const useResetPasswordWithOTP = () => {
+  const router = useRouter();
+
+  return useMutation({
+    mutationFn: ({ identifier, otp, newPassword }: { identifier: string; otp: string; newPassword: string }) =>
+      authFetchers.resetPasswordWithOTP(identifier, otp, newPassword),
+    onSuccess: () => {
+      // Redirect will be handled by the component using this hook
+      // Components can push to appropriate route (admin/customer/staff)
     },
   });
 };

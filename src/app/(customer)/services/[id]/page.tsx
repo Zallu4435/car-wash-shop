@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useService } from '@/api/domains/services/queries';
 import { useReviewsByService } from '@/api/domains/reviews/queries';
 import { ReviewsList } from '@/components/customer/ReviewsList';
@@ -23,6 +23,15 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
   const { id } = use(params);
   const { data: service, isLoading: serviceLoading } = useService(id);
   const [selectedAddOns, setSelectedAddOns] = useState<string[]>([]);
+
+  const vehiclePricing = useMemo(() => (
+    Array.isArray(service?.pricing) ? service?.pricing ?? [] : []
+  ), [service?.pricing]);
+
+  const basePrice = useMemo(() => {
+    if (!vehiclePricing.length) return 0;
+    return Math.min(...vehiclePricing.map((p: any) => Number(p.price) || 0));
+  }, [vehiclePricing]);
   const router = useRouter();
   const { data: reviews = [] } = useReviewsByService(id);
   
@@ -48,12 +57,11 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
   }
 
   const calculateTotal = () => {
-    
     const addOnsTotal = selectedAddOns.reduce((sum, addonId) => {
       const addon = mockAddOns.find((a) => a.id === addonId);
       return sum + (addon?.price || 0);
     }, 0);
-    return service.price + addOnsTotal;
+    return basePrice + addOnsTotal;
   };
 
   const calculateDuration = () => {
@@ -87,12 +95,20 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
           <div className="lg:col-span-2 space-y-4 sm:space-y-6">
             {/* Service Image */}
             <div className="relative h-[250px] sm:h-[350px] lg:h-[400px] bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl sm:rounded-2xl overflow-hidden border border-border">
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center">
-                  <div className="text-6xl sm:text-7xl md:text-8xl mb-2 sm:mb-4">🚗</div>
-                  <p className="text-xs sm:text-sm text-muted-foreground">Service Image</p>
+              {service.imageUrl ? (
+                <img 
+                  src={service.imageUrl}
+                  alt={service.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="text-6xl sm:text-7xl md:text-8xl mb-2 sm:mb-4">🚗</div>
+                    <p className="text-xs sm:text-sm text-muted-foreground">Service Image</p>
+                  </div>
                 </div>
-              </div>
+              )}
               <Badge className="absolute top-3 sm:top-4 right-3 sm:right-4 bg-card border-border shadow-lg text-xs sm:text-sm">
                 <Star className="h-3 w-3 fill-amber-400 text-amber-400 mr-1" />
                 4.5 (128)
@@ -105,9 +121,43 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
                 <Badge variant="default" className="text-xs sm:text-sm">{service.category?.name || service.categoryId || ''}</Badge>
                 <div className="flex items-center text-xs sm:text-sm text-muted-foreground">
                   <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1" />
-                  30 mins
+                  {service.duration} mins
                 </div>
               </div>
+            {/* Pricing by Vehicle Type */}
+            <Card className="border-2">
+              <CardHeader className="pb-3 sm:pb-4">
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
+                    <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                  </div>
+                  <CardTitle className="text-base sm:text-lg">Vehicle-wise Pricing</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2 sm:space-y-3">
+                  {vehiclePricing.length ? (
+                    vehiclePricing.map((p: any) => (
+                      <div
+                        key={p.vehicleType}
+                        className="flex items-center justify-between p-3 sm:p-4 border-2 border-border rounded-lg sm:rounded-xl bg-muted/30"
+                      >
+                        <span className="font-semibold capitalize text-sm sm:text-base">
+                          {String(p.vehicleType).replace(/-/g, ' ')}
+                        </span>
+                        <span className="font-bold text-primary text-sm sm:text-base">₹{p.price}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-xs text-muted-foreground">Pricing information will be available soon.</p>
+                  )}
+                </div>
+                <p className="text-[10px] sm:text-xs text-muted-foreground mt-3">
+                  Final price depends on the vehicle type you choose during booking.
+                </p>
+              </CardContent>
+            </Card>
+
               <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2 sm:mb-3">
                 {service.name}
               </h1>
@@ -243,8 +293,8 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
                 {/* Price Breakdown */}
                 <div className="space-y-2.5 sm:space-y-3">
                   <div className="flex justify-between text-xs sm:text-sm">
-                    <span className="text-muted-foreground">Base Service</span>
-                    <span className="font-medium text-foreground">₹{service.price}</span>
+                    <span className="text-muted-foreground">Base Service (from)</span>
+                    <span className="font-medium text-foreground">₹{basePrice}</span>
                   </div>
                   {selectedAddOns.length > 0 && (
                     <>

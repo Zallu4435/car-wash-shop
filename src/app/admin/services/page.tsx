@@ -52,7 +52,12 @@ export default function ServicesPage() {
   const filteredServices = services; // Already filtered by API
 
   const activeServices = services.filter(s => s.status === 'active').length;
-  const totalRevenue = services.reduce((sum, s) => sum + s.price, 0);
+  const totalRevenue = services.reduce((sum, s: any) => {
+    const minPrice = Array.isArray(s.pricing) && s.pricing.length
+      ? Math.min(...s.pricing.map((p: any) => p.price))
+      : 0;
+    return sum + minPrice;
+  }, 0);
   const avgPrice = services.length > 0 ? totalRevenue / services.length : 0;
 
   const handleDelete = async (serviceId: string, serviceName: string) => {
@@ -211,8 +216,8 @@ export default function ServicesPage() {
                   infoBoxes={[
                     {
                       icon: IndianRupee,
-                      label: 'Price',
-                      value: `₹${service.price}`,
+                      label: 'From',
+                      value: `₹${(Array.isArray((service as any).pricing) && (service as any).pricing.length ? Math.min(...(service as any).pricing.map((p: any) => p.price)) : 0)}`,
                       valueClassName: 'text-primary',
                     },
                     {

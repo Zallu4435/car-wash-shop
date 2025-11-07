@@ -10,13 +10,15 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { ArrowLeft, Plus, Folder } from 'lucide-react';
+import { ArrowLeft, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { AdminRoutes } from '@/lib/constants/routes';
 import { categorySchema, CategoryFormInput } from '@/schemas/admin/category';
+import { useCreateCategory } from '@/api/domains/admin-catalog/queries';
 
 export default function NewCategoryPage() {
   const router = useRouter();
+  const createCategory = useCreateCategory();
   
   const {
     register,
@@ -28,18 +30,17 @@ export default function NewCategoryPage() {
     resolver: zodResolver(categorySchema) as any,
     defaultValues: {
       active: true,
+      type: 'product',
     },
   });
 
-  const icon = watch('icon');
-
   const onSubmit = async (data: CategoryFormInput) => {
     try {
-      console.log('Category data:', data);
+      await createCategory.mutateAsync(data as any);
       toast.success('Category added successfully!');
       router.push(AdminRoutes.CATEGORIES);
-    } catch (error) {
-      toast.error('Failed to add category');
+    } catch (error: any) {
+      toast.error(error?.message || 'Failed to add category');
     }
   };
 
@@ -82,23 +83,6 @@ export default function NewCategoryPage() {
               )}
             </div>
 
-            {/* Icon */}
-            <div className="space-y-1.5 sm:space-y-2">
-              <Label htmlFor="icon" className="text-xs sm:text-sm">Icon Name</Label>
-              <Input
-                id="icon"
-                placeholder="e.g., car, sparkles, droplet"
-                className="h-9 sm:h-10 text-xs sm:text-sm"
-                {...register('icon')}
-              />
-              {errors.icon && (
-                <p className="text-[10px] sm:text-xs text-red-600 dark:text-red-400">{errors.icon.message}</p>
-              )}
-              {!errors.icon && (
-                <p className="text-[10px] sm:text-xs text-muted-foreground">Enter a Lucide icon name</p>
-              )}
-            </div>
-
             {/* Description */}
             <div className="space-y-1.5 sm:space-y-2">
               <Label htmlFor="description" className="text-xs sm:text-sm">
@@ -136,25 +120,33 @@ export default function NewCategoryPage() {
               />
             </div>
 
-            {/* Preview */}
-            {icon && (
-              <div className="p-3 sm:p-4 bg-primary/10 rounded-lg sm:rounded-xl border-2 border-primary/20">
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <div className="p-1.5 sm:p-2 bg-primary rounded-lg flex-shrink-0">
-                    <Folder className="h-4 w-4 sm:h-5 sm:w-5 text-primary-foreground" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-[10px] sm:text-xs text-muted-foreground mb-0.5 sm:mb-1">Icon Preview</p>
-                    <p className="text-xs sm:text-sm font-semibold text-foreground truncate">{icon}</p>
-                  </div>
-                </div>
-              </div>
-            )}
+            {/* Type Selection - Categories are now only for products */}
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label htmlFor="type" className="text-xs sm:text-sm">Category Type</Label>
+              <Controller
+                name="type"
+                control={control}
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} value={field.value} disabled>
+                    <SelectTrigger id="type" className="h-9 sm:h-10 text-xs sm:text-sm">
+                      <SelectValue placeholder="Product" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="product">Product</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              <p className="text-xs text-muted-foreground">Categories are only for products. Services use Bike/Car categories.</p>
+              {errors.type && (
+                <p className="text-[10px] sm:text-xs text-red-600 dark:text-red-400">{errors.type.message}</p>
+              )}
+            </div>
 
             {/* Submit Button */}
-            <Button type="submit" className="w-full h-10 sm:h-11 text-xs sm:text-sm border-2" disabled={isSubmitting}>
+            <Button type="submit" className="w-full h-10 sm:h-11 text-xs sm:text-sm border-2" disabled={isSubmitting || createCategory.isPending}>
               <Plus className="mr-1.5 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-              {isSubmitting ? 'Adding...' : 'Add Category'}
+              {isSubmitting || createCategory.isPending ? 'Adding...' : 'Add Category'}
             </Button>
           </form>
         </CardContent>

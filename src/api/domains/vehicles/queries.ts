@@ -12,6 +12,8 @@ export const useVehicles = () => {
     queryKey: vehicleKeys.all,
     queryFn: vehicleFetchers.getVehicles,
     staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnMount: true, // Always refetch when component mounts
+    refetchOnWindowFocus: true, // Refetch when window regains focus
   });
 };
 

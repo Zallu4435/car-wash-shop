@@ -1,3 +1,11 @@
+export interface Category {
+  _id: string;
+  name: string;
+  description?: string;
+  icon?: string;
+  isActive?: boolean;
+}
+
 export interface Product {
   _id: string;
 
@@ -6,7 +14,7 @@ export interface Product {
   image: string;
   price: number;
   brand?: string;
-  category: string;
+  category: string | Category; // Can be string (backward compat) or populated Category object
   isAvailable: boolean;
   rating?: number;
   stock?: number;

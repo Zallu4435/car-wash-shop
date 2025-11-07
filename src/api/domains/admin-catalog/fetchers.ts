@@ -12,9 +12,26 @@ import type {
   UpdateCategoryInput,
 } from '@/types/admin';
 import { AdminRoutes } from '@/lib/constants/routes';
-import { mockServices, mockProducts, mockCategories } from './mock-data';
 
-const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true';
+function mapBackendProductToAdminProduct(p: any): AdminProduct {
+  const status: AdminProduct['status'] = p.stock === 0 ? 'out_of_stock' : (p.isAvailable ? 'active' : 'inactive');
+  return {
+    id: p._id || p.id,
+    name: p.name,
+    description: p.description,
+    category: p.category,
+    categoryId: p.categoryId || p.category, // fallback
+    price: p.price,
+    stock: p.stock,
+    status,
+    image: p.image,
+    images: p.images,
+    specifications: p.specifications,
+    rating: typeof p.rating === 'number' ? p.rating : 0,
+    createdAt: p.createdAt || new Date().toISOString(),
+    active: Boolean(p.isAvailable), // backward-compat alias
+  };
+}
 
 export const adminCatalogFetchers = {
   // Services
@@ -25,112 +42,150 @@ export const adminCatalogFetchers = {
     page?: number;
     pageSize?: number;
   }): Promise<{ data: AdminService[]; total: number; page: number; pageSize: number; totalPages: number }> {
-    if (USE_MOCK_DATA) {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      let filtered = [...mockServices];
-      
-      if (filters?.search) {
-        const searchLower = filters.search.toLowerCase();
-        filtered = filtered.filter(s => 
-          s.name.toLowerCase().includes(searchLower) ||
-          s.category.toLowerCase().includes(searchLower)
-        );
-      }
-      
-      if (filters?.status) {
-        filtered = filtered.filter(s => s.status === filters.status);
-      }
-      
-      if (filters?.category) {
-        filtered = filtered.filter(s => s.category === filters.category);
-      }
-      
-      // Pagination
-      const page = filters?.page || 1;
-      const pageSize = filters?.pageSize || 10;
-      const total = filtered.length;
-      const totalPages = Math.ceil(total / pageSize);
-      const startIndex = (page - 1) * pageSize;
-      const endIndex = startIndex + pageSize;
-      const paginatedData = filtered.slice(startIndex, endIndex);
-      
-      return {
-        data: paginatedData,
-        total,
-        page,
-        pageSize,
-        totalPages,
-      };
-    }
-
-    const { data } = await apiClient.get<ApiResponse<{ data: AdminService[]; total: number; page: number; pageSize: number; totalPages: number }>>(
-      AdminRoutes.SERVICES,
+    const { data } = await apiClient.get<ApiResponse<any>>(
+      '/services',
       { params: filters }
     );
-    return data.data!;
+    const payload: any = data.data;
+    const mapped = (payload.data || []).map((s: any): AdminService => {
+      // Handle category - can be ObjectId string or populated object
+      let categoryValue = s.category;
+      let categoryId = s.category;
+      if (s.category && typeof s.category === 'object' && s.category !== null) {
+        categoryId = s.category._id || s.category.id;
+        categoryValue = s.category.name || categoryId;
+      }
+      return {
+        id: s._id || s.id,
+        name: s.name,
+        description: s.description,
+        category: categoryValue,
+        categoryId: categoryId,
+        pricing: Array.isArray(s.pricing) ? s.pricing : [],
+        duration: s.duration,
+        status: s.isAvailable ? 'active' : 'inactive',
+        image: s.image,
+        totalBookings: s.totalBookings || 0,
+        rating: typeof s.rating === 'number' ? s.rating : 0,
+        createdAt: s.createdAt || new Date().toISOString(),
+      };
+    });
+    return {
+      data: mapped,
+      total: payload.total,
+      page: payload.page,
+      pageSize: payload.limit,
+      totalPages: payload.totalPages,
+    };
   },
 
   async getServiceById(serviceId: string): Promise<AdminService> {
-    if (USE_MOCK_DATA) {
-      await new Promise(resolve => setTimeout(resolve, 300));
-      const service = mockServices.find(s => s.id === serviceId);
-      if (!service) throw new Error('Service not found');
-      return service;
-    }
-
-    const { data } = await apiClient.get<ApiResponse<AdminService>>(
-      `${AdminRoutes.SERVICES}/${serviceId}`
+    const { data } = await apiClient.get<ApiResponse<any>>(
+      `/services/${serviceId}`
     );
-    return data.data!;
+    const s = data.data ?? data;
+    // Handle category - can be ObjectId string or populated object
+    let categoryValue = s.category;
+    let categoryId = s.category;
+    if (s.category && typeof s.category === 'object' && s.category !== null) {
+      categoryId = s.category._id || s.category.id;
+      categoryValue = s.category.name || categoryId;
+    }
+    return {
+      id: s._id || s.id,
+      name: s.name,
+      description: s.description,
+      category: categoryValue,
+      categoryId: categoryId,
+      pricing: Array.isArray(s.pricing) ? s.pricing : [],
+      duration: s.duration,
+      status: s.isAvailable ? 'active' : 'inactive',
+      image: s.image,
+      totalBookings: s.totalBookings || 0,
+      rating: typeof s.rating === 'number' ? s.rating : 0,
+      createdAt: s.createdAt || new Date().toISOString(),
+    };
   },
 
   async createService(input: CreateServiceInput): Promise<AdminService> {
-    if (USE_MOCK_DATA) {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      return {
-        id: `SRV${String(mockServices.length + 1).padStart(3, '0')}`,
-        name: input.name,
-        description: input.description,
-        category: 'New Service',
-        price: input.price,
-        duration: input.duration,
-        status: 'active',
-        totalBookings: 0,
-        rating: 0,
-        createdAt: new Date().toISOString().split('T')[0],
-      };
-    }
-
-    const { data } = await apiClient.post<ApiResponse<AdminService>>(
-      AdminRoutes.SERVICES,
-      input
+    const payload = {
+      name: input.name,
+      description: input.description,
+      category: input.categoryId || (input as any).category,
+      pricing: input.pricing,
+      duration: input.duration,
+      isAvailable: true,
+      image: (input as any).image,
+    };
+    const { data } = await apiClient.post<ApiResponse<any>>(
+      '/services',
+      payload
     );
-    return data.data!;
+    const s = data.data;
+    // Handle category - can be ObjectId string or populated object
+    let categoryValue = s.category;
+    let categoryId = s.category;
+    if (s.category && typeof s.category === 'object' && s.category !== null) {
+      categoryId = s.category._id || s.category.id;
+      categoryValue = s.category.name || categoryId;
+    }
+    return {
+      id: s._id || s.id,
+      name: s.name,
+      description: s.description,
+      category: categoryValue,
+      categoryId: categoryId,
+      pricing: Array.isArray(s.pricing) ? s.pricing : [],
+      duration: s.duration,
+      status: s.isAvailable ? 'active' : 'inactive',
+      image: s.image,
+      totalBookings: s.totalBookings || 0,
+      rating: typeof s.rating === 'number' ? s.rating : 0,
+      createdAt: s.createdAt || new Date().toISOString(),
+    };
   },
 
   async updateService(serviceId: string, input: UpdateServiceInput): Promise<AdminService> {
-    if (USE_MOCK_DATA) {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      const service = mockServices.find(s => s.id === serviceId);
-      if (!service) throw new Error('Service not found');
-      return { ...service, ...input };
-    }
-
-    const { data } = await apiClient.patch<ApiResponse<AdminService>>(
-      `${AdminRoutes.SERVICES}/${serviceId}`,
-      input
+    const payload = {
+      name: input.name,
+      description: input.description,
+      category: (input as any).categoryId || (input as any).category,
+      pricing: input.pricing,
+      duration: input.duration,
+      image: (input as any).image,
+      isAvailable: (input as any).active ?? (input as any).isAvailable,
+    };
+    const { data } = await apiClient.put<ApiResponse<any>>(
+      `/services/${serviceId}`,
+      payload
     );
-    return data.data!;
+    const s = data.data;
+    // Handle category - can be ObjectId string or populated object
+    let categoryValue = s.category;
+    let categoryId = s.category;
+    if (s.category && typeof s.category === 'object' && s.category !== null) {
+      categoryId = s.category._id || s.category.id;
+      categoryValue = s.category.name || categoryId;
+    }
+    return {
+      id: s._id || s.id,
+      name: s.name,
+      description: s.description,
+      category: categoryValue,
+      categoryId: categoryId,
+      pricing: Array.isArray(s.pricing) ? s.pricing : [],
+      duration: s.duration,
+      status: s.isAvailable ? 'active' : 'inactive',
+      image: s.image,
+      totalBookings: s.totalBookings || 0,
+      rating: typeof s.rating === 'number' ? s.rating : 0,
+      createdAt: s.createdAt || new Date().toISOString(),
+    };
   },
 
   async deleteService(serviceId: string): Promise<{ message: string }> {
-    if (USE_MOCK_DATA) {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      return { message: 'Service deleted successfully' };
-    }
-
     const { data } = await apiClient.delete<ApiResponse<{ message: string }>>(
-      `${AdminRoutes.SERVICES}/${serviceId}`
+      `/services/${serviceId}`
     );
     return data.data!;
   },
@@ -144,86 +199,112 @@ export const adminCatalogFetchers = {
     page?: number;
     pageSize?: number;
   }): Promise<{ data: AdminProduct[]; total: number; page: number; pageSize: number; totalPages: number }> {
-    if (USE_MOCK_DATA) {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      let filtered = [...mockProducts];
-      
-      if (filters?.search) {
-        const searchLower = filters.search.toLowerCase();
-        filtered = filtered.filter(p => 
-          p.name.toLowerCase().includes(searchLower) ||
-          p.category.toLowerCase().includes(searchLower)
-        );
-      }
-      
-      if (filters?.status) {
-        filtered = filtered.filter(p => p.status === filters.status);
-      }
-      
-      if (filters?.category) {
-        filtered = filtered.filter(p => p.category === filters.category);
-      }
-      
-      if (filters?.stock) {
-        filtered = filtered.filter(p => {
-          if (filters.stock === 'in-stock') return p.stock > 10;
-          if (filters.stock === 'low-stock') return p.stock > 0 && p.stock <= 10;
-          if (filters.stock === 'out-of-stock') return p.stock === 0;
-          return true;
-        });
-      }
-      
-      // Pagination
-      const page = filters?.page || 1;
-      const pageSize = filters?.pageSize || 10;
-      const total = filtered.length;
-      const totalPages = Math.ceil(total / pageSize);
-      const startIndex = (page - 1) * pageSize;
-      const endIndex = startIndex + pageSize;
-      const paginatedData = filtered.slice(startIndex, endIndex);
-      
-      return {
-        data: paginatedData,
-        total,
-        page,
-        pageSize,
-        totalPages,
-      };
-    }
-
-    const { data } = await apiClient.get<ApiResponse<{ data: AdminProduct[]; total: number; page: number; pageSize: number; totalPages: number }>>(
-      AdminRoutes.PRODUCTS,
+    const { data } = await apiClient.get<ApiResponse<any>>(
+      '/products',
       { params: filters }
     );
-    return data.data!;
+    const payload: any = data.data;
+    if (Array.isArray(payload)) {
+      // Unexpected flat array; map and wrap with basic pagination
+      const mapped = payload.map(mapBackendProductToAdminProduct);
+      return {
+        data: mapped,
+        total: mapped.length,
+        page: filters?.page || 1,
+        pageSize: filters?.pageSize || mapped.length,
+        totalPages: 1,
+      };
+    }
+    // Expected shape from backend service: { data: products[], total, page, limit, totalPages }
+    const mapped = (payload.data || []).map(mapBackendProductToAdminProduct);
+    return {
+      data: mapped,
+      total: payload.total,
+      page: payload.page,
+      pageSize: payload.limit,
+      totalPages: payload.totalPages,
+    };
   },
 
   async getProductById(productId: string): Promise<AdminProduct> {
-    const { data } = await apiClient.get<ApiResponse<AdminProduct>>(
-      `${AdminRoutes.PRODUCTS}/${productId}`
+    const { data } = await apiClient.get<ApiResponse<any>>(
+      `/products/${productId}`
     );
-    return data.data!;
+    const raw = data.data ?? data;
+    return mapBackendProductToAdminProduct(raw);
   },
 
-  async createProduct(input: CreateProductInput): Promise<AdminProduct> {
+  async createProduct(input: any): Promise<AdminProduct> {
+    // Accept flexible input (ProductFormInput or CreateProductInput) and map to backend schema
+    // Convert empty SKU strings to undefined
+    const skuValue = input.sku && input.sku.trim() !== '' ? input.sku.trim() : undefined;
+    
+    const payload = {
+      name: input.name,
+      description: input.description,
+      category: input.category || input.categoryId,
+      price: input.price,
+      comparePrice: input.comparePrice ?? undefined,
+      stock: input.stock,
+      sku: skuValue,
+      image: Array.isArray(input.images) && input.images[0] ? input.images[0] : input.image,
+      isAvailable: typeof input.active === 'boolean' ? input.active : undefined,
+      featured: typeof input.featured === 'boolean' ? input.featured : undefined,
+      specifications: input.specifications,
+    };
+
     const { data } = await apiClient.post<ApiResponse<AdminProduct>>(
-      AdminRoutes.PRODUCTS,
-      input
+      '/products',
+      payload
     );
     return data.data!;
   },
 
-  async updateProduct(productId: string, input: UpdateProductInput): Promise<AdminProduct> {
-    const { data } = await apiClient.patch<ApiResponse<AdminProduct>>(
-      `${AdminRoutes.PRODUCTS}/${productId}`,
-      input
+  async updateProduct(productId: string, input: any): Promise<AdminProduct> {
+    // Build payload with all form fields - include all fields that are in the form
+    const payload: any = {
+      name: input.name,
+      description: input.description,
+      category: input.category || input.categoryId,
+      price: input.price,
+      stock: input.stock,
+    };
+    
+    // Optional fields - only include if they exist in input
+    if (input.comparePrice !== undefined && input.comparePrice !== null) {
+      payload.comparePrice = input.comparePrice;
+    }
+    if (input.sku !== undefined) {
+      // Convert empty SKU strings to undefined
+      payload.sku = input.sku && input.sku.trim() !== '' ? input.sku.trim() : undefined;
+    }
+    if (input.images !== undefined || input.image !== undefined) {
+      payload.image = Array.isArray(input.images) && input.images.length > 0 
+        ? input.images[0] 
+        : (input.image || '');
+    }
+    if (input.active !== undefined) {
+      payload.isAvailable = Boolean(input.active);
+    } else if (input.isAvailable !== undefined) {
+      payload.isAvailable = Boolean(input.isAvailable);
+    }
+    if (input.featured !== undefined) {
+      payload.featured = Boolean(input.featured);
+    }
+    if (input.specifications !== undefined) {
+      payload.specifications = input.specifications;
+    }
+
+    const { data } = await apiClient.put<ApiResponse<AdminProduct>>(
+      `/products/${productId}`,
+      payload
     );
     return data.data!;
   },
 
   async deleteProduct(productId: string): Promise<{ message: string }> {
     const { data } = await apiClient.delete<ApiResponse<{ message: string }>>(
-      `${AdminRoutes.PRODUCTS}/${productId}`
+      `/products/${productId}`
     );
     return data.data!;
   },
@@ -232,82 +313,102 @@ export const adminCatalogFetchers = {
   async getCategoryList(filters?: { 
     search?: string; 
     status?: string;
+    type?: string;
     page?: number;
     pageSize?: number;
   }): Promise<{ data: AdminCategory[]; total: number; page: number; pageSize: number; totalPages: number }> {
-    if (USE_MOCK_DATA) {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      let filtered = [...mockCategories];
-      
-      if (filters?.search) {
-        const searchLower = filters.search.toLowerCase();
-        filtered = filtered.filter(c => 
-          c.name.toLowerCase().includes(searchLower)
-        );
-      }
-      
-      if (filters?.status) {
-        filtered = filtered.filter(c => c.status === filters.status);
-      }
-      
-      // Pagination
-      const page = filters?.page || 1;
-      const pageSize = filters?.pageSize || 10;
-      const total = filtered.length;
-      const totalPages = Math.ceil(total / pageSize);
-      const startIndex = (page - 1) * pageSize;
-      const endIndex = startIndex + pageSize;
-      const paginatedData = filtered.slice(startIndex, endIndex);
-      
-      return {
-        data: paginatedData,
-        total,
-        page,
-        pageSize,
-        totalPages,
-      };
-    }
-
-    const { data } = await apiClient.get<ApiResponse<{ data: AdminCategory[]; total: number; page: number; pageSize: number; totalPages: number }>>(
-      AdminRoutes.CATEGORIES,
+    const { data } = await apiClient.get<ApiResponse<any>>(
+      '/categories',
       { params: filters }
     );
-    return data.data!;
+    const payload: any = data.data;
+    const mapped = (payload.data || []).map((c: any): AdminCategory => ({
+      id: c._id || c.id,
+      name: c.name,
+      type: c.type,
+      description: c.description,
+      status: c.isActive ? 'active' : 'inactive',
+      itemCount: c.itemCount || 0,
+      createdAt: c.createdAt || new Date().toISOString(),
+      active: Boolean(c.isActive), // backward-compat alias
+    }));
+    return {
+      data: mapped,
+      total: payload.total,
+      page: payload.page,
+      pageSize: payload.limit,
+      totalPages: payload.totalPages,
+    };
   },
 
   async getCategoryById(categoryId: string): Promise<AdminCategory> {
-    if (USE_MOCK_DATA) {
-      await new Promise(resolve => setTimeout(resolve, 300));
-      const category = mockCategories.find(c => c.id === categoryId);
-      if (!category) throw new Error('Category not found');
-      return category;
-    }
-
-    const { data } = await apiClient.get<ApiResponse<AdminCategory>>(
-      `${AdminRoutes.CATEGORIES}/${categoryId}`
+    const { data } = await apiClient.get<ApiResponse<any>>(
+      `/categories/${categoryId}`
     );
-    return data.data!;
+    const c = data.data ?? data;
+    return {
+      id: c._id || c.id,
+      name: c.name,
+      type: c.type,
+      description: c.description,
+      status: c.isActive ? 'active' : 'inactive',
+      itemCount: c.itemCount || 0,
+      createdAt: c.createdAt || new Date().toISOString(),
+      active: Boolean(c.isActive),
+    };
   },
 
   async createCategory(input: CreateCategoryInput): Promise<AdminCategory> {
-    const { data } = await apiClient.post<ApiResponse<AdminCategory>>(
-      AdminRoutes.CATEGORIES,
-      input
+    const payload = {
+      name: input.name,
+      type: input.type,
+      description: input.description,
+      isActive: (input as any).active ?? true,
+    };
+    const { data } = await apiClient.post<ApiResponse<any>>(
+      '/categories',
+      payload
     );
-    return data.data!;
+    const c = data.data;
+    return {
+      id: c._id || c.id,
+      name: c.name,
+      type: c.type,
+      description: c.description,
+      status: c.isActive ? 'active' : 'inactive',
+      itemCount: c.itemCount || 0,
+      createdAt: c.createdAt || new Date().toISOString(),
+      active: Boolean(c.isActive),
+    };
   },
 
   async updateCategory(categoryId: string, input: UpdateCategoryInput): Promise<AdminCategory> {
-    const { data } = await apiClient.patch<ApiResponse<AdminCategory>>(
-      `${AdminRoutes.CATEGORIES}/${categoryId}`,
-      input
+    const payload = {
+      name: input.name,
+      type: (input as any).type,
+      description: input.description,
+      isActive: (input as any).active ?? (input as any).isActive,
+    };
+    const { data } = await apiClient.put<ApiResponse<any>>(
+      `/categories/${categoryId}`,
+      payload
     );
-    return data.data!;
+    const c = data.data;
+    return {
+      id: c._id || c.id,
+      name: c.name,
+      type: c.type,
+      description: c.description,
+      status: c.isActive ? 'active' : 'inactive',
+      itemCount: c.itemCount || 0,
+      createdAt: c.createdAt || new Date().toISOString(),
+      active: Boolean(c.isActive),
+    };
   },
 
   async deleteCategory(categoryId: string): Promise<{ message: string }> {
     const { data } = await apiClient.delete<ApiResponse<{ message: string }>>(
-      `${AdminRoutes.CATEGORIES}/${categoryId}`
+      `/categories/${categoryId}`
     );
     return data.data!;
   },
