@@ -21,8 +21,13 @@ const otpValidation = z
 // ============================================
 
 export const staffLoginSchema = z.object({
-  phone: phoneValidation,
-  otp: otpValidation,
+  identifier: z
+    .string()
+    .trim()
+    .min(1, 'Phone number or email is required'),
+  password: z
+    .string()
+    .min(1, 'Password is required'),
 });
 
 // ============================================

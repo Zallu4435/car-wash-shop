@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
+import { apiClient } from '@/api/client';
 import { RAZORPAY_CONFIG, RAZORPAY_SCRIPT_URL } from '@/lib/payment/razorpay-config';
 import type {
   PaymentDetails,
@@ -67,62 +68,55 @@ export function useRazorpay(options?: UseRazorpayOptions) {
     loadRazorpayScript();
   }, []);
 
-  // Create Razorpay order
+  // Create Razorpay order via backend API
   const createOrder = useCallback(
-    async (amount: number, receipt?: string): Promise<string | null> => {
+    async (bookingData: any, amount: number, paymentType: string = 'advance'): Promise<string | null> => {
       try {
-        const response = await fetch('/api/payment/create-order', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            amount: Math.round(amount * 100), // Convert to paise
-            currency: RAZORPAY_CONFIG.CURRENCY,
-            receipt: receipt || `receipt_${Date.now()}`,
-          }),
+        const response = await apiClient.post('/checkout/session', {
+          bookingData,
+          amount,
+          paymentType,
         });
 
-        if (!response.ok) {
-          throw new Error('Failed to create order');
+        if (response.data?.success && response.data?.data?.orderId) {
+          return response.data.data.orderId;
         }
-
-        const data = await response.json();
-        return data.orderId;
-      } catch (error) {
+        throw new Error('Failed to create order');
+      } catch (error: any) {
         console.error('Error creating order:', error);
-        toast.error('Failed to initiate payment');
+        toast.error(error?.message || 'Failed to initiate payment');
         return null;
       }
     },
     []
   );
 
-  // Verify payment
+  // Verify payment via backend API
   const verifyPayment = useCallback(
     async (
       razorpayOrderId: string,
       razorpayPaymentId: string,
       razorpaySignature: string
-    ): Promise<boolean> => {
+    ): Promise<{ success: boolean; bookingId?: string; message?: string }> => {
       try {
-        const response = await fetch('/api/payment/verify', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            razorpay_order_id: razorpayOrderId,
-            razorpay_payment_id: razorpayPaymentId,
-            razorpay_signature: razorpaySignature,
-          }),
+        const response = await apiClient.post('/checkout/verify', {
+          razorpay_order_id: razorpayOrderId,
+          razorpay_payment_id: razorpayPaymentId,
+          razorpay_signature: razorpaySignature,
         });
 
-        if (!response.ok) {
-          throw new Error('Payment verification failed');
+        if (response.data?.success && response.data?.data) {
+          return {
+            success: true,
+            bookingId: response.data.data.bookingId,
+            message: response.data.data.message,
+          };
         }
-
-        const data = await response.json();
-        return data.success;
-      } catch (error) {
+        return { success: false };
+      } catch (error: any) {
         console.error('Error verifying payment:', error);
-        return false;
+        toast.error(error?.message || 'Payment verification failed');
+        return { success: false };
       }
     },
     []
@@ -142,13 +136,19 @@ export function useRazorpay(options?: UseRazorpayOptions) {
         return;
       }
 
+      if (!paymentDetails.bookingData) {
+        toast.error('Booking data is required for payment');
+        return;
+      }
+
       setIsLoading(true);
 
       try {
-        // Step 1: Create order
+        // Step 1: Create order via backend (requires bookingData)
         const orderId = await createOrder(
+          paymentDetails.bookingData,
           paymentDetails.amount,
-          paymentDetails.orderId || paymentDetails.bookingId
+          paymentDetails.paymentType || 'advance'
         );
 
         if (!orderId) {
@@ -175,15 +175,21 @@ export function useRazorpay(options?: UseRazorpayOptions) {
           },
           handler: async (response: RazorpaySuccessResponse) => {
             // Step 3: Verify payment
-            const isVerified = await verifyPayment(
+            const verificationResult = await verifyPayment(
               response.razorpay_order_id,
               response.razorpay_payment_id,
               response.razorpay_signature
             );
 
-            if (isVerified) {
+            if (verificationResult.success) {
+              // Add bookingId to response if available
+              const successResponse = {
+                ...response,
+                bookingId: verificationResult.bookingId,
+                message: verificationResult.message,
+              };
               if (options?.onSuccess) {
-                await options.onSuccess(response);
+                await options.onSuccess(successResponse as any);
               }
             } else {
               toast.error('Payment verification failed');

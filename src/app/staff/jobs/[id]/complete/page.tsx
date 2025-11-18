@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { CheckCircle, ArrowLeft } from 'lucide-react';
+import { CheckCircle, ArrowLeft, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { useUpdateJobStatus } from '@/api/domains/staff/queries';
 import { StaffRoutes } from '@/lib/constants/routes';
@@ -16,29 +16,37 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { completeJobSchema, CompleteJobInput } from '@/schemas/staff/job';
 import { useRazorpay } from '@/hooks/useRazorpay';
+import { useConfirmation } from '@/hooks/useConfirmation';
+import { apiClient } from '@/api/client';
 
 export default function CompleteJobPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
   const updateJobStatus = useUpdateJobStatus();
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const { confirm, ConfirmDialog } = useConfirmation();
 
   // Razorpay integration
   const { processPayment, isLoading: isRazorpayLoading } = useRazorpay({
-    onSuccess: (response) => {
+    onSuccess: async (response) => {
       toast.success('Payment successful!');
-      // Complete the job after successful payment
-      updateJobStatus.mutate(
-        { jobId: id, input: { status: 'completed', notes: 'Payment collected via Razorpay' } },
-        {
-          onSuccess: () => {
-            toast.success('Job completed successfully!');
-            router.push(StaffRoutes.JOBS);
-          },
-          onError: (err: any) => toast.error(err?.message || 'Failed to complete job'),
+      // Complete the job after successful payment with paymentReceived: true
+      try {
+        const apiResponse = await apiClient.patch(`/staff/jobs/${id}`, {
+          status: 'completed',
+          paymentReceived: true,
+          notes: 'Payment collected via Razorpay',
+        });
+
+        if (apiResponse.data.success) {
+          toast.success('Job completed successfully!');
+          router.push(StaffRoutes.JOBS);
         }
-      );
-      setIsProcessingPayment(false);
+      } catch (err: any) {
+        toast.error(err?.response?.data?.error?.message || err?.message || 'Failed to complete job');
+      } finally {
+        setIsProcessingPayment(false);
+      }
     },
     onFailure: () => {
       toast.error('Payment failed. Please try again.');
@@ -65,25 +73,73 @@ export default function CompleteJobPage({ params }: { params: Promise<{ id: stri
 
   const paymentMethod = watch('paymentMethod');
 
+  const handleCouldntReach = async () => {
+    const confirmed = await confirm({
+      title: 'Mark as Couldn\'t Reach',
+      description: 'Are you sure you couldn\'t reach the customer location? This will mark the job as "Couldn\'t Reach".',
+      confirmText: 'Yes, Mark as Couldn\'t Reach',
+      cancelText: 'Cancel',
+      type: 'warning',
+    });
+
+    if (!confirmed) return;
+
+    try {
+      setIsProcessingPayment(true);
+      const response = await apiClient.post(`/staff/jobs/${id}/couldnt-reach`, {
+        notes: 'Staff member could not reach the customer location',
+      });
+
+      if (response.data.success) {
+        toast.success('Job marked as couldn\'t reach');
+        router.push(StaffRoutes.JOBS);
+      }
+    } catch (err: any) {
+      toast.error(err?.response?.data?.error?.message || err?.message || 'Failed to update job status');
+    } finally {
+      setIsProcessingPayment(false);
+    }
+  };
+
   const onSubmit = async (data: CompleteJobInput) => {
     try {
       setIsProcessingPayment(true);
 
-      // Handle prepaid or cash payment
+      // Handle prepaid or cash payment - ask for payment confirmation
       if (data.paymentMethod === 'prepaid' || data.paymentMethod === 'cash') {
-        updateJobStatus.mutate(
-          { jobId: id, input: { status: 'completed', notes: data.notes } },
-          {
-            onSuccess: () => {
-              toast.success('Job completed successfully!');
-              router.push(StaffRoutes.JOBS);
-            },
-            onError: (err: any) => toast.error(err?.message || 'Failed to complete job'),
-            onSettled: () => {
-              setIsProcessingPayment(false);
-            },
+        // Show confirmation dialog asking if payment was received
+        const paymentReceived = await confirm({
+          title: 'Payment Confirmation',
+          description: 'Have you received the payment from the customer?',
+          confirmText: 'Yes, Payment Received',
+          cancelText: 'No, Not Received',
+          type: 'warning',
+        });
+
+        if (!paymentReceived) {
+          setIsProcessingPayment(false);
+          toast.info('Please collect the payment before marking the job as completed.');
+          return;
+        }
+
+        // Send status update with paymentReceived flag
+        // Use PATCH endpoint directly to include paymentReceived
+        try {
+          const response = await apiClient.patch(`/staff/jobs/${id}`, {
+            status: 'completed',
+            paymentReceived: true,
+            notes: data.notes,
+          });
+
+          if (response.data.success) {
+            toast.success('Job completed successfully!');
+            router.push(StaffRoutes.JOBS);
           }
-        );
+        } catch (err: any) {
+          toast.error(err?.response?.data?.error?.message || err?.message || 'Failed to complete job');
+        } finally {
+          setIsProcessingPayment(false);
+        }
         return;
       }
 
@@ -108,6 +164,9 @@ export default function CompleteJobPage({ params }: { params: Promise<{ id: stri
             collectedBy: 'staff',
           },
         });
+
+        // After successful payment, mark as completed with paymentReceived: true
+        // This is handled in the onSuccess callback above
       }
     } catch (error: any) {
       toast.error(error?.message || 'An error occurred');
@@ -209,8 +268,25 @@ export default function CompleteJobPage({ params }: { params: Promise<{ id: stri
                'Mark as Completed'}
             </Button>
           </form>
+
+          {/* Couldn't Reach Button */}
+          <div className="mt-4 pt-4 border-t border-border">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleCouldntReach}
+              className="w-full h-10 sm:h-11 text-xs sm:text-sm border-2 border-destructive/20 text-destructive hover:bg-destructive/10"
+              disabled={isProcessingPayment || isRazorpayLoading}
+            >
+              <XCircle className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+              Couldn't Reach Customer
+            </Button>
+          </div>
         </CardContent>
       </Card>
+
+      {/* Confirmation Dialog */}
+      <ConfirmDialog />
     </div>
   );
 }

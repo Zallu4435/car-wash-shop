@@ -170,7 +170,9 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
         <div className="lg:col-span-1">
           <NavigationMap
             address={job.location}
-            customerPhone={''}
+            customerPhone={job.customer?.phone || ''}
+            latitude={job.coordinates?.latitude}
+            longitude={job.coordinates?.longitude}
           />
         </div>
       </div>

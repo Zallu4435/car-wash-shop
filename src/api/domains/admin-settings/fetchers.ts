@@ -131,7 +131,7 @@ export const adminSettingsFetchers = {
 
   async logout(): Promise<{ message: string }> {
     const { data } = await apiClient.post<ApiResponse<{ message: string }>>(
-      '/admin/logout'
+      '/auth/logout'
     );
     return data.data!;
   },

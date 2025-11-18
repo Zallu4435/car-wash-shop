@@ -290,41 +290,29 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
                 </div>
               </CardHeader>
               <CardContent className="space-y-5 sm:space-y-6 pt-4 sm:pt-6">
-                {/* Price Breakdown */}
-                <div className="space-y-2.5 sm:space-y-3">
-                  <div className="flex justify-between text-xs sm:text-sm">
-                    <span className="text-muted-foreground">Base Service (from)</span>
-                    <span className="font-medium text-foreground">₹{basePrice}</span>
+                {/* Selected Add-ons */}
+                {selectedAddOns.length > 0 && (
+                  <div className="space-y-2.5 sm:space-y-3">
+                    {selectedAddOns.map((addonId) => {
+                      const addon = mockAddOns.find((a) => a.id === addonId);
+                      return (
+                        <div key={addonId} className="flex justify-between text-xs sm:text-sm">
+                          <span className="text-muted-foreground truncate mr-2">{addon?.name}</span>
+                          <span className="font-medium text-foreground flex-shrink-0">+{addon?.duration} mins</span>
+                        </div>
+                      );
+                    })}
                   </div>
-                  {selectedAddOns.length > 0 && (
-                    <>
-                      <Separator />
-                      {selectedAddOns.map((addonId) => {
-                        const addon = mockAddOns.find((a) => a.id === addonId);
-                        return (
-                          <div key={addonId} className="flex justify-between text-xs sm:text-sm">
-                            <span className="text-muted-foreground truncate mr-2">{addon?.name}</span>
-                            <span className="font-medium text-foreground flex-shrink-0">₹{addon?.price}</span>
-                          </div>
-                        );
-                      })}
-                    </>
-                  )}
-                  <Separator />
-                  <div className="flex justify-between font-bold text-base sm:text-lg pt-1 sm:pt-2">
-                    <span className="text-foreground">Total</span>
-                    <span className="text-primary">₹{calculateTotal()}</span>
-                  </div>
-                  <div className="flex justify-between text-xs sm:text-sm bg-muted p-2.5 sm:p-3 rounded-lg">
-                    <span className="text-muted-foreground">Estimated Duration</span>
-                    <span className="font-semibold text-foreground">{calculateDuration()} mins</span>
-                  </div>
+                )}
+                <div className="flex justify-between text-xs sm:text-sm bg-muted p-2.5 sm:p-3 rounded-lg">
+                  <span className="text-muted-foreground">Estimated Duration</span>
+                  <span className="font-semibold text-foreground">{calculateDuration()} mins</span>
                 </div>
 
                 {/* Book Button */}
                 <Button asChild className="w-full border-2 h-11 sm:h-12 text-sm sm:text-base" size="lg">
                   <Link href={`${CustomerRoutes.BOOK}?serviceId=${service.id}&addOns=${selectedAddOns.join(',')}`}>
-                    Book Now - ₹{calculateTotal()}
+                    Book Now
                   </Link>
                 </Button>
 
@@ -355,19 +343,15 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
             {/* Mobile Fixed Bottom Bar */}
             <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40">
               <div className="bg-background/95 backdrop-blur-xl border-t-2 border-border shadow-2xl px-4 py-3">
-                <div className="flex items-center justify-between gap-3 mb-3">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Total Amount</p>
-                    <p className="text-2xl font-bold text-primary">₹{calculateTotal()}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xs text-muted-foreground">Duration</p>
+                <div className="flex items-center justify-center gap-3 mb-3">
+                  <div className="text-center">
+                    <p className="text-xs text-muted-foreground">Estimated Duration</p>
                     <p className="text-sm font-semibold text-foreground">{calculateDuration()} mins</p>
                   </div>
                 </div>
                 <Button asChild className="w-full border-2 h-12 text-sm font-semibold" size="lg">
                   <Link href={`${CustomerRoutes.BOOK}?serviceId=${service.id}&addOns=${selectedAddOns.join(',')}`}>
-                    Book Now - ₹{calculateTotal()}
+                    Book Now
                   </Link>
                 </Button>
               </div>

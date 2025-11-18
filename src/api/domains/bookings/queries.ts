@@ -12,6 +12,8 @@ export const bookingKeys = {
   details: () => [...bookingKeys.all, 'detail'] as const,
   detail: (id: string) => [...bookingKeys.details(), id] as const,
   preview: () => [...bookingKeys.all, 'preview'] as const,
+  availableDays: (serviceId: string) =>
+    [...bookingKeys.all, 'availableDays', serviceId] as const,
   slots: (serviceId: string, date: string) =>
     [...bookingKeys.all, 'slots', serviceId, date] as const,
 };
@@ -34,12 +36,23 @@ export const useBooking = (bookingId: string) => {
   });
 };
 
+export const useAvailableDays = (serviceId: string, daysAhead?: number) => {
+  return useQuery({
+    queryKey: bookingKeys.availableDays(serviceId),
+    queryFn: () => bookingFetchers.getAvailableDays(serviceId, daysAhead),
+    enabled: !!serviceId,
+    staleTime: 1 * 60 * 1000, // 1 minute - reduced to get fresher data
+    refetchOnMount: true, // Always refetch when component mounts
+  });
+};
+
 export const useAvailableSlots = (serviceId: string, date: string) => {
   return useQuery({
     queryKey: bookingKeys.slots(serviceId, date),
     queryFn: () => bookingFetchers.getAvailableSlots(serviceId, date),
     enabled: !!serviceId && !!date,
-    staleTime: 2 * 60 * 1000, // 2 minutes
+    staleTime: 0, // Always consider data stale to get latest slots
+    refetchOnMount: true, // Always refetch when component mounts
   });
 };
 

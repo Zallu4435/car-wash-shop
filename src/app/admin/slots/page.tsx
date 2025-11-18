@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { format } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -42,7 +43,7 @@ export default function SlotManagementPage() {
   const markAvailableConfirmation = useConfirmation();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [showGenerateModal, setShowGenerateModal] = useState(false);
-  const selectedDateISO = selectedDate ? selectedDate.toISOString().split('T')[0] : undefined;
+  const selectedDateISO = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : undefined;
   const { data: slotsData, isLoading, error, refetch } = useAdminSlots(selectedDateISO);
   const generateSlotsMutation = useGenerateSlots();
   const updateSlotStatusMutation = useUpdateSlotStatus();
@@ -63,9 +64,15 @@ export default function SlotManagementPage() {
     return <Error message="Failed to load slots" details={(error as any)?.message} onRetry={() => refetch()} />;
   }
 
-  const toggleSlot = (slot: { id: string; status: 'available' | 'unavailable' }) => {
+  const toggleSlot = (slot: { id: string; status: 'available' | 'unavailable'; booked?: boolean }) => {
     if (!selectedDateISO) {
       toast.error('Please select a date first');
+      return;
+    }
+
+    // Prevent toggling booked slots
+    if (slot.booked) {
+      toast.error('Cannot change status of a booked slot');
       return;
     }
 
@@ -75,6 +82,9 @@ export default function SlotManagementPage() {
       {
         onSuccess: () => {
           refetch();
+        },
+        onError: (error: any) => {
+          toast.error(error.message || 'Failed to update slot');
         },
       }
     );
@@ -301,17 +311,26 @@ export default function SlotManagementPage() {
                 {slots.map((slot: any) => {
                   const isAvailable = slot.status === 'available';
                   const isProcessing = updateSlotStatusMutation.isPending;
+                  const isBooked = slot.booked;
+                  const isDisabled = isProcessing || isBooked;
 
                   return (
                     <button
                       key={slot.id}
                       onClick={() => toggleSlot(slot)}
-                      disabled={isProcessing}
-                      className={`p-3 sm:p-4 rounded-lg sm:rounded-xl border-2 transition-all duration-300 hover:shadow-md active:scale-95 ${
+                      disabled={isDisabled}
+                      className={`p-3 sm:p-4 rounded-lg sm:rounded-xl border-2 transition-all duration-300 ${
+                        isBooked
+                          ? 'opacity-60 cursor-not-allowed'
+                          : isProcessing
+                          ? 'opacity-50 cursor-not-allowed'
+                          : 'hover:shadow-md active:scale-95 cursor-pointer'
+                      } ${
                         isAvailable
                           ? 'border-green-300 bg-green-50 dark:bg-green-950/20 hover:bg-green-100/70'
                           : 'border-destructive bg-destructive/10 hover:bg-destructive/15'
-                      } ${isProcessing ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                      }`}
+                      title={isBooked ? 'This slot is booked and cannot be modified' : ''}
                     >
                       <div className="flex items-center justify-between mb-1.5 sm:mb-2">
                         <Clock

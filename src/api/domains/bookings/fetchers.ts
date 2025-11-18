@@ -28,6 +28,17 @@ export const bookingFetchers = {
     return data.data!;
   },
 
+  async getAvailableDays(
+    serviceId: string,
+    daysAhead?: number
+  ): Promise<{ availableDays: string[] }> {
+    const { data } = await apiClient.get<ApiResponse<{ availableDays: string[] }>>(
+      `${CustomerRoutes.BOOKINGS}/available-days`,
+      { params: { serviceId, daysAhead } }
+    );
+    return data.data!;
+  },
+
   async getAvailableSlots(
     serviceId: string,
     date: string

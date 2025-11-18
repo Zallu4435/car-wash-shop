@@ -43,6 +43,22 @@ export const useAssignStaffToBooking = () => {
   });
 };
 
+export const useRemoveStaffAssignment = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (bookingId: string) =>
+      adminRequestsFetchers.removeStaffAssignment(bookingId),
+    onSuccess: (data, bookingId) => {
+      queryClient.setQueryData(adminRequestsKeys.detail(bookingId), data);
+      queryClient.invalidateQueries({ queryKey: adminRequestsKeys.all });
+      toast.success('Staff assignment removed successfully');
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Failed to remove staff assignment');
+    },
+  });
+};
+
 export const useUpdateBookingStatus = () => {
   const queryClient = useQueryClient();
   return useMutation({

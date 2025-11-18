@@ -7,6 +7,8 @@ import {
   Clock,
   TrendingUp,
   CheckCircle,
+  UserCheck,
+  UserX,
 } from 'lucide-react';
 import { useState, useMemo } from 'react';
 import { useAdminBookingList } from '@/api/domains/admin-requests/queries';
@@ -43,8 +45,9 @@ export default function RequestsPage() {
   const filteredBookings = bookings; // Already filtered by API
 
   const pendingCount = bookings.filter(b => b.status === 'pending').length;
-  const inProgressCount = bookings.filter(b => b.status === 'in_progress').length;
-  const completedToday = bookings.filter(b => b.status === 'completed').length;
+  const confirmedCount = bookings.filter(b => b.status === 'confirmed').length;
+  const unassignedCount = bookings.filter(b => b.status === 'pending' && !b.assignedStaffId).length;
+  const completedCount = bookings.filter(b => b.status === 'completed').length;
 
   if (isLoading) {
     return <Loading text="Loading bookings..." />;
@@ -74,7 +77,7 @@ export default function RequestsPage() {
           Service Requests
         </h1>
         <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1">
-          Manage service bookings and assignments
+          Assign staff to booked services and manage bookings
         </p>
       </div>
 
@@ -83,39 +86,31 @@ export default function RequestsPage() {
         <StatCard
           icon={Calendar}
           label="Total Bookings"
-          value={bookings.length}
-          change="+10.5%"
-          trend="up"
-          description="This month"
+          value={totalItems}
+          description="All bookings"
         />
         
         <StatCard
-          icon={Clock}
-          label="Pending"
-          value={pendingCount}
-          valueClassName="text-primary"
-          change="+5.2%"
-          trend="up"
-          description="Awaiting assignment"
+          icon={UserX}
+          label="Unassigned"
+          value={unassignedCount}
+          valueClassName="text-orange-600 dark:text-orange-400"
+          description="Need staff assignment"
         />
         
         <StatCard
-          icon={TrendingUp}
-          label="In Progress"
-          value={inProgressCount}
-          change="+8.7%"
-          trend="up"
-          description="Active bookings"
+          icon={UserCheck}
+          label="Confirmed"
+          value={confirmedCount}
+          description="Staff assigned"
         />
         
         <StatCard
           icon={CheckCircle}
-          label="Completed Today"
-          value={completedToday}
-          valueClassName="text-primary"
-          change="+12.3%"
-          trend="up"
-          description="Successfully completed"
+          label="Completed"
+          value={completedCount}
+          valueClassName="text-green-600 dark:text-green-400"
+          description="Finished bookings"
         />
       </div>
 
@@ -170,7 +165,15 @@ export default function RequestsPage() {
           ) : (
             <div className="space-y-2.5 sm:space-y-3">
               {filteredBookings.map((booking) => {
-              const statusVariant = statusVariants[booking.status as keyof typeof statusVariants] || 'secondary';
+              const formatTime = (time: string) => {
+                if (!time) return 'N/A';
+                const [hours, minutes] = time.split(':');
+                const hour = parseInt(hours, 10);
+                const ampm = hour >= 12 ? 'PM' : 'AM';
+                const hour12 = hour % 12 || 12;
+                return `${hour12}:${minutes} ${ampm}`;
+              };
+
               return (
                 <TransactionCard
                   key={booking.id}
@@ -182,16 +185,37 @@ export default function RequestsPage() {
                   }}
                   statusBadge={{
                     label: booking.status,
-                    className: '',
+                    className: booking.status === 'pending' && !booking.assignedStaffId
+                      ? 'border-orange-500 text-orange-600 dark:text-orange-400'
+                      : booking.status === 'confirmed'
+                      ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                      : booking.status === 'completed'
+                      ? 'border-green-500 text-green-600 dark:text-green-400'
+                      : '',
                   }}
                   title={booking.customer}
-                  subtitle={booking.service}
+                  subtitle={
+                    <div className="flex flex-col gap-1">
+                      <span>{booking.service}</span>
+                      {booking.assignedStaff ? (
+                        <span className="text-xs text-muted-foreground flex items-center gap-1">
+                          <UserCheck className="h-3 w-3" />
+                          Assigned: {booking.assignedStaff}
+                        </span>
+                      ) : booking.status === 'pending' ? (
+                        <span className="text-xs text-orange-600 dark:text-orange-400 flex items-center gap-1">
+                          <UserX className="h-3 w-3" />
+                          Unassigned
+                        </span>
+                      ) : null}
+                    </div>
+                  }
                   onView={() => router.push(AdminRoutes.REQUEST_DETAIL(booking.id))}
-                  viewButtonText="View Details"
+                  viewButtonText="Assign Staff"
                   additionalContent={
                     <div className="mt-2 pt-2 border-t border-border md:hidden">
                       <p className="text-xs text-muted-foreground">
-                        {booking.date} • {booking.time}
+                        {booking.scheduledDate} • {booking.scheduledTime ? formatTime(booking.scheduledTime) : 'N/A'}
                       </p>
                     </div>
                   }

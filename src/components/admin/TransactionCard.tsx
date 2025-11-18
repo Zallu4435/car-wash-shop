@@ -37,7 +37,7 @@ interface TransactionCardProps {
     className?: string;
   };
   title: string;
-  subtitle: string;
+  subtitle: string | ReactNode;
   description?: string;
   infoBoxes?: InfoBox[];
   amount?: string | number;
@@ -173,7 +173,7 @@ export function TransactionCard({
                 </Badge>
               </div>
               <p className="font-semibold text-foreground truncate">{title}</p>
-              <p className="text-sm text-muted-foreground truncate">{subtitle}</p>
+              <div className="text-sm text-muted-foreground truncate">{subtitle}</div>
             </div>
           </div>
 
@@ -246,7 +246,7 @@ export function TransactionCard({
                 </Badge>
               </div>
               <p className="font-semibold text-sm sm:text-base text-foreground truncate">{title}</p>
-              <p className="text-xs sm:text-sm text-muted-foreground truncate">{subtitle}</p>
+              <div className="text-xs sm:text-sm text-muted-foreground truncate">{subtitle}</div>
               {amount !== undefined && (
                 <div className="mt-2 pt-2 border-t border-border flex items-center justify-between">
                   <div>

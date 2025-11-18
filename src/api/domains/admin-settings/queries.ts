@@ -90,13 +90,40 @@ export const useUpdateAdminProfile = () => {
 export const useAdminLogout = () => {
   const queryClient = useQueryClient();
   const router = useRouter();
+  
+  // Helper function to clear all auth data
+  const clearAuthData = () => {
+    // Clear token
+    setAccessToken(null);
+    
+    // Clear cookies
+    if (typeof document !== 'undefined') {
+      try {
+        document.cookie = 'auth_is_logged=; Max-Age=0; Path=/; SameSite=Lax';
+        document.cookie = 'auth_role=; Max-Age=0; Path=/; SameSite=Lax';
+      } catch (error) {
+        console.error('Failed to clear cookies:', error);
+      }
+    }
+    
+    // Clear query cache
+    queryClient.clear();
+  };
+  
   return useMutation({
     mutationFn: adminSettingsFetchers.logout,
     onSuccess: () => {
-      setAccessToken(null);
-      queryClient.clear();
+      clearAuthData();
       toast.success('Logged out successfully');
-      router.push(AdminRoutes.LOGIN);
+      // Use replace to prevent back navigation to admin pages
+      router.replace(AdminRoutes.LOGIN);
+    },
+    onError: (error: any) => {
+      // Even if API call fails, clear local auth data and redirect
+      clearAuthData();
+      toast.error(error.message || 'Failed to logout, but local session cleared');
+      // Use replace to prevent back navigation to admin pages
+      router.replace(AdminRoutes.LOGIN);
     },
   });
 };

@@ -74,13 +74,7 @@ const addOnsValidation = z
   .optional()
   .default([]);
 
-// Notes validation
-const notesValidation = z
-  .string()
-  .trim()
-  .max(500, 'Notes cannot exceed 500 characters')
-  .optional()
-  .or(z.literal(''));
+// Notes validation - removed as backend no longer supports notes field
 
 // ============================================
 // Create Booking Schema
@@ -94,7 +88,6 @@ export const createBookingSchema = z.object({
   scheduledTime: timeValidation,
   addOns: addOnsValidation,
   paymentType: paymentTypeValidation,
-  notes: notesValidation,
 });
 
 // ============================================

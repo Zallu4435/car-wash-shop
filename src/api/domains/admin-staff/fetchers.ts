@@ -19,7 +19,6 @@ const mockStaff: AdminStaff[] = [
     email: 'ramesh.kumar@carwash.com',
     phone: '+91 98765 43210',
     role: 'Senior Technician',
-    area: 'Koramangala',
     status: 'active',
     totalJobs: 342,
     avgRating: 4.8,
@@ -32,7 +31,6 @@ const mockStaff: AdminStaff[] = [
     email: 'suresh.patel@carwash.com',
     phone: '+91 98765 43211',
     role: 'Technician',
-    area: 'Indiranagar',
     status: 'active',
     totalJobs: 256,
     avgRating: 4.6,
@@ -45,7 +43,6 @@ const mockStaff: AdminStaff[] = [
     email: 'vijay.singh@carwash.com',
     phone: '+91 98765 43212',
     role: 'Technician',
-    area: 'HSR Layout',
     status: 'active',
     totalJobs: 189,
     avgRating: 4.7,
@@ -58,7 +55,6 @@ const mockStaff: AdminStaff[] = [
     email: 'anil.sharma@carwash.com',
     phone: '+91 98765 43213',
     role: 'Junior Technician',
-    area: 'Whitefield',
     status: 'active',
     totalJobs: 145,
     avgRating: 4.5,
@@ -71,8 +67,7 @@ const mockStaff: AdminStaff[] = [
     email: 'manoj.reddy@carwash.com',
     phone: '+91 98765 43214',
     role: 'Technician',
-    area: 'BTM Layout',
-    status: 'inactive',
+    status: 'suspended',
     totalJobs: 98,
     avgRating: 4.3,
     earnings: 42100,
@@ -84,10 +79,6 @@ const mockStaffDetails: Record<string, AdminStaffDetail> = {
   STF001: {
     ...mockStaff[0],
     skills: ['Car Wash', 'Detailing', 'Polishing', 'Interior Cleaning'],
-    availability: {
-      days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
-      hours: '9:00 AM - 6:00 PM',
-    },
     recentJobs: [
       {
         id: 'JOB101',
@@ -126,9 +117,6 @@ export const adminStaffFetchers = {
       }
       if (filters?.role) {
         filteredStaff = filteredStaff.filter(s => s.role === filters.role);
-      }
-      if (filters?.area) {
-        filteredStaff = filteredStaff.filter(s => s.area === filters.area);
       }
       if (filters?.search) {
         const searchLower = filters.search.toLowerCase();
@@ -186,15 +174,13 @@ export const adminStaffFetchers = {
         name: input.name,
         email: input.email,
         phone: input.phone,
-        role: input.role,
-        area: input.area,
+        role: input.role || 'staff',
         status: 'active',
         totalJobs: 0,
         avgRating: 0,
         earnings: 0,
         joinedDate: new Date().toISOString().split('T')[0],
         skills: input.skills || [],
-        availability: input.availability || { days: [], hours: '' },
         recentJobs: [],
         performanceMetrics: {
           completionRate: 0,
@@ -222,10 +208,6 @@ export const adminStaffFetchers = {
       const updated: AdminStaffDetail = {
         ...existingStaff,
         ...input,
-        availability: input.availability ? {
-          days: input.availability.days || existingStaff.availability?.days || [],
-          hours: input.availability.hours || existingStaff.availability?.hours || '',
-        } : existingStaff.availability,
       };
       return updated;
     }
@@ -249,7 +231,7 @@ export const adminStaffFetchers = {
     return data.data!;
   },
 
-  async updateStaffStatus(staffId: string, status: 'active' | 'inactive' | 'suspended'): Promise<AdminStaffDetail> {
+  async updateStaffStatus(staffId: string, status: 'active' | 'suspended'): Promise<AdminStaffDetail> {
     if (USE_MOCK_DATA) {
       await new Promise(resolve => setTimeout(resolve, 500));
       const existingStaff = mockStaffDetails[staffId];

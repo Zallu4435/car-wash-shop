@@ -25,15 +25,6 @@ export const staffSchema = z.object({
     )
     .optional()
     .or(z.literal('')),
-  role: z
-    .enum(['technician', 'manager', 'supervisor'], {
-      message: 'Please select a valid role',
-    }),
-  serviceArea: z
-    .string()
-    .min(2, 'Service area must be at least 2 characters')
-    .max(100, 'Service area must not exceed 100 characters')
-    .trim(),
   active: z.boolean().optional().default(true),
   avatar: z
     .string()

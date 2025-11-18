@@ -32,8 +32,7 @@ export interface AdminStaff {
   email: string;
   phone: string;
   role: string;
-  area: string;
-  status: 'active' | 'inactive' | 'suspended';
+  status: 'active' | 'suspended';
   totalJobs: number;
   avgRating: number;
   earnings: number;
@@ -43,10 +42,6 @@ export interface AdminStaff {
 
 export interface AdminStaffDetail extends AdminStaff {
   skills?: string[];
-  availability?: {
-    days: string[];
-    hours: string;
-  };
   recentJobs: Array<{
     id: string;
     service: string;
@@ -66,14 +61,8 @@ export interface CreateStaffInput {
   name: string;
   email: string;
   phone: string;
-  role: string;
-  area: string;
   password: string;
   skills?: string[];
-  availability?: {
-    days: string[];
-    hours: string;
-  };
 }
 
 export interface UpdateStaffInput {
@@ -81,19 +70,14 @@ export interface UpdateStaffInput {
   email?: string;
   phone?: string;
   role?: string;
-  area?: string;
-  status?: 'active' | 'inactive' | 'suspended';
+  status?: 'active' | 'suspended';
+  password?: string;
   skills?: string[];
-  availability?: {
-    days?: string[];
-    hours?: string;
-  };
 }
 
 export interface StaffFilters {
-  status?: 'active' | 'inactive' | 'suspended';
+  status?: 'active' | 'suspended';
   role?: string;
-  area?: string;
   search?: string;
   page?: number;
   limit?: number;
@@ -337,16 +321,51 @@ export interface AdminBookingDetail extends AdminBooking {
     name: string;
     email: string;
     phone: string;
+    avatar?: string;
   };
   vehicleDetails?: {
     brand: string;
     model: string;
     number: string;
     type: string;
+    year?: number;
   };
-  address: string;
+  address?: string | {
+    label?: string;
+    line1: string;
+    line2?: string;
+    city: string;
+    state: string;
+    pincode: string;
+    landmark?: string;
+    phone?: string;
+    fullAddress?: string;
+  };
+  coordinates?: {
+    latitude: number;
+    longitude: number;
+  };
+  paymentType?: 'full' | 'advance';
+  totalAmount?: number;
+  advanceAmount?: number;
+  assignedStaff?: {
+    id: string;
+    name: string;
+    phone?: string;
+    email?: string;
+    status?: string;
+    skills?: string[];
+  } | string | null;
+  addOns?: string[];
+  feedback?: {
+    rating?: number;
+    comment?: string;
+    createdAt?: string;
+  };
+  scheduledDateFormatted?: string;
+  scheduledDateTime?: string;
   notes?: string;
-  statusHistory: Array<{
+  statusHistory?: Array<{
     status: string;
     timestamp: string;
     note?: string;

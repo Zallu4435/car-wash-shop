@@ -8,23 +8,25 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 import { staffEditSchema, StaffEditFormInput } from '@/schemas/admin/staff';
 import { AdminRoutes } from '@/lib/constants/routes';
+import { useAdminStaffDetail, useUpdateStaff } from '@/api/domains/admin-staff/queries';
 
 export default function EditStaffPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
+  const { data: staffMember, isLoading } = useAdminStaffDetail(id);
+  const updateStaff = useUpdateStaff();
   
   const {
     register,
     handleSubmit,
     control,
     reset,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<StaffEditFormInput>({
     resolver: zodResolver(staffEditSchema) as any,
     defaultValues: {
@@ -33,26 +35,56 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
   });
 
   useEffect(() => {
-    // TODO: Fetch staff data from API
-    reset({
-      name: 'Rahul Kumar',
-      phone: '9876543210',
-      email: 'rahul@example.com',
-      role: 'technician',
-      serviceArea: 'Bandra, Khar',
-      active: true,
-    });
-  }, [id, reset]);
+    if (staffMember) {
+      reset({
+        name: staffMember.name,
+        phone: staffMember.phone,
+        email: staffMember.email,
+        active: staffMember.status === 'active',
+      });
+    }
+  }, [staffMember, reset]);
+
+  const isSubmitting = updateStaff.isPending;
 
   const onSubmit = async (data: StaffEditFormInput) => {
     try {
-      console.log('Updating staff:', id, data);
-      toast.success('Staff updated successfully!');
-      router.push(AdminRoutes.STAFF);
-    } catch (error) {
-      toast.error('Failed to update staff');
+      const updateData: any = {
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        status: data.active ? 'active' : 'suspended',
+      };
+
+      // Only include password if it's provided and not empty
+      if (data.password && data.password.trim() !== '') {
+        updateData.password = data.password;
+      }
+
+      await updateStaff.mutateAsync({ staffId: id, input: updateData });
+      router.push(AdminRoutes.STAFF_DETAIL(id));
+    } catch (error: any) {
+      // Error is already handled by the mutation hook
+      console.error('Failed to update staff:', error);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <p className="text-muted-foreground">Loading staff details...</p>
+      </div>
+    );
+  }
+
+  if (!staffMember) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+        <p className="text-muted-foreground">Staff member not found</p>
+        <Button onClick={() => router.push(AdminRoutes.STAFF)}>Back to Staff</Button>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-2xl space-y-4 sm:space-y-6 pb-6">
@@ -120,38 +152,22 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
             </div>
 
             <div className="space-y-1.5 sm:space-y-2">
-              <Label htmlFor="role" className="text-xs sm:text-sm">Role</Label>
-              <Controller
-                name="role"
-                control={control}
-                render={({ field }) => (
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <SelectTrigger id="role" className="h-9 sm:h-10 text-xs sm:text-sm">
-                      <SelectValue placeholder="Select role" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="technician">Technician</SelectItem>
-                      <SelectItem value="manager">Manager</SelectItem>
-                      <SelectItem value="supervisor">Supervisor</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-              {errors.role && (
-                <p className="text-[10px] sm:text-xs text-red-600 dark:text-red-400">{errors.role.message}</p>
+              <Label htmlFor="password" className="text-xs sm:text-sm">New Password <span className="text-[10px] sm:text-xs text-muted-foreground">(Optional - leave blank to keep current password)</span></Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="Enter new password (min 8 characters)"
+                  className="h-9 sm:h-10 text-xs sm:text-sm pl-10"
+                  {...register('password')}
+                />
+              </div>
+              {errors.password && (
+                <p className="text-[10px] sm:text-xs text-red-600 dark:text-red-400">{errors.password.message}</p>
               )}
-            </div>
-
-            <div className="space-y-1.5 sm:space-y-2">
-              <Label htmlFor="serviceArea" className="text-xs sm:text-sm">Service Area</Label>
-              <Input
-                id="serviceArea"
-                placeholder="e.g., Bandra, Khar"
-                className="h-9 sm:h-10 text-xs sm:text-sm"
-                {...register('serviceArea')}
-              />
-              {errors.serviceArea && (
-                <p className="text-[10px] sm:text-xs text-red-600 dark:text-red-400">{errors.serviceArea.message}</p>
+              {!errors.password && (
+                <p className="text-[10px] sm:text-xs text-muted-foreground">Min 8 characters with uppercase, lowercase & number</p>
               )}
             </div>
 

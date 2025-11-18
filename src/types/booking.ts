@@ -2,27 +2,43 @@ import { BookingStatus, PaymentStatus } from '@/lib/constants/status';
 
 export interface BookingInput {
   serviceId: string;
+  serviceName?: string;
   vehicleId: string;
   scheduledAt: string; // ISO date-time
-  addressId: string;
+  addressId: string; // Backend will fetch full address from this
   addOns?: string[];
   couponCode?: string;
   paymentType: 'full' | 'advance';
-  notes?: string;
+  coordinates?: {
+    latitude: number;
+    longitude: number;
+  };
+}
+
+export interface BookingAddress {
+  label?: string;
+  line1: string;
+  line2?: string;
+  city: string;
+  state: string;
+  pincode: string;
+  landmark?: string;
+  phone?: string;
+  fullAddress?: string; // Computed field for display
 }
 
 export interface Booking {
   id: string;
-  bookingNumber: string;
+  bookingNumber?: string; // Deprecated - use id instead
   userId?: string;
   serviceId: string;
   serviceName: string;
   vehicleId?: string;
+  slotId?: string;
   scheduledAt?: string;
   scheduledDate: string;
   scheduledTime: string;
-  addressId?: string;
-  address: string;
+  address: BookingAddress; // Now an object, not a string
   status: BookingStatus;
   totalAmount?: number;
   amount: number;

@@ -1,23 +1,22 @@
 'use client';
 
-// @ts-nocheck
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Phone, KeyRound } from 'lucide-react';
+import { Phone, Lock } from 'lucide-react';
 import { toast } from 'sonner';
-import { useVerifyOtp } from '@/api/domains/auth/queries';
 import { StaffRoutes } from '@/lib/constants/routes';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { staffLoginSchema, StaffLoginInput } from '@/schemas/staff/auth';
+import { useLoginWithCredentials } from '@/api/domains/auth/queries';
 
 export default function StaffLoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const loginMutation = useVerifyOtp();
+  const loginMutation = useLoginWithCredentials();
 
   const {
     register,
@@ -29,7 +28,7 @@ export default function StaffLoginPage() {
 
   const onSubmit = (data: StaffLoginInput) => {
     loginMutation.mutate(
-      { phone: data.phone, otp: data.otp },
+      { identifier: data.identifier, password: data.password },
       {
         onSuccess: (response) => {
           if (response.user.role !== 'staff') {
@@ -55,38 +54,35 @@ export default function StaffLoginPage() {
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div>
-              <Label htmlFor="phone">Phone Number</Label>
+              <Label htmlFor="identifier">Phone Number or Email</Label>
               <div className="relative">
                 <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <Input
-                  id="phone"
-                  type="tel"
-                  placeholder="9876543210"
-                  {...register('phone')}
+                  id="identifier"
+                  type="text"
+                  placeholder="9876543210 or staff@example.com"
+                  {...register('identifier')}
                   className="pl-10"
-                  maxLength={10}
                 />
               </div>
-              {errors.phone && (
-                <p className="text-xs text-red-600 dark:text-red-400 mt-1">{errors.phone.message}</p>
+              {errors.identifier && (
+                <p className="text-xs text-red-600 dark:text-red-400 mt-1">{errors.identifier.message}</p>
               )}
             </div>
             <div>
-              <Label htmlFor="otp">One-Time Password</Label>
+              <Label htmlFor="password">Password</Label>
               <div className="relative">
-                <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <Input
-                  id="otp"
-                  type="text"
-                  inputMode="numeric"
-                  placeholder="Enter 6-digit OTP"
-                  {...register('otp')}
+                  id="password"
+                  type="password"
+                  placeholder="Enter your password"
+                  {...register('password')}
                   className="pl-10"
-                  maxLength={6}
                 />
               </div>
-              {errors.otp && (
-                <p className="text-xs text-red-600 dark:text-red-400 mt-1">{errors.otp.message}</p>
+              {errors.password && (
+                <p className="text-xs text-red-600 dark:text-red-400 mt-1">{errors.password.message}</p>
               )}
             </div>
             <Button type="submit" className="w-full border-2" disabled={loginMutation.isPending}>

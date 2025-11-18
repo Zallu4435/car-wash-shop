@@ -37,6 +37,10 @@ export interface StaffDashboardSummary {
     notes: string[];
     location: string;
     amount?: number;
+    coordinates?: {
+      latitude: number;
+      longitude: number;
+    } | null;
     vehicleDetails?: {
       type: string;
       model: string;

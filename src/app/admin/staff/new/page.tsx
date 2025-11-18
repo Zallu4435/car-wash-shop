@@ -7,21 +7,22 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { ArrowLeft, UserPlus } from 'lucide-react';
 import { toast } from 'sonner';
 import { staffSchema, StaffFormInput } from '@/schemas/admin/staff';
 import { AdminRoutes } from '@/lib/constants/routes';
+import { useCreateStaff } from '@/api/domains/admin-staff/queries';
 
 export default function NewStaffPage() {
   const router = useRouter();
+  const createStaff = useCreateStaff();
   
   const {
     register,
     handleSubmit,
     control,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<StaffFormInput>({
     resolver: zodResolver(staffSchema) as any,
     defaultValues: {
@@ -29,13 +30,30 @@ export default function NewStaffPage() {
     },
   });
 
+  const isSubmitting = createStaff.isPending;
+
   const onSubmit = async (data: StaffFormInput) => {
     try {
-      console.log('Staff data:', data);
-      toast.success('Staff member added successfully!');
+      // Validate password is provided
+      if (!data.password || data.password.trim() === '') {
+        toast.error('Password is required');
+        return;
+      }
+
+      // Map frontend form fields to backend API format
+      const staffData = {
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        password: data.password,
+        status: data.active ? 'active' : 'suspended', // Map active to status (active or suspended)
+      };
+
+      await createStaff.mutateAsync(staffData);
       router.push(AdminRoutes.STAFF);
-    } catch (error) {
-      toast.error('Failed to add staff member');
+    } catch (error: any) {
+      // Error is already handled by the mutation hook
+      console.error('Failed to create staff:', error);
     }
   };
 
@@ -126,44 +144,6 @@ export default function NewStaffPage() {
               )}
               {!errors.password && (
                 <p className="text-[10px] sm:text-xs text-muted-foreground">Min 8 characters with uppercase, lowercase & number</p>
-              )}
-            </div>
-
-            {/* Role */}
-            <div className="space-y-1.5 sm:space-y-2">
-              <Label htmlFor="role" className="text-xs sm:text-sm">Role</Label>
-              <Controller
-                name="role"
-                control={control}
-                render={({ field }) => (
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <SelectTrigger id="role" className="h-9 sm:h-10 text-xs sm:text-sm">
-                      <SelectValue placeholder="Select role" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="technician">Technician</SelectItem>
-                      <SelectItem value="manager">Manager</SelectItem>
-                      <SelectItem value="supervisor">Supervisor</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-              {errors.role && (
-                <p className="text-[10px] sm:text-xs text-red-600 dark:text-red-400">{errors.role.message}</p>
-              )}
-            </div>
-
-            {/* Service Area */}
-            <div className="space-y-1.5 sm:space-y-2">
-              <Label htmlFor="serviceArea" className="text-xs sm:text-sm">Service Area</Label>
-              <Input
-                id="serviceArea"
-                placeholder="e.g., Bandra, Khar"
-                className="h-9 sm:h-10 text-xs sm:text-sm"
-                {...register('serviceArea')}
-              />
-              {errors.serviceArea && (
-                <p className="text-[10px] sm:text-xs text-red-600 dark:text-red-400">{errors.serviceArea.message}</p>
               )}
             </div>
 

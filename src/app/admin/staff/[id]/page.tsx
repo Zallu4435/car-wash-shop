@@ -2,7 +2,7 @@
 
 import { use } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Edit, Phone, Mail, MapPin, Star, Briefcase, IndianRupee, Calendar, Ban, Trash2 } from 'lucide-react';
+import { ArrowLeft, Edit, Phone, Mail, Star, Briefcase, IndianRupee, Calendar, Ban, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -11,50 +11,20 @@ import { useConfirmation } from '@/hooks/useConfirmation';
 import { toast } from 'sonner';
 import { DangerZone } from '@/components/admin/DangerZone';
 import { AdminRoutes } from '@/lib/constants/routes';
-
-const staffMember = {
-  id: 'staff_001',
-  name: 'Rahul Kumar',
-  phone: '+91 98765 43210',
-  email: 'rahul@example.com',
-  role: 'Senior Detailer',
-  area: 'Bandra, Khar',
-  active: true,
-  joinedDate: '2024-06-15',
-  completedJobs: 156,
-  rating: 4.8,
-  totalEarnings: 125600,
-};
-
-const recentJobs = [
-  { id: 'BK045', customer: 'Amit Shah', service: 'Premium Wash', date: '2025-10-24', amount: 499, status: 'completed' },
-  { id: 'BK044', customer: 'Priya Kumar', service: 'Interior Detailing', date: '2025-10-23', amount: 699, status: 'completed' },
-  { id: 'BK043', customer: 'Rahul Verma', service: 'Full Detailing', date: '2025-10-22', amount: 1299, status: 'completed' },
-];
+import { useAdminStaffDetail, useDeleteStaff, useUpdateStaffStatus } from '@/api/domains/admin-staff/queries';
 
 export default function StaffDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
   const blockConfirmation = useConfirmation();
   const deleteConfirmation = useConfirmation();
-
-  const handleBlockClick = async () => {
-    const confirmed = await blockConfirmation.confirm({
-      type: 'block',
-      title: 'Block Staff Member?',
-      description: 'This staff member will be blocked from accepting new jobs. They will not be able to access their account until unblocked.',
-      confirmText: 'Yes, Block Staff',
-      cancelText: 'Cancel',
-      itemName: staffMember.name,
-    });
-
-    if (confirmed) {
-      // TODO: Implement block staff API
-      toast.success(`Staff member "${staffMember.name}" has been blocked`);
-    }
-  };
+  const { data: staffMember, isLoading } = useAdminStaffDetail(id);
+  const deleteStaff = useDeleteStaff();
+  const updateStaffStatus = useUpdateStaffStatus();
 
   const handleDeleteClick = async () => {
+    if (!staffMember) return;
+    
     const confirmed = await deleteConfirmation.confirm({
       type: 'delete',
       title: 'Delete Staff Member?',
@@ -65,11 +35,29 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
     });
 
     if (confirmed) {
-      // TODO: Implement delete staff API
-      toast.success(`Staff member "${staffMember.name}" has been deleted`);
+      await deleteStaff.mutateAsync(id);
       router.push(AdminRoutes.STAFF);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <p className="text-muted-foreground">Loading staff details...</p>
+      </div>
+    );
+  }
+
+  if (!staffMember) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+        <p className="text-muted-foreground">Staff member not found</p>
+        <Button onClick={() => router.push(AdminRoutes.STAFF)}>Back to Staff</Button>
+      </div>
+    );
+  }
+
+  const recentJobs = staffMember.recentJobs || [];
 
   return (
     <div className="space-y-4 sm:space-y-6 pb-6">
@@ -98,11 +86,10 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
                   </div>
                   <div className="min-w-0">
                     <CardTitle className="text-lg sm:text-xl md:text-2xl mb-1">{staffMember.name}</CardTitle>
-                    <p className="text-xs sm:text-sm text-muted-foreground">{staffMember.role}</p>
                   </div>
                 </div>
-                <Badge variant={staffMember.active ? 'default' : 'secondary'} className="text-xs sm:text-sm mx-auto sm:mx-0 w-fit">
-                  {staffMember.active ? 'Active' : 'Inactive'}
+                <Badge variant={staffMember.status === 'active' ? 'default' : 'secondary'} className="text-xs sm:text-sm mx-auto sm:mx-0 w-fit">
+                  {staffMember.status === 'active' ? 'Active' : 'Suspended'}
                 </Badge>
               </div>
             </CardHeader>
@@ -125,14 +112,6 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
                 </div>
               </div>
 
-              <div className="p-3 sm:p-3.5 md:p-4 bg-muted rounded-lg sm:rounded-xl border-2 border-border">
-                <div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-2">
-                  <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
-                  <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Service Area</p>
-                </div>
-                <p className="text-xs sm:text-sm font-semibold text-foreground">{staffMember.area}</p>
-              </div>
-
               <Separator />
 
               <div className="grid grid-cols-2 gap-2.5 sm:gap-3 md:gap-4">
@@ -142,7 +121,7 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
                 </div>
                 <div>
                   <p className="text-xs sm:text-sm text-muted-foreground mb-1">Rating</p>
-                  <p className="text-xs sm:text-sm font-semibold text-foreground">⭐ {staffMember.rating}</p>
+                  <p className="text-xs sm:text-sm font-semibold text-foreground">⭐ {staffMember.avgRating}</p>
                 </div>
               </div>
             </CardContent>
@@ -166,7 +145,7 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
                       <p className="text-sm text-muted-foreground">{job.service}</p>
                       <p className="text-xs text-muted-foreground mt-1">
                         <Calendar className="h-3 w-3 inline mr-1" />
-                        {job.date}
+                        {new Date(job.date).toLocaleDateString()}
                       </p>
                     </div>
                     <div className="text-right">
@@ -196,7 +175,7 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
                     <Briefcase className="h-3 w-3 sm:h-3.5 sm:w-3.5 md:h-4 md:w-4 text-muted-foreground flex-shrink-0" />
                     <p className="text-[9px] sm:text-[10px] md:text-xs text-muted-foreground uppercase tracking-wide">Jobs</p>
                   </div>
-                  <p className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-foreground">{staffMember.completedJobs}</p>
+                  <p className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-foreground">{staffMember.totalJobs}</p>
                   <p className="text-[9px] sm:text-[10px] md:text-xs text-muted-foreground mt-0.5 sm:mt-1">Completed</p>
                 </div>
 
@@ -205,7 +184,7 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
                     <IndianRupee className="h-3 w-3 sm:h-3.5 sm:w-3.5 md:h-4 md:w-4 text-primary flex-shrink-0" />
                     <p className="text-[9px] sm:text-[10px] md:text-xs text-muted-foreground uppercase tracking-wide">Earned</p>
                   </div>
-                  <p className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-primary">₹{(staffMember.totalEarnings / 1000).toFixed(0)}K</p>
+                  <p className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-primary">₹{(staffMember.earnings / 1000).toFixed(0)}K</p>
                   <p className="text-[9px] sm:text-[10px] md:text-xs text-muted-foreground mt-0.5 sm:mt-1">Lifetime</p>
                 </div>
               </div>
@@ -215,8 +194,8 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
                   <Star className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
                   <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Avg Rating</p>
                 </div>
-                <p className="text-3xl sm:text-4xl font-bold text-foreground">⭐ {staffMember.rating}</p>
-                <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">Based on {staffMember.completedJobs} reviews</p>
+                <p className="text-3xl sm:text-4xl font-bold text-foreground">⭐ {staffMember.avgRating}</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">Based on {staffMember.totalJobs} reviews</p>
               </div>
             </CardContent>
           </Card>
@@ -226,11 +205,31 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
             description="Irreversible actions that affect this staff member"
             actions={[
               {
-                title: 'Block Staff Member',
-                description: 'Prevent staff from accepting new jobs',
-                buttonText: 'Block',
+                title: staffMember.status === 'active' ? 'Suspend Staff Member' : 'Activate Staff Member',
+                description: staffMember.status === 'active' 
+                  ? 'Prevent staff from accepting new jobs' 
+                  : 'Reactivate staff member to accept new jobs',
+                buttonText: staffMember.status === 'active' ? 'Suspend' : 'Activate',
                 buttonIcon: Ban,
-                onClick: handleBlockClick,
+                onClick: async () => {
+                  if (!staffMember) return;
+                  const confirmed = await blockConfirmation.confirm({
+                    type: staffMember.status === 'active' ? 'block' : 'default',
+                    title: staffMember.status === 'active' ? 'Suspend Staff Member?' : 'Activate Staff Member?',
+                    description: staffMember.status === 'active'
+                      ? 'This staff member will be suspended and cannot accept new jobs.'
+                      : 'This staff member will be reactivated and can accept new jobs.',
+                    confirmText: staffMember.status === 'active' ? 'Yes, Suspend' : 'Yes, Activate',
+                    cancelText: 'Cancel',
+                    itemName: staffMember.name,
+                  });
+                  if (confirmed) {
+                    await updateStaffStatus.mutateAsync({ 
+                      staffId: id, 
+                      status: staffMember.status === 'active' ? 'suspended' : 'active' 
+                    });
+                  }
+                },
                 variant: 'outline',
                 buttonClassName: 'border-orange-300 dark:border-orange-800 text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950/30',
               },

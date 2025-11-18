@@ -86,7 +86,9 @@ export function AddVehicleModal({
 
   const handleCategorySelect = (categoryId: string) => {
     setSelectedCategory(categoryId);
-    setValue('type', categoryId as any);
+    // For bikes, always set type to 'bike'. For cars, use the category as type.
+    const vehicleType = selectedType === 'bike' ? 'bike' : categoryId;
+    setValue('type', vehicleType as any);
     // Reset brand when category changes
     setValue('brand', '');
     setCurrentStep('details');

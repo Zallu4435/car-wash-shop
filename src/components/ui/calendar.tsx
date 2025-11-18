@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { format } from 'date-fns';
 import { cn } from '@/lib/utils/cn';
 import { Button } from '@/components/ui/button';
 
@@ -10,9 +11,18 @@ interface CalendarProps {
   selected?: Date;
   onSelect?: (date: Date | undefined) => void;
   className?: string;
+  availableDays?: string[]; // Array of date strings in 'YYYY-MM-DD' format. If undefined, all dates are allowed. If empty array, no dates are allowed.
+  disabled?: boolean;
 }
 
-export function Calendar({ mode = 'single', selected, onSelect, className }: CalendarProps) {
+export function Calendar({ 
+  mode = 'single', 
+  selected, 
+  onSelect, 
+  className,
+  availableDays,
+  disabled = false
+}: CalendarProps) {
   const [currentMonth, setCurrentMonth] = React.useState(selected || new Date());
 
   const daysInMonth = new Date(
@@ -64,6 +74,33 @@ export function Calendar({ mode = 'single', selected, onSelect, className }: Cal
       today.getMonth() === currentMonth.getMonth() &&
       today.getFullYear() === currentMonth.getFullYear()
     );
+  };
+
+  const isAvailable = (day: number) => {
+    // If availableDays is undefined, allow all dates (for admin use)
+    if (availableDays === undefined) return true;
+    // If availableDays is an empty array, disable all dates (no slots available)
+    if (availableDays.length === 0) return false;
+    // Otherwise, check if the date is in the availableDays array
+    const date = new Date(
+      currentMonth.getFullYear(),
+      currentMonth.getMonth(),
+      day
+    );
+    // Use format() instead of toISOString() to avoid timezone issues
+    const dateKey = format(date, 'yyyy-MM-dd');
+    return availableDays.includes(dateKey);
+  };
+
+  const isPastDate = (day: number) => {
+    const date = new Date(
+      currentMonth.getFullYear(),
+      currentMonth.getMonth(),
+      day
+    );
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return date < today;
   };
 
   return (
@@ -120,18 +157,24 @@ export function Calendar({ mode = 'single', selected, onSelect, className }: Cal
           const day = index + 1;
           const isSelectedDay = isSelected(day);
           const isTodayDay = isToday(day);
+          const dayAvailable = isAvailable(day);
+          const dayPast = isPastDate(day);
+          const isDisabled = disabled || !dayAvailable || dayPast;
 
           return (
             <button
               key={day}
-              onClick={() => handleDateClick(day)}
+              onClick={() => !isDisabled && handleDateClick(day)}
+              disabled={isDisabled}
               className={cn(
                 'aspect-square flex items-center justify-center rounded-xl text-sm font-medium transition-all',
-                'hover:bg-primary/10 hover:scale-105',
+                isDisabled && 'opacity-40 cursor-not-allowed',
+                !isDisabled && 'hover:bg-primary/10 hover:scale-105',
                 isSelectedDay &&
                   'bg-gradient-to-br from-primary to-primary/80 text-primary-foreground hover:from-primary/90 hover:to-primary/80 shadow-xl scale-110 ring-2 ring-primary/70',
-                isTodayDay && !isSelectedDay && 'bg-primary/20 font-bold ring-2 ring-primary',
-                !isSelectedDay && !isTodayDay && 'text-foreground hover:text-primary'
+                isTodayDay && !isSelectedDay && !isDisabled && 'bg-primary/20 font-bold ring-2 ring-primary',
+                !isSelectedDay && !isTodayDay && !isDisabled && 'text-foreground hover:text-primary',
+                dayAvailable && !isSelectedDay && !isTodayDay && !dayPast && 'bg-green-50 dark:bg-green-950/20'
               )}
             >
               {day}

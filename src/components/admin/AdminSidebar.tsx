@@ -101,18 +101,8 @@ export function AdminSidebar({ sidebarOpen, setSidebarOpen }: AdminSidebarProps)
   const adminLogout = useAdminLogout();
 
   const handleLogout = () => {
-    // Clear auth cookies eagerly to let middleware and guards react immediately
-    try {
-      document.cookie = 'auth_is_logged=; Max-Age=0; Path=/; SameSite=Lax';
-      document.cookie = 'auth_role=; Max-Age=0; Path=/; SameSite=Lax';
-    } catch (_) {}
-
-    adminLogout.mutate(undefined, {
-      onSuccess: () => {
-        // toast and redirect handled in hook as well, but keep feedback here
-        toast.success('Logged out successfully');
-      },
-    });
+    // The logout hook handles all cleanup (cookies, token, cache, redirect)
+    adminLogout.mutate(undefined);
   };
 
   // Filter navigation items based on search

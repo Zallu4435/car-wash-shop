@@ -87,7 +87,9 @@ export interface PaymentDetails {
   amount: number;
   description: string;
   orderId?: string;
-  bookingId?: string;
+  bookingId?: string; // Deprecated - use bookingData instead
+  bookingData?: any; // Booking data to be created after payment
+  paymentType?: string;
   userId?: string;
   userEmail?: string;
   userName?: string;

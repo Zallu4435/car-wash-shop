@@ -10,6 +10,7 @@ import {
   CalendarDays,
   Car,
   CheckCircle,
+  ChevronDown,
   ChevronRight,
   Clock,
   CreditCard,
@@ -30,7 +31,7 @@ import Error from '@/components/shared/display/Error';
 import { MapPicker } from '@/components/shared/selectors/MapPicker';
 import { AddressSelectionModal } from '@/components/customer/AddressSelectionModal';
 import { useService } from '@/api/domains/services/queries';
-import { useAvailableSlots, bookingKeys } from '@/api/domains/bookings/queries';
+import { useAvailableSlots, useAvailableDays, bookingKeys } from '@/api/domains/bookings/queries';
 import { bookingFetchers } from '@/api/domains/bookings/fetchers';
 import { useVehicleContext } from '@/context/VehicleContext';
 import { useAddresses } from '@/api/domains/addresses/queries';
@@ -216,6 +217,7 @@ export default function BookServicePage() {
   const [geoLoading, setGeoLoading] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<TimeSlot | null>(null);
+  const [isCalendarExpanded, setIsCalendarExpanded] = useState(true);
   const [bookingConfirmation, setBookingConfirmation] = useState<Booking | null>(null);
   const [depositInfo, setDepositInfo] = useState<{
     amount: number;
@@ -295,87 +297,73 @@ export default function BookServicePage() {
     return baseDuration + addOnDuration;
   }, [baseDuration, addOnDetails]);
 
-  const createBookingMutation = useMutation({
-    mutationFn: (input: BookingInput) => bookingFetchers.createBooking(input),
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: bookingKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: bookingKeys.all });
-      setBookingConfirmation(data);
-      setCurrentStep('confirmation');
-      toast.success('Booking confirmed!');
-    },
-    onError: (error: any) => {
-      toast.error(error?.message || 'Failed to confirm booking');
-    },
-    onSettled: () => {
-      setIsProcessingPayment(false);
-    },
-  });
-
-  const handleFinalizeBooking = async (paymentId: string, orderId: string) => {
-    if (!service || !selectedVehicle || !selectedDate || !selectedSlot || !selectedAddressId) {
-      toast.error('Missing booking details. Please try again.');
-      setIsProcessingPayment(false);
-      return;
-    }
-
-    const scheduledDateTime = combineDateAndTime(selectedDate, selectedSlot.startTime);
-
-    const bookingPayload: BookingInput = {
-      serviceId: service.id,
-      vehicleId: selectedVehicle.id,
-      scheduledAt: scheduledDateTime.toISOString(),
-      addressId: selectedAddressId,
-      addOns: selectedAddOnIds,
-      paymentType: 'advance',
-      notes: `Deposit payment captured via Razorpay. paymentId=${paymentId}, orderId=${orderId}`,
-    };
-
-    setDepositInfo({
-      amount: depositAmount,
-      paymentId,
-      orderId,
-    });
-
-    createBookingMutation.mutate(bookingPayload);
-  };
+  // Removed createBookingMutation - booking is now created after payment success
 
   const { processPayment, isLoading: razorpayLoading } = useRazorpay({
     onSuccess: async (response) => {
-      setIsProcessingPayment(true);
-      await handleFinalizeBooking(response.razorpay_payment_id, response.razorpay_order_id);
+      // Payment verified and booking created by backend
+      // Fetch created booking to show confirmation
+      const bookingIdToUse = response.bookingId;
+      if (bookingIdToUse) {
+        try {
+          const updatedBooking = await bookingFetchers.getBookingById(bookingIdToUse);
+          setBookingConfirmation(updatedBooking);
+          setDepositInfo({
+            amount: depositAmount,
+            paymentId: response.razorpay_payment_id,
+            orderId: response.razorpay_order_id,
+          });
+          setCurrentStep('confirmation');
+          toast.success('Payment received! Once slot assigned to a staff we\'ll let you know.');
+        } catch (error) {
+          toast.error('Payment successful but failed to load booking details');
+        }
+      } else {
+        toast.success('Payment received! Once slot assigned to a staff we\'ll let you know.');
+      }
+      setIsProcessingPayment(false);
     },
     onFailure: () => {
-      toast.error('Deposit payment failed. Please try again.');
+      toast.error('Deposit payment failed. Please try again. Your slot is still available.');
       setIsProcessingPayment(false);
+      // Booking remains in pending status, slot remains available
     },
     onDismiss: () => {
       setIsProcessingPayment(false);
+      toast.info('Payment cancelled. Your slot is still available.');
     },
   });
 
   const serviceDateKey = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '';
   const {
+    data: availableDaysData,
+    isFetching: availableDaysFetching,
+    refetch: refetchAvailableDays,
+  } = useAvailableDays(service ? service.id : '', 30);
+  
+  const {
     data: availableSlots,
     isFetching: slotsFetching,
+    refetch: refetchAvailableSlots,
   } = useAvailableSlots(service ? service.id : '', serviceDateKey);
+
+  // Refetch slots when entering schedule step to get latest availability
+  useEffect(() => {
+    if (currentStep === 'schedule' && service?.id) {
+      refetchAvailableDays();
+      if (serviceDateKey) {
+        refetchAvailableSlots();
+      }
+    }
+  }, [currentStep, service?.id, serviceDateKey, refetchAvailableDays, refetchAvailableSlots]);
+
+  const availableDays = availableDaysData?.availableDays || [];
 
   const currentStepIndex = stepsConfig.findIndex((step) => step.id === currentStep);
 
   const selectedAddress = useMemo(() => {
     return addresses.find((address) => address.id === selectedAddressId) || null;
   }, [addresses, selectedAddressId]);
-
-  useEffect(() => {
-    if (contextSelectedVehicle && matchingVehicles.some((vehicle) => vehicle.id === contextSelectedVehicle.id)) {
-      setSelectedVehicleId(contextSelectedVehicle.id);
-      return;
-    }
-
-    if (!selectedVehicleId && matchingVehicles.length > 0) {
-      setSelectedVehicleId(matchingVehicles[0].id);
-    }
-  }, [contextSelectedVehicle, matchingVehicles, selectedVehicleId]);
 
   useEffect(() => {
     if (addressesLoading) return;
@@ -473,8 +461,14 @@ export default function BookServicePage() {
       toast.error('Please choose a future date for your service.');
       return;
     }
+    const dateKey = format(date, 'yyyy-MM-dd');
+    if (availableDays.length > 0 && !availableDays.includes(dateKey)) {
+      toast.error('This date is not available. Please select an available date.');
+      return;
+    }
     setSelectedDate(date);
     setSelectedSlot(null);
+    setIsCalendarExpanded(false); // Collapse calendar when date is selected
   };
 
   const goToStep = (step: Step) => {
@@ -557,10 +551,29 @@ export default function BookServicePage() {
     setIsProcessingPayment(true);
 
     try {
+      // Prepare booking data (will be created after successful payment)
+      const scheduledDateTime = combineDateAndTime(selectedDate, selectedSlot.startTime);
+
+      const bookingData: BookingInput = {
+        serviceId: service.id,
+        serviceName: service.name,
+        vehicleId: selectedVehicle.id,
+        scheduledAt: scheduledDateTime.toISOString(),
+        addressId: selectedAddressId,
+        addOns: selectedAddOnIds,
+        paymentType: 'advance',
+        coordinates: selectedLocation ? {
+          latitude: selectedLocation.latitude,
+          longitude: selectedLocation.longitude,
+        } : undefined,
+      };
+
+      // Process payment with bookingData (booking will be created after payment success)
       await processPayment({
+        bookingData: bookingData,
         amount: depositAmount,
         description: `Deposit for ${service.name}`,
-        orderId: `BOOK_${Date.now()}`,
+        paymentType: 'advance',
         userName,
         userEmail,
         userPhone,
@@ -888,64 +901,109 @@ export default function BookServicePage() {
                   </p>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="rounded-xl border-2 border-border p-3 sm:p-4">
-                    <Calendar
-                      selected={selectedDate || undefined}
-                      onSelect={handleDateSelect}
-                    />
-                  </div>
-
+                  {/* Calendar Section - Collapsible */}
                   <div className="space-y-3">
-                    <h3 className="text-sm font-semibold text-foreground">Available Time Slots</h3>
-                    {!selectedDate && (
-                      <p className="rounded-lg bg-muted/60 p-4 text-sm text-muted-foreground">
-                        Select a date to view available slots.
-                      </p>
-                    )}
-
-                    {selectedDate && slotsFetching && (
-                      <div className="rounded-lg border border-border bg-muted/40 p-4 text-center text-sm text-muted-foreground">
-                        <Loader2 className="mr-2 inline h-4 w-4 animate-spin" />
-                        Loading slots...
+                    {selectedDate && !isCalendarExpanded && (
+                      <div className="flex items-center justify-between rounded-xl border-2 border-border bg-muted/30 p-3">
+                        <div className="flex items-center gap-2">
+                          <CalendarDays className="h-4 w-4 text-primary" />
+                          <span className="text-sm font-semibold text-foreground">
+                            Selected: {safeFormatDate(selectedDate, 'EEEE, MMM dd, yyyy')}
+                          </span>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setIsCalendarExpanded(true)}
+                          className="h-8"
+                        >
+                          Change Date
+                          <ChevronDown className="ml-2 h-4 w-4" />
+                        </Button>
                       </div>
                     )}
 
-                    {selectedDate && !slotsFetching && (
-                      <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-3">
-                        {availableSlots?.slots?.length ? (
-                          availableSlots.slots.map((slot) => {
-                            const isUnavailable = slot.isAvailable === false;
-                            const isActive = selectedSlot?.startTime === slot.startTime && selectedSlot?.endTime === slot.endTime;
-                            return (
-                              <button
-                                key={`${slot.startTime}-${slot.endTime}`}
-                                type="button"
-                                disabled={isUnavailable}
-                                onClick={() => setSelectedSlot(slot)}
-                                className={cn(
-                                  'rounded-xl border-2 p-3 text-left transition-all',
-                                  isUnavailable && 'cursor-not-allowed border-dashed text-muted-foreground',
-                                  isActive && 'border-primary bg-primary/5 shadow-md',
-                                  !isActive && !isUnavailable && 'border-border hover:border-primary/50'
-                                )}
-                              >
-                                <div className="flex items-center justify-between text-sm font-semibold text-foreground">
-                                  <span>{slot.startTime}</span>
-                                  <Clock className="h-4 w-4 text-muted-foreground" />
-                                </div>
-                                <p className="mt-1 text-xs text-muted-foreground">Until {slot.endTime}</p>
-                                {isUnavailable && <p className="mt-2 text-xs font-medium text-red-500">Booked</p>}
-                              </button>
-                            );
-                          })
-                        ) : (
-                          <div className="col-span-full rounded-lg border border-border bg-muted/40 p-4 text-center text-sm text-muted-foreground">
-                            No slots available for this date. Please choose another day.
+                    {(isCalendarExpanded || !selectedDate) && (
+                      <div className="rounded-xl border-2 border-border p-3 sm:p-4">
+                        {availableDaysFetching ? (
+                          <div className="flex items-center justify-center py-8">
+                            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                            <span className="ml-2 text-sm text-muted-foreground">Loading available dates...</span>
                           </div>
+                        ) : (
+                          <Calendar
+                            selected={selectedDate || undefined}
+                            onSelect={handleDateSelect}
+                            availableDays={availableDays}
+                          />
                         )}
                       </div>
                     )}
                   </div>
+
+                  {/* Time Slots Section */}
+                  {selectedDate && (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-sm font-semibold text-foreground">Available Time Slots</h3>
+                        {selectedDate && (
+                          <Badge variant="secondary" className="text-xs">
+                            {safeFormatDate(selectedDate, 'MMM dd, yyyy')}
+                          </Badge>
+                        )}
+                      </div>
+
+                      {slotsFetching && (
+                        <div className="rounded-lg border border-border bg-muted/40 p-4 text-center text-sm text-muted-foreground">
+                          <Loader2 className="mr-2 inline h-4 w-4 animate-spin" />
+                          Loading slots...
+                        </div>
+                      )}
+
+                      {!slotsFetching && (
+                        <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-3">
+                          {availableSlots?.slots?.length ? (
+                            availableSlots.slots
+                              .filter((slot) => slot.isAvailable === true) // Only show available slots
+                              .map((slot) => {
+                                const isActive = selectedSlot?.startTime === slot.startTime && selectedSlot?.endTime === slot.endTime;
+                                return (
+                                  <button
+                                    key={`${slot.startTime}-${slot.endTime}`}
+                                    type="button"
+                                    onClick={() => setSelectedSlot(slot)}
+                                    className={cn(
+                                      'rounded-xl border-2 p-3 text-left transition-all',
+                                      isActive && 'border-primary bg-primary/10 shadow-md ring-2 ring-primary/20',
+                                      !isActive && 'border-border hover:border-primary/50 hover:bg-primary/5'
+                                    )}
+                                  >
+                                    <div className="flex items-center justify-between text-sm font-semibold text-foreground">
+                                      <span>{slot.startTime}</span>
+                                      <Clock className="h-4 w-4 text-muted-foreground" />
+                                    </div>
+                                    <p className="mt-1 text-xs text-muted-foreground">Until {slot.endTime}</p>
+                                    {isActive && (
+                                      <p className="mt-2 text-xs font-medium text-primary">Selected</p>
+                                    )}
+                                  </button>
+                                );
+                              })
+                          ) : (
+                            <div className="col-span-full rounded-lg border border-border bg-muted/40 p-4 text-center text-sm text-muted-foreground">
+                              No slots available for this date. Please choose another day.
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {!selectedDate && (
+                    <div className="rounded-lg bg-muted/60 p-4 text-center text-sm text-muted-foreground">
+                      Select a date above to view available time slots.
+                    </div>
+                  )}
 
                   <div className="flex flex-col gap-2 pt-2 sm:flex-row sm:items-center sm:justify-between">
                     <Button variant="outline" onClick={goToPreviousStep}>
@@ -1023,9 +1081,9 @@ export default function BookServicePage() {
                     </Button>
                     <Button
                       onClick={handleDepositPayment}
-                      disabled={isProcessingPayment || razorpayLoading || createBookingMutation.isPending}
+                      disabled={isProcessingPayment || razorpayLoading}
                     >
-                      {(isProcessingPayment || razorpayLoading || createBookingMutation.isPending) && (
+                      {(isProcessingPayment || razorpayLoading) && (
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       )}
                       Pay Deposit & Confirm ({formatCurrency(depositAmount)})
@@ -1051,7 +1109,7 @@ export default function BookServicePage() {
                 <CardContent className="space-y-4">
                   <div className="rounded-xl border-2 border-border bg-muted/40 p-4">
                     <p className="text-sm font-semibold text-foreground">Booking ID</p>
-                    <p className="mt-1 text-sm text-muted-foreground">{bookingConfirmation.bookingNumber || bookingConfirmation.id}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">{bookingConfirmation.id}</p>
                   </div>
 
                   <SummaryItem
@@ -1166,16 +1224,18 @@ export default function BookServicePage() {
                   )}
                 />
 
-                <div className="rounded-xl border border-border bg-muted/30 p-3">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Estimate</span>
-                    <span className="font-semibold text-foreground">{formatCurrency(totalAmount)}</span>
+                {selectedVehicle && (
+                  <div className="rounded-xl border border-border bg-muted/30 p-3">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Estimate</span>
+                      <span className="font-semibold text-foreground">{formatCurrency(totalAmount)}</span>
+                    </div>
+                    <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
+                      <span>Deposit</span>
+                      <span>{formatCurrency(depositAmount)}</span>
+                    </div>
                   </div>
-                  <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
-                    <span>Deposit</span>
-                    <span>{formatCurrency(depositAmount)}</span>
-                  </div>
-                </div>
+                )}
 
                 <div className="text-xs text-muted-foreground">
                   <p className="font-semibold text-foreground">Add-ons</p>

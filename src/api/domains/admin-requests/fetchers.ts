@@ -153,7 +153,7 @@ export const adminRequestsFetchers = {
     }
 
     const { data } = await apiClient.get<ApiResponse<PaginatedResponse<AdminBooking>>>(
-      AdminRoutes.REQUESTS,
+      '/admin/requests',
       { params: filters }
     );
     return data.data!;
@@ -170,7 +170,7 @@ export const adminRequestsFetchers = {
     }
 
     const { data } = await apiClient.get<ApiResponse<AdminBookingDetail>>(
-      AdminRoutes.REQUEST_DETAIL(bookingId)
+      `/admin/requests/${bookingId}`
     );
     return data.data!;
   },
@@ -202,7 +202,7 @@ export const adminRequestsFetchers = {
     }
 
     const { data } = await apiClient.post<ApiResponse<AdminBookingDetail>>(
-      AdminRoutes.REQUEST_ASSIGN(bookingId),
+      `/admin/requests/${bookingId}/assign`,
       input
     );
     return data.data!;
@@ -234,7 +234,7 @@ export const adminRequestsFetchers = {
     }
 
     const { data } = await apiClient.patch<ApiResponse<AdminBookingDetail>>(
-      AdminRoutes.REQUEST_DETAIL(bookingId),
+      `/admin/requests/${bookingId}/status`,
       { status, note }
     );
     return data.data!;
@@ -243,7 +243,7 @@ export const adminRequestsFetchers = {
   // Slots Management
   async getSlots(date: string): Promise<{ slots: Array<{ id: string; time: string; status: 'available' | 'unavailable'; booked: boolean; capacity?: number }> }> {
     const { data } = await apiClient.get<ApiResponse<{ slots: Array<any> }>>(
-      `${AdminRoutes.REQUESTS}/slots`,
+      '/admin/requests/slots',
       { params: { date } }
     );
     const slots = (data.data?.slots || []).map((slot: any) => ({
@@ -258,7 +258,7 @@ export const adminRequestsFetchers = {
 
   async createSlots(input: { date: string; startTime: string; endTime: string; capacity?: number }): Promise<{ slots: Array<any> }> {
     const { data } = await apiClient.post<ApiResponse<{ slots: Array<any> }>>(
-      `${AdminRoutes.REQUESTS}/slots`,
+      '/admin/requests/slots',
       input
     );
     const slots = (data.data?.slots || []).map((slot: any) => ({
@@ -273,7 +273,7 @@ export const adminRequestsFetchers = {
 
   async updateSlot(slotId: string, input: { status?: 'available' | 'unavailable'; booked?: boolean }): Promise<{ slot: any }> {
     const { data } = await apiClient.patch<ApiResponse<any>>(
-      `${AdminRoutes.REQUESTS}/slots/${slotId}`,
+      `/admin/requests/slots/${slotId}`,
       input
     );
     const slot = data.data;
@@ -290,7 +290,7 @@ export const adminRequestsFetchers = {
 
   async updateSlotsStatus(input: { date: string; status: 'available' | 'unavailable' }): Promise<{ slots: Array<any> }> {
     const { data } = await apiClient.post<ApiResponse<{ slots: Array<any> }>>(
-      `${AdminRoutes.REQUESTS}/slots/bulk-status`,
+      '/admin/requests/slots/bulk-status',
       input
     );
     const slots = (data.data?.slots || []).map((slot: any) => ({
@@ -301,5 +301,26 @@ export const adminRequestsFetchers = {
       capacity: slot.capacity,
     }));
     return { slots };
+  },
+
+  async removeStaffAssignment(bookingId: string): Promise<AdminBookingDetail> {
+    if (USE_MOCK_DATA) {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      const bookingDetail = mockBookingDetails[bookingId];
+      if (!bookingDetail) {
+        throw new Error('Booking not found');
+      }
+      return {
+        ...bookingDetail,
+        assignedStaffId: null,
+        assignedStaff: null,
+        status: 'pending',
+      };
+    }
+
+    const { data } = await apiClient.delete<ApiResponse<AdminBookingDetail>>(
+      `/admin/requests/${bookingId}/assign`
+    );
+    return data.data!;
   },
 };

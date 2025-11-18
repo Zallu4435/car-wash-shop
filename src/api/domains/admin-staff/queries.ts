@@ -74,12 +74,12 @@ export const useDeleteStaff = () => {
 export const useUpdateStaffStatus = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ staffId, status }: { staffId: string; status: 'active' | 'inactive' | 'suspended' }) =>
+    mutationFn: ({ staffId, status }: { staffId: string; status: 'active' | 'suspended' }) =>
       adminStaffFetchers.updateStaffStatus(staffId, status),
     onSuccess: (data, variables) => {
       queryClient.setQueryData(adminStaffKeys.detail(variables.staffId), data);
       queryClient.invalidateQueries({ queryKey: adminStaffKeys.all });
-      const statusText = variables.status === 'suspended' ? 'suspended' : variables.status === 'active' ? 'activated' : 'deactivated';
+      const statusText = variables.status === 'suspended' ? 'suspended' : 'activated';
       toast.success(`Staff member ${statusText} successfully`);
     },
     onError: (error: any) => {
