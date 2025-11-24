@@ -372,12 +372,12 @@ export default function EnhancedHeader() {
 
           {/* Mobile Menu */}
           <div
-            className={`md:hidden transition-all duration-500 ${
-              mobileMenuOpen 
-                ? 'max-h-[calc(100vh-5rem)] opacity-100' 
-                : 'max-h-0 opacity-0'
-            }`}
-          >
+  className={`md:hidden overflow-hidden transition-all duration-500 ${
+    mobileMenuOpen 
+      ? 'max-h-[calc(100vh-5rem)] opacity-100 pointer-events-auto' 
+      : 'max-h-0 opacity-0 pointer-events-none'
+  }`}
+>
 <div className="py-3 sm:py-4 space-y-2 overflow-y-auto overflow-x-hidden max-h-[calc(100vh-6rem)] pb-6 scroll-smooth...">
 {/* User Info / Login Prompt */}
               {isAuthenticated && user ? (

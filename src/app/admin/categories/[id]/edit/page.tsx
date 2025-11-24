@@ -19,23 +19,15 @@ export default function EditCategoryPage({ params }: { params: Promise<{ id: str
 
   const fields = [
     { name: 'name', label: 'Category Name', type: 'text' as const, required: true },
-    {
-      name: 'type',
-      label: 'Type',
-      type: 'select' as const,
-      options: [
-        { value: 'service', label: 'Service' },
-        { value: 'product', label: 'Product' },
-      ],
-      required: true,
-    },
     { name: 'description', label: 'Description', type: 'textarea' as const },
     { name: 'active', label: 'Active', type: 'switch' as const },
   ];
 
   const handleSubmit = async (data: any) => {
     try {
-      await updateCategory.mutateAsync({ categoryId: id, input: data });
+      // Always set type to 'product' for categories
+      const updatedData = { ...data, type: 'product' };
+      await updateCategory.mutateAsync({ categoryId: id, input: updatedData });
       toast.success('Category updated successfully!');
       router.push(AdminRoutes.CATEGORIES);
     } catch (error: any) {
@@ -45,7 +37,6 @@ export default function EditCategoryPage({ params }: { params: Promise<{ id: str
 
   const defaultValues = category ? {
     name: category.name,
-    type: category.type,
     description: category.description || '',
     active: category.active ?? category.status === 'active',
   } : undefined;

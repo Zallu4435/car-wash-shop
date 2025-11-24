@@ -149,7 +149,7 @@ export const adminCatalogFetchers = {
     const payload = {
       name: input.name,
       description: input.description,
-      category: (input as any).categoryId || (input as any).category,
+      // Category is not included - it cannot be edited
       pricing: input.pricing,
       duration: input.duration,
       image: (input as any).image,

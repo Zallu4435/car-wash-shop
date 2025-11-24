@@ -21,10 +21,12 @@ import { AddressSelectionModal } from '@/components/customer/AddressSelectionMod
 import { CouponInput } from '@/components/shared/forms/CouponInput';
 import { useRazorpay } from '@/hooks/useRazorpay';
 import { CustomerRoutes } from '@/lib/constants/routes';
+import { useAuth } from '@/context/AuthContext';
 
 export default function CheckoutPage() {
   const router = useRouter();
   const { confirm, ConfirmDialog } = useConfirmation();
+  const { user } = useAuth();
   const [paymentMethod, setPaymentMethod] = useState<'cod' | 'online'>('online');
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [showMapPicker, setShowMapPicker] = useState(false);
@@ -190,10 +192,22 @@ export default function CheckoutPage() {
 
       // Handle Online payment with Razorpay
       if (paymentMethod === 'online') {
-        // Get user details (in real app, fetch from auth context)
-        const userEmail = 'customer@example.com'; // TODO: Get from auth
-        const userName = 'Customer'; // TODO: Get from auth
-        const userPhone = '+919876543210'; // TODO: Get from auth
+        // Get user details from auth context
+        if (!user) {
+          toast.error('Please log in to proceed with payment');
+          setIsProcessingPayment(false);
+          return;
+        }
+
+        const userEmail = user.email || '';
+        const userName = user.name || 'Customer';
+        const userPhone = user.phone || '';
+
+        if (!userEmail || !userPhone) {
+          toast.error('Please complete your profile (email and phone required)');
+          setIsProcessingPayment(false);
+          return;
+        }
 
         await processPayment({
           amount: total,

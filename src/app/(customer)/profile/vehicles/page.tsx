@@ -17,6 +17,7 @@ import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
 import type { Vehicle } from '@/types/vehicle';
 import { CustomerRoutes } from '@/lib/constants/routes';
+import { getVehicleCategory, isCarType, getVehicleDisplayType } from '@/utils/vehicle';
 
 export default function VehiclesPage() {
   const router = useRouter();
@@ -67,13 +68,13 @@ export default function VehiclesPage() {
     return <Error message="Failed to load vehicles" />;
   }
 
-  const carVehicles = vehicles.filter(v => ['car', 'hatchback', 'sedan', 'suv'].includes(v.type));
-  const bikeVehicles = vehicles.filter(v => v.type === 'bike');
+  const carVehicles = vehicles.filter(v => getVehicleCategory(v) === 'car');
+  const bikeVehicles = vehicles.filter(v => getVehicleCategory(v) === 'bike');
 
   const VehicleCard = ({ vehicle }: { vehicle: Vehicle }) => {
-    const isCarType = ['car', 'hatchback', 'sedan', 'suv'].includes(vehicle.type);
-    const Icon = isCarType ? Car : Bike;
-    const vehicleImage = isCarType
+    const vehicleIsCar = isCarType(vehicle);
+    const Icon = vehicleIsCar ? Car : Bike;
+    const vehicleImage = vehicleIsCar
       ? '/images/vehicles/car-placeholder.svg' 
       : '/images/vehicles/bike-placeholder.svg';
     
@@ -87,7 +88,7 @@ export default function VehiclesPage() {
             >
               <img 
                 src={vehicleImage} 
-                alt={`${vehicle.type}`}
+                alt={`${getVehicleDisplayType(vehicle)}`}
                 className="h-16 w-16 sm:h-20 sm:w-20 md:h-24 md:w-24 object-contain"
               />
             </div>
@@ -154,7 +155,7 @@ export default function VehiclesPage() {
               >
                 <img 
                   src={vehicleImage} 
-                  alt={`${vehicle.type}`}
+                  alt={`${getVehicleDisplayType(vehicle)}`}
                   className="h-14 w-14 object-contain"
                 />
               </div>

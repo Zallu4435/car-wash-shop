@@ -45,6 +45,7 @@ import type { Location as MapLocation } from '@/lib/maps';
 import { geocodeAddress, getCurrentPosition, reverseGeocode } from '@/lib/maps/leaflet-utils';
 import { cn } from '@/lib/utils/cn';
 import { useRazorpay } from '@/hooks/useRazorpay';
+import { getVehicleCategory, getVehicleBodyType, normalizeVehicleCategory, getVehicleDisplayType } from '@/utils/vehicle';
 
 type Step = 'vehicle' | 'address' | 'schedule' | 'review' | 'confirmation';
 
@@ -92,23 +93,27 @@ const stepsConfig: StepConfig[] = [
   },
 ];
 
-function normalizeVehicleCategory(type: string): 'car' | 'bike' | 'other' {
-  const normalized = type.toLowerCase();
-  if (normalized === 'bike') return 'bike';
-  if (normalized === 'car') return 'car';
-  if (BIKE_TYPE_KEYWORDS.some((keyword) => normalized.includes(keyword))) return 'bike';
-  if (CAR_TYPE_KEYWORDS.some((keyword) => normalized.includes(keyword))) return 'car';
-  return 'other';
-}
+import { getVehicleCategory, getVehicleBodyType, normalizeVehicleCategory, getVehicleDisplayType } from '@/utils/vehicle';
 
 function getPriceForVehicle(servicePricing: Array<{ vehicleType: string; price: number }> | undefined, vehicle: Vehicle | null): number | null {
   if (!servicePricing || !servicePricing.length || !vehicle) return null;
-  const normalizedVehicleType = vehicle.type?.toLowerCase();
+  
+  const bodyType = getVehicleBodyType(vehicle);
+  const category = getVehicleCategory(vehicle);
+  
+  // Try exact match with bodyType first
+  if (bodyType) {
+    const bodyTypeMatch = servicePricing.find((p) => String(p.vehicleType).toLowerCase() === bodyType.toLowerCase());
+    if (bodyTypeMatch) return Number(bodyTypeMatch.price) || null;
+  }
+  
+  // Try exact match with category
+  if (category) {
+    const categoryMatch = servicePricing.find((p) => String(p.vehicleType).toLowerCase() === category.toLowerCase());
+    if (categoryMatch) return Number(categoryMatch.price) || null;
+  }
 
-  const directMatch = servicePricing.find((p) => String(p.vehicleType).toLowerCase() === normalizedVehicleType);
-  if (directMatch) return Number(directMatch.price) || null;
-
-  const category = normalizeVehicleCategory(vehicle.type || '');
+  // Try partial matches
   if (category === 'bike') {
     const bikeMatch = servicePricing.find((p) => BIKE_TYPE_KEYWORDS.some((keyword) => String(p.vehicleType).toLowerCase().includes(keyword)));
     if (bikeMatch) return Number(bikeMatch.price) || null;
@@ -257,7 +262,7 @@ export default function BookServicePage() {
     if (!serviceVehicleTypes.length) return vehicles;
 
     return vehicles.filter((vehicle) => {
-      const category = normalizeVehicleCategory(vehicle.type || '');
+      const category = getVehicleCategory(vehicle) || normalizeVehicleCategory(vehicle.type || '');
       if (category === 'other') return false;
       return serviceVehicleTypes.includes(category);
     });
@@ -742,7 +747,7 @@ export default function BookServicePage() {
                       {matchingVehicles.map((vehicle) => {
                         const price = getPriceForVehicle(service.pricing, vehicle) ?? baseServicePrice;
                         const isActive = selectedVehicleId === vehicle.id;
-                        const vehicleCategory = normalizeVehicleCategory(vehicle.type || '');
+                        const vehicleCategory = getVehicleCategory(vehicle) || normalizeVehicleCategory(vehicle.type || '');
                         const Icon = vehicleCategory === 'bike' ? Bike : Car;
                         return (
                           <div
@@ -763,7 +768,7 @@ export default function BookServicePage() {
                                   {vehicle.brand} {vehicle.model}
                                 </p>
                                 <p className="text-xs text-muted-foreground uppercase tracking-wide">
-                                  {vehicle.type} • {vehicle.year}
+                                  {getVehicleDisplayType(vehicle)} • {vehicle.year}
                                 </p>
                                 <p className="text-xs text-muted-foreground">{vehicle.plateNumber}</p>
                               </div>

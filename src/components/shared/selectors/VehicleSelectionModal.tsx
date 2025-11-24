@@ -123,8 +123,8 @@ export function VehicleSelectionModal({
               <div className="space-y-2">
                 {vehicles.map((vehicle) => {
                   const isSelected = vehicle.id === selectedVehicleId;
-                  const VehicleIcon = vehicle.type === 'car' ? CarIcon : Bike;
-                  const vehicleImage = vehicle.type === 'car' 
+                  const VehicleIcon = getVehicleCategory(vehicle) === 'car' ? CarIcon : Bike;
+                  const vehicleImage = getVehicleCategory(vehicle) === 'car' 
                     ? '/images/vehicles/car-placeholder.svg' 
                     : '/images/vehicles/bike-placeholder.svg';
 
@@ -142,7 +142,7 @@ export function VehicleSelectionModal({
                         <div className={`p-2 rounded-lg ${isSelected ? 'bg-primary/20' : 'bg-muted group-hover:bg-muted/80'}`}>
                           <img 
                             src={vehicleImage} 
-                            alt={vehicle.type}
+                            alt={getVehicleDisplayType(vehicle)}
                             className="h-12 w-12 object-contain"
                           />
                         </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useState } from 'react';
+import { use, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -14,31 +14,46 @@ import { ArrowLeft, Save, Image as ImageIcon, X } from 'lucide-react';
 import { AdminRoutes } from '@/lib/constants/routes';
 import { toast } from 'sonner';
 import { bannerSchema, BannerFormInput } from '@/schemas/admin/banner';
+import { useAdminBannerDetail, useUpdateBanner } from '@/api/domains/admin-marketing/queries';
+import Loading from '@/components/shared/display/Loading';
+import Error from '@/components/shared/display/Error';
 
 export default function EditBannerPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
-  const [uploadedImage, setUploadedImage] = useState<string>('https://example.com/banner.jpg');
+  const [uploadedImage, setUploadedImage] = useState<string>('');
+  
+  const { data: banner, isLoading, error, refetch } = useAdminBannerDetail(id);
+  const updateBannerMutation = useUpdateBanner();
   
   const {
     register,
     handleSubmit,
     control,
     setValue,
+    reset,
     formState: { errors, isSubmitting },
   } = useForm<BannerFormInput>({
     resolver: zodResolver(bannerSchema) as any,
     defaultValues: {
-      title: 'Premium Wash - 20% Off',
-      description: 'Get 20% off on your first premium wash service',
-      image: 'https://example.com/banner.jpg',
-      link: 'https://example.com/services',
-      displayOrder: 1,
-      startDate: '2025-10-20',
-      endDate: '2025-11-30',
       active: true,
     },
   });
+
+  // Populate form when banner data loads
+  useEffect(() => {
+    if (banner) {
+      setValue('title', banner.title);
+      setValue('description', banner.description || '');
+      setValue('image', banner.image);
+      setValue('link', banner.link || '');
+      setValue('displayOrder', typeof banner.position === 'number' ? banner.position : 0);
+      setValue('startDate', banner.startDate || banner.validFrom || '');
+      setValue('endDate', banner.endDate || banner.validUntil || '');
+      setValue('active', banner.active !== false);
+      setUploadedImage(banner.image || '');
+    }
+  }, [banner, setValue]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -62,13 +77,45 @@ export default function EditBannerPage({ params }: { params: Promise<{ id: strin
 
   const onSubmit = async (data: BannerFormInput) => {
     try {
-      console.log('Updating banner:', id, data);
-      toast.success('Banner updated successfully!');
+      await updateBannerMutation.mutateAsync({
+        bannerId: id,
+        input: {
+          title: data.title,
+          description: data.description || '',
+          image: data.image,
+          link: data.link || '',
+          position: 'hero', // Default to hero position
+          status: data.active ? 'active' : 'inactive',
+          validFrom: data.startDate || undefined,
+          validUntil: data.endDate || undefined,
+          displayOrder: data.displayOrder || 0,
+        } as any,
+      });
       router.push(AdminRoutes.BANNERS);
-    } catch (error) {
-      toast.error('Failed to update banner');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to update banner');
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="max-w-2xl space-y-4 sm:space-y-6 pb-6">
+        <Loading text="Loading banner..." />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-2xl space-y-4 sm:space-y-6 pb-6">
+        <Error 
+          message="Failed to load banner" 
+          details={(error as any)?.message}
+          onRetry={() => refetch()}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-2xl space-y-4 sm:space-y-6 pb-6">
@@ -243,9 +290,9 @@ export default function EditBannerPage({ params }: { params: Promise<{ id: strin
             )}
 
             {/* Submit Button */}
-            <Button type="submit" className="w-full h-10 sm:h-11 text-xs sm:text-sm border-2" disabled={isSubmitting}>
+            <Button type="submit" className="w-full h-10 sm:h-11 text-xs sm:text-sm border-2" disabled={isSubmitting || updateBannerMutation.isPending}>
               <Save className="mr-1.5 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-              {isSubmitting ? 'Updating...' : 'Update Banner'}
+              {(isSubmitting || updateBannerMutation.isPending) ? 'Updating...' : 'Update Banner'}
             </Button>
           </form>
         </CardContent>

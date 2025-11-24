@@ -40,6 +40,7 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
   });
 
   const category = watch('category');
+  const pricing = watch('pricing');
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -88,9 +89,18 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
       if (categoryValue && ['bike', 'car'].includes(categoryValue)) {
         setValue('category', categoryValue as 'bike' | 'car');
       }
-      if (service.price != null) setValue('price', Number(service.price));
+      // Set pricing array - ensure it's an array of { vehicleType, price } objects
+      if (service.pricing && Array.isArray(service.pricing)) {
+        setValue('pricing', service.pricing);
+      } else if (service.price != null) {
+        // Legacy: if single price exists, convert to pricing array
+        // This shouldn't happen with new structure, but handle for backwards compatibility
+        const vehicleTypes = categoryValue === 'bike' 
+          ? ['super-bike', 'sports-bike', 'cruiser', 'scooter', 'scooty', 'motorcycle']
+          : ['sedan', 'suv', 'hatchback', 'luxury'];
+        setValue('pricing', vehicleTypes.map(vt => ({ vehicleType: vt, price: Number(service.price) })));
+      }
       if (service.duration != null) setValue('duration', Number(service.duration));
-      if (service.vehicleType != null) setValue('vehicleType', service.vehicleType);
       if (service.isAvailable != null) {
         setValue('active', Boolean(service.isAvailable));
       } else if (service.active != null) {
@@ -105,10 +115,12 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
 
   const onSubmit = async (data: ServiceFormInput) => {
     try {
+      // Remove category from update data - category cannot be edited
+      const { category, ...updateData } = data;
       await updateService.mutateAsync({ 
         serviceId: id, 
         input: {
-          ...data,
+          ...updateData,
           image: data.image || uploadedImage, // Use form data or fallback to state
         } as any 
       });
@@ -200,36 +212,6 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
               )}
             </div>
 
-            {/* Category */}
-            <div className="space-y-1.5 sm:space-y-2">
-              <Label htmlFor="category" className="text-xs sm:text-sm">Category</Label>
-              <Controller
-                name="category"
-                control={control}
-                render={({ field }) => (
-                  <Select 
-                    onValueChange={(value) => {
-                      field.onChange(value);
-                      // Reset vehicle type when category changes
-                      setValue('vehicleType', '');
-                    }} 
-                    value={field.value}
-                  >
-                    <SelectTrigger id="category" className="h-9 sm:h-10 text-xs sm:text-sm">
-                      <SelectValue placeholder="Select category (Bike or Car)" />
-                    </SelectTrigger>
-                    <SelectContent className="force-sheet-bg border-2 rounded-lg">
-                      <SelectItem value="bike" className="text-xs sm:text-sm rounded-md">Bike</SelectItem>
-                      <SelectItem value="car" className="text-xs sm:text-sm rounded-md">Car</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-              {errors.category && (
-                <p className="text-[10px] sm:text-xs text-red-600 dark:text-red-400">{errors.category.message}</p>
-              )}
-            </div>
-
             {/* Description */}
             <div className="space-y-1.5 sm:space-y-2">
               <Label htmlFor="description" className="text-xs sm:text-sm">Description</Label>
@@ -245,84 +227,67 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
               )}
             </div>
 
-            {/* Price & Duration */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-              <div className="space-y-1.5 sm:space-y-2">
-                <Label htmlFor="price" className="text-xs sm:text-sm">Price (₹)</Label>
-                <div className="relative">
-                  <IndianRupee className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
-                  <Input
-                    id="price"
-                    type="number"
-                    placeholder="299"
-                    className="pl-9 sm:pl-10 h-9 sm:h-10 text-xs sm:text-sm"
-                    {...register('price', { valueAsNumber: true })}
-                  />
-                </div>
-                {errors.price && (
-                  <p className="text-[10px] sm:text-xs text-red-600 dark:text-red-400">{errors.price.message}</p>
-                )}
+            {/* Duration */}
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label htmlFor="duration" className="text-xs sm:text-sm">Duration (minutes)</Label>
+              <div className="relative">
+                <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
+                <Input
+                  id="duration"
+                  type="number"
+                  placeholder="30"
+                  className="pl-9 sm:pl-10 h-9 sm:h-10 text-xs sm:text-sm"
+                  {...register('duration', { valueAsNumber: true })}
+                />
               </div>
-              <div className="space-y-1.5 sm:space-y-2">
-                <Label htmlFor="duration" className="text-xs sm:text-sm">Duration (minutes)</Label>
-                <div className="relative">
-                  <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
-                  <Input
-                    id="duration"
-                    type="number"
-                    placeholder="30"
-                    className="pl-9 sm:pl-10 h-9 sm:h-10 text-xs sm:text-sm"
-                    {...register('duration', { valueAsNumber: true })}
-                  />
-                </div>
-                {errors.duration && (
-                  <p className="text-[10px] sm:text-xs text-red-600 dark:text-red-400">{errors.duration.message}</p>
-                )}
-              </div>
+              {errors.duration && (
+                <p className="text-[10px] sm:text-xs text-red-600 dark:text-red-400">{errors.duration.message}</p>
+              )}
             </div>
 
-            {/* Vehicle Type */}
-            <div className="space-y-1.5 sm:space-y-2">
-              <Label htmlFor="vehicleType" className="text-xs sm:text-sm">Vehicle Type</Label>
-              <Controller
-                name="vehicleType"
-                control={control}
-                render={({ field }) => (
-                  <Select 
-                    onValueChange={field.onChange} 
-                    value={field.value}
-                    disabled={!category}
-                  >
-                    <SelectTrigger id="vehicleType" className="h-9 sm:h-10 text-xs sm:text-sm">
-                      <SelectValue placeholder={category ? "Select vehicle type" : "Select category first"} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {category === 'bike' ? (
-                        <>
-                          <SelectItem value="super-bike">Super Bike</SelectItem>
-                          <SelectItem value="sports-bike">Sports Bike</SelectItem>
-                          <SelectItem value="cruiser">Cruiser</SelectItem>
-                          <SelectItem value="scooter">Scooter</SelectItem>
-                          <SelectItem value="scooty">Scooty</SelectItem>
-                          <SelectItem value="motorcycle">Motorcycle</SelectItem>
-                        </>
-                      ) : category === 'car' ? (
-                        <>
-                          <SelectItem value="sedan">Sedan</SelectItem>
-                          <SelectItem value="suv">SUV</SelectItem>
-                          <SelectItem value="hatchback">Hatchback</SelectItem>
-                          <SelectItem value="luxury">Luxury</SelectItem>
-                        </>
-                      ) : null}
-                    </SelectContent>
-                  </Select>
-                )}
-              />
+            {/* Vehicle-wise Pricing */}
+            <div className="space-y-2 sm:space-y-3">
+              <Label className="text-xs sm:text-sm">Pricing by Vehicle Type</Label>
               {!category && (
-                <p className="text-xs text-muted-foreground">Please select a category first to choose vehicle type</p>
+                <p className="text-xs text-muted-foreground">Category information is required to display pricing options</p>
               )}
-              {errors.vehicleType && (
-                <p className="text-[10px] sm:text-xs text-red-600 dark:text-red-400">{errors.vehicleType.message}</p>
+              {category && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                  {(category === 'car'
+                    ? ['sedan', 'suv', 'hatchback', 'luxury']
+                    : ['super-bike', 'sports-bike', 'cruiser', 'scooter', 'scooty', 'motorcycle']
+                  ).map((vt) => (
+                    <div key={vt} className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs sm:text-sm font-medium capitalize">{vt.replace(/-/g, ' ')}</span>
+                      </div>
+                      <div className="relative">
+                        <IndianRupee className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
+                        <Input
+                          type="number"
+                          placeholder="499"
+                          className="pl-9 sm:pl-10 h-9 sm:h-10 text-xs sm:text-sm"
+                          value={pricing?.find((p: any) => p.vehicleType === vt)?.price ?? ''}
+                          onChange={(e) => {
+                            const value = Number(e.target.value);
+                            const current = pricing || [];
+                            const exists = current.findIndex((p: any) => p.vehicleType === vt);
+                            if (exists >= 0) {
+                              const next = [...current];
+                              next[exists] = { vehicleType: vt, price: value };
+                              setValue('pricing', next as any, { shouldValidate: true });
+                            } else {
+                              setValue('pricing', [...current, { vehicleType: vt, price: value }] as any, { shouldValidate: true });
+                            }
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {errors.pricing && (
+                <p className="text-[10px] sm:text-xs text-red-600 dark:text-red-400">{(errors as any).pricing?.message || 'Please set at least one price'}</p>
               )}
             </div>
 

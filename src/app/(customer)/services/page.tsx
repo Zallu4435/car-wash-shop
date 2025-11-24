@@ -13,6 +13,7 @@ import type { ServiceFilters } from '@/types/service';
 import Loading from '@/components/shared/display/Loading';
 import { useVehicleContext } from '@/context/VehicleContext';
 import { mockServiceTypes } from '@/mocks/data/customer-mock-data';
+import { getVehicleCategory } from '@/utils/vehicle';
 
 export default function ServicesPage() {
   const [selectedVehicleTypes, setSelectedVehicleTypes] = useState<string[]>([]);
@@ -43,17 +44,35 @@ export default function ServicesPage() {
     search: debouncedSearch || undefined,
   };
 
+  // Fetch all services without category filter for count calculations
+  const allServicesFilters: ServiceFilters = {
+    search: debouncedSearch || undefined,
+    // No category filter - we need all services to calculate accurate counts
+  };
+
   // API calls
   const { data: servicesResponse, isLoading: servicesLoading } = useServices(filters);
+  const { data: allServicesResponse } = useServices(allServicesFilters);
 
   const allServices = servicesResponse?.data || [];
+  const allServicesForCounts = allServicesResponse?.data || [];
 
-  // Vehicle types with actual counts from services
+  // Helper function to get category ID from service (handles both string and object)
+  const getCategoryId = (service: any): string | undefined => {
+    if (!service.category) return undefined;
+    if (typeof service.category === 'string') return service.category;
+    return service.category.id || service.categoryId;
+  };
+
+  // Vehicle types with actual counts from all services (not filtered by category)
   const vehicleTypes = mockServiceTypes.map(type => ({
     id: type.id,
     name: type.name,
     icon: type.icon,
-    count: allServices.filter((s: any) => s.category === type.id).length,
+    count: allServicesForCounts.filter((s: any) => {
+      const categoryId = getCategoryId(s);
+      return categoryId === type.id || categoryId?.toLowerCase() === type.id.toLowerCase();
+    }).length,
   }));
 
   const handleOpenFilters = () => {
@@ -99,7 +118,10 @@ export default function ServicesPage() {
 
   const filteredServices = allServices.filter((service: any) => {
     if (selectedVehicleTypes.length === 0) return true;
-    return selectedVehicleTypes.includes(service.category);
+    const categoryId = getCategoryId(service);
+    return categoryId && selectedVehicleTypes.some(typeId => 
+      categoryId === typeId || categoryId.toLowerCase() === typeId.toLowerCase()
+    );
   });
 
   const totalItems = filteredServices.length;
@@ -134,7 +156,7 @@ export default function ServicesPage() {
           <div className="mt-4 sm:mt-6 p-3 sm:p-4 rounded-xl border-2 border-border bg-card flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 min-w-0 flex-1">
               <div className="p-2 bg-primary/10 rounded-lg flex-shrink-0">
-                {selectedVehicle?.type === 'bike' ? (
+                {getVehicleCategory(selectedVehicle) === 'bike' ? (
                   <Bike className="h-5 w-5 text-primary" />
                 ) : (
                   <Car className="h-5 w-5 text-primary" />
@@ -147,7 +169,7 @@ export default function ServicesPage() {
                       Showing prices for: {selectedVehicle.brand} {selectedVehicle.model}
                     </p>
                     <p className="text-xs text-muted-foreground capitalize truncate">
-                      {selectedVehicle.type === 'car' ? 'Car' : 'Bike'} • {selectedVehicle.year}
+                      {getVehicleCategory(selectedVehicle) === 'car' ? 'Car' : 'Bike'} • {selectedVehicle.year}
                     </p>
                   </>
                 ) : (

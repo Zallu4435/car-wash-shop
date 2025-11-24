@@ -8,7 +8,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { ArrowLeft, Plus } from 'lucide-react';
 import { toast } from 'sonner';
@@ -24,7 +23,6 @@ export default function NewCategoryPage() {
     register,
     handleSubmit,
     control,
-    watch,
     formState: { errors, isSubmitting },
   } = useForm<CategoryFormInput>({
     resolver: zodResolver(categorySchema) as any,
@@ -118,29 +116,6 @@ export default function NewCategoryPage() {
                   />
                 )}
               />
-            </div>
-
-            {/* Type Selection - Categories are now only for products */}
-            <div className="space-y-1.5 sm:space-y-2">
-              <Label htmlFor="type" className="text-xs sm:text-sm">Category Type</Label>
-              <Controller
-                name="type"
-                control={control}
-                render={({ field }) => (
-                  <Select onValueChange={field.onChange} value={field.value} disabled>
-                    <SelectTrigger id="type" className="h-9 sm:h-10 text-xs sm:text-sm">
-                      <SelectValue placeholder="Product" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="product">Product</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-              <p className="text-xs text-muted-foreground">Categories are only for products. Services use Bike/Car categories.</p>
-              {errors.type && (
-                <p className="text-[10px] sm:text-xs text-red-600 dark:text-red-400">{errors.type.message}</p>
-              )}
             </div>
 
             {/* Submit Button */}

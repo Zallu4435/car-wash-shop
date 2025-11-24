@@ -4,13 +4,22 @@ import { z } from 'zod';
 // Reusable Field Validations
 // ============================================
 
-// Vehicle type validation
-const vehicleTypeValidation = z
+// Vehicle category validation
+const vehicleCategoryValidation = z
   .string()
-  .min(1, 'Please select a vehicle type')
+  .min(1, 'Please select a vehicle category')
   .refine(
-    (val) => ['car', 'bike', 'suv', 'sedan', 'hatchback'].includes(val),
-    { message: 'Please select a valid vehicle type' }
+    (val) => ['car', 'bike'].includes(val),
+    { message: 'Please select a valid vehicle category' }
+  ) as any;
+
+// Vehicle body type validation
+const vehicleBodyTypeValidation = z
+  .string()
+  .min(1, 'Please select a vehicle body type')
+  .refine(
+    (val) => ['sedan', 'suv', 'hatchback', 'scooter', 'motorcycle'].includes(val),
+    { message: 'Please select a valid vehicle body type' }
   ) as any;
 
 // Brand validation
@@ -77,7 +86,8 @@ const fuelTypeValidation = z
 // ============================================
 
 export const addVehicleSchema = z.object({
-  type: vehicleTypeValidation,
+  category: vehicleCategoryValidation,
+  bodyType: vehicleBodyTypeValidation,
   brand: brandValidation,
   model: modelValidation,
   year: yearValidation,
@@ -100,7 +110,8 @@ export const editVehicleSchema = addVehicleSchema.extend({
 // ============================================
 
 export const quickAddVehicleSchema = z.object({
-  type: vehicleTypeValidation,
+  category: vehicleCategoryValidation,
+  bodyType: vehicleBodyTypeValidation,
   brand: brandValidation,
   model: modelValidation,
   plateNumber: plateNumberValidation,

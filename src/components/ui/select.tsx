@@ -14,7 +14,22 @@ const SelectTrigger = React.forwardRef<
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      'flex h-11 w-full items-center justify-between rounded-xl border-2 border-input bg-background px-4 py-2 text-sm text-foreground ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/30 focus:ring-offset-1 focus:border-primary/50 disabled:cursor-not-allowed disabled:opacity-50 transition-all cursor-pointer [&>span]:line-clamp-1',
+      // Layout & Base Styles
+      'flex h-11 w-full items-center justify-between rounded-xl border-2 px-4 py-2 text-sm transition-all cursor-pointer [&>span]:line-clamp-1',
+      
+      // --- FORCE SOLID COLORS (No Theme Variables) ---
+      
+      // Light Mode: Solid White background, Light Grey border
+      'bg-white border-gray-200 text-gray-900',
+      
+      // Dark Mode: Solid Zinc background, Dark Zinc border
+      'dark:bg-zinc-950 dark:border-zinc-800 dark:text-gray-100',
+      
+      // Focus States
+      'focus:outline-none focus:ring-1 focus:ring-primary/30 focus:border-primary/50',
+      'placeholder:text-gray-400 dark:placeholder:text-gray-500',
+      'disabled:cursor-not-allowed disabled:opacity-50',
+      
       className
     )}
     {...props}
@@ -33,7 +48,7 @@ const SelectScrollUpButton = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <SelectPrimitive.ScrollUpButton
     ref={ref}
-    className={cn('flex cursor-pointer items-center justify-center py-1', className)}
+    className={cn('flex cursor-pointer items-center justify-center py-1 opacity-50 hover:opacity-100', className)}
     {...props}
   >
     <ChevronUp className="h-4 w-4" />
@@ -47,7 +62,7 @@ const SelectScrollDownButton = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <SelectPrimitive.ScrollDownButton
     ref={ref}
-    className={cn('flex cursor-pointer items-center justify-center py-1', className)}
+    className={cn('flex cursor-pointer items-center justify-center py-1 opacity-50 hover:opacity-100', className)}
     {...props}
   >
     <ChevronDown className="h-4 w-4" />
@@ -63,7 +78,19 @@ const SelectContent = React.forwardRef<
     <SelectPrimitive.Content
       ref={ref}
       className={cn(
-        'relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-xl border-2 border-primary/20 bg-primary/5 text-foreground shadow-xl data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2',
+        // Layout & Animation
+        'relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-xl border-2 shadow-xl',
+        'data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2',
+        
+        // --- CRITICAL FIX: FORCE SOLID BACKGROUNDS ---
+        // We use standard tailwind colors to guarantee opacity.
+        
+        // Light Mode: Solid Light Grey Background (The "Subtle Grey" you asked for)
+        'bg-gray-100 border-gray-200 text-gray-900',
+        
+        // Dark Mode: Solid Dark Zinc Background
+        'dark:bg-zinc-950 dark:border-zinc-800 dark:text-gray-50',
+
         position === 'popper' &&
           'data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1',
         className
@@ -93,7 +120,7 @@ const SelectLabel = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <SelectPrimitive.Label
     ref={ref}
-    className={cn('py-1.5 pl-8 pr-2 text-sm font-semibold text-foreground', className)}
+    className={cn('py-1.5 pl-8 pr-2 text-sm font-semibold text-gray-900 dark:text-gray-100', className)}
     {...props}
   />
 ));
@@ -106,7 +133,18 @@ const SelectItem = React.forwardRef<
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
-      'relative flex w-full cursor-pointer select-none items-center rounded-lg py-2 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 border-b border-border/30 last:border-b-0',
+      'relative flex w-full cursor-pointer select-none items-center rounded-lg py-2 pl-8 pr-2 text-sm outline-none transition-colors',
+      
+      // Base Text
+      'text-gray-700 dark:text-gray-300',
+      
+      // Light Mode Hover: White background (Contrast against Gray-100 container)
+      'focus:bg-white focus:text-gray-900',
+      
+      // Dark Mode Hover: Lighter Zinc background
+      'dark:focus:bg-zinc-800 dark:focus:text-white',
+      
+      'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
       className
     )}
     {...props}
@@ -127,7 +165,7 @@ const SelectSeparator = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <SelectPrimitive.Separator
     ref={ref}
-    className={cn('-mx-1 my-1 h-px bg-border', className)}
+    className={cn('-mx-1 my-1 h-px bg-gray-200 dark:bg-zinc-800', className)}
     {...props}
   />
 ));

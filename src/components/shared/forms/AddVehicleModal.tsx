@@ -48,7 +48,8 @@ export function AddVehicleModal({
   } = useForm<AddVehicleInput>({
     resolver: zodResolver(addVehicleSchema) as any,
     defaultValues: {
-      type: 'car',
+      category: 'car',
+      bodyType: 'sedan',
       brand: '',
       model: '',
       year: new Date().getFullYear(),
@@ -80,16 +81,14 @@ export function AddVehicleModal({
 
   const handleTypeSelect = (type: 'car' | 'bike') => {
     setSelectedType(type);
-    setValue('type', type);
+    setValue('category', type);
     setCurrentStep('category');
   };
 
-  const handleCategorySelect = (categoryId: string) => {
-    setSelectedCategory(categoryId);
-    // For bikes, always set type to 'bike'. For cars, use the category as type.
-    const vehicleType = selectedType === 'bike' ? 'bike' : categoryId;
-    setValue('type', vehicleType as any);
-    // Reset brand when category changes
+  const handleCategorySelect = (bodyTypeId: string) => {
+    setSelectedCategory(bodyTypeId);
+    setValue('bodyType', bodyTypeId as 'sedan' | 'suv' | 'hatchback' | 'scooter' | 'motorcycle');
+    // Reset brand when bodyType changes
     setValue('brand', '');
     setCurrentStep('details');
   };
@@ -97,7 +96,8 @@ export function AddVehicleModal({
   const onSubmit = (data: AddVehicleInput) => {
     createVehicleMutation.mutate(
       {
-        type: data.type,
+        category: data.category,
+        bodyType: data.bodyType,
         brand: data.brand,
         model: data.model,
         year: data.year,

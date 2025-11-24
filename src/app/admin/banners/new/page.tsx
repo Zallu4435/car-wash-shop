@@ -14,10 +14,12 @@ import { ArrowLeft, Plus, Image as ImageIcon, X } from 'lucide-react';
 import { AdminRoutes } from '@/lib/constants/routes';
 import { toast } from 'sonner';
 import { bannerSchema, BannerFormInput } from '@/schemas/admin/banner';
+import { useCreateBanner } from '@/api/domains/admin-marketing/queries';
 
 export default function NewBannerPage() {
   const router = useRouter();
   const [uploadedImage, setUploadedImage] = useState<string>('');
+  const createBannerMutation = useCreateBanner();
   
   const {
     register,
@@ -54,11 +56,25 @@ export default function NewBannerPage() {
 
   const onSubmit = async (data: BannerFormInput) => {
     try {
-      console.log('Banner data:', data);
-      toast.success('Banner created successfully!');
+      // Map form data to API input format
+      // The backend controller will handle the mapping, but we need to send the right structure
+      const bannerInput = {
+        title: data.title,
+        description: data.description || '',
+        image: data.image,
+        link: data.link || '',
+        position: 'hero', // Default to hero position for homepage banners
+        validFrom: data.startDate || new Date().toISOString().split('T')[0],
+        validUntil: data.endDate || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        // Additional fields that backend expects
+        active: data.active,
+        displayOrder: data.displayOrder || 0,
+      };
+      
+      await createBannerMutation.mutateAsync(bannerInput as any);
       router.push(AdminRoutes.BANNERS);
-    } catch (error) {
-      toast.error('Failed to create banner');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to create banner');
     }
   };
 
@@ -235,9 +251,9 @@ export default function NewBannerPage() {
             )}
 
             {/* Submit Button */}
-            <Button type="submit" className="w-full h-10 sm:h-11 text-xs sm:text-sm border-2" disabled={isSubmitting}>
+            <Button type="submit" className="w-full h-10 sm:h-11 text-xs sm:text-sm border-2" disabled={isSubmitting || createBannerMutation.isPending}>
               <Plus className="mr-1.5 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-              {isSubmitting ? 'Creating...' : 'Create Banner'}
+              {(isSubmitting || createBannerMutation.isPending) ? 'Creating...' : 'Create Banner'}
             </Button>
           </form>
         </CardContent>

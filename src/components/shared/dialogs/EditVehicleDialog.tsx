@@ -20,15 +20,15 @@ interface EditVehicleDialogProps {
   vehicle: Vehicle | null;
 }
 
-const CAR_CATEGORIES = [
-  { id: 'hatchback', name: 'Hatchback' },
+const CAR_BODY_TYPES = [
   { id: 'sedan', name: 'Sedan' },
   { id: 'suv', name: 'SUV' },
-  { id: 'car', name: 'Car' },
+  { id: 'hatchback', name: 'Hatchback' },
 ];
 
-const BIKE_CATEGORIES = [
-  { id: 'bike', name: 'Bike' },
+const BIKE_BODY_TYPES = [
+  { id: 'scooter', name: 'Scooter' },
+  { id: 'motorcycle', name: 'Motorcycle' },
 ];
 
 export function EditVehicleDialog({ open, onOpenChange, vehicle }: EditVehicleDialogProps) {
@@ -49,27 +49,42 @@ export function EditVehicleDialog({ open, onOpenChange, vehicle }: EditVehicleDi
   });
 
   const formData = watch();
-  const vehicleType = formData.type;
+  const vehicleCategory = formData.category;
 
-  // Determine if vehicle is car-like or bike
-  const isCarType = vehicle && ['car', 'hatchback', 'sedan', 'suv'].includes(vehicle.type);
-  const categories = isCarType ? CAR_CATEGORIES : BIKE_CATEGORIES;
+  // Determine if vehicle is car or bike
+  const isCarType = vehicle?.category === 'car';
+  const bodyTypes = isCarType ? CAR_BODY_TYPES : BIKE_BODY_TYPES;
 
-  // Populate form when vehicle changes
+  // Populate form when modal opens with vehicle data
   useEffect(() => {
-    if (vehicle) {
-      setValue('type', vehicle.type);
-      setValue('brand', vehicle.brand || '');
-      setValue('model', vehicle.model || '');
-      setValue('year', vehicle.year.toString());
-      setValue('plateNumber', vehicle.plateNumber || '');
-      setValue('color', vehicle.color || '');
-      setValue('fuelType', vehicle.fuelType || 'petrol');
-      setValue('isDefault', vehicle.isPrimary);
-    } else {
+    if (open && vehicle) {
+      const formValues = {
+        category: vehicle.category || (vehicle.type === 'bike' ? 'bike' : 'car'),
+        bodyType: vehicle.bodyType || (vehicle.category === 'car' ? 'sedan' : 'scooter'),
+        brand: vehicle.brand || '',
+        model: vehicle.model || '',
+        year: vehicle.year.toString(),
+        plateNumber: vehicle.plateNumber || '',
+        color: vehicle.color || '',
+        fuelType: vehicle.fuelType || 'petrol',
+        isDefault: vehicle.isPrimary,
+      };
+      // Reset form with all values first
+      reset(formValues);
+      // Then explicitly set Select values after a brief delay to ensure components are ready
+      // Use requestAnimationFrame to ensure it happens after render
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setValue('category', formValues.category, { shouldValidate: true, shouldDirty: false });
+          setValue('bodyType', formValues.bodyType, { shouldValidate: true, shouldDirty: false });
+          setValue('brand', vehicle.brand || '', { shouldValidate: true, shouldDirty: false });
+          setValue('fuelType', vehicle.fuelType || 'petrol', { shouldValidate: true, shouldDirty: false });
+        });
+      });
+    } else if (!open) {
       reset();
     }
-  }, [vehicle, reset, setValue]);
+  }, [open, vehicle, reset, setValue]);
 
   // Handle mounting for animation
   useEffect(() => {
@@ -103,11 +118,14 @@ export function EditVehicleDialog({ open, onOpenChange, vehicle }: EditVehicleDi
 
   const onSubmit = (data: AddVehicleInput) => {
     if (!vehicle) return;
+    // Category is not editable, use the existing vehicle's category
+    const currentCategory = vehicle.category || (vehicle.type === 'bike' ? 'bike' : 'car');
     updateVehicleMutation.mutate(
       {
         id: vehicle.id,
         input: {
-          type: data.type,
+          category: currentCategory,
+          bodyType: data.bodyType,
           brand: data.brand,
           model: data.model,
           year: data.year,
@@ -165,29 +183,33 @@ export function EditVehicleDialog({ open, onOpenChange, vehicle }: EditVehicleDi
 
           <div className="flex-1 overflow-y-auto px-4 sm:px-5 lg:px-6 py-4 sm:py-5">
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 sm:space-y-4">
-              {/* Vehicle Type */}
+              {/* Vehicle Body Type */}
               <div className="space-y-1.5 sm:space-y-2">
-                <Label htmlFor="type" className="text-xs sm:text-sm font-medium">Vehicle Type <span className="text-red-500">*</span></Label>
+                <Label htmlFor="bodyType" className="text-xs sm:text-sm font-medium">Body Type <span className="text-red-500">*</span></Label>
                 <Controller
-                  name="type"
+                  name="bodyType"
                   control={control}
                   render={({ field }) => (
-                    <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger id="type" className="h-9 sm:h-10 lg:h-11 text-xs sm:text-sm border-2">
-                        <SelectValue placeholder="Select vehicle type" />
+                    <Select 
+                      key={`bodyType-${vehicle?.id || 'new'}-${open}`} 
+                      value={field.value} 
+                      onValueChange={field.onChange}
+                    >
+                      <SelectTrigger id="bodyType" className="h-9 sm:h-10 lg:h-11 text-xs sm:text-sm border-2">
+                        <SelectValue placeholder="Select body type" />
                       </SelectTrigger>
                       <SelectContent>
-                        {categories.map((category) => (
-                          <SelectItem key={category.id} value={category.id}>
-                            {category.name}
+                        {bodyTypes.map((bodyType) => (
+                          <SelectItem key={bodyType.id} value={bodyType.id}>
+                            {bodyType.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   )}
                 />
-                {errors.type && (
-                  <p className="text-xs text-red-600 dark:text-red-400">{String(errors.type.message)}</p>
+                {errors.bodyType && (
+                  <p className="text-xs text-red-600 dark:text-red-400">{String(errors.bodyType.message)}</p>
                 )}
               </div>
 
@@ -198,7 +220,11 @@ export function EditVehicleDialog({ open, onOpenChange, vehicle }: EditVehicleDi
                   name="brand"
                   control={control}
                   render={({ field }) => (
-                    <Select value={field.value} onValueChange={field.onChange}>
+                    <Select 
+                      key={`brand-${vehicle?.id || 'new'}-${open}`} 
+                      value={field.value} 
+                      onValueChange={field.onChange}
+                    >
                       <SelectTrigger id="brand" className="h-9 sm:h-10 lg:h-11 text-xs sm:text-sm border-2">
                         <SelectValue placeholder="Select brand" />
                       </SelectTrigger>
@@ -285,7 +311,11 @@ export function EditVehicleDialog({ open, onOpenChange, vehicle }: EditVehicleDi
                   name="fuelType"
                   control={control}
                   render={({ field }) => (
-                    <Select value={field.value || 'petrol'} onValueChange={field.onChange}>
+                    <Select 
+                      key={`fuelType-${vehicle?.id || 'new'}-${open}`} 
+                      value={field.value || 'petrol'} 
+                      onValueChange={field.onChange}
+                    >
                       <SelectTrigger id="fuelType" className="h-9 sm:h-10 lg:h-11 text-xs sm:text-sm border-2">
                         <SelectValue placeholder="Select fuel type" />
                       </SelectTrigger>
