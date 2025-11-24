@@ -18,7 +18,20 @@ const vehicleBodyTypeValidation = z
   .string()
   .min(1, 'Please select a vehicle body type')
   .refine(
-    (val) => ['sedan', 'suv', 'hatchback', 'scooter', 'motorcycle'].includes(val),
+    (val) =>
+      [
+        'sedan',
+        'suv',
+        'hatchback',
+        'luxury',
+        'super-bike',
+        'sports-bike',
+        'cruiser',
+        'scooty',
+        // Legacy values retained to avoid breaking existing records
+        'scooter',
+        'motorcycle',
+      ].includes(val),
     { message: 'Please select a valid vehicle body type' }
   ) as any;
 

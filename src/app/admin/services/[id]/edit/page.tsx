@@ -96,7 +96,7 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
         // Legacy: if single price exists, convert to pricing array
         // This shouldn't happen with new structure, but handle for backwards compatibility
         const vehicleTypes = categoryValue === 'bike' 
-          ? ['super-bike', 'sports-bike', 'cruiser', 'scooter', 'scooty', 'motorcycle']
+          ? ['super-bike', 'sports-bike', 'cruiser', 'scooty']
           : ['sedan', 'suv', 'hatchback', 'luxury'];
         setValue('pricing', vehicleTypes.map(vt => ({ vehicleType: vt, price: Number(service.price) })));
       }
@@ -255,7 +255,7 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   {(category === 'car'
                     ? ['sedan', 'suv', 'hatchback', 'luxury']
-                    : ['super-bike', 'sports-bike', 'cruiser', 'scooter', 'scooty', 'motorcycle']
+                    : ['super-bike', 'sports-bike', 'cruiser', 'scooty']
                   ).map((vt) => (
                     <div key={vt} className="space-y-1.5">
                       <div className="flex items-center justify-between">

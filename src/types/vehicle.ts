@@ -2,7 +2,17 @@ export interface Vehicle {
   id: string;
   userId: string;
   category: 'car' | 'bike';
-  bodyType: 'sedan' | 'suv' | 'hatchback' | 'scooter' | 'motorcycle';
+  bodyType:
+    | 'sedan'
+    | 'suv'
+    | 'hatchback'
+    | 'luxury'
+    | 'super-bike'
+    | 'sports-bike'
+    | 'cruiser'
+    | 'scooty'
+    | 'scooter'
+    | 'motorcycle';
   brand: string;
   model: string;
   year: number;
@@ -18,7 +28,17 @@ export interface Vehicle {
 
 export interface VehicleInput {
   category: 'car' | 'bike';
-  bodyType: 'sedan' | 'suv' | 'hatchback' | 'scooter' | 'motorcycle';
+  bodyType:
+    | 'sedan'
+    | 'suv'
+    | 'hatchback'
+    | 'luxury'
+    | 'super-bike'
+    | 'sports-bike'
+    | 'cruiser'
+    | 'scooty'
+    | 'scooter'
+    | 'motorcycle';
   brand: string;
   model: string;
   year: number;

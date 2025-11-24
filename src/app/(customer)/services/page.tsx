@@ -152,38 +152,6 @@ export default function ServicesPage() {
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2">Our Services</h1>
           <p className="text-sm sm:text-base text-muted-foreground">Professional car, bike, and home cleaning services</p>
 
-          {/* Vehicle selection banner */}
-          <div className="mt-4 sm:mt-6 p-3 sm:p-4 rounded-xl border-2 border-border bg-card flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3 min-w-0 flex-1">
-              <div className="p-2 bg-primary/10 rounded-lg flex-shrink-0">
-                {getVehicleCategory(selectedVehicle) === 'bike' ? (
-                  <Bike className="h-5 w-5 text-primary" />
-                ) : (
-                  <Car className="h-5 w-5 text-primary" />
-                )}
-              </div>
-              <div className="min-w-0">
-                {selectedVehicle ? (
-                  <>
-                    <p className="text-sm font-semibold text-foreground truncate">
-                      Showing prices for: {selectedVehicle.brand} {selectedVehicle.model}
-                    </p>
-                    <p className="text-xs text-muted-foreground capitalize truncate">
-                      {getVehicleCategory(selectedVehicle) === 'car' ? 'Car' : 'Bike'} • {selectedVehicle.year}
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <p className="text-sm font-semibold text-foreground">No vehicle selected</p>
-                    <p className="text-xs text-muted-foreground">Select your vehicle to see accurate pricing</p>
-                  </>
-                )}
-              </div>
-            </div>
-            <Button variant="outline" size="sm" onClick={() => setShowVehicleModal(true)} className="shrink-0">
-              Change Vehicle
-            </Button>
-          </div>
         </div>
       </section>
 

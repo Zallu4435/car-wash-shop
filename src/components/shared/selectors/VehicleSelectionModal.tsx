@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { X, Car as CarIcon, Bike, Check, Plus } from 'lucide-react';
 import { useVehicleContext } from '@/context/VehicleContext';
 import { useRouter } from 'next/navigation';
+import { getVehicleCategory, getVehicleDisplayType } from '@/utils/vehicle';
 import type { Vehicle } from '@/types/vehicle';
 
 interface VehicleSelectionModalProps {

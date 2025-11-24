@@ -27,8 +27,10 @@ const CAR_BODY_TYPES = [
 ];
 
 const BIKE_BODY_TYPES = [
-  { id: 'scooter', name: 'Scooter' },
-  { id: 'motorcycle', name: 'Motorcycle' },
+  { id: 'super-bike', name: 'Super Bike' },
+  { id: 'sports-bike', name: 'Sports Bike' },
+  { id: 'cruiser', name: 'Cruiser' },
+  { id: 'scooty', name: 'Scooty' },
 ];
 
 export function EditVehicleDialog({ open, onOpenChange, vehicle }: EditVehicleDialogProps) {
@@ -60,7 +62,7 @@ export function EditVehicleDialog({ open, onOpenChange, vehicle }: EditVehicleDi
     if (open && vehicle) {
       const formValues = {
         category: vehicle.category || (vehicle.type === 'bike' ? 'bike' : 'car'),
-        bodyType: vehicle.bodyType || (vehicle.category === 'car' ? 'sedan' : 'scooter'),
+        bodyType: vehicle.bodyType || (vehicle.category === 'car' ? 'sedan' : 'super-bike'),
         brand: vehicle.brand || '',
         model: vehicle.model || '',
         year: vehicle.year.toString(),

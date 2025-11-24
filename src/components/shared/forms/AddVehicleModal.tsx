@@ -25,8 +25,10 @@ const CAR_CATEGORIES = [
 ];
 
 const BIKE_CATEGORIES = [
-  { id: 'scooter', name: 'Scooter', icon: '🛵' },
-  { id: 'motorcycle', name: 'Motorcycle', icon: '🏍️' },
+  { id: 'super-bike', name: 'Super Bike', icon: '🏍️' },
+  { id: 'sports-bike', name: 'Sports Bike', icon: '🏁' },
+  { id: 'cruiser', name: 'Cruiser', icon: '🛵' },
+  { id: 'scooty', name: 'Scooty', icon: '🛴' },
 ];
 
 export function AddVehicleModal({ 
@@ -87,7 +89,7 @@ export function AddVehicleModal({
 
   const handleCategorySelect = (bodyTypeId: string) => {
     setSelectedCategory(bodyTypeId);
-    setValue('bodyType', bodyTypeId as 'sedan' | 'suv' | 'hatchback' | 'scooter' | 'motorcycle');
+    setValue('bodyType', bodyTypeId as AddVehicleInput['bodyType']);
     // Reset brand when bodyType changes
     setValue('brand', '');
     setCurrentStep('details');

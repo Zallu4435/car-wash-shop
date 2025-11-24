@@ -57,7 +57,7 @@ interface StepConfig {
 }
 
 const CAR_TYPE_KEYWORDS = ['car', 'sedan', 'suv', 'hatchback', 'crossover', 'mpv', 'pickup'];
-const BIKE_TYPE_KEYWORDS = ['bike', 'motorcycle', 'scooter'];
+const BIKE_TYPE_KEYWORDS = ['bike', 'super-bike', 'sports-bike', 'cruiser', 'scooty', 'motorcycle', 'scooter'];
 const DEPOSIT_PERCENTAGE = 0.3;
 
 const stepsConfig: StepConfig[] = [
@@ -93,7 +93,7 @@ const stepsConfig: StepConfig[] = [
   },
 ];
 
-import { getVehicleCategory, getVehicleBodyType, normalizeVehicleCategory, getVehicleDisplayType } from '@/utils/vehicle';
+
 
 function getPriceForVehicle(servicePricing: Array<{ vehicleType: string; price: number }> | undefined, vehicle: Vehicle | null): number | null {
   if (!servicePricing || !servicePricing.length || !vehicle) return null;

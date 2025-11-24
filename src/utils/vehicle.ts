@@ -40,7 +40,7 @@ export function normalizeVehicleCategory(type: string): 'car' | 'bike' | 'other'
   const normalized = type.toLowerCase();
   if (normalized === 'bike') return 'bike';
   if (normalized === 'car') return 'car';
-  const BIKE_KEYWORDS = ['bike', 'motorcycle', 'scooter'];
+  const BIKE_KEYWORDS = ['bike', 'motorcycle', 'scooter', 'super-bike', 'sports-bike', 'cruiser', 'scooty'];
   const CAR_KEYWORDS = ['car', 'sedan', 'suv', 'hatchback', 'crossover', 'mpv', 'pickup'];
   if (BIKE_KEYWORDS.some((keyword) => normalized.includes(keyword))) return 'bike';
   if (CAR_KEYWORDS.some((keyword) => normalized.includes(keyword))) return 'car';
