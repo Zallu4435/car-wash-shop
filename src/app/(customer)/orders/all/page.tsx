@@ -5,17 +5,21 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Pagination } from '@/components/admin/Pagination';
 import { FilterSheet } from '@/components/shared/filters/FilterSheet';
 import { useOrders } from '@/api/domains/orders/queries';
 import { useBookings } from '@/api/domains/bookings/queries';
-import { Package, Calendar, ChevronRight, ShoppingBag, ArrowLeft, Search, Filter, X, Car, SlidersHorizontal, Wrench } from 'lucide-react';
+import { Package, Calendar, ChevronRight, ShoppingBag, ArrowLeft, Search, Filter, X, SlidersHorizontal, Wrench } from 'lucide-react';
 import { useState, useEffect, useMemo } from 'react';
+import type { ComponentProps } from 'react';
 import Loading from '@/components/shared/display/Loading';
 import { EmptyState } from '@/components/shared/display/EmptyState';
 import { CustomerRoutes } from '@/lib/constants/routes';
+import type { Order as ProductOrder } from '@/types/order';
+import type { Booking } from '@/types/booking';
+
+type MixedOrder = (ProductOrder & { _type: 'order' }) | (Booking & { _type: 'booking' });
 
 export default function AllOrdersPage() {
   // Fetch both orders and bookings
@@ -30,21 +34,19 @@ export default function AllOrdersPage() {
   const [pageSize, setPageSize] = useState(6);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
-  // Merge orders and bookings
-  const productOrders = ordersResponse?.data || [];
-  const serviceBookings = bookingsResponse?.data || [];
-  
-  // Combine and mark each with a type
-  const allOrders = useMemo(() => {
-    const combined = [
+  const allOrders = useMemo<MixedOrder[]>(() => {
+    const productOrders = ordersResponse?.data ?? [];
+    const serviceBookings = bookingsResponse?.data ?? [];
+    
+    const combined: MixedOrder[] = [
       ...productOrders.map(order => ({ ...order, _type: 'order' as const })),
-      ...serviceBookings.map(booking => ({ ...booking, _type: 'booking' as const }))
+      ...serviceBookings.map(booking => ({ ...booking, _type: 'booking' as const })),
     ];
-    // Sort by creation date, newest first
-    return combined.sort((a, b) => 
+    
+    return combined.sort((a, b) =>
       new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
     );
-  }, [productOrders, serviceBookings]);
+  }, [ordersResponse?.data, bookingsResponse?.data]);
 
   const orders = allOrders;
   
@@ -65,18 +67,37 @@ export default function AllOrdersPage() {
   if (isLoading) { return <Loading text="Loading orders..." /> }
 
   const filteredOrders = orders.filter(order => {
-    const serviceName = order.serviceName?.toLowerCase() || '';
-    const isBooking = (order as any)._type === 'booking';
-    
-    const matchesSearch = order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      serviceName.includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || order.status.toLowerCase() === statusFilter;
+    const isBooking = order._type === 'booking';
+    const normalizedSearch = searchQuery.toLowerCase();
+    const normalizedStatus = (order.status || '').toLowerCase();
+    const matchesStatus = statusFilter === 'all' || normalizedStatus === statusFilter;
 
     let matchesType = true;
     if (typeFilter === 'services') {
       matchesType = isBooking;
     } else if (typeFilter === 'products') {
       matchesType = !isBooking;
+    }
+
+    const baseId = (order.id || '').toString().toLowerCase();
+    let matchesSearch = true;
+    if (normalizedSearch) {
+      if (isBooking) {
+        const serviceName = (order.serviceName || '').toLowerCase();
+        matchesSearch =
+          baseId.includes(normalizedSearch) ||
+          serviceName.includes(normalizedSearch);
+      } else {
+        const orderNumber = (order.orderNumber || '').toLowerCase();
+        const items = order.items ?? [];
+        const itemMatch = items.some(item =>
+          (item.productName || '').toLowerCase().includes(normalizedSearch)
+        );
+        matchesSearch =
+          orderNumber.includes(normalizedSearch) ||
+          baseId.includes(normalizedSearch) ||
+          itemMatch;
+      }
     }
 
     return matchesSearch && matchesStatus && matchesType;
@@ -114,7 +135,8 @@ export default function AllOrdersPage() {
     searchQuery !== ''
   ].filter(Boolean).length;
 
-  const getStatusVariant = (status: string) => {
+  type BadgeVariant = ComponentProps<typeof Badge>['variant'];
+  const getStatusVariant = (status: string): BadgeVariant => {
     switch (status.toLowerCase()) {
       case 'delivered':
       case 'completed':
@@ -216,7 +238,31 @@ export default function AllOrdersPage() {
             <>
               <div className="space-y-3 sm:space-y-4 mb-6 sm:mb-8">
                 {paginatedOrders.map((order) => {
-                  const isBooking = (order as any)._type === 'booking';
+                  const isBooking = order._type === 'booking';
+                  const bookingData = isBooking ? order : null;
+                  const productData = !isBooking ? order : null;
+
+                  const detailHref = isBooking
+                    ? CustomerRoutes.ORDER_SERVICE_DETAIL(order.id)
+                    : CustomerRoutes.ORDER_PRODUCT_DETAIL(order.id);
+                  const primaryLabel = isBooking
+                    ? bookingData?.serviceName || 'Service Booking'
+                    : (productData?.items?.[0]?.productName ?? 'Product Order');
+                  const amountValue = isBooking
+                    ? bookingData?.amount ?? bookingData?.totalAmount ?? 0
+                    : productData?.totalAmount ?? productData?.subtotal ?? 0;
+                  const orderIdentifier = isBooking
+                    ? order.id
+                    : order.orderNumber || order.id;
+                  const additionalItems = !isBooking
+                    ? Math.max(((productData?.items?.length) ?? 0) - 1, 0)
+                    : 0;
+                  const displayDate = order.createdAt
+                    ? new Date(order.createdAt).toLocaleDateString()
+                    : 'Date unavailable';
+                  const productQuantity = !isBooking
+                    ? productData?.items?.[0]?.quantity ?? 1
+                    : 1;
 
                   return (
                     <Card key={order.id} className="hover:shadow-lg transition-shadow border-2 border-border">
@@ -230,28 +276,35 @@ export default function AllOrdersPage() {
                             )}
                             <div className="min-w-0 flex-1">
                               <p className="font-mono font-bold text-sm sm:text-base text-foreground truncate">
-                                {order.id}
+                                {orderIdentifier}
                               </p>
                               <div className="flex items-center gap-1.5 sm:gap-2 mt-0.5 sm:mt-1 text-xs sm:text-sm text-muted-foreground">
                                 <Calendar className="h-3 w-3 sm:h-3.5 sm:w-3.5 flex-shrink-0" />
-                                <span className="truncate">{new Date(order.createdAt || Date.now()).toLocaleDateString()}</span>
+                                <span className="truncate">{displayDate}</span>
                               </div>
                               <Badge variant="outline" className="mt-1.5 sm:mt-2 text-xs">
                                 {isBooking ? 'Service Booking' : 'Product Order'}
                               </Badge>
                             </div>
                           </div>
-                          <Badge variant={getStatusVariant(order.status) as any} className="text-xs sm:text-sm w-fit">
+                          <Badge variant={getStatusVariant(order.status)} className="text-xs sm:text-sm w-fit">
                             {order.status}
                           </Badge>
                         </div>
 
                         <div className="space-y-1.5 sm:space-y-2 mb-3 sm:mb-4 p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl">
                           <div className="flex justify-between text-xs sm:text-sm gap-2">
-                            <span className="text-foreground truncate flex-1">{order.serviceName || 'Order'}</span>
-                            <span className="text-muted-foreground flex-shrink-0">× 1</span>
+                                <span className="text-foreground truncate flex-1">{primaryLabel}</span>
+                                <span className="text-muted-foreground flex-shrink-0">
+                                  × {productQuantity}
+                                </span>
                           </div>
-                          {order.vehicleDetails && (
+                          {!isBooking && additionalItems > 0 && (
+                            <p className="text-[11px] sm:text-xs text-muted-foreground">
+                              + {additionalItems} more item{additionalItems > 1 ? 's' : ''}
+                            </p>
+                          )}
+                          {isBooking && order.vehicleDetails && (
                             <div className="text-xs text-muted-foreground">
                               {order.vehicleDetails.model} • {order.vehicleDetails.number}
                             </div>
@@ -261,10 +314,10 @@ export default function AllOrdersPage() {
                         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 pt-3 sm:pt-4 border-t border-border">
                           <div>
                             <p className="text-xs sm:text-sm text-muted-foreground mb-0.5 sm:mb-1">Total Amount</p>
-                            <p className="text-xl sm:text-2xl font-bold text-primary">₹{(order as any).amount || order.totalAmount || 0}</p>
+                            <p className="text-xl sm:text-2xl font-bold text-primary">₹{amountValue}</p>
                           </div>
                           <Button asChild variant="outline" className="group w-full sm:w-auto h-9 sm:h-10" size="sm">
-                            <Link href={CustomerRoutes.ORDER_DETAIL(order.id)} className="text-xs sm:text-sm">
+                            <Link href={detailHref} className="text-xs sm:text-sm">
                               View Details
                               <ChevronRight className="ml-1 h-3.5 w-3.5 sm:h-4 sm:w-4 group-hover:translate-x-1 transition-transform" />
                             </Link>

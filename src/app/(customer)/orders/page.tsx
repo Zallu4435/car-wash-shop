@@ -2,270 +2,282 @@
 
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { useOrders } from '@/api/domains/orders/queries';
 import { useBookings } from '@/api/domains/bookings/queries';
-import { Package, Calendar, ChevronRight, ShoppingBag, Car, Clock, ArrowRight, Wrench } from 'lucide-react';
-import { EmptyState } from '@/components/shared/display/EmptyState';
 import Loading from '@/components/shared/display/Loading';
+import {
+  Package,
+  ShoppingBag,
+  Car,
+  Clock,
+  ChevronRight,
+  CalendarDays,
+} from 'lucide-react';
 import Error from '@/components/shared/display/Error';
-import { useMemo } from 'react';
 import { CustomerRoutes } from '@/lib/constants/routes';
+import { useMemo } from 'react';
+import type { Booking } from '@/types/booking';
+import type { Order } from '@/types/order';
+import type { LucideIcon } from 'lucide-react';
 
-export default function OrdersLandingPage() {
-  // API calls - fetch both orders and bookings
-  const { data: ordersResponse, isLoading: ordersLoading, error: ordersError, refetch: refetchOrders } = useOrders({ limit: 10 });
-  const { data: bookingsResponse, isLoading: bookingsLoading, error: bookingsError, refetch: refetchBookings } = useBookings();
-  
-  const isLoading = ordersLoading || bookingsLoading;
-  const error = ordersError || bookingsError;
-  
-  const productOrders = ordersResponse?.data || [];
-  const serviceBookings = bookingsResponse?.data || [];
-  
-  // Combine all orders and bookings
-  const allOrders = useMemo(() => {
-    const combined = [
-      ...productOrders.map(order => ({ ...order, _type: 'order' as const })),
-      ...serviceBookings.map(booking => ({ ...booking, _type: 'booking' as const }))
-    ];
-    return combined.sort((a, b) => 
-      new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+// --- 1. Unified Type Definition ---
+type ActivityType = 'service' | 'product';
+
+interface UnifiedActivity {
+  id: string;
+  type: ActivityType;
+  title: string;
+  status: string;
+  date: string;
+  amount: number;
+  detailLink: string;
+  meta?: string;
+}
+
+export default function OrdersPage() {
+  const { 
+    data: productData, 
+    isLoading: loadingProducts, 
+    error: productError 
+  } = useOrders({ limit: 5, page: 1 });
+
+  const { 
+    data: serviceData, 
+    isLoading: loadingServices, 
+    error: serviceError 
+  } = useBookings({ limit: 5, page: 1 });
+
+  const { recentOrders, stats } = useMemo(() => {
+    const rawProducts: Order[] = productData?.data || [];
+    const rawServices: Booking[] = serviceData?.data || [];
+    
+    const productTotal = productData?.total ?? rawProducts.length;
+    const serviceTotal = serviceData?.total ?? rawServices.length;
+
+    const normalizedProducts: UnifiedActivity[] = rawProducts.map(order => ({
+      id: order.id,
+      type: 'product',
+      title: order.items?.[0]?.productName || `Order #${order.orderNumber}`,
+      status: order.status,
+      date: order.createdAt,
+      amount: order.totalAmount ?? order.subtotal ?? 0,
+      detailLink: CustomerRoutes.ORDER_PRODUCT_DETAIL(order.id),
+      meta: order.orderNumber ? `#${order.orderNumber}` : undefined
+    }));
+
+    const normalizedServices: UnifiedActivity[] = rawServices.map(booking => ({
+      id: booking.id,
+      type: 'service',
+      title: booking.serviceName,
+      status: booking.status,
+      date: booking.scheduledAt || booking.createdAt,
+      amount: booking.amount || booking.totalAmount || 0,
+      detailLink: CustomerRoutes.ORDER_SERVICE_DETAIL(booking.id),
+      meta: booking.vehicleDetails ? `${booking.vehicleDetails.model} (${booking.vehicleDetails.number})` : undefined
+    }));
+
+    const combined = [...normalizedProducts, ...normalizedServices].sort((a, b) => 
+      new Date(b.date).getTime() - new Date(a.date).getTime()
     );
-  }, [productOrders, serviceBookings]);
 
-  const recentOrders = allOrders.slice(0, 3);
-  const allServiceOrders = serviceBookings;
-  const allProductOrders = productOrders;
+    return {
+      recentOrders: combined.slice(0, 5),
+      stats: {
+        products: productTotal,
+        services: serviceTotal
+      }
+    };
+  }, [productData, serviceData]);
 
-  const getStatusVariant = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'delivered':
-      case 'completed':
-        return 'default';
-      case 'pending':
-      case 'processing':
-        return 'secondary';
-      case 'cancelled':
-        return 'destructive';
-      default:
-        return 'outline';
-    }
-  };
+  const isLoading = loadingProducts || loadingServices;
+  const error = productError || serviceError;
+  const errorMessage =
+    error && typeof error === 'object' && 'message' in error
+      ? String((error as { message?: string }).message)
+      : undefined;
 
-  const orderCategories = [
-    {
-      id: 'services',
-      title: 'All Services',
-      description: 'Car wash, bike service, and home cleaning',
-      icon: Car,
-      count: allServiceOrders.length,
-      color: 'bg-blue-50 dark:bg-blue-950/20',
-      iconColor: 'text-blue-600 dark:text-blue-400',
-      href: CustomerRoutes.ORDERS_SERVICES,
-    },
-    {
-      id: 'products',
-      title: 'Product Orders',
-      description: 'Track your product purchases and deliveries',
-      icon: ShoppingBag,
-      count: allProductOrders.length,
-      color: 'bg-purple-50 dark:bg-purple-950/20',
-      iconColor: 'text-purple-600 dark:text-purple-400',
-      href: CustomerRoutes.ORDERS_PRODUCTS,
-    },
-  ];
-
-  // Loading state
-  if (isLoading) {
-    return <Loading text="Loading orders..." />;
-  }
-
-  // Error state
   if (error) {
-    return (
-      <Error 
-        message="Failed to load orders" 
-        details={(error as any)?.message}
-        onRetry={() => {
-          refetchOrders();
-          refetchBookings();
-        }}
-      />
-    );
+    return <Error message="Failed to load orders" details={errorMessage} />;
   }
 
   return (
-    <div className="min-h-screen bg-background pb-32 lg:pb-8">
-      {/* Header Section */}
-      <section className="sticky top-0 z-10 border-b border-border/40 bg-background/80 backdrop-blur-sm">
-        <div className="container-custom py-4 sm:py-6">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-lg bg-primary/10 text-primary">
-              <Package className="h-6 w-6" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">My Orders</h1>
-              <p className="text-sm text-muted-foreground mt-0.5">
-                Track and manage all your orders
-              </p>
-            </div>
-          </div>
+    <div className="min-h-screen bg-muted/10 pb-20">
+      <header className="bg-background border-b sticky top-0 z-20">
+        <div className="container-custom py-6">
+          <h1 className="text-3xl font-bold tracking-tight">Orders</h1>
+          <p className="text-muted-foreground">Your recent services and product purchases at a glance.</p>
         </div>
-      </section>
+      </header>
 
-      {/* Main Content */}
-      <section className="py-6 sm:py-8 lg:py-12">
-        <div className="container-custom">
-          {/* Order Categories */}
-          <div className="mb-8 sm:mb-10 lg:mb-12">
-            <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground mb-4 sm:mb-6">
-              Browse Orders By Type
+      <main className="container-custom py-8 space-y-8">
+        <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <OverviewCard 
+            title="Active Services" 
+            count={stats.services} 
+            icon={Car}
+            href={CustomerRoutes.ORDERS_SERVICES}
+            color="text-blue-600"
+            bgColor="bg-blue-50 dark:bg-blue-950/30"
+            loading={isLoading}
+          />
+          <OverviewCard 
+            title="Product Orders" 
+            count={stats.products} 
+            icon={ShoppingBag}
+            href={CustomerRoutes.ORDERS_PRODUCTS}
+            color="text-purple-600"
+            bgColor="bg-purple-50 dark:bg-purple-950/30"
+            loading={isLoading}
+          />
+        </section>
+
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold flex items-center gap-2">
+              <Clock className="h-5 w-5 text-muted-foreground" />
+              Recent Orders & Services
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-              {orderCategories.map((category) => {
-                const Icon = category.icon;
-                return (
-                  <Link key={category.id} href={category.href}>
-                    <Card className="border-2 border-border hover:shadow-lg transition-all duration-300 cursor-pointer group h-full">
-                      <CardContent className="p-5 sm:p-6 md:p-8">
-                        <div className="flex items-start justify-between mb-3 sm:mb-4">
-                          <Icon className={`h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 ${category.iconColor} group-hover:scale-110 transition-transform`} />
-                          <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
-                        </div>
-                        
-                        <h3 className="text-base sm:text-lg md:text-xl font-bold text-foreground mb-1.5 sm:mb-2 group-hover:text-primary transition-colors">
-                          {category.title}
-                        </h3>
-                        <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">
-                          {category.description}
-                        </p>
-                        
-                        <div className="flex items-center justify-between pt-3 sm:pt-4 border-t border-border">
-                          <div>
-                            <p className="text-2xl sm:text-3xl font-bold text-foreground">{category.count}</p>
-                            <p className="text-xs text-muted-foreground mt-0.5 sm:mt-1">
-                              {category.count === 1 ? 'order' : 'orders'}
-                            </p>
-                          </div>
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="border-2 group-hover:bg-primary group-hover:text-primary-foreground transition-colors h-8 sm:h-9 text-xs sm:text-sm"
-                          >
-                            View All
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </Link>
-                );
-              })}
-            </div>
+            
           </div>
 
-          {/* Divider */}
-          <div className="relative py-4 sm:py-6 mb-8 sm:mb-10 lg:mb-12">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-border"></div>
+          {isLoading ? (
+            <div className="space-y-3">
+              <Loading text="Loading recent orders..." />
             </div>
-            <div className="relative flex justify-center">
-              <div className="bg-background px-3 sm:px-4">
-                <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-              </div>
+          ) : recentOrders.length > 0 ? (
+            <div className="space-y-3">
+              {recentOrders.map((item) => (
+                <ActivityItem key={`${item.type}-${item.id}`} item={item} />
+              ))}
             </div>
-          </div>
-
-          {/* Recent Orders */}
-          <div>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
-              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground">Recent Orders</h2>
-              <Button asChild variant="outline" size="sm" className="border-2 w-full sm:w-auto h-9 sm:h-10">
-                <Link href={CustomerRoutes.ORDERS_ALL} className="text-xs sm:text-sm">View All Orders</Link>
-              </Button>
-            </div>
-
-            {recentOrders.length > 0 ? (
-              <div className="space-y-3 sm:space-y-4">
-                {recentOrders.map((order) => {
-                  const isBooking = (order as any)._type === 'booking';
-                  
-                  return (
-                    <Card key={order.id} className="hover:shadow-lg transition-shadow border-2 border-border">
-                      <CardContent className="p-4 sm:p-5 md:p-6">
-                        {/* Order Header */}
-                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-3 sm:mb-4 pb-3 sm:pb-4 border-b border-border">
-                          <div className="flex items-start gap-2 sm:gap-3 min-w-0 flex-1">
-                            {isBooking ? (
-                              <Wrench className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
-                            ) : (
-                              <ShoppingBag className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600 dark:text-purple-400 flex-shrink-0" />
-                            )}
-                            <div className="min-w-0 flex-1">
-                              <p className="font-mono font-bold text-sm sm:text-base text-foreground truncate">
-                                {order.id}
-                              </p>
-                              <div className="flex items-center gap-1.5 sm:gap-2 mt-0.5 sm:mt-1 text-xs sm:text-sm text-muted-foreground">
-                                <Calendar className="h-3 w-3 sm:h-3.5 sm:w-3.5 flex-shrink-0" />
-                                <span className="truncate">{new Date(order.createdAt || Date.now()).toLocaleDateString()}</span>
-                              </div>
-                              <Badge variant="outline" className="mt-1.5 sm:mt-2 text-xs">
-                                {isBooking ? 'Service' : 'Product'}
-                              </Badge>
-                            </div>
-                          </div>
-                          <Badge variant={getStatusVariant(order.status) as any} className="text-xs sm:text-sm w-fit">
-                            {order.status}
-                          </Badge>
-                        </div>
-                        
-                        {/* Order Items */}
-                        <div className="space-y-1.5 sm:space-y-2 mb-3 sm:mb-4 p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl">
-                          <div className="flex justify-between text-xs sm:text-sm gap-2">
-                            <span className="text-foreground truncate flex-1">{order.serviceName || 'Order'}</span>
-                            <span className="text-muted-foreground flex-shrink-0">× 1</span>
-                          </div>
-                        </div>
-
-                        {/* Order Footer */}
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 pt-3 sm:pt-4 border-t border-border">
-                          <div>
-                            <p className="text-xs sm:text-sm text-muted-foreground mb-0.5 sm:mb-1">Total Amount</p>
-                            <p className="text-xl sm:text-2xl font-bold text-primary">₹{(order as any).amount || order.totalAmount || 0}</p>
-                          </div>
-                          <Button asChild variant="outline" className="border-2 group w-full sm:w-auto h-9 sm:h-10" size="sm">
-                            <Link href={CustomerRoutes.ORDER_DETAIL(order.id)} className="text-xs sm:text-sm">
-                              View Details
-                              <ChevronRight className="ml-1 h-3.5 w-3.5 sm:h-4 sm:w-4 group-hover:translate-x-1 transition-transform" />
-                            </Link>
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            ) : (
-              <EmptyState
-                icon={Package}
-                title="No orders yet"
-                description="Start shopping to see your orders here"
-                action={
-                  <div className="flex flex-col sm:flex-row gap-3 justify-center px-4">
-                    <Button asChild className="border-2 w-full sm:w-auto h-10 sm:h-11">
-                      <Link href={CustomerRoutes.SERVICES} className="text-sm sm:text-base">Browse Services</Link>
-                    </Button>
-                    <Button asChild variant="outline" className="border-2 w-full sm:w-auto h-10 sm:h-11">
-                      <Link href={CustomerRoutes.PRODUCTS} className="text-sm sm:text-base">Browse Products</Link>
-                    </Button>
-                  </div>
-                }
-              />
-            )}
-          </div>
-        </div>
-      </section>
+          ) : (
+            <EmptyOrdersState />
+          )}
+        </section>
+      </main>
     </div>
   );
+}
+
+// --- Sub-Components ---
+
+interface OverviewCardProps {
+  title: string;
+  count: number;
+  icon: LucideIcon;
+  href: string;
+  color: string;
+  bgColor: string;
+  loading: boolean;
+}
+
+function OverviewCard({ title, count, icon: Icon, href, color, bgColor, loading }: OverviewCardProps) {
+  return (
+    <Link href={href} className="block h-full">
+      <Card className="h-full border hover:border-primary/50 transition-colors cursor-pointer">
+        <CardContent className="p-6 flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-muted-foreground mb-1">{title}</p>
+            {loading ? (
+              <div className="animate-pulse h-8 w-16 bg-muted rounded" />
+            ) : (
+              <div className="flex items-baseline gap-1">
+                <h3 className="text-3xl font-bold">{count}</h3>
+                <span className="text-xs text-muted-foreground">total</span>
+              </div>
+            )}
+          </div>
+          <div className={`h-12 w-12 rounded-full flex items-center justify-center ${bgColor} ${color}`}>
+            <Icon className="h-6 w-6" />
+          </div>
+        </CardContent>
+      </Card>
+    </Link>
+  );
+}
+
+function ActivityItem({ item }: { item: UnifiedActivity }) {
+  const isService = item.type === 'service';
+  const Icon = isService ? Car : Package;
+  const statusColor = getStatusColor(item.status);
+
+  return (
+    <Link href={item.detailLink}>
+      <Card className="group hover:border-primary/40 transition-colors">
+        <CardContent className="p-4 flex items-center gap-4">
+          <div className={`h-10 w-10 rounded-lg flex items-center justify-center shrink-0 ${isService ? 'bg-blue-100/50 text-blue-600' : 'bg-purple-100/50 text-purple-600'}`}>
+            <Icon className="h-5 w-5" />
+          </div>
+
+          <div className="flex-1 min-w-0">
+            <div className="flex justify-between items-start">
+              <h4 className="font-semibold truncate text-foreground group-hover:text-primary transition-colors">
+                {item.title}
+              </h4>
+              <Badge variant="outline" className={`hidden sm:inline-flex capitalize ${statusColor} border-0 bg-opacity-10`}>
+                {item.status}
+              </Badge>
+            </div>
+            
+            <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
+              <span className="flex items-center gap-1">
+                <CalendarDays className="h-3.5 w-3.5" />
+                {new Date(item.date).toLocaleDateString()}
+              </span>
+              {item.meta && (
+                <>
+                  <span className="w-1 h-1 rounded-full bg-muted-foreground/40" />
+                  <span className="truncate max-w-[150px] sm:max-w-xs">{item.meta}</span>
+                </>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4 text-right">
+            <div>
+              <p className="font-bold text-foreground">₹{item.amount}</p>
+              <Badge variant="outline" className={`sm:hidden capitalize text-[10px] h-5 px-1.5 ${statusColor} border-0 bg-opacity-10`}>
+                {item.status}
+              </Badge>
+            </div>
+            <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+          </div>
+        </CardContent>
+      </Card>
+    </Link>
+  );
+}
+
+function EmptyOrdersState() {
+  return (
+    <Card className="border-dashed">
+      <CardContent className="py-12 flex flex-col items-center text-center">
+        <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center mb-4">
+          <Package className="h-6 w-6 text-muted-foreground" />
+        </div>
+        <h3 className="font-semibold text-lg">No orders yet</h3>
+        <p className="text-muted-foreground max-w-sm mb-6">
+          Book a service or buy a product to get started.
+        </p>
+        <div className="flex gap-3">
+          <Button asChild variant="outline">
+            <Link href={CustomerRoutes.SERVICES}>Book Service</Link>
+          </Button>
+          <Button asChild>
+            <Link href={CustomerRoutes.PRODUCTS}>Shop Products</Link>
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function getStatusColor(status: string) {
+  const s = status.toLowerCase();
+  if (['completed', 'delivered'].includes(s)) return 'text-green-600 bg-green-100';
+  if (['cancelled', 'failed'].includes(s)) return 'text-red-600 bg-red-100';
+  if (['pending', 'processing'].includes(s)) return 'text-amber-600 bg-amber-100';
+  return 'text-slate-600 bg-slate-100';
 }

@@ -23,6 +23,9 @@ export default function CancelOrderPage({ params }: { params: Promise<{ id: stri
   
   // Determine if it's a booking based on ID prefix
   const isBooking = id.startsWith('booking_');
+  const detailHref = isBooking
+    ? CustomerRoutes.ORDER_SERVICE_DETAIL(id)
+    : CustomerRoutes.ORDER_PRODUCT_DETAIL(id);
   
   const cancelOrderMutation = useCancelOrder();
   const cancelBookingMutation = useCancelBooking();
@@ -68,7 +71,7 @@ export default function CancelOrderPage({ params }: { params: Promise<{ id: stri
       {/* Header */}
       <section className="bg-gradient-to-br from-red-50 to-background dark:from-red-950/20 border-b border-border">
         <div className="container-custom py-8">
-          <Link href={CustomerRoutes.ORDER_DETAIL(id)}>
+          <Link href={detailHref}>
             <Button variant="ghost" className="mb-4 hover:bg-muted">
               <ArrowLeft className="mr-2 h-4 w-4" />
               {isBooking ? 'Back to Booking' : 'Back to Order'}

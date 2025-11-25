@@ -9,14 +9,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Pagination } from '@/components/admin/Pagination';
 import { FilterSheet } from '@/components/shared/filters/FilterSheet';
 import { useOrders } from '@/api/domains/orders/queries';
-import { Package, Calendar, ChevronRight, Car, ArrowLeft, Search, Filter, ShoppingBag, SlidersHorizontal, X } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { Package, Calendar, ChevronRight, Car, ArrowLeft, Search, Filter, ShoppingBag, SlidersHorizontal } from 'lucide-react';
+import { useState, useMemo } from 'react';
 import { EmptyState } from '@/components/shared/display/EmptyState';
 import { CustomerRoutes } from '@/lib/constants/routes';
+import Loading from '@/components/shared/display/Loading';
+import Error from '@/components/shared/display/Error';
+import type { ComponentProps } from 'react';
 
 export default function ProductOrdersPage() {
-  const { data: ordersResponse } = useOrders({ type: 'product' });
-  const orders = ordersResponse?.data || [];
+  const { data: ordersResponse, isLoading, error, refetch } = useOrders({ type: 'product' });
+  const orders = ordersResponse?.data ?? [];
+  const totalProductOrders = ordersResponse?.total ?? orders.length;
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [showFilters, setShowFilters] = useState(false);
@@ -29,37 +33,40 @@ export default function ProductOrdersPage() {
     setCurrentPage(1);
   };
 
-  const productOrders = orders.filter(order => {
-    const serviceName = order.serviceName?.toLowerCase() || '';
-    return !serviceName.includes('wash') && 
-      !serviceName.includes('service') &&
-      !serviceName.includes('cleaning') &&
-      !serviceName.includes('bike') &&
-      !serviceName.includes('car');
-  });
-
-  const filteredOrders = productOrders.filter(order => {
-    const serviceName = order.serviceName?.toLowerCase() || '';
-    const matchesSearch = order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      serviceName.includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || order.status.toLowerCase() === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+  const filteredOrders = useMemo(() => {
+    const currentOrders = ordersResponse?.data ?? [];
+    const normalizedSearch = searchQuery.toLowerCase();
+    return currentOrders.filter(order => {
+      const orderNumber = (order.orderNumber || order.id || '').toString().toLowerCase();
+      const status = order.status?.toLowerCase?.() || '';
+      const matchesSearch =
+        orderNumber.includes(normalizedSearch) ||
+        order.items?.some(item =>
+          (item.productName || '').toLowerCase().includes(normalizedSearch)
+        );
+      const matchesStatus = statusFilter === 'all' || status === statusFilter;
+      return matchesSearch && matchesStatus;
+    });
+  }, [ordersResponse?.data, searchQuery, statusFilter]);
 
   // Pagination
   const totalItems = filteredOrders.length;
   const totalPages = Math.ceil(totalItems / pageSize);
   const startIndex = (currentPage - 1) * pageSize;
-  const endIndex = startIndex + pageSize;
+  const endIndex = Math.min(startIndex + pageSize, totalItems);
   const paginatedOrders = filteredOrders.slice(startIndex, endIndex);
+  
+  // Count display text - shows product order count (not bookings)
+  const getCountText = () => {
+    if (totalProductOrders === 0) return 'No product orders yet';
+    if (totalProductOrders === 1) return '1 product order';
+    return `${totalProductOrders} product orders`;
+  };
 
-  // Reset to page 1 when filters change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery, statusFilter]);
-
-  const getStatusVariant = (status: string) => {
-    switch (status.toLowerCase()) {
+  type BadgeVariant = ComponentProps<typeof Badge>['variant'];
+  const getStatusVariant = (status?: string): BadgeVariant => {
+    const normalized = status?.toLowerCase?.() || '';
+    switch (normalized) {
       case 'delivered':
       case 'completed':
         return 'default';
@@ -77,6 +84,24 @@ export default function ProductOrdersPage() {
     statusFilter !== 'all',
     searchQuery !== ''
   ].filter(Boolean).length;
+
+  if (isLoading) {
+    return <Loading text="Loading product orders..." />;
+  }
+
+  if (error) {
+    const errorMessage =
+      error && typeof error === 'object' && 'message' in error
+        ? String((error as { message?: string }).message)
+        : undefined;
+    return (
+      <Error
+        message="Failed to load product orders"
+        details={errorMessage}
+        onRetry={() => refetch()}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background pb-32 lg:pb-8">
@@ -96,7 +121,7 @@ export default function ProductOrdersPage() {
             <div>
               <h1 className="text-3xl font-bold tracking-tight">Product Orders</h1>
               <p className="text-sm text-muted-foreground mt-0.5">
-                {filteredOrders.length} product {filteredOrders.length === 1 ? 'order' : 'orders'}
+                {getCountText()}
               </p>
             </div>
           </div>
@@ -130,14 +155,23 @@ export default function ProductOrdersPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Search by order ID or product name..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10"
-                    />
+                  <Input
+                    placeholder="Search by order ID or product name..."
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      setCurrentPage(1);
+                    }}
+                    className="pl-10"
+                  />
                   </div>
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <Select
+                  value={statusFilter}
+                  onValueChange={(value) => {
+                    setStatusFilter(value);
+                    setCurrentPage(1);
+                  }}
+                >
                     <SelectTrigger>
                       <SelectValue placeholder="Filter by status" />
                     </SelectTrigger>
@@ -158,49 +192,72 @@ export default function ProductOrdersPage() {
           {filteredOrders.length > 0 ? (
             <>
               <div className="space-y-3 sm:space-y-4">
-                {paginatedOrders.map((order) => (
-                <Card key={order.id} className="hover:shadow-lg transition-shadow border-2 border-border">
+                {paginatedOrders.map((order) => {
+                const orderId = (order.id ?? order._id ?? '').toString() || 'N/A';
+                const createdAt = order.createdAt || order.updatedAt;
+                const createdAtLabel = createdAt ? new Date(createdAt).toLocaleDateString() : 'Date unavailable';
+                const firstItem = order.items?.[0];
+                const totalAmount = order.totalAmount ?? order.subtotal ?? 0;
+                const status = order.status || 'N/A';
+                const additionalItems = Math.max((order.items?.length || 0) - 1, 0);
+
+                return (
+                <Card key={`${orderId}-${firstItem?.productName || 'product'}`} className="hover:shadow-lg transition-shadow border-2 border-border">
                   <CardContent className="p-4 sm:p-5 md:p-6">
                     <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-3 sm:mb-4 pb-3 sm:pb-4 border-b border-border">
                       <div className="flex items-start gap-2 sm:gap-3 min-w-0 flex-1">
-                        <ShoppingBag className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600 dark:text-purple-400 flex-shrink-0" />
+                        <ShoppingBag className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600 dark:text-purple-400 shrink-0" />
                         <div className="min-w-0 flex-1">
                           <p className="font-mono font-bold text-sm sm:text-base text-foreground truncate">
-                            {order.id}
+                            {order.orderNumber || orderId}
                           </p>
                           <div className="flex items-center gap-1.5 sm:gap-2 mt-0.5 sm:mt-1 text-xs sm:text-sm text-muted-foreground">
-                            <Calendar className="h-3 w-3 sm:h-3.5 sm:w-3.5 flex-shrink-0" />
-                            <span className="truncate">{new Date(order.createdAt).toLocaleDateString()}</span>
+                            <Calendar className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" />
+                            <span className="truncate">{createdAtLabel}</span>
                           </div>
                         </div>
                       </div>
-                      <Badge variant={getStatusVariant(order.status) as any} className="text-xs sm:text-sm w-fit">
-                        {order.status}
+                      <Badge variant={getStatusVariant(status)} className="text-xs sm:text-sm w-fit">
+                        {status}
                       </Badge>
                     </div>
                     
                     <div className="space-y-1.5 sm:space-y-2 mb-3 sm:mb-4 p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl">
                       <div className="flex justify-between text-xs sm:text-sm gap-2">
-                        <span className="text-foreground truncate flex-1">{order.serviceName}</span>
-                        <span className="text-muted-foreground flex-shrink-0">× 1</span>
+                        <span className="text-foreground truncate flex-1">
+                          {firstItem?.productName || 'Product item'}
+                        </span>
+                        <span className="text-muted-foreground shrink-0">× {firstItem?.quantity ?? 1}</span>
                       </div>
+                      {additionalItems > 0 && (
+                        <p className="text-[11px] sm:text-xs text-muted-foreground">
+                          + {additionalItems} more item{additionalItems > 1 ? 's' : ''}
+                        </p>
+                      )}
                     </div>
 
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 pt-3 sm:pt-4 border-t border-border">
                       <div>
                         <p className="text-xs sm:text-sm text-muted-foreground mb-0.5 sm:mb-1">Total Amount</p>
-                        <p className="text-xl sm:text-2xl font-bold text-primary">₹{order.totalAmount}</p>
+                        <p className="text-xl sm:text-2xl font-bold text-primary">₹{totalAmount}</p>
                       </div>
-                      <Button asChild variant="outline" className="border-2 group w-full sm:w-auto h-9 sm:h-10" size="sm">
-                        <Link href={CustomerRoutes.ORDER_DETAIL(order.id)} className="text-xs sm:text-sm">
+                      {orderId !== 'N/A' ? (
+                        <Button asChild variant="outline" className="border-2 group w-full sm:w-auto h-9 sm:h-10" size="sm">
+                          <Link href={CustomerRoutes.ORDER_PRODUCT_DETAIL(orderId)} className="text-xs sm:text-sm">
+                            View Details
+                            <ChevronRight className="ml-1 h-3.5 w-3.5 sm:h-4 sm:w-4 group-hover:translate-x-1 transition-transform" />
+                          </Link>
+                        </Button>
+                      ) : (
+                        <Button variant="outline" className="border-2 w-full sm:w-auto h-9 sm:h-10" size="sm" disabled>
                           View Details
-                          <ChevronRight className="ml-1 h-3.5 w-3.5 sm:h-4 sm:w-4 group-hover:translate-x-1 transition-transform" />
-                        </Link>
-                      </Button>
+                          <ChevronRight className="ml-1 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                        </Button>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
-                ))}
+                );})}
               </div>
 
               {/* Pagination */}

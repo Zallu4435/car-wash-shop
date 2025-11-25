@@ -13,15 +13,6 @@ const notesValidation = z
   .optional()
   .or(z.literal(''));
 
-// Payment method validation
-const paymentMethodValidation = z
-  .string()
-  .min(1, 'Please select a payment method')
-  .refine(
-    (val) => ['cash', 'online', 'prepaid'].includes(val),
-    { message: 'Please select a valid payment method' }
-  ) as any;
-
 // Rating validation (optional for staff)
 const ratingValidation = z
   .number()
@@ -35,7 +26,6 @@ const ratingValidation = z
 
 export const completeJobSchema = z.object({
   jobId: z.string().min(1, 'Job ID is required'),
-  paymentMethod: paymentMethodValidation,
   notes: notesValidation,
   rating: ratingValidation,
 });

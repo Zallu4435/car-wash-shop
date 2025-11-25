@@ -5,7 +5,7 @@ import type {
   UpdateStaffProfileInput,
   StaffNotification,
 } from '@/types/staff';
-import { StaffRoutes } from '@/lib/constants/routes';
+import { StaffRoutes, CustomerRoutes } from '@/lib/constants/routes';
 
 const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true';
 
@@ -128,7 +128,7 @@ export const staffProfileFetchers = {
     }
 
     const { data } = await apiClient.post<ApiResponse<{ message: string }>>(
-      StaffRoutes.LOGOUT
+      CustomerRoutes.AUTH_LOGOUT
     );
     return data.data!;
   },

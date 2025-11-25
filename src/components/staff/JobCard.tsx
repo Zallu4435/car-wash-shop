@@ -55,9 +55,6 @@ export function JobCard({ job }: JobCardProps) {
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
-              <Badge variant="outline" className="font-mono text-xs">
-                {job.id}
-              </Badge>
               <Badge className={status.bgColor}>
                 <span className={status.color}>{status.label}</span>
               </Badge>

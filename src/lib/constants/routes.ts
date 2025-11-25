@@ -31,7 +31,8 @@ export const ROUTES = {
     ORDERS_ALL: '/orders/all',
     ORDERS_SERVICES: '/orders/services',
     ORDERS_PRODUCTS: '/orders/products',
-    ORDER_DETAIL: (id: string) => `/orders/${id}`,
+    ORDER_PRODUCT_DETAIL: (id: string) => `/orders/products/${id}`,
+    ORDER_SERVICE_DETAIL: (id: string) => `/orders/services/${id}`,
     ORDER_CANCEL: (id: string) => `/orders/${id}/cancel`,
     ORDER_INVOICE: (id: string) => `/orders/${id}/invoice`,
     

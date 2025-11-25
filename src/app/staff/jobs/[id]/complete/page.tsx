@@ -7,15 +7,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { CheckCircle, ArrowLeft, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { useUpdateJobStatus } from '@/api/domains/staff/queries';
 import { StaffRoutes } from '@/lib/constants/routes';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { completeJobSchema, CompleteJobInput } from '@/schemas/staff/job';
-import { useRazorpay } from '@/hooks/useRazorpay';
 import { useConfirmation } from '@/hooks/useConfirmation';
 import { apiClient } from '@/api/client';
 
@@ -26,52 +24,16 @@ export default function CompleteJobPage({ params }: { params: Promise<{ id: stri
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const { confirm, ConfirmDialog } = useConfirmation();
 
-  // Razorpay integration
-  const { processPayment, isLoading: isRazorpayLoading } = useRazorpay({
-    onSuccess: async (response) => {
-      toast.success('Payment successful!');
-      // Complete the job after successful payment with paymentReceived: true
-      try {
-        const apiResponse = await apiClient.patch(`/staff/jobs/${id}`, {
-          status: 'completed',
-          paymentReceived: true,
-          notes: 'Payment collected via Razorpay',
-        });
-
-        if (apiResponse.data.success) {
-          toast.success('Job completed successfully!');
-          router.push(StaffRoutes.JOBS);
-        }
-      } catch (err: any) {
-        toast.error(err?.response?.data?.error?.message || err?.message || 'Failed to complete job');
-      } finally {
-        setIsProcessingPayment(false);
-      }
-    },
-    onFailure: () => {
-      toast.error('Payment failed. Please try again.');
-      setIsProcessingPayment(false);
-    },
-    onDismiss: () => {
-      setIsProcessingPayment(false);
-    },
-  });
-
   const {
     register,
     handleSubmit,
-    control,
-    watch,
     formState: { errors },
   } = useForm<CompleteJobInput>({
     resolver: zodResolver(completeJobSchema) as any,
     defaultValues: {
       jobId: id,
-      paymentMethod: 'cash',
     },
   });
-
-  const paymentMethod = watch('paymentMethod');
 
   const handleCouldntReach = async () => {
     const confirmed = await confirm({
@@ -105,71 +67,33 @@ export default function CompleteJobPage({ params }: { params: Promise<{ id: stri
     try {
       setIsProcessingPayment(true);
 
-      // Handle prepaid or cash payment - ask for payment confirmation
-      if (data.paymentMethod === 'prepaid' || data.paymentMethod === 'cash') {
-        // Show confirmation dialog asking if payment was received
-        const paymentReceived = await confirm({
-          title: 'Payment Confirmation',
-          description: 'Have you received the payment from the customer?',
-          confirmText: 'Yes, Payment Received',
-          cancelText: 'No, Not Received',
-          type: 'warning',
-        });
+      const paymentReceived = await confirm({
+        title: 'Payment Confirmation',
+        description: 'Have you received the payment from the customer?',
+        confirmText: 'Yes, Payment Received',
+        cancelText: 'No, Not Received',
+        type: 'warning',
+      });
 
-        if (!paymentReceived) {
-          setIsProcessingPayment(false);
-          toast.info('Please collect the payment before marking the job as completed.');
-          return;
-        }
-
-        // Send status update with paymentReceived flag
-        // Use PATCH endpoint directly to include paymentReceived
-        try {
-          const response = await apiClient.patch(`/staff/jobs/${id}`, {
-            status: 'completed',
-            paymentReceived: true,
-            notes: data.notes,
-          });
-
-          if (response.data.success) {
-            toast.success('Job completed successfully!');
-            router.push(StaffRoutes.JOBS);
-          }
-        } catch (err: any) {
-          toast.error(err?.response?.data?.error?.message || err?.message || 'Failed to complete job');
-        } finally {
-          setIsProcessingPayment(false);
-        }
+      if (!paymentReceived) {
+        setIsProcessingPayment(false);
+        toast.info('Please collect the payment before marking the job as completed.');
         return;
       }
 
-      // Handle online payment with Razorpay
-      if (data.paymentMethod === 'online') {
-        // Get customer details (in real app, fetch from job details)
-        const customerEmail = 'customer@example.com'; // TODO: Get from job
-        const customerName = 'Customer'; // TODO: Get from job
-        const customerPhone = '+919876543210'; // TODO: Get from job
-        const jobAmount = 599; // TODO: Get from job details
+      const response = await apiClient.patch(`/staff/jobs/${id}`, {
+        status: 'completed',
+        paymentReceived: true,
+        notes: data.notes,
+      });
 
-        await processPayment({
-          amount: jobAmount,
-          description: `Payment for Job #${id}`,
-          bookingId: id,
-          userEmail: customerEmail,
-          userName: customerName,
-          userPhone: customerPhone,
-          notes: {
-            jobId: id,
-            paymentMethod: 'online',
-            collectedBy: 'staff',
-          },
-        });
-
-        // After successful payment, mark as completed with paymentReceived: true
-        // This is handled in the onSuccess callback above
+      if (response.data.success) {
+        toast.success('Job completed successfully!');
+        router.push(StaffRoutes.JOBS);
       }
     } catch (error: any) {
-      toast.error(error?.message || 'An error occurred');
+      toast.error(error?.response?.data?.error?.message || error?.message || 'Failed to complete job');
+    } finally {
       setIsProcessingPayment(false);
     }
   };
@@ -196,41 +120,7 @@ export default function CompleteJobPage({ params }: { params: Promise<{ id: stri
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6">
-            {/* Payment Method */}
-            <div className="space-y-2 sm:space-y-3">
-              <Label className="text-xs sm:text-sm">Payment Method <span className="text-red-500">*</span></Label>
-              <Controller
-                name="paymentMethod"
-                control={control}
-                render={({ field }) => (
-                  <RadioGroup value={field.value} onValueChange={field.onChange}>
-                    <div className="flex items-center space-x-2 p-2.5 sm:p-3 border-2 border-border rounded-lg sm:rounded-xl hover:bg-muted cursor-pointer">
-                      <RadioGroupItem value="cash" id="cash" />
-                      <Label htmlFor="cash" className="flex-1 cursor-pointer text-xs sm:text-sm">
-                        💵 Cash Payment
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-2 p-2.5 sm:p-3 border-2 border-border rounded-lg sm:rounded-xl hover:bg-muted cursor-pointer">
-                      <RadioGroupItem value="online" id="online" />
-                      <Label htmlFor="online" className="flex-1 cursor-pointer text-xs sm:text-sm">
-                        🌐 Online Payment
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-2 p-2.5 sm:p-3 border-2 border-border rounded-lg sm:rounded-xl hover:bg-muted cursor-pointer">
-                      <RadioGroupItem value="prepaid" id="prepaid" />
-                      <Label htmlFor="prepaid" className="flex-1 cursor-pointer text-xs sm:text-sm">
-                        ✅ Already Prepaid
-                      </Label>
-                    </div>
-                  </RadioGroup>
-                )}
-              />
-              {errors.paymentMethod && (
-                <p className="text-xs text-red-600 dark:text-red-400">{String(errors.paymentMethod.message)}</p>
-              )}
-            </div>
-
-              {/* Service Notes */}
+            {/* Service Notes */}
             <div className="space-y-2">
               <Label htmlFor="notes" className="text-xs sm:text-sm">Service Notes <span className="text-[10px] sm:text-xs text-muted-foreground">(Optional)</span></Label>
               <Textarea
@@ -244,8 +134,8 @@ export default function CompleteJobPage({ params }: { params: Promise<{ id: stri
                 <p className="text-xs text-red-600 dark:text-red-400">{errors.notes.message}</p>
               )}
               <p className="text-[10px] sm:text-xs text-muted-foreground">
-              Add any important details about this service
-            </p>
+                Add any important details about this service
+              </p>
           </div>
 
           {/* Confirmation */}
@@ -260,12 +150,10 @@ export default function CompleteJobPage({ params }: { params: Promise<{ id: stri
               type="submit"
               className="w-full shadow-lg h-10 sm:h-11 lg:h-12 text-xs sm:text-sm lg:text-base border-2" 
               size="lg"
-              disabled={isProcessingPayment || isRazorpayLoading || updateJobStatus.isPending}
+              disabled={isProcessingPayment || updateJobStatus.isPending}
             >
               <CheckCircle className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-              {isProcessingPayment || isRazorpayLoading ? 'Processing...' : 
-               paymentMethod === 'online' ? 'Collect Payment & Complete' : 
-               'Mark as Completed'}
+              {isProcessingPayment ? 'Processing...' : 'Mark as Completed'}
             </Button>
           </form>
 
@@ -276,7 +164,7 @@ export default function CompleteJobPage({ params }: { params: Promise<{ id: stri
               variant="outline"
               onClick={handleCouldntReach}
               className="w-full h-10 sm:h-11 text-xs sm:text-sm border-2 border-destructive/20 text-destructive hover:bg-destructive/10"
-              disabled={isProcessingPayment || isRazorpayLoading}
+              disabled={isProcessingPayment}
             >
               <XCircle className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
               Couldn't Reach Customer

@@ -10,16 +10,20 @@ import { Separator } from '@/components/ui/separator';
 
 export default function InvoicePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
+  const isService = id.startsWith('booking_');
+  const detailHref = isService
+    ? CustomerRoutes.ORDER_SERVICE_DETAIL(id)
+    : CustomerRoutes.ORDER_PRODUCT_DETAIL(id);
 
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
       <section className="bg-gradient-to-br from-primary/5 to-background border-b border-border">
         <div className="container-custom py-8">
-          <Link href={CustomerRoutes.ORDER_DETAIL(id)}>
+          <Link href={detailHref}>
             <Button variant="ghost" className="mb-4 hover:bg-muted">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Order
+              {isService ? 'Back to Booking' : 'Back to Order'}
             </Button>
           </Link>
           <div className="flex items-center gap-3">
