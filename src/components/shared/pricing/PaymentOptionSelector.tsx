@@ -42,8 +42,17 @@ export function PaymentOptionSelector({ value, onChange, codFee = 0, isService =
     },
   ];
 
-  // Filter out COD option for services
-  const options = isService ? allOptions.filter(opt => opt.id !== 'cod') : allOptions;
+  const options = allOptions.filter((option) => {
+    if (!isService && option.id === 'advance') {
+      return false; // Advance payments are only available for services
+    }
+
+    if (isService && option.id === 'cod') {
+      return false; // COD is disabled for services
+    }
+
+    return true;
+  });
 
   return (
     <RadioGroup value={value} onValueChange={onChange} className="space-y-2.5 sm:space-y-3">

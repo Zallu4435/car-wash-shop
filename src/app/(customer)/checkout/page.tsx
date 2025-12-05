@@ -2,31 +2,61 @@
 
 // @ts-nocheck
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { DeliveryFeeNotice } from '@/components/customer/DeliveryFeeNotice';
 import { PaymentOptionSelector } from '@/components/shared/pricing/PaymentOptionSelector';
 import { PricingBreakdown } from '@/components/shared/pricing/PricingBreakdown';
 import { MapPicker } from '@/components/shared/selectors/MapPicker';
-import { ShoppingBag, MapPin, CreditCard, Lock, Tag, X } from 'lucide-react';
-import { useCart } from '@/api/domains/cart/queries';
+import { ShoppingBag, MapPin, CreditCard, Lock } from 'lucide-react';
+import { useCart, useClearCart } from '@/api/domains/cart/queries';
 import { useAddresses } from '@/api/domains/addresses/queries';
-import { useCreateCheckoutSession } from '@/api/domains/checkout/queries';
-import { useValidateCoupon } from '@/api/domains/orders/queries';
+import { useCreateProductOrder, useValidateCoupon } from '@/api/domains/orders/queries';
 import Loading from '@/components/shared/display/Loading';
 import { toast } from 'sonner';
 import { useConfirmation } from '@/hooks/useConfirmation';
+import { StorageKeys } from '@/lib/constants/storage';
+import type { RazorpaySuccessResponse } from '@/lib/payment/razorpay-types';
 import { AddressSelectionModal } from '@/components/customer/AddressSelectionModal';
 import { CouponInput } from '@/components/shared/forms/CouponInput';
 import { useRazorpay } from '@/hooks/useRazorpay';
 import { CustomerRoutes } from '@/lib/constants/routes';
 import { useAuth } from '@/context/AuthContext';
 
+interface DirectPurchasePayload {
+  type: 'product';
+  itemId: string;
+  quantity: number;
+  price: number;
+  name: string;
+  image?: string;
+}
+
+interface OrderItemInput {
+  productId: string;
+  quantity: number;
+}
+
+type CheckoutSuccessResponse = RazorpaySuccessResponse & {
+  checkoutResult?: {
+    success: boolean;
+    type?: 'service' | 'product';
+    bookingId?: string;
+    orderId?: string;
+    orderNumber?: string;
+    message?: string;
+  };
+};
+
 export default function CheckoutPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { confirm, ConfirmDialog } = useConfirmation();
   const { user } = useAuth();
+  const isBuyNowMode = searchParams.get('mode') === 'buy-now';
+  const [directPurchase, setDirectPurchase] = useState<DirectPurchasePayload | null>(null);
+  const [isLoadingDirectPurchase, setIsLoadingDirectPurchase] = useState(isBuyNowMode);
   const [paymentMethod, setPaymentMethod] = useState<'cod' | 'online'>('online');
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [showMapPicker, setShowMapPicker] = useState(false);
@@ -42,19 +72,32 @@ export default function CheckoutPage() {
   
   // API calls
   const { data: cart, isLoading: cartLoading } = useCart();
+  const clearCartMutation = useClearCart();
   const { data: addresses = [], isLoading: addressesLoading } = useAddresses();
-  const createCheckoutSessionMutation = useCreateCheckoutSession();
   const validateCouponMutation = useValidateCoupon();
+  const createProductOrderMutation = useCreateProductOrder();
 
   // Razorpay integration
   const { processPayment, isLoading: isRazorpayLoading } = useRazorpay({
-    onSuccess: async (response) => {
+    onSuccess: async (response: CheckoutSuccessResponse) => {
       setIsProcessingPayment(true);
       try {
-        // TODO: Save payment details to database
-        toast.success('Payment successful!');
-        router.push(`${CustomerRoutes.PAYMENT_RECEIPT}?orderId=${response.razorpay_order_id}&paymentId=${response.razorpay_payment_id}`);
+        const checkoutResult = response.checkoutResult;
+        if (checkoutResult?.type === 'product') {
+          if (typeof window !== 'undefined') {
+            window.sessionStorage.removeItem(StorageKeys.DIRECT_PURCHASE);
+          }
+          if (!isDirectPurchase) {
+            await clearCartMutation.mutateAsync();
+          }
+          toast.success(checkoutResult.message || 'Order placed successfully!');
+          router.push(`${CustomerRoutes.ORDERS_PRODUCTS}?highlight=${checkoutResult.orderId || ''}`);
+        } else {
+          toast.success(checkoutResult?.message || 'Payment successful!');
+          router.push(`${CustomerRoutes.PAYMENT_RECEIPT}?orderId=${response.razorpay_order_id}&paymentId=${response.razorpay_payment_id}`);
+        }
       } catch (error) {
+        console.error('Payment success handler error:', error);
         toast.error('Failed to process order');
       } finally {
         setIsProcessingPayment(false);
@@ -69,15 +112,65 @@ export default function CheckoutPage() {
     },
   });
 
+  useEffect(() => {
+    if (!isBuyNowMode) {
+      setDirectPurchase(null);
+      setIsLoadingDirectPurchase(false);
+      return;
+    }
+
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    setIsLoadingDirectPurchase(true);
+
+    try {
+      const storedPayload = window.sessionStorage.getItem(StorageKeys.DIRECT_PURCHASE);
+
+      if (!storedPayload) {
+        throw new Error('missing buy-now payload');
+      }
+
+      const parsedPayload = JSON.parse(storedPayload);
+
+      if (!parsedPayload?.itemId || !parsedPayload?.quantity || !parsedPayload?.price) {
+        throw new Error('invalid buy-now payload');
+      }
+
+      setDirectPurchase(parsedPayload);
+    } catch (error) {
+      console.error('Failed to load buy-now checkout payload', error);
+      toast.error('Unable to start buy-now checkout. Please try again.');
+      router.push(CustomerRoutes.PRODUCTS);
+    } finally {
+      setIsLoadingDirectPurchase(false);
+    }
+  }, [isBuyNowMode, router]);
+
   const selectedAddress = addresses.find(addr => addr.id === selectedAddressId);
-  const subtotal = cart?.subtotal || 0;
+  const isDirectPurchase = Boolean(isBuyNowMode && directPurchase);
+  const subtotal = isDirectPurchase
+    ? directPurchase.price * directPurchase.quantity
+    : cart?.subtotal || 0;
   const deliveryFee = paymentMethod === 'cod' ? COD_FEE : 0;
   const finalAmount = subtotal - discount;
   const total = finalAmount + deliveryFee;
+  const orderItemCount = isDirectPurchase
+    ? directPurchase.quantity
+    : cart?.items.length || 0;
+  const orderItemLabel = isDirectPurchase
+    ? `${directPurchase.name} (x${directPurchase.quantity})`
+    : `${orderItemCount} item${orderItemCount !== 1 ? 's' : ''}`;
+  const orderDescription = isDirectPurchase
+    ? `Order for ${directPurchase.quantity} unit${directPurchase.quantity > 1 ? 's' : ''} of ${directPurchase.name}`
+    : `Order for ${orderItemCount} item${orderItemCount !== 1 ? 's' : ''}`;
   
   // Validation checks
+  const hasCartItems = cart && cart.items.length > 0;
+  const hasOrderItems = isDirectPurchase || hasCartItems;
   const isMinimumOrderMet = subtotal >= MIN_ORDER_AMOUNT;
-  const canPlaceOrder = selectedAddressId && cart && isMinimumOrderMet;
+  const canPlaceOrder = Boolean(selectedAddressId && hasOrderItems && isMinimumOrderMet);
 
   // Set default address when addresses load
   useEffect(() => {
@@ -90,10 +183,45 @@ export default function CheckoutPage() {
 
   // Show warning if minimum order not met
   useEffect(() => {
-    if (cart && !isMinimumOrderMet) {
+    if (!isBuyNowMode && cart && !isMinimumOrderMet) {
       toast.warning(`Minimum order amount is ₹${MIN_ORDER_AMOUNT}. Current: ₹${subtotal}`);
     }
-  }, [cart, isMinimumOrderMet, subtotal]);
+  }, [cart, isBuyNowMode, isMinimumOrderMet, subtotal]);
+
+  useEffect(() => {
+    if (isBuyNowMode && directPurchase && !isMinimumOrderMet) {
+      toast.warning(`Minimum order amount is ₹${MIN_ORDER_AMOUNT}. Current: ₹${subtotal}`);
+    }
+  }, [isBuyNowMode, directPurchase, isMinimumOrderMet, subtotal]);
+
+  const getOrderItems = (): OrderItemInput[] => {
+    if (isDirectPurchase && directPurchase) {
+      return [
+        {
+          productId: directPurchase.itemId,
+          quantity: directPurchase.quantity,
+        },
+      ];
+    }
+
+    return (cart?.items || [])
+      .map((item) => {
+        const productId =
+          item.product?.id ||
+          item.productId ||
+          item.id;
+
+        if (!productId) {
+          return null;
+        }
+
+        return {
+          productId,
+          quantity: item.quantity,
+        };
+      })
+      .filter((item): item is OrderItemInput => Boolean(item && item.productId));
+  };
 
   const handleSelectAddress = (addressId: string) => {
     setSelectedAddressId(addressId);
@@ -114,7 +242,7 @@ export default function CheckoutPage() {
 
   const handlePlaceOrder = async () => {
     // Comprehensive validation checks
-    if (!cart || cart.items.length === 0) {
+    if (!isDirectPurchase && (!cart || cart.items.length === 0)) {
       toast.error('Your cart is empty');
       router.push(CustomerRoutes.CART);
       return;
@@ -143,21 +271,13 @@ export default function CheckoutPage() {
       return;
     }
 
-    // Confirmation modal
-    const orderSummary = `
-      Order Amount: ₹${subtotal}
-      ${discount > 0 ? `Discount: -₹${discount}` : ''}
-      ${deliveryFee > 0 ? `Delivery Fee: +₹${deliveryFee}` : 'Free Delivery'}
-      Total: ₹${total}
-    `;
-
     const confirmed = await confirm({
       title: 'Confirm Your Order',
       description: `You are about to place an order for ₹${total}. ${paymentMethod === 'cod' ? 'You will pay cash on delivery.' : 'You will be redirected to the payment gateway.'}`,
       confirmText: paymentMethod === 'cod' ? 'Confirm Order (COD)' : 'Proceed to Payment',
       cancelText: 'Review Cart',
       type: 'info',
-      itemName: `${cart.items.length} item${cart.items.length > 1 ? 's' : ''}`,
+      itemName: orderItemLabel,
     });
 
     if (!confirmed) return;
@@ -167,26 +287,46 @@ export default function CheckoutPage() {
 
       // Handle COD payment
       if (paymentMethod === 'cod') {
-        const tempBookingId = `temp_${Date.now()}`;
-        
-        const checkoutData = {
-          bookingId: tempBookingId,
-          paymentType: 'full' as 'full' | 'advance',
-          amount: total,
-        };
+        const orderItems = getOrderItems();
 
-        createCheckoutSessionMutation.mutate(checkoutData, {
-          onSuccess: (data) => {
-            toast.success('Order placed successfully!');
-            router.push(`${CustomerRoutes.PAYMENT_RECEIPT}?orderId=${data.bookingId || tempBookingId}&paymentMethod=cod`);
+        if (orderItems.length === 0) {
+          toast.error('Unable to determine order items');
+          setIsProcessingPayment(false);
+          return;
+        }
+
+        createProductOrderMutation.mutate(
+          {
+            items: orderItems,
+            addressId: selectedAddressId,
+            paymentMethod: 'cod',
+            discount,
+            tax: 0,
+            shippingFee: deliveryFee,
+            source: isDirectPurchase ? 'direct' : 'cart',
           },
-          onError: (error: any) => {
-            toast.error(error?.message || 'Failed to place order. Please try again.');
-          },
-          onSettled: () => {
-            setIsProcessingPayment(false);
-          },
-        });
+          {
+            onSuccess: (order) => {
+              if (typeof window !== 'undefined') {
+                window.sessionStorage.removeItem(StorageKeys.DIRECT_PURCHASE);
+              }
+
+              if (!isDirectPurchase) {
+                clearCartMutation.mutate();
+              }
+
+              toast.success('Order placed successfully!');
+              router.push(`${CustomerRoutes.ORDERS_PRODUCTS}?highlight=${order.id || order._id || ''}`);
+            },
+            onError: (error: unknown) => {
+              const message = error instanceof Error ? error.message : 'Failed to place order. Please try again.';
+              toast.error(message);
+            },
+            onSettled: () => {
+              setIsProcessingPayment(false);
+            },
+          }
+        );
         return;
       }
 
@@ -203,21 +343,41 @@ export default function CheckoutPage() {
         const userName = user.name || 'Customer';
         const userPhone = user.phone || '';
 
-        if (!userEmail || !userPhone) {
-          toast.error('Please complete your profile (email and phone required)');
+        if (!userPhone) {
+          toast.error('Please add a phone number in your profile to continue');
           setIsProcessingPayment(false);
           return;
         }
 
+        const orderItems = getOrderItems();
+        if (orderItems.length === 0) {
+          toast.error('Unable to determine order items');
+          setIsProcessingPayment(false);
+          return;
+        }
+
+        const productOrderPayload = {
+          items: orderItems,
+          addressId: selectedAddressId,
+          discount,
+          tax: 0,
+          shippingFee: deliveryFee,
+          source: isDirectPurchase ? 'direct' : 'cart',
+          notes: appliedCoupon ? `Coupon: ${appliedCoupon}` : undefined,
+        };
+
         await processPayment({
+          checkoutType: 'product',
+          productOrder: productOrderPayload,
           amount: total,
-          description: `Order for ${cart.items.length} items`,
+          description: orderDescription,
           orderId: `ORDER_${Date.now()}`,
+          paymentType: 'full',
           userEmail,
           userName,
           userPhone,
           notes: {
-            items: cart.items.length.toString(),
+            items: orderItemCount.toString(),
             subtotal: subtotal.toString(),
             discount: discount.toString(),
             deliveryFee: deliveryFee.toString(),
@@ -225,8 +385,9 @@ export default function CheckoutPage() {
           },
         });
       }
-    } catch (error: any) {
-      toast.error(error?.message || 'An unexpected error occurred');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'An unexpected error occurred';
+      toast.error(message);
       console.error('Checkout error:', error);
       setIsProcessingPayment(false);
     }
@@ -246,8 +407,9 @@ export default function CheckoutPage() {
       } else {
         toast.error('Invalid or expired coupon code');
       }
-    } catch (error: any) {
-      toast.error(error?.message || 'Failed to validate coupon. Please try again.');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to validate coupon. Please try again.';
+      toast.error(message);
       console.error('Coupon validation error:', error);
     }
   };
@@ -259,12 +421,20 @@ export default function CheckoutPage() {
   };
 
   // Loading state
-  if (cartLoading || addressesLoading) {
+  if (isBuyNowMode && isLoadingDirectPurchase) {
+    return <Loading text="Preparing checkout..." />;
+  }
+
+  if (isBuyNowMode && !isLoadingDirectPurchase && !directPurchase) {
+    return null;
+  }
+
+  if ((!isDirectPurchase && cartLoading) || addressesLoading) {
     return <Loading text="Loading checkout..." />;
   }
 
-  // Redirect if cart is empty
-  if (!cart || cart.items.length === 0) {
+  // Redirect if cart is empty and not in buy-now mode
+  if (!isDirectPurchase && (!cart || cart.items.length === 0)) {
     toast.error('Your cart is empty');
     router.push(CustomerRoutes.CART);
     return null;
@@ -347,7 +517,7 @@ export default function CheckoutPage() {
                     <div className="mt-3 sm:mt-4">
                       <MapPicker
                         initialAddress={selectedAddress ? `${selectedAddress.line1}, ${selectedAddress.city}` : ''}
-                        onLocationSelect={(location) => {
+                        onLocationSelect={() => {
                           // In a real app, you'd create a new address here
                           setShowMapPicker(false);
                         }}

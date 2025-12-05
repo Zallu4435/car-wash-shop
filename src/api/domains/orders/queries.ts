@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { orderFetchers } from './fetchers';
-import type { OrderFilters, OrderFeedbackInput } from '@/types/order';
+import type { CreateProductOrderInput, OrderFilters, OrderFeedbackInput } from '@/types/order';
 import { toast } from 'sonner';
 
 // Query Keys
@@ -34,6 +34,21 @@ export const useValidateCoupon = () => {
   return useMutation({
     mutationFn: ({ code, amount }: { code: string; amount: number }) =>
       orderFetchers.validateCoupon(code, amount),
+  });
+};
+
+export const useCreateProductOrder = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: CreateProductOrderInput) => orderFetchers.createProductOrder(input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: orderKeys.lists() });
+      toast.success('Order placed successfully!');
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Failed to place order');
+    },
   });
 };
 

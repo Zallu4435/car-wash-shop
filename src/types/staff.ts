@@ -126,7 +126,7 @@ export interface StaffDashboardSummary {
     title: string;
     message: string;
     type: 'job_assigned' | 'job_cancelled' | 'payment' | 'rating' | 'system';
-    data?: Record<string, any>;
+  data?: Record<string, string | number | boolean | null | undefined>;
     read: boolean;
     createdAt: string;
   }

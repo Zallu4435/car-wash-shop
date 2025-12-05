@@ -6,13 +6,27 @@ import { apiClient } from '@/api/client';
 import { RAZORPAY_CONFIG, RAZORPAY_SCRIPT_URL } from '@/lib/payment/razorpay-config';
 import type {
   PaymentDetails,
+  ProductOrderPaymentPayload,
   RazorpayOptions,
   RazorpaySuccessResponse,
   RazorpayErrorResponse,
 } from '@/lib/payment/razorpay-types';
 
+type CheckoutVerificationResult = {
+  success: boolean;
+  type?: 'service' | 'product';
+  bookingId?: string;
+  orderId?: string;
+  orderNumber?: string;
+  message?: string;
+};
+
+type RazorpaySuccessWithResult = RazorpaySuccessResponse & {
+  checkoutResult?: CheckoutVerificationResult;
+};
+
 interface UseRazorpayOptions {
-  onSuccess?: (response: RazorpaySuccessResponse) => void | Promise<void>;
+  onSuccess?: (response: RazorpaySuccessWithResult) => void | Promise<void>;
   onFailure?: (error: RazorpayErrorResponse) => void;
   onDismiss?: () => void;
 }
@@ -68,23 +82,30 @@ export function useRazorpay(options?: UseRazorpayOptions) {
     loadRazorpayScript();
   }, []);
 
+  type CheckoutSessionPayload = {
+    type: 'service' | 'product';
+    amount: number;
+    paymentType?: string;
+    bookingData?: Record<string, unknown>;
+    orderData?: ProductOrderPaymentPayload;
+  };
+
   // Create Razorpay order via backend API
   const createOrder = useCallback(
-    async (bookingData: any, amount: number, paymentType: string = 'advance'): Promise<string | null> => {
+    async (payload: CheckoutSessionPayload): Promise<string | null> => {
       try {
         const response = await apiClient.post('/checkout/session', {
-          bookingData,
-          amount,
-          paymentType,
+          ...payload,
         });
 
         if (response.data?.success && response.data?.data?.orderId) {
           return response.data.data.orderId;
         }
         throw new Error('Failed to create order');
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('Error creating order:', error);
-        toast.error(error?.message || 'Failed to initiate payment');
+        const message = error instanceof Error ? error.message : 'Failed to initiate payment';
+        toast.error(message);
         return null;
       }
     },
@@ -97,7 +118,7 @@ export function useRazorpay(options?: UseRazorpayOptions) {
       razorpayOrderId: string,
       razorpayPaymentId: string,
       razorpaySignature: string
-    ): Promise<{ success: boolean; bookingId?: string; message?: string }> => {
+    ): Promise<CheckoutVerificationResult> => {
       try {
         const response = await apiClient.post('/checkout/verify', {
           razorpay_order_id: razorpayOrderId,
@@ -108,14 +129,18 @@ export function useRazorpay(options?: UseRazorpayOptions) {
         if (response.data?.success && response.data?.data) {
           return {
             success: true,
+            type: response.data.data.type,
             bookingId: response.data.data.bookingId,
+            orderId: response.data.data.orderId,
+            orderNumber: response.data.data.orderNumber,
             message: response.data.data.message,
           };
         }
         return { success: false };
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('Error verifying payment:', error);
-        toast.error(error?.message || 'Payment verification failed');
+        const message = error instanceof Error ? error.message : 'Payment verification failed';
+        toast.error(message);
         return { success: false };
       }
     },
@@ -136,20 +161,36 @@ export function useRazorpay(options?: UseRazorpayOptions) {
         return;
       }
 
-      if (!paymentDetails.bookingData) {
-        toast.error('Booking data is required for payment');
-        return;
-      }
-
       setIsLoading(true);
 
       try {
-        // Step 1: Create order via backend (requires bookingData)
-        const orderId = await createOrder(
-          paymentDetails.bookingData,
-          paymentDetails.amount,
-          paymentDetails.paymentType || 'advance'
-        );
+        const checkoutType = paymentDetails.checkoutType || 'service';
+
+        const sessionPayload: CheckoutSessionPayload = {
+          type: checkoutType,
+          amount: paymentDetails.amount,
+        };
+
+        if (checkoutType === 'service') {
+          if (!paymentDetails.bookingData) {
+            toast.error('Booking data is required for payment');
+            setIsLoading(false);
+            return;
+          }
+          sessionPayload.bookingData = paymentDetails.bookingData;
+          sessionPayload.paymentType = paymentDetails.paymentType || 'advance';
+        } else {
+          if (!paymentDetails.productOrder) {
+            toast.error('Order data is required for product payment');
+            setIsLoading(false);
+            return;
+          }
+          sessionPayload.orderData = paymentDetails.productOrder;
+          sessionPayload.paymentType = 'full';
+        }
+
+        // Step 1: Create order via backend
+        const orderId = await createOrder(sessionPayload);
 
         if (!orderId) {
           throw new Error('Failed to create payment order');
@@ -183,13 +224,12 @@ export function useRazorpay(options?: UseRazorpayOptions) {
 
             if (verificationResult.success) {
               // Add bookingId to response if available
-              const successResponse = {
+              const successResponse: RazorpaySuccessWithResult = {
                 ...response,
-                bookingId: verificationResult.bookingId,
-                message: verificationResult.message,
+                checkoutResult: verificationResult,
               };
               if (options?.onSuccess) {
-                await options.onSuccess(successResponse as any);
+                await options.onSuccess(successResponse);
               }
             } else {
               toast.error('Payment verification failed');
@@ -234,9 +274,10 @@ export function useRazorpay(options?: UseRazorpayOptions) {
         });
 
         razorpay.open();
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('Payment error:', error);
-        toast.error('Failed to process payment');
+        const message = error instanceof Error ? error.message : 'Failed to process payment';
+        toast.error(message);
         setIsLoading(false);
       }
     },

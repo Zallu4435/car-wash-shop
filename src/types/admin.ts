@@ -237,58 +237,85 @@ export interface UpdateCategoryInput {
 }
 
 // Order Management Types
+export interface AdminOrderCustomer {
+  id?: string;
+  name?: string;
+  email?: string;
+  phone?: string;
+}
+
+export interface AdminOrderItem {
+  id?: string;
+  productId?: string;
+  name: string;
+  quantity: number;
+  price: number;
+  subtotal?: number;
+  image?: string;
+}
+
+export interface AdminOrderAddress {
+  line1?: string;
+  line2?: string;
+  city?: string;
+  state?: string;
+  pincode?: string;
+  landmark?: string;
+  phone?: string;
+}
+
 export interface AdminOrder {
   id: string;
   orderNumber: string;
-  customer: string;
-  customerId: string;
-  items: Array<{
-    id: string;
-    name: string;
-    quantity: number;
-    price: number;
-  }>;
-  total: number;
+  customer?: AdminOrderCustomer;
+  items?: AdminOrderItem[];
+  subtotal: number;
+  discount: number;
+  tax: number;
+  shippingFee: number;
+  totalAmount: number;
+  total?: number;
   status: OrderStatus;
   paymentStatus: PaymentStatus;
   paymentMethod: string;
   createdAt: string;
-  deliveryAddress?: string;
+  updatedAt: string;
+  deliveryAddress?: AdminOrderAddress;
+  notes?: Array<{
+    note: string;
+    addedBy?: string;
+    addedAt?: string;
+  }>;
 }
 
 export interface AdminOrderDetail extends AdminOrder {
-  customerDetails: {
-    name: string;
-    email: string;
-    phone: string;
+  customerDetails?: AdminOrderCustomer;
+  deliveryDetails?: AdminOrderAddress & {
+    address?: string;
   };
-  deliveryDetails?: {
-    address: string;
-    city: string;
-    state: string;
-    pincode: string;
-  };
-  statusHistory: Array<{
+  statusHistory?: Array<{
     status: string;
     timestamp: string;
     note?: string;
   }>;
   invoice?: {
-    invoiceNumber: string;
-    invoiceUrl: string;
+    invoiceNumber?: string;
+    invoiceUrl?: string;
   };
 }
 
 export interface UpdateOrderStatusInput {
-  status: Exclude<OrderStatus, 'pending' | 'packed' | 'out-for-delivery' | 'returned'>;
+  status: OrderStatus;
   note?: string;
 }
 
 export interface OrderFilters {
   status?: string;
   paymentStatus?: string;
+  paymentMethod?: string;
   fromDate?: string;
   toDate?: string;
+  dateRange?: string;
   search?: string;
   page?: number;
   limit?: number;
@@ -479,7 +506,7 @@ export interface AdminNotification {
   title: string;
   message: string;
   type: 'order' | 'booking' | 'staff' | 'customer' | 'system';
-  data?: Record<string, any>;
+  data?: Record<string, string | number | boolean | null | undefined>;
   read: boolean;
   createdAt: string;
 }

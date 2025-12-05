@@ -4,7 +4,7 @@ export interface Notification {
     title: string;
     message: string;
     type: 'booking' | 'payment' | 'order' | 'promotion' | 'system';
-    data?: Record<string, any>;
+    data?: Record<string, string | number | boolean | null | undefined>;
     read: boolean;
     actionUrl?: string;
     createdAt: string;

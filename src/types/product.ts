@@ -13,6 +13,7 @@ export interface Product {
   description: string;
   image: string;
   price: number;
+  comparePrice?: number | null;
   brand?: string;
   category: string | Category; // Can be string (backward compat) or populated Category object
   isAvailable: boolean;

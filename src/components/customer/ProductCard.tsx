@@ -95,7 +95,14 @@ export function ProductCard({ product }: ProductCardProps) {
           <div className="flex items-baseline justify-between mb-3 sm:mb-4">
             <div className="flex flex-col">
               <span className="text-xs text-muted-foreground mb-0.5">Price</span>
-              <span className="text-xl sm:text-2xl font-bold text-foreground">₹{product.price}</span>
+              <div className="flex items-baseline gap-2">
+                {product.comparePrice != null && (
+                  <span className="text-sm sm:text-base text-muted-foreground line-through">
+                    ₹{product.comparePrice}
+                  </span>
+                )}
+                <span className="text-xl sm:text-2xl font-bold text-foreground">₹{product.price}</span>
+              </div>
             </div>
             <Badge 
               variant={(product.stock ?? 0) > 0 ? "success" : "error"}

@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { NavigationMap } from '@/components/staff/NavigationMap';
 import { useStaffJobDetail } from '@/api/domains/staff';
 import { StaffRoutes } from '@/lib/constants/routes';
+import { BOOKING_STATUS } from '@/lib/constants/status';
 import Loading from '@/components/shared/display/Loading';
 import { EmptyState } from '@/components/shared/display/EmptyState';
 
@@ -156,14 +157,16 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
           </Card>
 
           {/* Complete Button */}
-          <Button 
-            onClick={() => router.push(StaffRoutes.JOB_COMPLETE(id))}
-            className="w-full shadow-lg h-10 sm:h-11 lg:h-12 text-xs sm:text-sm lg:text-base border-2" 
-            size="lg"
-          >
-            <CheckCircle className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-            Mark as Completed
-          </Button>
+          {job.status !== BOOKING_STATUS.COMPLETED && (
+            <Button 
+              onClick={() => router.push(StaffRoutes.JOB_COMPLETE(id))}
+              className="w-full shadow-lg h-10 sm:h-11 lg:h-12 text-xs sm:text-sm lg:text-base border-2" 
+              size="lg"
+            >
+              <CheckCircle className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+              Mark as Completed
+            </Button>
+          )}
         </div>
 
         {/* Right Column - Navigation */}

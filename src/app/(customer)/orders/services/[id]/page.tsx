@@ -24,6 +24,25 @@ import { ReviewModal } from '@/components/customer/ReviewModal';
 import { ReviewsList } from '@/components/customer/ReviewsList';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
+import type { BookingAddress } from '@/types/booking';
+
+const formatAddress = (address?: BookingAddress | string) => {
+  if (!address) return 'Address not available';
+
+  if (typeof address === 'string') {
+    return address;
+  }
+
+  if (address.fullAddress) {
+    return address.fullAddress;
+  }
+
+  const streetParts = [address.line1, address.line2].filter(Boolean);
+  const cityState = [address.city, address.state].filter(Boolean).join(', ');
+  const location = [cityState, address.pincode].filter(Boolean).join(' - ');
+
+  return [...streetParts, location].filter(Boolean).join(', ');
+};
 
 export default function ServiceOrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -49,6 +68,74 @@ export default function ServiceOrderDetailPage({ params }: { params: Promise<{ i
   if (!booking || error) {
     return <Error message="Booking not found" details={(error as any)?.message} />;
   }
+
+  const addressDetails = booking.address;
+  const formattedAddress = formatAddress(addressDetails);
+  const isAddressObject = typeof addressDetails !== 'string' && !!addressDetails;
+  const vehicleDetails = booking.vehicleDetails;
+  const vehicleName = vehicleDetails
+    ? [vehicleDetails.brand || (vehicleDetails as { make?: string })?.make, vehicleDetails.model]
+        .filter(Boolean)
+        .join(' ') || 'N/A'
+    : 'N/A';
+
+  // Format scheduled date and time for display
+  const formatScheduledSlot = () => {
+    if (!booking.scheduledDate) return 'Not scheduled';
+    
+    try {
+      const date = new Date(booking.scheduledDate);
+      if (isNaN(date.getTime())) {
+        // Try parsing as YYYY-MM-DD
+        const [year, month, day] = booking.scheduledDate.split('-');
+        if (year && month && day) {
+          const parsedDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+          if (!isNaN(parsedDate.getTime())) {
+            const formattedDate = parsedDate.toLocaleDateString('en-US', {
+              weekday: 'long',
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            });
+            
+            if (booking.scheduledTime) {
+              const [hours, minutes] = booking.scheduledTime.split(':');
+              if (hours && minutes) {
+                const hour12 = parseInt(hours) % 12 || 12;
+                const ampm = parseInt(hours) >= 12 ? 'PM' : 'AM';
+                return `${formattedDate} at ${hour12}:${minutes} ${ampm}`;
+              }
+              return `${formattedDate} at ${booking.scheduledTime}`;
+            }
+            return formattedDate;
+          }
+        }
+        return booking.scheduledDate;
+      }
+      
+      const formattedDate = date.toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+      
+      if (booking.scheduledTime) {
+        const [hours, minutes] = booking.scheduledTime.split(':');
+        if (hours && minutes) {
+          const hour12 = parseInt(hours) % 12 || 12;
+          const ampm = parseInt(hours) >= 12 ? 'PM' : 'AM';
+          return `${formattedDate} at ${hour12}:${minutes} ${ampm}`;
+        }
+        return `${formattedDate} at ${booking.scheduledTime}`;
+      }
+      return formattedDate;
+    } catch (error) {
+      return booking.scheduledTime 
+        ? `${booking.scheduledDate} • ${booking.scheduledTime}` 
+        : booking.scheduledDate;
+    }
+  };
 
   const trackerStatus = (() => {
     if (normalizedStatus === 'completed') return 'delivered';
@@ -87,7 +174,7 @@ export default function ServiceOrderDetailPage({ params }: { params: Promise<{ i
             </div>
             <div>
               <h1 className="text-3xl font-bold tracking-tight">Service Booking Details</h1>
-              <p className="text-sm text-muted-foreground mt-0.5">Booking #{id}</p>
+              <p className="text-sm text-muted-foreground mt-0.5">Booking #{id.slice(-6).toUpperCase()}</p>
             </div>
           </div>
         </div>
@@ -128,7 +215,7 @@ export default function ServiceOrderDetailPage({ params }: { params: Promise<{ i
                         <p className="text-xs sm:text-sm font-medium text-muted-foreground">Scheduled Slot</p>
                       </div>
                       <p className="font-semibold text-sm sm:text-base text-foreground">
-                        {booking.scheduledDate ? `${booking.scheduledDate} • ${booking.scheduledTime ?? 'Flexible'}` : 'Not scheduled'}
+                        {formatScheduledSlot()}
                       </p>
                     </div>
                   </div>
@@ -170,15 +257,24 @@ export default function ServiceOrderDetailPage({ params }: { params: Promise<{ i
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl">
+                  <div className="p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl space-y-2">
                     <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                      {booking.address || 'Address not available'}
+                      {formattedAddress}
                     </p>
+                    {isAddressObject && (
+                      <div className="text-xs sm:text-sm text-muted-foreground space-y-1">
+                        {addressDetails?.label && (
+                          <p className="font-medium text-foreground">Label: {addressDetails.label}</p>
+                        )}
+                        {addressDetails?.landmark && <p>Landmark: {addressDetails.landmark}</p>}
+                        {addressDetails?.phone && <p>Contact: {addressDetails.phone}</p>}
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
 
-              {booking.vehicleDetails && (
+            {vehicleDetails && (
                 <Card className="border-2 border-border">
                   <CardHeader className="pb-3 sm:pb-4">
                     <div className="flex items-center gap-2 sm:gap-3">
@@ -191,20 +287,20 @@ export default function ServiceOrderDetailPage({ params }: { params: Promise<{ i
                       <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">Type</span>
                         <span className="font-medium text-foreground capitalize">
-                          {booking.vehicleDetails.type || 'N/A'}
+                          {vehicleDetails.type || 'N/A'}
                         </span>
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">Model</span>
                         <span className="font-medium text-foreground">
-                          {booking.vehicleDetails.make} {booking.vehicleDetails.model}
+                          {vehicleName}
                         </span>
                       </div>
-                      {booking.vehicleDetails.number && (
+                      {vehicleDetails.number && (
                         <div className="flex justify-between text-sm">
                           <span className="text-muted-foreground">Number</span>
                           <span className="font-medium text-foreground">
-                            {booking.vehicleDetails.number}
+                            {vehicleDetails.number}
                           </span>
                         </div>
                       )}
@@ -287,7 +383,13 @@ export default function ServiceOrderDetailPage({ params }: { params: Promise<{ i
             </div>
 
             <div className="lg:col-span-1">
-              <OrderTracker currentStatus={trackerStatus} statusHistory={statusHistory} isService />
+              <OrderTracker 
+                currentStatus={trackerStatus} 
+                statusHistory={statusHistory} 
+                isService 
+                scheduledDate={booking.scheduledDate}
+                scheduledTime={booking.scheduledTime}
+              />
             </div>
           </div>
 

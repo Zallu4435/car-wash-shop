@@ -40,7 +40,12 @@ export default function ProductOrderDetailPage({ params }: { params: Promise<{ i
   const productId = order?.items?.[0]?.productId;
   const { data: productReviews = [] } = useReviewsByProduct(productId || 'product_001');
 
-  const isCompleted = ['completed', 'delivered'].includes((order?.status || '').toLowerCase());
+  const normalizedStatus = (order?.status || '').toLowerCase();
+  const isCompleted = ['completed', 'delivered'].includes(normalizedStatus);
+  const isCancelRestricted = ['packed', 'shipped', 'out-for-delivery', 'delivered', 'returned', 'cancelled'].includes(
+    normalizedStatus
+  );
+  const canCancelOrder = Boolean(order && !isCancelRestricted);
 
   if (isLoading) {
     return <Loading text="Loading order details..." />;
@@ -291,7 +296,7 @@ export default function ProductOrderDetailPage({ params }: { params: Promise<{ i
                     Download Invoice
                   </Link>
                 </Button>
-                {!isCompleted && (
+                {canCancelOrder && (
                   <Button
                     asChild
                     variant="outline"

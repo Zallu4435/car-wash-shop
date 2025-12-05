@@ -10,6 +10,11 @@ export interface OrderItem {
   subtotal?: number;
 }
 
+export interface CreateOrderItemInput {
+  productId: string;
+  quantity: number;
+}
+
 export interface OrderAddress {
   label?: string;
   line1: string;
@@ -67,4 +72,15 @@ export interface CouponValidation {
   isValid: boolean;
   discount: number;
   message?: string;
+}
+
+export interface CreateProductOrderInput {
+  items: CreateOrderItemInput[];
+  addressId: string;
+  paymentMethod: 'cod' | 'online';
+  discount?: number;
+  tax?: number;
+  shippingFee?: number;
+  notes?: string;
+  source?: 'cart' | 'direct';
 }

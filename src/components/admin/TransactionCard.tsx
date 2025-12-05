@@ -50,7 +50,6 @@ interface TransactionCardProps {
 }
 
 export function TransactionCard({
-  id,
   icon: Icon,
   imageUrl,
   primaryBadge,
@@ -224,6 +223,12 @@ export function TransactionCard({
             )}
           </div>
         </div>
+
+        {additionalContent && (
+          <div className="hidden md:block mt-4 border-t border-border pt-4 text-sm text-muted-foreground">
+            {additionalContent}
+          </div>
+        )}
 
         {/* Mobile/Tablet Layout */}
         <div className="md:hidden space-y-3">

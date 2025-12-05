@@ -8,8 +8,21 @@ import type {
   BookingFilters,
 } from '@/types/booking';
 import { CustomerRoutes } from '@/lib/constants/routes';
-import { BOOKING_STATUS, PAYMENT_STATUS } from '@/lib/constants/status';
 // Booking endpoints are now fully backed by API; no mocks
+
+const normalizeBooking = (booking: (Booking & { _id?: string }) | undefined): Booking => {
+  if (!booking) {
+    return booking as Booking;
+  }
+
+  const { _id, id, ...rest } = booking as Booking & { _id?: string };
+  const normalizedId = id ?? (_id ? String(_id) : '');
+
+  return {
+    ...rest,
+    id: normalizedId,
+  };
+};
 
 export const bookingFetchers = {
   async createBooking(input: BookingInput): Promise<Booking> {
@@ -17,7 +30,7 @@ export const bookingFetchers = {
       CustomerRoutes.BOOKINGS,
       input
     );
-    return data.data!;
+    return normalizeBooking(data.data!);
   },
 
   async getBookingPreview(input: Partial<BookingInput>): Promise<BookingPreview> {
@@ -54,7 +67,7 @@ export const bookingFetchers = {
     const { data } = await apiClient.get<ApiResponse<Booking>>(
       `${CustomerRoutes.BOOKINGS}/${bookingId}`
     );
-    return data.data!;
+    return normalizeBooking(data.data!);
   },
 
   async getUserBookings(
@@ -64,7 +77,11 @@ export const bookingFetchers = {
       CustomerRoutes.BOOKINGS,
       { params: filters }
     );
-    return data.data!;
+    const payload = data.data!;
+    return {
+      ...payload,
+      data: payload.data.map((booking) => normalizeBooking(booking)),
+    };
   },
 
   async cancelBooking(bookingId: string): Promise<{ message: string }> {

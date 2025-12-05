@@ -3,11 +3,15 @@
 import { AdminRoutes } from '@/lib/constants/routes';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { 
-  ShoppingBag, 
+import {
+  ShoppingBag,
   IndianRupee,
   Package,
-  CheckCircle
+  CheckCircle,
+  Mail,
+  Phone,
+  MapPin,
+  CreditCard,
 } from 'lucide-react';
 import { useState, useMemo } from 'react';
 import { useAdminOrderList } from '@/api/domains/admin-orders/queries';
@@ -42,29 +46,51 @@ export default function OrdersPage() {
   const totalPages = orderData?.totalPages || 0;
   const filteredOrders = orders; // Already filtered by API
 
-  const totalRevenue = orders.reduce((sum, o) => sum + o.total, 0);
-  const deliveredOrders = orders.filter(o => o.status === 'delivered').length;
+  const totalRevenue = orders.reduce((sum, o) => sum + (o.totalAmount || o.total || 0), 0);
+  const deliveredOrders = orders.filter((o) => o.status === 'delivered').length;
+
+  const formatDateTime = (date?: string) => {
+    if (!date) return '—';
+    return new Intl.DateTimeFormat('en-IN', {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+    }).format(new Date(date));
+  };
+
+  const formatCurrency = (amount?: number) => {
+    const value = typeof amount === 'number' ? amount : 0;
+    return value.toLocaleString('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0,
+    });
+  };
 
   if (isLoading) {
     return <Loading text="Loading orders..." />;
   }
 
   if (error) {
+    const errorMessage = error instanceof Error ? error.message : undefined;
     return (
       <Error 
         message="Failed to load orders" 
-        details={(error as any)?.message}
+        details={errorMessage}
         onRetry={() => refetch()}
       />
     );
   }
 
   const statusColors = {
+    pending: { variant: 'outline' as const, color: 'text-amber-600 dark:text-amber-400', bgColor: 'bg-amber-100 dark:bg-amber-950/30' },
     processing: { variant: 'secondary' as const, color: 'text-blue-600 dark:text-blue-400', bgColor: 'bg-blue-100 dark:bg-blue-950/30' },
     confirmed: { variant: 'default' as const, color: 'text-green-600 dark:text-green-400', bgColor: 'bg-green-100 dark:bg-green-950/30' },
+    packed: { variant: 'secondary' as const, color: 'text-indigo-600 dark:text-indigo-400', bgColor: 'bg-indigo-100 dark:bg-indigo-950/30' },
     shipped: { variant: 'default' as const, color: 'text-purple-600 dark:text-purple-400', bgColor: 'bg-purple-100 dark:bg-purple-950/30' },
+    'out-for-delivery': { variant: 'secondary' as const, color: 'text-orange-600 dark:text-orange-400', bgColor: 'bg-orange-100 dark:bg-orange-950/30' },
     delivered: { variant: 'default' as const, color: 'text-green-600 dark:text-green-400', bgColor: 'bg-green-100 dark:bg-green-950/30' },
     cancelled: { variant: 'secondary' as const, color: 'text-red-600 dark:text-red-400', bgColor: 'bg-red-100 dark:bg-red-950/30' },
+    returned: { variant: 'secondary' as const, color: 'text-rose-600 dark:text-rose-400', bgColor: 'bg-rose-100 dark:bg-rose-950/30' },
   };
 
   return (
@@ -165,29 +191,57 @@ export default function OrdersPage() {
           ) : (
             <div className="space-y-2.5 sm:space-y-3">
               {filteredOrders.map((order) => {
-              const statusStyle = statusColors[order.status as keyof typeof statusColors] || statusColors.processing;
-              return (
-                <TransactionCard
-                  key={order.id}
-                  id={order.id}
-                  icon={Package}
-                  primaryBadge={{
-                    label: order.orderNumber,
-                    variant: 'outline',
-                  }}
-                  statusBadge={{
-                    label: order.status,
-                    className: `border-2 ${statusStyle.color}`,
-                  }}
-                  title={order.customer}
-                  subtitle={order.createdAt}
-                  amount={order.total}
-                  amountLabel="Amount"
-                  onView={() => router.push(AdminRoutes.ORDER_DETAIL(order.id))}
-                  viewButtonText="View"
-                />
-              );
-            })}
+                const statusStyle = statusColors[order.status as keyof typeof statusColors] || statusColors.processing;
+                const customerName = order.customer?.name || 'Guest';
+                const contactMail = order.customer?.email || 'No email';
+                const contactPhone = order.customer?.phone || 'No phone';
+                const location = [order.deliveryAddress?.city, order.deliveryAddress?.state].filter(Boolean).join(', ') || 'No location';
+                return (
+                  <TransactionCard
+                    key={order.id}
+                    id={order.id}
+                    icon={Package}
+                    primaryBadge={{
+                      label: order.orderNumber,
+                      variant: 'outline',
+                    }}
+                    statusBadge={{
+                      label: order.status.replace(/-/g, ' '),
+                      className: `border-2 capitalize ${statusStyle.color}`,
+                    }}
+                    title={customerName}
+                    subtitle={formatDateTime(order.createdAt)}
+                    amount={formatCurrency(order.totalAmount ?? order.total)}
+                    amountLabel="Total"
+                    onView={() => router.push(AdminRoutes.ORDER_DETAIL(order.id))}
+                    viewButtonText="View"
+                    additionalContent={
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 text-xs text-muted-foreground">
+                        <div className="flex items-center gap-2">
+                          <Mail className="h-3.5 w-3.5 text-primary" />
+                          <span className="truncate">{contactMail}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Phone className="h-3.5 w-3.5 text-primary" />
+                          <span>{contactPhone}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <MapPin className="h-3.5 w-3.5 text-primary" />
+                          <span className="truncate">{location}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <CreditCard className="h-3.5 w-3.5 text-primary" />
+                          <span className="capitalize">{order.paymentMethod}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Package className="h-3.5 w-3.5 text-primary" />
+                          <span className="capitalize">{order.paymentStatus}</span>
+                        </div>
+                      </div>
+                    }
+                  />
+                );
+              })}
             </div>
           )}
           

@@ -1,13 +1,137 @@
 import { apiClient } from '@/api/client';
 import type { ApiResponse, PaginatedResponse } from '@/types/api';
-import type { AdminOrder, AdminOrderDetail, UpdateOrderStatusInput, OrderFilters } from '@/types/admin';
+import type {
+  AdminOrder,
+  AdminOrderCustomer,
+  AdminOrderDetail,
+  UpdateOrderStatusInput,
+  OrderFilters,
+} from '@/types/admin';
 import { AdminRoutes } from '@/lib/constants/routes';
 import { ORDER_STATUS, PAYMENT_STATUS } from '@/lib/constants/status';
 
 const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true';
 
 // Mock data
-const mockOrders: AdminOrder[] = [
+type RawRecord = Record<string, unknown>;
+
+const toNumber = (value: unknown, fallback = 0) => {
+  if (typeof value === 'number') return value;
+  if (typeof value === 'string') {
+    const parsed = Number(value);
+    return Number.isNaN(parsed) ? fallback : parsed;
+  }
+  return fallback;
+};
+
+const toStringValue = (value: unknown) => {
+  if (typeof value === 'string' || typeof value === 'number') {
+    return String(value);
+  }
+  return undefined;
+};
+
+const asRecord = (value: unknown): RawRecord | undefined =>
+  value && typeof value === 'object' ? (value as RawRecord) : undefined;
+
+const asRecordArray = (value: unknown): RawRecord[] =>
+  Array.isArray(value) ? (value as RawRecord[]) : [];
+
+const normalizeOrder = (orderInput: RawRecord): AdminOrder => {
+  if (!orderInput) {
+    throw new Error('Invalid order payload');
+  }
+
+  const items = asRecordArray(orderInput.items).map((item) => {
+    const unitPrice = toNumber(item.unitPrice ?? item.price, 0);
+    const quantity = toNumber(item.quantity, 0);
+    return {
+      id: toStringValue(item.id ?? item._id ?? item.productId ?? item.name),
+      productId: item.productId ? String(item.productId) : undefined,
+      name: toStringValue(item.productName ?? item.name) ?? 'Product',
+      quantity,
+      price: unitPrice,
+      subtotal: toNumber(item.subtotal, unitPrice * quantity),
+      image: toStringValue(item.productImage ?? item.image),
+    };
+  });
+
+  const customerSource =
+    asRecord(orderInput.customer) ||
+    asRecord(orderInput.customerDetails) ||
+    (typeof orderInput.userId === 'object' ? asRecord(orderInput.userId) : undefined);
+  const customer: AdminOrderCustomer | undefined =
+    customerSource || orderInput.customer
+      ? {
+          id:
+            toStringValue(customerSource?.id ?? customerSource?._id ?? orderInput.customerId) ??
+            undefined,
+          name: toStringValue(customerSource?.name ?? orderInput.customer) ?? undefined,
+          email: toStringValue(customerSource?.email),
+          phone: toStringValue(customerSource?.phone),
+        }
+      : undefined;
+
+  const deliveryAddress =
+    typeof orderInput.deliveryAddress === 'string'
+      ? { line1: orderInput.deliveryAddress }
+      : (orderInput.deliveryAddress as AdminOrder['deliveryAddress'] | undefined);
+
+  return {
+    id: toStringValue(orderInput.id ?? orderInput._id ?? orderInput.orderId) ?? '',
+    orderNumber: toStringValue(orderInput.orderNumber ?? orderInput.orderId ?? orderInput.id) ?? '',
+    customer,
+    items,
+    subtotal: toNumber(orderInput.subtotal ?? orderInput.amount ?? orderInput.total, 0),
+    discount: toNumber(orderInput.discount, 0),
+    tax: toNumber(orderInput.tax, 0),
+    shippingFee: toNumber(orderInput.shippingFee ?? orderInput.deliveryFee, 0),
+    totalAmount: toNumber(
+      orderInput.totalAmount ?? orderInput.total ?? orderInput.finalAmount ?? orderInput.amount,
+      0
+    ),
+    total: toNumber(
+      orderInput.total ?? orderInput.totalAmount ?? orderInput.finalAmount ?? orderInput.amount,
+      0
+    ),
+    status: (orderInput.status as string) ?? ORDER_STATUS.PROCESSING,
+    paymentStatus: (orderInput.paymentStatus as string) ?? PAYMENT_STATUS.PENDING,
+    paymentMethod: (orderInput.paymentMethod as string) ?? 'online',
+    createdAt: toStringValue(orderInput.createdAt) ?? new Date().toISOString(),
+    updatedAt:
+      toStringValue(orderInput.updatedAt) ??
+      toStringValue(orderInput.createdAt) ??
+      new Date().toISOString(),
+    deliveryAddress,
+    notes: (orderInput.notes as AdminOrder['notes']) ?? undefined,
+  };
+};
+
+const normalizeOrderDetail = (orderInput: RawRecord): AdminOrderDetail => {
+  const base = normalizeOrder(orderInput);
+  const addressString = base.deliveryAddress
+    ? [base.deliveryAddress.line1, base.deliveryAddress.line2, base.deliveryAddress.city, base.deliveryAddress.state, base.deliveryAddress.pincode]
+        .filter(Boolean)
+        .join(', ')
+    : undefined;
+
+  return {
+    ...base,
+    customerDetails: (orderInput.customerDetails as AdminOrderCustomer | undefined) ?? base.customer,
+    deliveryDetails:
+      (orderInput.deliveryDetails as AdminOrderDetail['deliveryDetails']) ??
+      (base.deliveryAddress
+        ? {
+            ...base.deliveryAddress,
+            address: addressString,
+          }
+        : undefined),
+    statusHistory: orderInput.statusHistory as AdminOrderDetail['statusHistory'],
+    invoice: orderInput.invoice as AdminOrderDetail['invoice'],
+  };
+};
+
+const mockOrders = [
   {
     id: 'ORD001',
     orderNumber: 'ORD-2024-001',
@@ -73,7 +197,7 @@ const mockOrders: AdminOrder[] = [
   },
 ];
 
-const mockOrderDetails: Record<string, AdminOrderDetail> = {
+const mockOrderDetails = {
   ORD001: {
     ...mockOrders[0],
     customerDetails: {
@@ -151,7 +275,7 @@ export const adminOrdersFetchers = {
       const paginatedOrders = filteredOrders.slice(startIndex, endIndex);
 
       return {
-        data: paginatedOrders,
+        data: paginatedOrders.map(normalizeOrder),
         total: filteredOrders.length,
         page,
         limit,
@@ -163,7 +287,11 @@ export const adminOrdersFetchers = {
       AdminRoutes.ORDERS,
       { params: filters }
     );
-    return data.data!;
+    const payload = data.data!;
+    return {
+      ...payload,
+      data: payload.data.map(normalizeOrder),
+    };
   },
 
   async getOrderById(orderId: string): Promise<AdminOrderDetail> {
@@ -173,13 +301,13 @@ export const adminOrdersFetchers = {
       if (!orderDetail) {
         throw new Error('Order not found');
       }
-      return orderDetail;
+      return normalizeOrderDetail(orderDetail);
     }
 
     const { data } = await apiClient.get<ApiResponse<AdminOrderDetail>>(
       AdminRoutes.ORDER_DETAIL(orderId)
     );
-    return data.data!;
+    return normalizeOrderDetail(data.data!);
   },
 
   async updateOrderStatus(
@@ -192,25 +320,25 @@ export const adminOrdersFetchers = {
       if (!orderDetail) {
         throw new Error('Order not found');
       }
-      return {
+      return normalizeOrderDetail({
         ...orderDetail,
         status: input.status,
         statusHistory: [
-          ...orderDetail.statusHistory,
+          ...(orderDetail.statusHistory || []),
           {
             status: input.status,
             timestamp: new Date().toISOString(),
             note: input.note,
           },
         ],
-      };
+      });
     }
 
     const { data } = await apiClient.patch<ApiResponse<AdminOrderDetail>>(
       AdminRoutes.ORDER_STATUS(orderId),
       input
     );
-    return data.data!;
+    return normalizeOrderDetail(data.data!);
   },
 
   async getOrderInvoice(orderId: string): Promise<Blob> {

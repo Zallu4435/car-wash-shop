@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { CustomerRoutes } from '@/lib/constants/routes';
+import { StorageKeys } from '@/lib/constants/storage';
 import { useProduct } from '@/api/domains/products/queries';
 import { useAddToCart } from '@/api/domains/cart/queries';
 import { useReviewsByProduct } from '@/api/domains/reviews/queries';
@@ -59,16 +60,32 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
   const handleBuyNow = () => {
     const pid = (product as any)?._id ?? product.id ?? id;
-    addToCartMutation.mutate({
-      type: 'product',
-      itemId: pid,
-      quantity: quantity,
-    }, {
-      onSuccess: () => {
-        toast.success('Redirecting to checkout...');
-        router.push(CustomerRoutes.CHECKOUT);
+
+    if (typeof window !== 'undefined') {
+      const directPurchasePayload = {
+        type: 'product' as const,
+        itemId: pid,
+        quantity,
+        price: product.price,
+        name: product.name,
+        image: product.image ?? '',
+        addedAt: Date.now(),
+      };
+
+      try {
+        window.sessionStorage.setItem(
+          StorageKeys.DIRECT_PURCHASE,
+          JSON.stringify(directPurchasePayload),
+        );
+      } catch (error) {
+        console.error('Failed to cache buy-now item', error);
+        toast.error('Something went wrong. Please try again.');
+        return;
       }
-    });
+    }
+
+    toast.success('Redirecting to checkout...');
+    router.push(`${CustomerRoutes.CHECKOUT}?mode=buy-now`);
   };
 
   return (
@@ -210,7 +227,14 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
                   {/* Price */}
                   <div>
-                    <p className="text-3xl font-bold text-primary mb-1">₹{product.price}</p>
+                    <div className="flex items-baseline gap-3 mb-1">
+                      {product.comparePrice != null && (
+                        <span className="text-lg text-muted-foreground line-through">
+                          ₹{product.comparePrice}
+                        </span>
+                      )}
+                      <p className="text-3xl font-bold text-primary">₹{product.price}</p>
+                    </div>
                     <p className="text-xs text-muted-foreground">Inclusive of all taxes</p>
                   </div>
 

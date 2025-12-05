@@ -83,12 +83,29 @@ export interface VerifyPaymentResponse {
 }
 
 // Payment Details for UI
+export interface ProductOrderPaymentItem {
+  productId: string;
+  quantity: number;
+}
+
+export interface ProductOrderPaymentPayload {
+  items: ProductOrderPaymentItem[];
+  addressId: string;
+  discount?: number;
+  tax?: number;
+  shippingFee?: number;
+  source?: string;
+  notes?: string;
+}
+
 export interface PaymentDetails {
   amount: number;
   description: string;
   orderId?: string;
   bookingId?: string; // Deprecated - use bookingData instead
-  bookingData?: any; // Booking data to be created after payment
+  bookingData?: Record<string, unknown>; // Booking data to be created after payment
+  productOrder?: ProductOrderPaymentPayload; // Product checkout payload
+  checkoutType?: 'service' | 'product';
   paymentType?: string;
   userId?: string;
   userEmail?: string;
@@ -100,7 +117,7 @@ export interface PaymentDetails {
 // Razorpay Instance Type
 export interface RazorpayInstance {
   open(): void;
-  on(event: string, callback: (response: any) => void): void;
+  on(event: string, callback: (response: unknown) => void): void;
 }
 
 declare global {
