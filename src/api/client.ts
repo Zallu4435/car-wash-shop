@@ -2,7 +2,10 @@ import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { ApiResponse } from '@/types/api';
 import { getAccessToken, setAccessToken as setGlobalAccessToken } from '@/state/authState';
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+if (!BASE_URL) {
+  throw new Error('NEXT_PUBLIC_API_URL environment variable is required');
+}
 
 export const apiClient = axios.create({
   baseURL: BASE_URL,
