@@ -125,47 +125,4 @@ export const adminMarketingFetchers = {
     return data.data!;
   },
 
-  // Campaigns
-  async getCampaignList(filters?: {
-    search?: string;
-    status?: string;
-    page?: number;
-    limit?: number;
-  }): Promise<PaginatedResponse<any>> {
-    const { data } = await apiClient.get<ApiResponse<PaginatedResponse<any>>>(
-      AdminRoutes.CAMPAIGNS,
-      { params: filters }
-    );
-    return data.data!;
-  },
-
-  async getCampaignById(campaignId: string): Promise<any> {
-    const { data } = await apiClient.get<ApiResponse<any>>(
-      `${AdminRoutes.CAMPAIGNS}/${campaignId}`
-    );
-    return data.data!;
-  },
-
-  async createCampaign(input: any): Promise<any> {
-    const { data } = await apiClient.post<ApiResponse<any>>(
-      AdminRoutes.CAMPAIGNS,
-      input
-    );
-    return data.data!;
-  },
-
-  async updateCampaign(campaignId: string, input: any): Promise<any> {
-    const { data } = await apiClient.patch<ApiResponse<any>>(
-      `${AdminRoutes.CAMPAIGNS}/${campaignId}`,
-      input
-    );
-    return data.data!;
-  },
-
-  async deleteCampaign(campaignId: string): Promise<{ message: string }> {
-    const { data } = await apiClient.delete<ApiResponse<{ message: string }>>(
-      `${AdminRoutes.CAMPAIGNS}/${campaignId}`
-    );
-    return data.data!;
-  },
 };

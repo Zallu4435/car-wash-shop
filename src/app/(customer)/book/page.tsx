@@ -97,16 +97,16 @@ const stepsConfig: StepConfig[] = [
 
 function getPriceForVehicle(servicePricing: Array<{ vehicleType: string; price: number }> | undefined, vehicle: Vehicle | null): number | null {
   if (!servicePricing || !servicePricing.length || !vehicle) return null;
-  
+
   const bodyType = getVehicleBodyType(vehicle);
   const category = getVehicleCategory(vehicle);
-  
+
   // Try exact match with bodyType first
   if (bodyType) {
     const bodyTypeMatch = servicePricing.find((p) => String(p.vehicleType).toLowerCase() === bodyType.toLowerCase());
     if (bodyTypeMatch) return Number(bodyTypeMatch.price) || null;
   }
-  
+
   // Try exact match with category
   if (category) {
     const categoryMatch = servicePricing.find((p) => String(p.vehicleType).toLowerCase() === category.toLowerCase());
@@ -201,7 +201,7 @@ export default function BookServicePage() {
     isLoading: vehiclesLoading,
   } = useVehicleContext();
   const queryClient = useQueryClient();
-  
+
   // Refetch vehicles when page mounts to ensure fresh data
   useEffect(() => {
     queryClient.invalidateQueries({ queryKey: ['vehicles'] });
@@ -345,7 +345,7 @@ export default function BookServicePage() {
     isFetching: availableDaysFetching,
     refetch: refetchAvailableDays,
   } = useAvailableDays(service ? service.id : '', 30);
-  
+
   const {
     data: availableSlots,
     isFetching: slotsFetching,
@@ -632,8 +632,8 @@ export default function BookServicePage() {
           isActive
             ? 'border-primary bg-primary/10 shadow-lg'
             : isCompleted
-            ? 'border-green-500/60 bg-green-500/10'
-            : 'border-border bg-muted/30'
+              ? 'border-green-500/60 bg-green-500/10'
+              : 'border-border bg-muted/30'
         )}
       >
         <div className="flex items-center gap-2">
@@ -764,13 +764,12 @@ export default function BookServicePage() {
                                 <Icon className="h-5 w-5" />
                               </div>
                               <div>
-                                <p className="text-sm font-semibold text-foreground">
-                                  {vehicle.brand} {vehicle.model}
+                                <p className="text-sm font-semibold text-foreground capitalize">
+                                  {getVehicleDisplayType(vehicle)}
                                 </p>
-                                <p className="text-xs text-muted-foreground uppercase tracking-wide">
-                                  {getVehicleDisplayType(vehicle)} • {vehicle.year}
+                                <p className="text-xs text-muted-foreground uppercase tracking-wide capitalize">
+                                  {vehicle.category}
                                 </p>
-                                <p className="text-xs text-muted-foreground">{vehicle.plateNumber}</p>
                               </div>
                             </div>
                             <div className="text-right">
@@ -1122,10 +1121,10 @@ export default function BookServicePage() {
                     label="Vehicle"
                     value={selectedVehicle ? (
                       <div>
-                        <p className="text-sm font-semibold text-foreground">
-                          {selectedVehicle.brand} {selectedVehicle.model}
+                        <p className="text-sm font-semibold text-foreground capitalize">
+                          {getVehicleDisplayType(selectedVehicle)}
                         </p>
-                        <p className="text-xs text-muted-foreground uppercase tracking-wide">{selectedVehicle.type}</p>
+                        <p className="text-xs text-muted-foreground uppercase tracking-wide capitalize">{selectedVehicle.category}</p>
                       </div>
                     ) : (
                       <p className="text-sm text-muted-foreground">Vehicle details unavailable</p>
@@ -1208,8 +1207,8 @@ export default function BookServicePage() {
                   label="Vehicle"
                   value={selectedVehicle ? (
                     <div className="text-sm text-foreground">
-                      <p>{selectedVehicle.brand} {selectedVehicle.model}</p>
-                      <p className="text-xs text-muted-foreground">{selectedVehicle.plateNumber}</p>
+                      <p className="capitalize">{getVehicleDisplayType(selectedVehicle)}</p>
+                      <p className="text-xs text-muted-foreground capitalize">{selectedVehicle.category}</p>
                     </div>
                   ) : (
                     <p className="text-sm text-muted-foreground">Pending selection</p>

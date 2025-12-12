@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
+import { ActiveStatusField } from '@/components/shared/form/ActiveStatusField';
 import { ArrowLeft, Save, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 import { staffEditSchema, StaffEditFormInput } from '@/schemas/admin/staff';
@@ -20,7 +20,7 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
   const router = useRouter();
   const { data: staffMember, isLoading } = useAdminStaffDetail(id);
   const updateStaff = useUpdateStaff();
-  
+
   const {
     register,
     handleSubmit,
@@ -171,29 +171,15 @@ export default function EditStaffPage({ params }: { params: Promise<{ id: string
               )}
             </div>
 
-            <div className="flex items-center justify-between p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl border-2 border-border">
-              <div className="min-w-0 flex-1 mr-3">
-                <Label htmlFor="active" className="cursor-pointer text-xs sm:text-sm">Active Status</Label>
-                <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">Staff member can receive jobs</p>
-              </div>
-              <Controller
-                name="active"
-                control={control}
-                render={({ field }) => (
-                  <Switch
-                    id="active"
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                    className="flex-shrink-0"
-                  />
-                )}
-              />
-            </div>
+            <ActiveStatusField
+              control={control}
+              description="Staff member can receive jobs"
+            />
 
             <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3">
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 className="flex-1 h-9 sm:h-10 text-xs sm:text-sm border-2"
                 onClick={() => router.push(AdminRoutes.STAFF)}
               >

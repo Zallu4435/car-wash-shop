@@ -25,7 +25,7 @@ export default function AllOrdersPage() {
   // Fetch both orders and bookings
   const { data: ordersResponse, isLoading: ordersLoading } = useOrders();
   const { data: bookingsResponse, isLoading: bookingsLoading } = useBookings();
-  
+
   // State hooks MUST be called before any conditional returns
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -37,19 +37,19 @@ export default function AllOrdersPage() {
   const allOrders = useMemo<MixedOrder[]>(() => {
     const productOrders = ordersResponse?.data ?? [];
     const serviceBookings = bookingsResponse?.data ?? [];
-    
+
     const combined: MixedOrder[] = [
       ...productOrders.map(order => ({ ...order, _type: 'order' as const })),
       ...serviceBookings.map(booking => ({ ...booking, _type: 'booking' as const })),
     ];
-    
+
     return combined.sort((a, b) =>
       new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
     );
   }, [ordersResponse?.data, bookingsResponse?.data]);
 
   const orders = allOrders;
-  
+
   // Prevent body scroll when modal is open - MUST be before conditional return
   useEffect(() => {
     if (showMobileFilters) {
@@ -61,7 +61,7 @@ export default function AllOrdersPage() {
       document.body.style.overflow = 'unset';
     };
   }, [showMobileFilters]);
-  
+
   // Check loading state AFTER all hooks
   const isLoading = ordersLoading || bookingsLoading;
   if (isLoading) { return <Loading text="Loading orders..." /> }
@@ -294,10 +294,10 @@ export default function AllOrdersPage() {
 
                         <div className="space-y-1.5 sm:space-y-2 mb-3 sm:mb-4 p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl">
                           <div className="flex justify-between text-xs sm:text-sm gap-2">
-                                <span className="text-foreground truncate flex-1">{primaryLabel}</span>
-                                <span className="text-muted-foreground flex-shrink-0">
-                                  × {productQuantity}
-                                </span>
+                            <span className="text-foreground truncate flex-1">{primaryLabel}</span>
+                            <span className="text-muted-foreground flex-shrink-0">
+                              × {productQuantity}
+                            </span>
                           </div>
                           {!isBooking && additionalItems > 0 && (
                             <p className="text-[11px] sm:text-xs text-muted-foreground">
@@ -306,7 +306,7 @@ export default function AllOrdersPage() {
                           )}
                           {isBooking && order.vehicleDetails && (
                             <div className="text-xs text-muted-foreground">
-                              {order.vehicleDetails.model} • {order.vehicleDetails.number}
+                              <span className="capitalize">{order.vehicleDetails.bodyType}</span>
                             </div>
                           )}
                         </div>
@@ -449,4 +449,3 @@ export default function AllOrdersPage() {
     </div>
   );
 }
-  

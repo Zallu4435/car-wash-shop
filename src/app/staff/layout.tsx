@@ -41,6 +41,9 @@ export default function StaffLayout({ children }: { children: React.ReactNode })
     { value: 'system' as const, label: 'System', icon: Monitor },
   ];
 
+  // Check if on login page to hide header and navigation
+  const isLoginPage = pathname.includes('/auth/login');
+
   const handleLogout = () => {
     logoutMutation.mutate(undefined, {
       onSuccess: () => {
@@ -48,6 +51,11 @@ export default function StaffLayout({ children }: { children: React.ReactNode })
       },
     });
   };
+
+  // On login page, just render children without header/nav
+  if (isLoginPage) {
+    return <>{children}</>;
+  }
 
   return (
     <div className="min-h-screen bg-background">

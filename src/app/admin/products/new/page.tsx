@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ActiveStatusField } from '@/components/shared/form/ActiveStatusField';
 import { Switch } from '@/components/ui/switch';
 import { ArrowLeft, Plus, Image as ImageIcon, X } from 'lucide-react';
 import { toast } from 'sonner';
@@ -22,7 +23,7 @@ export default function NewProductPage() {
   const [uploadedImage, setUploadedImage] = useState<string>('');
   const { data: categoriesResponse } = useAdminCategoryList({ type: 'product', status: 'active' });
   const productCategories = categoriesResponse?.data || [];
-  
+
   const {
     register,
     handleSubmit,
@@ -254,24 +255,11 @@ export default function NewProductPage() {
 
             {/* Active & Featured Status */}
             <div className="space-y-2 sm:space-y-3">
-              <div className="flex items-center justify-between gap-3 p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl border-2 border-border">
-                <div className="min-w-0 flex-1">
-                  <Label htmlFor="active" className="cursor-pointer text-xs sm:text-sm font-medium">Active Status</Label>
-                  <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">Product is visible in the store</p>
-                </div>
-                <Controller
-                  name="active"
-                  control={control}
-                  render={({ field }) => (
-                    <Switch
-                      id="active"
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  )}
-                />
-              </div>
-              
+              <ActiveStatusField
+                control={control}
+                description="Product is visible in the store"
+              />
+
               <div className="flex items-center justify-between gap-3 p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl border-2 border-border">
                 <div className="min-w-0 flex-1">
                   <Label htmlFor="featured" className="cursor-pointer text-xs sm:text-sm font-medium">Featured Product</Label>

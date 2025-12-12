@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-  import { ArrowLeft, Plus, Trash2, Car, Bike, Edit, Star } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Car, Bike, Edit, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -75,27 +75,27 @@ export default function VehiclesPage() {
     const vehicleIsCar = isCarType(vehicle);
     const Icon = vehicleIsCar ? Car : Bike;
     const vehicleImage = vehicleIsCar
-      ? '/images/vehicles/car-placeholder.svg' 
+      ? '/images/vehicles/car-placeholder.svg'
       : '/images/vehicles/bike-placeholder.svg';
-    
+
     return (
       <Card className={`border-2 hover:shadow-lg transition-all group ${vehicle.isPrimary ? 'border-primary/50' : ''}`}>
         <CardContent className="p-4 sm:p-5 md:p-6">
           {/* Desktop Layout */}
           <div className="hidden sm:flex items-start gap-3 sm:gap-4">
-            <div 
+            <div
               className="p-2 sm:p-3 rounded-lg sm:rounded-xl flex-shrink-0 transition-transform group-hover:scale-105 bg-gradient-to-br from-primary/5 to-primary/10"
             >
-              <img 
-                src={vehicleImage} 
+              <img
+                src={vehicleImage}
                 alt={`${getVehicleDisplayType(vehicle)}`}
                 className="h-16 w-16 sm:h-20 sm:w-20 md:h-24 md:w-24 object-contain"
               />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-2 mb-1.5 sm:mb-2">
-                <h3 className="font-bold text-base sm:text-lg md:text-xl text-foreground truncate">
-                  {vehicle.brand} {vehicle.model}
+                <h3 className="font-bold text-base sm:text-lg md:text-xl text-foreground truncate capitalize">
+                  {getVehicleDisplayType(vehicle)}
                 </h3>
                 {vehicle.isPrimary && (
                   <Badge className="text-xs flex-shrink-0 bg-primary/10 text-primary border-primary/20">
@@ -104,14 +104,9 @@ export default function VehiclesPage() {
                   </Badge>
                 )}
               </div>
-              <p className="text-muted-foreground font-mono text-sm sm:text-base md:text-lg mb-0.5 sm:mb-1 truncate">
-                {vehicle.plateNumber}
+              <p className="text-muted-foreground text-sm sm:text-base md:text-lg mb-0.5 sm:mb-1 capitalize">
+                {vehicle.category}
               </p>
-              <div className="flex items-center gap-3 text-xs sm:text-sm text-muted-foreground">
-                <span>Year: {vehicle.year}</span>
-                {vehicle.color && <span>• {vehicle.color}</span>}
-                {vehicle.fuelType && <span>• {vehicle.fuelType}</span>}
-              </div>
             </div>
             <div className="flex flex-col gap-1.5 sm:gap-2 flex-shrink-0">
               {!vehicle.isPrimary && (
@@ -150,18 +145,18 @@ export default function VehiclesPage() {
           {/* Mobile Layout */}
           <div className="sm:hidden">
             <div className="flex items-start gap-3 mb-3">
-              <div 
+              <div
                 className="p-2 rounded-lg flex-shrink-0 bg-gradient-to-br from-primary/5 to-primary/10"
               >
-                <img 
-                  src={vehicleImage} 
+                <img
+                  src={vehicleImage}
                   alt={`${getVehicleDisplayType(vehicle)}`}
                   className="h-14 w-14 object-contain"
                 />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="font-bold text-base text-foreground line-clamp-2 mb-1">
-                  {vehicle.brand} {vehicle.model}
+                <h3 className="font-bold text-base text-foreground line-clamp-2 mb-1 capitalize">
+                  {getVehicleDisplayType(vehicle)}
                 </h3>
                 {vehicle.isPrimary && (
                   <Badge className="text-xs bg-primary/10 text-primary border-primary/20">
@@ -172,14 +167,9 @@ export default function VehiclesPage() {
               </div>
             </div>
             <div className="mb-3">
-              <p className="text-muted-foreground font-mono text-sm mb-1">
-                {vehicle.plateNumber}
+              <p className="text-muted-foreground text-sm mb-1 capitalize">
+                {vehicle.category}
               </p>
-              <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-                <span>Year: {vehicle.year}</span>
-                {vehicle.color && <span>• {vehicle.color}</span>}
-                {vehicle.fuelType && <span>• {vehicle.fuelType}</span>}
-              </div>
             </div>
             <div className="flex gap-2">
               {!vehicle.isPrimary && (
@@ -243,7 +233,7 @@ export default function VehiclesPage() {
                 </p>
               </div>
             </div>
-            <Button 
+            <Button
               type="button"
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleAddVehicle(); }}
               className="h-11 px-6 gap-2 whitespace-nowrap font-semibold"
@@ -264,9 +254,9 @@ export default function VehiclesPage() {
               title="No Vehicles Added Yet"
               description="Add your first vehicle to get started with quick bookings"
               action={
-                <Button 
+                <Button
                   type="button"
-                  size="lg" 
+                  size="lg"
                   onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleAddVehicle(); }}
                   className="shadow-lg border-2 h-10 sm:h-11"
                 >

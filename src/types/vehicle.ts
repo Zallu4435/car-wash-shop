@@ -3,22 +3,16 @@ export interface Vehicle {
   userId: string;
   category: 'car' | 'bike';
   bodyType:
-    | 'sedan'
-    | 'suv'
-    | 'hatchback'
-    | 'luxury'
-    | 'super-bike'
-    | 'sports-bike'
-    | 'cruiser'
-    | 'scooty'
-    | 'scooter'
-    | 'motorcycle';
-  brand: string;
-  model: string;
-  year: number;
-  plateNumber: string;
-  color?: string;
-  fuelType?: 'petrol' | 'diesel' | 'electric' | 'hybrid' | 'cng';
+  | 'sedan'
+  | 'suv'
+  | 'hatchback'
+  | 'luxury'
+  | 'super-bike'
+  | 'sports-bike'
+  | 'cruiser'
+  | 'scooty'
+  | 'scooter'
+  | 'motorcycle';
   isPrimary: boolean;
   createdAt: string;
   updatedAt: string;
@@ -29,33 +23,14 @@ export interface Vehicle {
 export interface VehicleInput {
   category: 'car' | 'bike';
   bodyType:
-    | 'sedan'
-    | 'suv'
-    | 'hatchback'
-    | 'luxury'
-    | 'super-bike'
-    | 'sports-bike'
-    | 'cruiser'
-    | 'scooty'
-    | 'scooter'
-    | 'motorcycle';
-  brand: string;
-  model: string;
-  year: number;
-  plateNumber: string;
-  color?: string;
-  fuelType?: 'petrol' | 'diesel' | 'electric' | 'hybrid' | 'cng';
-}
-
-export interface VehicleBrand {
-  id: string;
-  name: string;
-  logo: string;
-}
-
-export interface VehicleModel {
-  id: string;
-  name: string;
-  brandId: string;
-  type: 'sedan' | 'suv' | 'hatchback' | 'luxury' | 'bike';
+  | 'sedan'
+  | 'suv'
+  | 'hatchback'
+  | 'luxury'
+  | 'super-bike'
+  | 'sports-bike'
+  | 'cruiser'
+  | 'scooty'
+  | 'scooter'
+  | 'motorcycle';
 }

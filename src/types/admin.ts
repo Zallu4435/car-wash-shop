@@ -106,10 +106,8 @@ export interface AdminCustomerDetail extends AdminCustomer {
   }>;
   vehicles: Array<{
     id: string;
-    brand: string;
-    model: string;
-    number: string;
-    type: string;
+    category: 'car' | 'bike';
+    bodyType: string;
   }>;
   recentOrders: Array<{
     id: string;
@@ -352,11 +350,8 @@ export interface AdminBookingDetail extends AdminBooking {
     avatar?: string;
   };
   vehicleDetails?: {
-    brand: string;
-    model: string;
-    number: string;
-    type: string;
-    year?: number;
+    category: 'car' | 'bike';
+    bodyType: string;
   };
   address?: string | {
     label?: string;

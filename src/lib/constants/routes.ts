@@ -5,27 +5,27 @@ export const ROUTES = {
     LOGIN: '/auth/login',
     REGISTER: '/auth/register',
     VERIFY_OTP: '/auth/verify-otp',
-    
+
     // Services
     SERVICES: '/services',
     SERVICE_DETAIL: (id: string) => `/services/${id}`,
     SERVICE_SEARCH: '/services/search',
-    
+
     // Booking
     BOOK: '/book',
     BOOK_SCHEDULE: '/book/schedule',
     BOOK_SUMMARY: '/book/summary',
     BOOK_PAYMENT: '/book/payment-option',
-    
+
     // Products
     PRODUCTS: '/products',
     PRODUCT_DETAIL: (id: string) => `/products/${id}`,
     PRODUCT_SEARCH: '/products/search',
-    
+
     // Cart & Checkout
     CART: '/cart',
     CHECKOUT: '/checkout',
-    
+
     // Orders
     ORDERS: '/orders',
     ORDERS_ALL: '/orders/all',
@@ -35,12 +35,12 @@ export const ROUTES = {
     ORDER_SERVICE_DETAIL: (id: string) => `/orders/services/${id}`,
     ORDER_CANCEL: (id: string) => `/orders/${id}/cancel`,
     ORDER_INVOICE: (id: string) => `/orders/${id}/invoice`,
-    
+
     // Payment
     PAYMENT: '/payment',
     PAYMENT_STATUS: '/payment/status',
     PAYMENT_RECEIPT: '/payment/receipt',
-    
+
     // Profile
     PROFILE: '/profile',
     VEHICLES: '/profile/vehicles',
@@ -50,7 +50,7 @@ export const ROUTES = {
     ADD_ADDRESS: '/profile/addresses/add',
     PROFILE_SECURITY: '/profile/security',
     PROFILE_DELETE: '/profile/delete',
-    
+
     // Support
     FEEDBACK: '/feedback',
     SUPPORT: '/support',
@@ -60,14 +60,14 @@ export const ROUTES = {
     COMPLAINT_DETAIL: (id: string) => `/support/complaints/${id}`,
     SUPPORT_TICKETS: '/support/tickets',
     SUPPORT_TOPICS: '/support/topics',
-    
+
     // Legal
     TERMS: '/terms',
     PRIVACY: '/privacy',
-    
+
     // Notifications (Page)
     NOTIFICATIONS_PAGE: '/notifications',
-    
+
     // API Routes
     NOTIFICATIONS: '/notifications',
     SEARCH: '/search',
@@ -97,17 +97,17 @@ export const ROUTES = {
   STAFF: {
     LOGIN: '/staff/auth/login',
     DASHBOARD: '/staff/dashboard',
-    
+
     // Jobs
     JOBS: '/staff/jobs',
     JOB_DETAIL: (id: string) => `/staff/jobs/${id}`,
     JOB_COMPLETE: (id: string) => `/staff/jobs/${id}/complete`,
     JOB_NAVIGATE: (id: string) => `/staff/jobs/${id}/navigate`,
-    
+
     // Payments
     PAYMENTS: '/staff/payments',
     PAYMENT_DETAIL: (id: string) => `/staff/payments/${id}`,
-    
+
     // Other
     HISTORY: '/staff/history',
     PROFILE: '/staff/profile',
@@ -121,32 +121,32 @@ export const ROUTES = {
     LOGIN: '/admin/auth/login',
     FORGOT_PASSWORD: '/admin/auth/forgot-password',
     DASHBOARD: '/admin/dashboard',
-    
+
     // Catalog Management
     SERVICES: '/admin/services',
     SERVICE_NEW: '/admin/services/new',
     SERVICE_EDIT: (id: string) => `/admin/services/${id}/edit`,
-    
+
     PRODUCTS: '/admin/products',
     PRODUCT_NEW: '/admin/products/new',
     PRODUCT_DETAIL: (id: string) => `/admin/products/${id}`,
     PRODUCT_EDIT: (id: string) => `/admin/products/${id}/edit`,
-    
+
     CATEGORIES: '/admin/categories',
     CATEGORY_NEW: '/admin/categories/new',
     CATEGORY_DETAIL: (id: string) => `/admin/categories/${id}`,
     CATEGORY_EDIT: (id: string) => `/admin/categories/${id}/edit`,
-    
+
     // Staff Management
     STAFF: '/admin/staff',
     STAFF_NEW: '/admin/staff/new',
     STAFF_DETAIL: (id: string) => `/admin/staff/${id}`,
     STAFF_EDIT: (id: string) => `/admin/staff/${id}/edit`,
-    
+
     // Customer Management
     CUSTOMERS: '/admin/customers',
     CUSTOMER_DETAIL: (id: string) => `/admin/customers/${id}`,
-    
+
     // Vehicle Management (Pages)
     VEHICLES: '/admin/vehicles',
     VEHICLE_TYPES: '/admin/vehicles/types',
@@ -159,49 +159,45 @@ export const ROUTES = {
     VEHICLE_MODEL_NEW: '/admin/vehicles/models/new',
     VEHICLE_MODEL_DETAIL: (id: string) => `/admin/vehicles/models/${id}`,
     VEHICLE_MODEL_EDIT: (id: string) => `/admin/vehicles/models/${id}/edit`,
-    
+
     // Vehicle Management (API Endpoints)
     VEHICLE_BRANDS_API: '/api/admin/vehicles/brands',
     VEHICLE_MODELS_API: '/api/admin/vehicles/models',
-    
+
     // Order Management
     ORDERS: '/admin/orders',
     ORDER_DETAIL: (id: string) => `/admin/orders/${id}`,
     ORDER_STATUS: (id: string) => `/admin/orders/${id}/status`,
     ORDER_INVOICE: (id: string) => `/admin/orders/${id}/invoice`,
-    
+
     // Booking/Request Management
     REQUESTS: '/admin/requests',
     REQUEST_DETAIL: (id: string) => `/admin/requests/${id}`,
     REQUEST_ASSIGN: (id: string) => `/admin/requests/${id}/assign`,
-    
+
     // Marketing
     BANNERS: '/admin/banners',
     BANNER_NEW: '/admin/banners/new',
     BANNER_EDIT: (id: string) => `/admin/banners/${id}/edit`,
-    
+
     POSTERS: '/admin/posters',
     POSTER_NEW: '/admin/posters/new',
     POSTER_EDIT: (id: string) => `/admin/posters/${id}/edit`,
-    
-    CAMPAIGNS: '/admin/campaigns',
-    CAMPAIGN_NEW: '/admin/campaigns/new',
-    CAMPAIGN_EDIT: (id: string) => `/admin/campaigns/${id}/edit`,
-    
+
     // Coupons
     COUPONS: '/admin/coupons',
     COUPON_NEW: '/admin/coupons/new',
     COUPON_DETAIL: (id: string) => `/admin/coupons/${id}`,
     COUPON_EDIT: (id: string) => `/admin/coupons/${id}/edit`,
-    
+
     // Payment Management
     PAYMENTS: '/admin/payments',
     PAYMENT_DETAIL: (id: string) => `/admin/payments/${id}`,
     COD_REPORTS: '/admin/payments/cod/reports',
-    
+
     // Cancellations
     CANCELLATIONS: '/admin/cancellations',
-    
+
     // Reports
     REPORTS: '/admin/reports',
     REPORTS_SERVICES: '/admin/reports/services',
@@ -209,12 +205,12 @@ export const ROUTES = {
     REPORTS_STAFF: '/admin/reports/staff',
     REPORTS_PAYMENTS: '/admin/reports/payments',
     REPORTS_COUPONS: '/admin/reports/coupons',
-    
+
     // Feedback & Support
     FEEDBACK: '/admin/feedback',
     TICKETS: '/admin/tickets',
     TICKET_DETAIL: (id: string) => `/admin/tickets/${id}`,
-    
+
     // Settings
     SETTINGS: '/admin/settings',
     SETTINGS_DELIVERY: '/admin/settings/delivery-fees',

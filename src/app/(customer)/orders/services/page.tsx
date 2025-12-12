@@ -21,7 +21,7 @@ type ServiceOrder = Booking & { _id?: string };
 export default function ServiceOrdersPage() {
   const { data: bookingsResponse, isLoading, error, refetch } = useBookings();
   const orders: ServiceOrder[] = bookingsResponse?.data ?? [];
-  
+
   // State
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -70,7 +70,7 @@ export default function ServiceOrdersPage() {
   };
 
   if (isLoading) return <Loading text="Loading service bookings..." />;
-  
+
   if (error) {
     return (
       <Error
@@ -100,7 +100,7 @@ export default function ServiceOrdersPage() {
                 Manage and track your service history
               </p>
             </div>
-            
+
             {/* Moved the Product Orders button here to save space */}
             <Button asChild variant="outline" size="sm" className="ml-10 sm:ml-0 w-fit">
               <Link href={CustomerRoutes.ORDERS_PRODUCTS}>
@@ -124,9 +124,9 @@ export default function ServiceOrdersPage() {
               className="pl-9"
             />
           </div>
-          
+
           <div className="flex gap-2 overflow-x-auto pb-1 md:pb-0">
-             <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-[140px]">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
@@ -139,9 +139,9 @@ export default function ServiceOrdersPage() {
             </Select>
 
             {hasActiveFilters && (
-              <Button 
-                variant="ghost" 
-                size="icon" 
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={() => {
                   setSearchQuery('');
                   setStatusFilter('all');
@@ -167,7 +167,7 @@ export default function ServiceOrdersPage() {
               return (
                 <Card key={orderId} className="group hover:border-primary/50 transition-colors">
                   <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center gap-4">
-                    
+
                     {/* Icon Column */}
                     <div className="hidden sm:flex items-center justify-center h-12 w-12 rounded-full bg-muted/50 text-muted-foreground">
                       <Icon className="h-6 w-6" />
@@ -179,17 +179,17 @@ export default function ServiceOrdersPage() {
                         <Icon className="h-5 w-5 text-muted-foreground" />
                         <Badge variant={getStatusVariant(order.status) as any}>{order.status}</Badge>
                       </div>
-                      
+
                       <h3 className="font-semibold truncate">{serviceName}</h3>
                       <div className="text-sm text-muted-foreground flex items-center gap-2 mt-0.5">
                         <span className="truncate">#{orderId.slice(-6).toUpperCase()}</span>
                         <span>•</span>
                         <span>{date}</span>
                         {order.vehicleDetails && (
-                           <>
-                             <span className="hidden sm:inline">•</span>
-                             <span className="hidden sm:inline truncate">{order.vehicleDetails.model}</span>
-                           </>
+                          <>
+                            <span className="hidden sm:inline">•</span>
+                            <span className="hidden sm:inline truncate capitalize">{order.vehicleDetails.bodyType}</span>
+                          </>
                         )}
                       </div>
                     </div>
@@ -201,16 +201,16 @@ export default function ServiceOrdersPage() {
 
                     {/* Price & Action Column */}
                     <div className="flex items-center justify-between sm:justify-end gap-4 pt-3 sm:pt-0 border-t sm:border-t-0 w-full sm:w-auto">
-                       <div className="sm:text-right">
-                          <p className="text-xs text-muted-foreground sm:hidden">Total</p>
-                          <p className="font-bold text-lg">₹{amount}</p>
-                       </div>
-                       
-                       <Button asChild variant="outline" size="sm" className="h-9">
-                          <Link href={CustomerRoutes.ORDER_SERVICE_DETAIL(orderId)}>
-                            Details <ChevronRight className="ml-1 h-3 w-3" />
-                          </Link>
-                       </Button>
+                      <div className="sm:text-right">
+                        <p className="text-xs text-muted-foreground sm:hidden">Total</p>
+                        <p className="font-bold text-lg">₹{amount}</p>
+                      </div>
+
+                      <Button asChild variant="outline" size="sm" className="h-9">
+                        <Link href={CustomerRoutes.ORDER_SERVICE_DETAIL(orderId)}>
+                          Details <ChevronRight className="ml-1 h-3 w-3" />
+                        </Link>
+                      </Button>
                     </div>
 
                   </CardContent>

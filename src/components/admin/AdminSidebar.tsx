@@ -62,7 +62,6 @@ const navigationGroups = [
     title: 'Marketing',
     items: [
       { name: 'Banners', href: AdminRoutes.BANNERS, icon: Megaphone },
-      { name: 'Campaigns', href: AdminRoutes.CAMPAIGNS, icon: Megaphone },
       { name: 'Posters', href: AdminRoutes.POSTERS, icon: Megaphone },
       { name: 'Coupons', href: AdminRoutes.COUPONS, icon: Tag },
     ]

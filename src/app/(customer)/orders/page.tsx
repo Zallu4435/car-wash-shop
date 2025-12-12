@@ -37,22 +37,22 @@ interface UnifiedActivity {
 }
 
 export default function OrdersPage() {
-  const { 
-    data: productData, 
-    isLoading: loadingProducts, 
-    error: productError 
+  const {
+    data: productData,
+    isLoading: loadingProducts,
+    error: productError
   } = useOrders({ limit: 5, page: 1 });
 
-  const { 
-    data: serviceData, 
-    isLoading: loadingServices, 
-    error: serviceError 
+  const {
+    data: serviceData,
+    isLoading: loadingServices,
+    error: serviceError
   } = useBookings({ limit: 5, page: 1 });
 
   const { recentOrders, stats } = useMemo(() => {
     const rawProducts: Order[] = productData?.data || [];
     const rawServices: Booking[] = serviceData?.data || [];
-    
+
     const productTotal = productData?.total ?? rawProducts.length;
     const serviceTotal = serviceData?.total ?? rawServices.length;
 
@@ -75,10 +75,10 @@ export default function OrdersPage() {
       date: booking.scheduledAt || booking.createdAt,
       amount: booking.amount || booking.totalAmount || 0,
       detailLink: CustomerRoutes.ORDER_SERVICE_DETAIL(booking.id),
-      meta: booking.vehicleDetails ? `${booking.vehicleDetails.model} (${booking.vehicleDetails.number})` : undefined
+      meta: booking.vehicleDetails ? `${booking.vehicleDetails.bodyType}` : undefined
     }));
 
-    const combined = [...normalizedProducts, ...normalizedServices].sort((a, b) => 
+    const combined = [...normalizedProducts, ...normalizedServices].sort((a, b) =>
       new Date(b.date).getTime() - new Date(a.date).getTime()
     );
 
@@ -113,18 +113,18 @@ export default function OrdersPage() {
 
       <main className="container-custom py-8 space-y-8">
         <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <OverviewCard 
-            title="Active Services" 
-            count={stats.services} 
+          <OverviewCard
+            title="Active Services"
+            count={stats.services}
             icon={Car}
             href={CustomerRoutes.ORDERS_SERVICES}
             color="text-blue-600"
             bgColor="bg-blue-50 dark:bg-blue-950/30"
             loading={isLoading}
           />
-          <OverviewCard 
-            title="Product Orders" 
-            count={stats.products} 
+          <OverviewCard
+            title="Product Orders"
+            count={stats.products}
             icon={ShoppingBag}
             href={CustomerRoutes.ORDERS_PRODUCTS}
             color="text-purple-600"
@@ -139,7 +139,7 @@ export default function OrdersPage() {
               <Clock className="h-5 w-5 text-muted-foreground" />
               Recent Orders & Services
             </h2>
-            
+
           </div>
 
           {isLoading ? (
@@ -220,7 +220,7 @@ function ActivityItem({ item }: { item: UnifiedActivity }) {
                 {item.status}
               </Badge>
             </div>
-            
+
             <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
               <span className="flex items-center gap-1">
                 <CalendarDays className="h-3.5 w-3.5" />

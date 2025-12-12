@@ -17,18 +17,18 @@ import { AdminRoutes } from '@/lib/constants/routes';
 export default function CustomerDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
-  
+
   // Fetch customer data
   const { data: customer, isLoading, error } = useAdminCustomerDetail(id);
   const updateStatusMutation = useUpdateCustomerStatus();
-  
+
   // Use the confirmation hook
   const blockConfirmation = useConfirmation();
   const deleteConfirmation = useConfirmation();
 
   const handleBlockClick = async () => {
     if (!customer) return;
-    
+
     const confirmed = await blockConfirmation.confirm({
       type: 'block',
       title: 'Block Customer?',
@@ -45,7 +45,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
 
   const handleDeleteClick = async () => {
     if (!customer) return;
-    
+
     const confirmed = await deleteConfirmation.confirm({
       type: 'delete',
       title: 'Delete Customer?',
@@ -70,8 +70,8 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
   // Error state
   if (error || !customer) {
     return (
-      <Error 
-        message="Failed to load customer" 
+      <Error
+        message="Failed to load customer"
         details={error?.message}
         onRetry={() => window.location.reload()}
       />
@@ -151,8 +151,8 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
                       <Car className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                     </div>
                     <div>
-                      <p className="font-semibold text-foreground">{vehicle.brand} {vehicle.model}</p>
-                      <p className="text-sm text-muted-foreground font-mono">{vehicle.number}</p>
+                      <p className="font-semibold text-foreground capitalize">{vehicle.bodyType}</p>
+                      <p className="text-sm text-muted-foreground capitalize">{vehicle.category}</p>
                     </div>
                   </div>
                 ))}

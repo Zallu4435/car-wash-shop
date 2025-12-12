@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
+import { ActiveStatusField } from '@/components/shared/form/ActiveStatusField';
 import { ArrowLeft, Plus, Image as ImageIcon, X } from 'lucide-react';
 import { AdminRoutes } from '@/lib/constants/routes';
 import { toast } from 'sonner';
@@ -18,7 +18,7 @@ import { posterSchema, PosterFormInput } from '@/schemas/admin/poster';
 export default function NewPosterPage() {
   const router = useRouter();
   const [uploadedImage, setUploadedImage] = useState<string>('');
-  
+
   const {
     register,
     handleSubmit,
@@ -128,9 +128,9 @@ export default function NewPosterPage() {
             {/* Title */}
             <div className="space-y-1.5 sm:space-y-2">
               <Label htmlFor="title" className="text-xs sm:text-sm">Poster Title</Label>
-              <Input 
-                id="title" 
-                placeholder="Summer Special" 
+              <Input
+                id="title"
+                placeholder="Summer Special"
                 className="h-9 sm:h-10 text-xs sm:text-sm"
                 {...register('title')}
               />
@@ -158,9 +158,9 @@ export default function NewPosterPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div className="space-y-1.5 sm:space-y-2">
                 <Label htmlFor="link" className="text-xs sm:text-sm">Link URL <span className="text-[10px] sm:text-xs text-muted-foreground">(Optional)</span></Label>
-                <Input 
-                  id="link" 
-                  placeholder="https://example.com" 
+                <Input
+                  id="link"
+                  placeholder="https://example.com"
                   className="h-9 sm:h-10 text-xs sm:text-sm"
                   {...register('link')}
                 />
@@ -170,10 +170,10 @@ export default function NewPosterPage() {
               </div>
               <div className="space-y-1.5 sm:space-y-2">
                 <Label htmlFor="displayOrder" className="text-xs sm:text-sm">Display Order <span className="text-[10px] sm:text-xs text-muted-foreground">(Optional)</span></Label>
-                <Input 
-                  id="displayOrder" 
-                  type="number" 
-                  placeholder="1" 
+                <Input
+                  id="displayOrder"
+                  type="number"
+                  placeholder="1"
                   className="h-9 sm:h-10 text-xs sm:text-sm"
                   {...register('displayOrder', { valueAsNumber: true })}
                 />
@@ -187,9 +187,9 @@ export default function NewPosterPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div className="space-y-1.5 sm:space-y-2">
                 <Label htmlFor="startDate" className="text-xs sm:text-sm">Start Date <span className="text-[10px] sm:text-xs text-muted-foreground">(Optional)</span></Label>
-                <Input 
-                  id="startDate" 
-                  type="date" 
+                <Input
+                  id="startDate"
+                  type="date"
                   className="h-9 sm:h-10 text-xs sm:text-sm"
                   {...register('startDate')}
                 />
@@ -199,9 +199,9 @@ export default function NewPosterPage() {
               </div>
               <div className="space-y-1.5 sm:space-y-2">
                 <Label htmlFor="endDate" className="text-xs sm:text-sm">End Date <span className="text-[10px] sm:text-xs text-muted-foreground">(Optional)</span></Label>
-                <Input 
-                  id="endDate" 
-                  type="date" 
+                <Input
+                  id="endDate"
+                  type="date"
                   className="h-9 sm:h-10 text-xs sm:text-sm"
                   {...register('endDate')}
                 />
@@ -212,24 +212,10 @@ export default function NewPosterPage() {
             </div>
 
             {/* Active Status */}
-            <div className="flex items-center justify-between p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl border-2 border-border">
-              <div className="min-w-0 flex-1 mr-3">
-                <Label htmlFor="active" className="cursor-pointer text-xs sm:text-sm">Active Status</Label>
-                <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">Poster is visible on the website</p>
-              </div>
-              <Controller
-                name="active"
-                control={control}
-                render={({ field }) => (
-                  <Switch
-                    id="active"
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                    className="flex-shrink-0"
-                  />
-                )}
-              />
-            </div>
+            <ActiveStatusField
+              control={control}
+              description="Poster is visible in the app"
+            />
 
             {errors.image && (
               <p className="text-[10px] sm:text-xs text-red-600 dark:text-red-400">{errors.image.message}</p>

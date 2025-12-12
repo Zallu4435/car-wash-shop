@@ -181,11 +181,10 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
                 <Badge
                   variant="outline"
                   className={
-                    `text-[10px] sm:text-xs flex-shrink-0 border-2 ${
-                      booking.status === 'pending' ? 'border-orange-500 text-orange-600 dark:text-orange-400' :
+                    `text-[10px] sm:text-xs flex-shrink-0 border-2 ${booking.status === 'pending' ? 'border-orange-500 text-orange-600 dark:text-orange-400' :
                       booking.status === 'confirmed' ? 'border-blue-500 text-blue-600 dark:text-blue-400' :
-                      booking.status === 'completed' ? 'border-green-500 text-green-600 dark:text-green-400' :
-                      'border-red-500 text-red-600 dark:text-red-400'}`
+                        booking.status === 'completed' ? 'border-green-500 text-green-600 dark:text-green-400' :
+                          'border-red-500 text-red-600 dark:text-red-400'}`
                   }>
                   {booking.status}
                 </Badge>
@@ -239,15 +238,12 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
                       <Car className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
                       Vehicle Details
                     </h3>
-                    <p className="text-base sm:text-lg font-semibold text-foreground mb-1">
-                      {booking.vehicleDetails.brand} {booking.vehicleDetails.model}
+                    <p className="text-base sm:text-lg font-semibold text-foreground mb-1 capitalize">
+                      {booking.vehicleDetails.bodyType}
                     </p>
-                    <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm text-muted-foreground">
-                      {booking.vehicleDetails.number && (
-                        <Badge variant="outline" className="font-mono text-[10px] sm:text-xs">{booking.vehicleDetails.number}</Badge>
-                      )}
-                      {booking.vehicleDetails.year && <span>Year: {booking.vehicleDetails.year}</span>}
-                    </div>
+                    <p className="text-xs sm:text-sm text-muted-foreground capitalize">
+                      {booking.vehicleDetails.category}
+                    </p>
                   </div>
                   <Separator />
                 </>
@@ -261,10 +257,10 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
                     Service Location
                   </h3>
                   <p className="text-xs sm:text-sm text-foreground leading-relaxed mb-3">
-                    {typeof booking.address === 'string' 
-                      ? booking.address 
-                      : (booking.address.fullAddress || 
-                         `${booking.address.line1}${booking.address.line2 ? ', ' + booking.address.line2 : ''}, ${booking.address.city}, ${booking.address.state} - ${booking.address.pincode}`)}
+                    {typeof booking.address === 'string'
+                      ? booking.address
+                      : (booking.address.fullAddress ||
+                        `${booking.address.line1}${booking.address.line2 ? ', ' + booking.address.line2 : ''}, ${booking.address.city}, ${booking.address.state} - ${booking.address.pincode}`)}
                   </p>
                 </div>
               )}
@@ -281,10 +277,10 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
                     <LocationMap
                       latitude={booking.coordinates.latitude}
                       longitude={booking.coordinates.longitude}
-                      address={typeof booking.address === 'string' 
-                        ? booking.address 
-                        : (booking.address?.fullAddress || 
-                           `${booking.address?.line1 || ''}${booking.address?.line2 ? ', ' + booking.address.line2 : ''}, ${booking.address?.city || ''}, ${booking.address?.state || ''} - ${booking.address?.pincode || ''}`)}
+                      address={typeof booking.address === 'string'
+                        ? booking.address
+                        : (booking.address?.fullAddress ||
+                          `${booking.address?.line1 || ''}${booking.address?.line2 ? ', ' + booking.address.line2 : ''}, ${booking.address?.city || ''}, ${booking.address?.state || ''} - ${booking.address?.pincode || ''}`)}
                       height="400px"
                     />
                   </div>

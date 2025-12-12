@@ -105,17 +105,6 @@ export const PAYMENT_METHOD = {
 } as const;
 
 // ============================================
-// Campaign Type Constants
-// ============================================
-
-export const CAMPAIGN_TYPE = {
-  EMAIL: 'email',
-  SMS: 'sms',
-  NOTIFICATION: 'notification',
-  BANNER: 'banner',
-} as const;
-
-// ============================================
 // Target Audience Constants
 // ============================================
 
@@ -150,6 +139,5 @@ export type UserRole = (typeof USER_ROLE)[keyof typeof USER_ROLE];
 export type StaffRole = (typeof STAFF_ROLE)[keyof typeof STAFF_ROLE];
 export type SenderType = (typeof SENDER_TYPE)[keyof typeof SENDER_TYPE];
 export type PaymentMethod = (typeof PAYMENT_METHOD)[keyof typeof PAYMENT_METHOD];
-export type CampaignType = (typeof CAMPAIGN_TYPE)[keyof typeof CAMPAIGN_TYPE];
 export type TargetAudience = (typeof TARGET_AUDIENCE)[keyof typeof TARGET_AUDIENCE];
 export type DiscountType = (typeof DISCOUNT_TYPE)[keyof typeof DISCOUNT_TYPE];

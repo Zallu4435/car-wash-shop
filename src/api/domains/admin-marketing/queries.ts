@@ -21,14 +21,6 @@ export const adminMarketingKeys = {
     pageSize?: number;
   }) => [...adminMarketingKeys.posters(), 'list', filters] as const,
   posterDetail: (id: string) => [...adminMarketingKeys.posters(), 'detail', id] as const,
-  campaigns: () => [...adminMarketingKeys.all, 'campaigns'] as const,
-  campaignsList: (filters?: {
-    search?: string;
-    status?: string;
-    page?: number;
-    pageSize?: number;
-  }) => [...adminMarketingKeys.campaigns(), 'list', filters] as const,
-  campaignDetail: (id: string) => [...adminMarketingKeys.campaigns(), 'detail', id] as const,
 };
 
 // Banners
@@ -181,77 +173,3 @@ export const useDeletePoster = () => {
   });
 };
 
-// Campaigns
-export const useAdminCampaignList = (filters?: {
-  search?: string;
-  status?: string;
-  page?: number;
-  pageSize?: number;
-}) => {
-  // Convert pageSize to limit for the API
-  const apiFilters = filters ? {
-    ...filters,
-    limit: filters.pageSize,
-    pageSize: undefined,
-  } : undefined;
-
-  return useQuery({
-    queryKey: adminMarketingKeys.campaignsList(filters),
-    queryFn: () => adminMarketingFetchers.getCampaignList(apiFilters as any),
-    staleTime: 5 * 60 * 1000,
-    placeholderData: (previousData) => previousData,
-  });
-};
-
-export const useAdminCampaignDetail = (campaignId: string) => {
-  return useQuery({
-    queryKey: adminMarketingKeys.campaignDetail(campaignId),
-    queryFn: () => adminMarketingFetchers.getCampaignById(campaignId),
-    enabled: !!campaignId,
-    staleTime: 2 * 60 * 1000,
-  });
-};
-
-export const useCreateCampaign = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input: any) => adminMarketingFetchers.createCampaign(input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: adminMarketingKeys.campaigns() });
-      toast.success('Campaign created successfully');
-    },
-    onError: (error: any) => {
-      toast.error(error.message || 'Failed to create campaign');
-    },
-  });
-};
-
-export const useUpdateCampaign = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({ campaignId, input }: { campaignId: string; input: any }) =>
-      adminMarketingFetchers.updateCampaign(campaignId, input),
-    onSuccess: (data, variables) => {
-      queryClient.setQueryData(adminMarketingKeys.campaignDetail(variables.campaignId), data);
-      queryClient.invalidateQueries({ queryKey: adminMarketingKeys.campaigns() });
-      toast.success('Campaign updated successfully');
-    },
-    onError: (error: any) => {
-      toast.error(error.message || 'Failed to update campaign');
-    },
-  });
-};
-
-export const useDeleteCampaign = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (campaignId: string) => adminMarketingFetchers.deleteCampaign(campaignId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: adminMarketingKeys.campaigns() });
-      toast.success('Campaign deleted successfully');
-    },
-    onError: (error: any) => {
-      toast.error(error.message || 'Failed to delete campaign');
-    },
-  });
-};

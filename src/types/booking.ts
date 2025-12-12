@@ -46,10 +46,8 @@ export interface Booking {
   paymentStatus: PaymentStatus;
   addOns?: AddOn[];
   vehicleDetails: {
-    brand: string;
-    model: string;
-    number: string;
-    type: string;
+    category: 'car' | 'bike';
+    bodyType: string;
   };
   assignedStaff?: string;
   completedAt?: string;

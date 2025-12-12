@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
+import { ActiveStatusField } from '@/components/shared/form/ActiveStatusField';
 import { ArrowLeft, Save, Image as ImageIcon, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { productSchema, ProductFormInput } from '@/schemas/admin/product';
@@ -27,7 +27,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
   const updateProduct = useUpdateProduct();
   const { data: categoriesResponse } = useAdminCategoryList({ type: 'product', status: 'active' });
   const productCategories = categoriesResponse?.data || [];
-  
+
   const {
     register,
     handleSubmit,
@@ -63,7 +63,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
           categoryValue = String(product.category);
         }
       }
-      
+
       // If categories are already loaded, try to map category name to ID
       if (productCategories.length > 0 && categoryValue) {
         // Check if categoryValue is already a valid ID
@@ -76,7 +76,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
           }
         }
       }
-      
+
       // Set each field individually to ensure all fields update
       if (product.name != null) setValue('name', product.name);
       if (product.description != null) setValue('description', product.description);
@@ -113,7 +113,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
           categoryValue = product.category;
         }
       }
-      
+
       // If category is a name string, try to find the matching category ID
       if (categoryValue) {
         const foundById = productCategories.find(cat => cat.id === categoryValue);
@@ -314,31 +314,16 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
             </div>
 
             {/* Active Status */}
-            <div className="flex items-center justify-between gap-3 p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl border-2 border-border">
-              <div className="min-w-0 flex-1">
-                <Label htmlFor="active" className="cursor-pointer text-xs sm:text-sm font-medium">Active Status</Label>
-                <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">
-                  Product is visible in the store
-                </p>
-              </div>
-              <Controller
-                name="active"
-                control={control}
-                render={({ field }) => (
-                  <Switch
-                    id="active"
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                )}
-              />
-            </div>
+            <ActiveStatusField
+              control={control}
+              description="Product is visible in the store"
+            />
 
             {/* Action Buttons */}
             <div className="flex flex-col xs:flex-row gap-2 sm:gap-3">
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 className="flex-1 h-9 sm:h-10 text-xs sm:text-sm border-2 rounded-lg"
                 onClick={() => router.push(AdminRoutes.PRODUCTS)}
               >

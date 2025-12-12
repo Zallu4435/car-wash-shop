@@ -95,19 +95,19 @@ export const getCurrentPosition = (): Promise<{ lat: number; lng: number }> => {
       },
       (error) => {
         let errorMessage = 'Unable to get your location';
-        
+
         switch (error.code) {
           case 1: // PERMISSION_DENIED
-            errorMessage = 'Location access denied. Please enable location permissions.';
+            errorMessage = 'Location access denied. Please click the lock/site settings icon in your browser\'s address bar to enable location permissions, then try again.';
             break;
           case 2: // POSITION_UNAVAILABLE
-            errorMessage = 'Location information unavailable.';
+            errorMessage = 'Location information unavailable. Please check that your device\'s location services are enabled.';
             break;
           case 3: // TIMEOUT
-            errorMessage = 'Location request timed out.';
+            errorMessage = 'Location request timed out. Please try again.';
             break;
         }
-        
+
         reject(new Error(errorMessage));
       },
       {
@@ -134,9 +134,9 @@ export const calculateDistance = (
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos(toRad(lat1)) *
-      Math.cos(toRad(lat2)) *
-      Math.sin(dLng / 2) *
-      Math.sin(dLng / 2);
+    Math.cos(toRad(lat2)) *
+    Math.sin(dLng / 2) *
+    Math.sin(dLng / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 };

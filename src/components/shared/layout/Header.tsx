@@ -7,6 +7,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useVehicleContext } from '@/context/VehicleContext';
 import { useRouter, usePathname } from 'next/navigation';
 import { NotificationPanel } from '@/components/shared/notification/NotificationPanel';
+import { getVehicleDisplayType } from '@/utils/vehicle';
 import { VehicleSelectionModal } from '@/components/shared/selectors/VehicleSelectionModal';
 import { useCart } from '@/api/domains/cart/queries';
 import { useUpdateVehicle } from '@/api/domains/vehicles/queries';
@@ -86,7 +87,7 @@ export default function EnhancedHeader() {
       input: { isPrimary: true }
     }, {
       onSuccess: () => {
-        toast.success(`${vehicle.brand} ${vehicle.model} is now your primary vehicle`);
+        toast.success(`${getVehicleDisplayType(vehicle)} is now your primary vehicle`);
       },
       onError: () => {
         toast.error('Failed to set as primary vehicle');
@@ -125,8 +126,8 @@ export default function EnhancedHeader() {
     <>
       <header
         className={`sticky top-0 z-50 transition-all duration-300 ${scrolled
-            ? 'bg-background/95 backdrop-blur-xl shadow-lg border-b border-border'
-            : 'bg-background shadow-sm border-b border-border'
+          ? 'bg-background/95 backdrop-blur-xl shadow-lg border-b border-border'
+          : 'bg-background shadow-sm border-b border-border'
           }`}
       >
         <nav className="container-custom">
@@ -135,8 +136,12 @@ export default function EnhancedHeader() {
             <button onClick={() => handleNavigation('/')} className="flex items-center gap-2 sm:gap-3 group cursor-pointer">
               <div className="relative">
                 <div className="absolute inset-0 bg-primary rounded-lg sm:rounded-xl blur-md sm:blur-lg opacity-40 group-hover:opacity-60 transition-all"></div>
-                <div className="relative bg-primary p-2 sm:p-2.5 rounded-lg sm:rounded-xl shadow-lg group-hover:shadow-xl group-hover:scale-105 transition-all">
-                  <Droplet className="h-6 w-6 sm:h-7 sm:w-7 text-primary-foreground" />
+                <div className="relative bg-primary rounded-lg sm:rounded-xl  transition-all overflow-hidden w-10 h-10 sm:w-12 sm:h-12">
+                  <img
+                    src="/images/logo.png"
+                    alt="Eazy Wash Logo"
+                    className="w-full h-full object-cover"
+                  />
                 </div>
               </div>
               <div className="flex flex-col">
@@ -160,8 +165,8 @@ export default function EnhancedHeader() {
                     key={item.name}
                     onClick={() => handleNavigation(item.href)}
                     className={`relative px-3 lg:px-5 py-2 lg:py-2.5 text-sm font-medium transition-all rounded-lg lg:rounded-xl cursor-pointer ${isActive
-                        ? 'text-primary bg-primary/15 font-semibold'
-                        : 'text-foreground hover:text-primary hover:bg-muted'
+                      ? 'text-primary bg-primary/15 font-semibold'
+                      : 'text-foreground hover:text-primary hover:bg-muted'
                       }`}
                   >
                     {item.name}
@@ -190,8 +195,8 @@ export default function EnhancedHeader() {
 
                   {selectedVehicle && (
                     <div className="absolute top-full right-0 mt-2 px-3 py-2 bg-card border border-border rounded-lg shadow-lg opacity-0 invisible group-hover/vehicle:opacity-100 group-hover/vehicle:visible transition-all duration-200 whitespace-nowrap z-50">
-                      <p className="text-xs font-medium text-foreground">{selectedVehicle.brand} {selectedVehicle.model}</p>
-                      <p className="text-[10px] text-muted-foreground">{selectedVehicle.plateNumber}</p>
+                      <p className="text-xs font-medium text-foreground capitalize">{getVehicleDisplayType(selectedVehicle)}</p>
+                      <p className="text-[10px] text-muted-foreground capitalize">{selectedVehicle.category}</p>
                     </div>
                   )}
 
@@ -368,8 +373,8 @@ export default function EnhancedHeader() {
           {/* Mobile Menu */}
           <div
             className={`md:hidden overflow-hidden transition-all duration-500 ${mobileMenuOpen
-                ? 'max-h-[calc(100vh-5rem)] opacity-100 pointer-events-auto'
-                : 'max-h-0 opacity-0 pointer-events-none'
+              ? 'max-h-[calc(100vh-5rem)] opacity-100 pointer-events-auto'
+              : 'max-h-0 opacity-0 pointer-events-none'
               }`}
           >
             <div className="py-3 sm:py-4 space-y-2 overflow-y-auto overflow-x-hidden max-h-[calc(100vh-6rem)] pb-6 scroll-smooth...">
@@ -402,10 +407,10 @@ export default function EnhancedHeader() {
                   {selectedVehicle && (
                     <div className="mt-2 pt-2 border-t border-border">
                       <p className="text-[10px] sm:text-xs text-muted-foreground">Selected Vehicle</p>
-                      <p className="text-xs sm:text-sm font-medium text-foreground truncate">
-                        {selectedVehicle.brand} {selectedVehicle.model}
+                      <p className="text-xs sm:text-sm font-medium text-foreground truncate capitalize">
+                        {getVehicleDisplayType(selectedVehicle)}
                       </p>
-                      <p className="text-[10px] text-muted-foreground">{selectedVehicle.plateNumber}</p>
+                      <p className="text-[10px] text-muted-foreground capitalize">{selectedVehicle.category}</p>
                     </div>
                   )}
                 </div>
@@ -513,8 +518,8 @@ export default function EnhancedHeader() {
                         key={option.value}
                         onClick={() => setTheme(option.value)}
                         className={`flex flex-col items-center gap-1.5 sm:gap-2 p-2.5 sm:p-3 rounded-lg sm:rounded-xl transition-all cursor-pointer ${isActive
-                            ? 'bg-primary/10 text-primary border-2 border-primary'
-                            : 'bg-muted hover:bg-muted/80 border-2 border-transparent'
+                          ? 'bg-primary/10 text-primary border-2 border-primary'
+                          : 'bg-muted hover:bg-muted/80 border-2 border-transparent'
                           }`}
                       >
                         <Icon className="h-4 w-4 sm:h-5 sm:w-5" />

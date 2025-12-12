@@ -14,11 +14,11 @@ interface VehicleSelectionModalProps {
   selectedVehicleId?: string;
 }
 
-export function VehicleSelectionModal({ 
-  isOpen, 
-  onClose, 
+export function VehicleSelectionModal({
+  isOpen,
+  onClose,
   onSelect,
-  selectedVehicleId 
+  selectedVehicleId
 }: VehicleSelectionModalProps) {
   const { vehicles } = useVehicleContext();
   const router = useRouter();
@@ -72,20 +72,18 @@ export function VehicleSelectionModal({
   return (
     <>
       {/* Backdrop with Blur */}
-      <div 
-        className={`fixed inset-0 z-50 bg-black/60 backdrop-blur-md dark:bg-black/70 transition-opacity duration-500 ${
-          showContent ? 'opacity-100' : 'opacity-0 pointer-events-none'
-        }`}
+      <div
+        className={`fixed inset-0 z-50 bg-black/60 backdrop-blur-md dark:bg-black/70 transition-opacity duration-500 ${showContent ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          }`}
         onClick={onClose}
       />
 
       {/* Modal */}
-      <div 
-        className={`fixed left-1/2 top-1/2 z-50 w-full max-w-md transition-all duration-500 ease-in-out ${
-          showContent 
-            ? '-translate-x-1/2 -translate-y-1/2 opacity-100 scale-100' 
+      <div
+        className={`fixed left-1/2 top-1/2 z-50 w-full max-w-md transition-all duration-500 ease-in-out ${showContent
+            ? '-translate-x-1/2 -translate-y-1/2 opacity-100 scale-100'
             : '-translate-x-1/2 -translate-y-1/2 opacity-0 scale-95 pointer-events-none'
-        }`}
+          }`}
         onTransitionEnd={handleTransitionEnd}
       >
         <div className="border-2 border-border rounded-2xl shadow-2xl max-h-[85vh] overflow-hidden flex flex-col mx-4 force-sheet-bg">
@@ -125,34 +123,33 @@ export function VehicleSelectionModal({
                 {vehicles.map((vehicle) => {
                   const isSelected = vehicle.id === selectedVehicleId;
                   const VehicleIcon = getVehicleCategory(vehicle) === 'car' ? CarIcon : Bike;
-                  const vehicleImage = getVehicleCategory(vehicle) === 'car' 
-                    ? '/images/vehicles/car-placeholder.svg' 
+                  const vehicleImage = getVehicleCategory(vehicle) === 'car'
+                    ? '/images/vehicles/car-placeholder.svg'
                     : '/images/vehicles/bike-placeholder.svg';
 
                   return (
                     <button
                       key={vehicle.id}
                       onClick={() => handleVehicleSelect(vehicle)}
-                      className={`w-full p-4 rounded-xl border-2 transition-all text-left group cursor-pointer ${
-                        isSelected
+                      className={`w-full p-4 rounded-xl border-2 transition-all text-left group cursor-pointer ${isSelected
                           ? 'border-primary bg-primary/10 shadow-sm'
                           : 'border-border hover:border-primary/50 hover:shadow-sm'
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center gap-3">
                         <div className={`p-2 rounded-lg ${isSelected ? 'bg-primary/20' : 'bg-muted group-hover:bg-muted/80'}`}>
-                          <img 
-                            src={vehicleImage} 
+                          <img
+                            src={vehicleImage}
                             alt={getVehicleDisplayType(vehicle)}
                             className="h-12 w-12 object-contain"
                           />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-sm text-foreground truncate">
-                            {vehicle.brand} {vehicle.model}
+                          <p className="font-semibold text-sm text-foreground truncate capitalize">
+                            {getVehicleDisplayType(vehicle)}
                           </p>
-                          <p className="text-xs text-muted-foreground truncate mt-0.5">
-                            {vehicle.plateNumber} • {vehicle.year}
+                          <p className="text-xs text-muted-foreground truncate mt-0.5 capitalize">
+                            {vehicle.category}
                           </p>
                         </div>
                         {isSelected && (
@@ -171,7 +168,7 @@ export function VehicleSelectionModal({
                     </button>
                   );
                 })}
-                
+
                 {/* Add Vehicle Button */}
                 <button
                   onClick={handleAddVehicle}

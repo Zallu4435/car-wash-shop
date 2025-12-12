@@ -74,15 +74,13 @@ export default function ServiceOrderDetailPage({ params }: { params: Promise<{ i
   const isAddressObject = typeof addressDetails !== 'string' && !!addressDetails;
   const vehicleDetails = booking.vehicleDetails;
   const vehicleName = vehicleDetails
-    ? [vehicleDetails.brand || (vehicleDetails as { make?: string })?.make, vehicleDetails.model]
-        .filter(Boolean)
-        .join(' ') || 'N/A'
+    ? vehicleDetails.bodyType || 'N/A'
     : 'N/A';
 
   // Format scheduled date and time for display
   const formatScheduledSlot = () => {
     if (!booking.scheduledDate) return 'Not scheduled';
-    
+
     try {
       const date = new Date(booking.scheduledDate);
       if (isNaN(date.getTime())) {
@@ -97,7 +95,7 @@ export default function ServiceOrderDetailPage({ params }: { params: Promise<{ i
               month: 'long',
               day: 'numeric'
             });
-            
+
             if (booking.scheduledTime) {
               const [hours, minutes] = booking.scheduledTime.split(':');
               if (hours && minutes) {
@@ -112,14 +110,14 @@ export default function ServiceOrderDetailPage({ params }: { params: Promise<{ i
         }
         return booking.scheduledDate;
       }
-      
+
       const formattedDate = date.toLocaleDateString('en-US', {
         weekday: 'long',
         year: 'numeric',
         month: 'long',
         day: 'numeric'
       });
-      
+
       if (booking.scheduledTime) {
         const [hours, minutes] = booking.scheduledTime.split(':');
         if (hours && minutes) {
@@ -131,8 +129,8 @@ export default function ServiceOrderDetailPage({ params }: { params: Promise<{ i
       }
       return formattedDate;
     } catch (error) {
-      return booking.scheduledTime 
-        ? `${booking.scheduledDate} • ${booking.scheduledTime}` 
+      return booking.scheduledTime
+        ? `${booking.scheduledDate} • ${booking.scheduledTime}`
         : booking.scheduledDate;
     }
   };
@@ -274,7 +272,7 @@ export default function ServiceOrderDetailPage({ params }: { params: Promise<{ i
                 </CardContent>
               </Card>
 
-            {vehicleDetails && (
+              {vehicleDetails && (
                 <Card className="border-2 border-border">
                   <CardHeader className="pb-3 sm:pb-4">
                     <div className="flex items-center gap-2 sm:gap-3">
@@ -285,25 +283,17 @@ export default function ServiceOrderDetailPage({ params }: { params: Promise<{ i
                   <CardContent>
                     <div className="p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl space-y-2">
                       <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Type</span>
+                        <span className="text-muted-foreground">Category</span>
                         <span className="font-medium text-foreground capitalize">
-                          {vehicleDetails.type || 'N/A'}
+                          {vehicleDetails.category || 'N/A'}
                         </span>
                       </div>
                       <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Model</span>
-                        <span className="font-medium text-foreground">
-                          {vehicleName}
+                        <span className="text-muted-foreground">Body Type</span>
+                        <span className="font-medium text-foreground capitalize">
+                          {vehicleDetails.bodyType || 'N/A'}
                         </span>
                       </div>
-                      {vehicleDetails.number && (
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">Number</span>
-                          <span className="font-medium text-foreground">
-                            {vehicleDetails.number}
-                          </span>
-                        </div>
-                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -324,9 +314,8 @@ export default function ServiceOrderDetailPage({ params }: { params: Promise<{ i
                               {[1, 2, 3, 4, 5].map((star) => (
                                 <Star
                                   key={star}
-                                  className={`h-4 w-4 sm:h-5 sm:w-5 ${
-                                    star <= bookingReview.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
-                                  }`}
+                                  className={`h-4 w-4 sm:h-5 sm:w-5 ${star <= bookingReview.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
+                                    }`}
                                 />
                               ))}
                               <span className="text-sm sm:text-base font-medium text-foreground ml-1">
@@ -383,10 +372,10 @@ export default function ServiceOrderDetailPage({ params }: { params: Promise<{ i
             </div>
 
             <div className="lg:col-span-1">
-              <OrderTracker 
-                currentStatus={trackerStatus} 
-                statusHistory={statusHistory} 
-                isService 
+              <OrderTracker
+                currentStatus={trackerStatus}
+                statusHistory={statusHistory}
+                isService
                 scheduledDate={booking.scheduledDate}
                 scheduledTime={booking.scheduledTime}
               />

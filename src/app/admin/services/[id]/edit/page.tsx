@@ -10,8 +10,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
 import { ArrowLeft, Save, Car, Clock, IndianRupee, Image as ImageIcon, X } from 'lucide-react';
+import { ActiveStatusField } from '@/components/shared/form/ActiveStatusField';
 import { toast } from 'sonner';
 import { serviceSchema, ServiceFormInput } from '@/schemas/admin/service';
 import { AdminRoutes } from '@/lib/constants/routes';
@@ -23,7 +23,7 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
   const [uploadedImage, setUploadedImage] = useState<string>('');
   const { data: serviceDetail } = useAdminServiceDetail(id);
   const updateService = useUpdateService();
-  
+
   const {
     register,
     handleSubmit,
@@ -82,7 +82,7 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
           categoryValue = 'car';
         }
       }
-      
+
       // Set each field individually to ensure all fields update
       if (service.name != null) setValue('name', service.name);
       if (service.description != null) setValue('description', service.description);
@@ -95,7 +95,7 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
       } else if (service.price != null) {
         // Legacy: if single price exists, convert to pricing array
         // This shouldn't happen with new structure, but handle for backwards compatibility
-        const vehicleTypes = categoryValue === 'bike' 
+        const vehicleTypes = categoryValue === 'bike'
           ? ['super-bike', 'sports-bike', 'cruiser', 'scooty']
           : ['sedan', 'suv', 'hatchback', 'luxury'];
         setValue('pricing', vehicleTypes.map(vt => ({ vehicleType: vt, price: Number(service.price) })));
@@ -117,12 +117,12 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
     try {
       // Remove category from update data - category cannot be edited
       const { category, ...updateData } = data;
-      await updateService.mutateAsync({ 
-        serviceId: id, 
+      await updateService.mutateAsync({
+        serviceId: id,
         input: {
           ...updateData,
           image: data.image || uploadedImage, // Use form data or fallback to state
-        } as any 
+        } as any
       });
       toast.success('Service updated successfully!');
       router.push(AdminRoutes.SERVICES);
@@ -292,32 +292,16 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
             </div>
 
             {/* Active Status */}
-            <div className="flex items-center justify-between p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl border-2 border-border">
-              <div className="min-w-0 flex-1 mr-3">
-                <Label htmlFor="active" className="cursor-pointer text-xs sm:text-sm">Active Status</Label>
-                <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">
-                  Service is available for booking
-                </p>
-              </div>
-              <Controller
-                name="active"
-                control={control}
-                render={({ field }) => (
-                  <Switch
-                    id="active"
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                    className="flex-shrink-0"
-                  />
-                )}
-              />
-            </div>
+            <ActiveStatusField
+              control={control}
+              description="Service is available for booking"
+            />
 
             {/* Action Buttons */}
             <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3">
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 className="flex-1 h-9 sm:h-10 text-xs sm:text-sm border-2"
                 onClick={() => router.push(AdminRoutes.SERVICES)}
               >
