@@ -50,7 +50,7 @@ export default function RegisterPage() {
           <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 bg-primary rounded-xl sm:rounded-2xl mb-3 sm:mb-4">
             <Droplet className="h-7 w-7 sm:h-8 sm:w-8 text-primary-foreground" />
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Join CarWash</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Join Eazy Wash</h1>
           <p className="text-xs sm:text-sm text-muted-foreground mt-1 sm:mt-2">
             Start your car care journey today
           </p>
@@ -191,10 +191,10 @@ export default function RegisterPage() {
               </div>
 
               <div className="pt-1 sm:pt-2">
-                <Button 
-                  type="submit" 
-                  className="w-full shadow-lg h-11 sm:h-12 text-sm sm:text-base border-2" 
-                  size="lg" 
+                <Button
+                  type="submit"
+                  className="w-full shadow-lg h-11 sm:h-12 text-sm sm:text-base border-2"
+                  size="lg"
                   disabled={registerMutation.isPending}
                 >
                   {registerMutation.isPending ? 'Creating Account...' : 'Create Account'}

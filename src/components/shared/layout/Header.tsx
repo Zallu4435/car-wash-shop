@@ -32,12 +32,12 @@ export default function EnhancedHeader() {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showVehicleModal, setShowVehicleModal] = useState(false);
   const [avatarError, setAvatarError] = useState(false);
-  
+
   const { theme, resolvedTheme, setTheme } = useTheme();
   const { user, isAuthenticated, logout, isLoading } = useAuth();
   const { selectedVehicle, selectVehicle, clearVehicle, hasVehicles } = useVehicleContext();
   const updateVehicleMutation = useUpdateVehicle();
-  
+
   const { data: cartData } = useCart();
   const cartCount = cartData?.items?.length || 0;
 
@@ -62,7 +62,7 @@ export default function EnhancedHeader() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, [mobileMenuOpen]);
-  
+
 
   const handleNavigation = (href: string) => {
     router.push(href);
@@ -123,12 +123,11 @@ export default function EnhancedHeader() {
 
   return (
     <>
-      <header 
-        className={`sticky top-0 z-50 transition-all duration-300 ${
-          scrolled 
-            ? 'bg-background/95 backdrop-blur-xl shadow-lg border-b border-border' 
+      <header
+        className={`sticky top-0 z-50 transition-all duration-300 ${scrolled
+            ? 'bg-background/95 backdrop-blur-xl shadow-lg border-b border-border'
             : 'bg-background shadow-sm border-b border-border'
-        }`}
+          }`}
       >
         <nav className="container-custom">
           <div className="flex items-center justify-between h-16 sm:h-20">
@@ -142,7 +141,7 @@ export default function EnhancedHeader() {
               </div>
               <div className="flex flex-col">
                 <span className="text-base sm:text-xl font-bold text-foreground tracking-tight">
-                  CarWash
+                  Eazy Wash
                 </span>
                 <span className="text-[10px] sm:text-xs text-muted-foreground -mt-0.5 font-medium">
                   Premium Service
@@ -153,18 +152,17 @@ export default function EnhancedHeader() {
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-1 lg:gap-2">
               {navigation.map((item) => {
-                const isActive = item.href === '/' 
+                const isActive = item.href === '/'
                   ? pathname === '/' || pathname === ''
                   : pathname === item.href || pathname.startsWith(item.href + '/');
                 return (
                   <button
                     key={item.name}
                     onClick={() => handleNavigation(item.href)}
-                    className={`relative px-3 lg:px-5 py-2 lg:py-2.5 text-sm font-medium transition-all rounded-lg lg:rounded-xl cursor-pointer ${
-                      isActive
+                    className={`relative px-3 lg:px-5 py-2 lg:py-2.5 text-sm font-medium transition-all rounded-lg lg:rounded-xl cursor-pointer ${isActive
                         ? 'text-primary bg-primary/15 font-semibold'
                         : 'text-foreground hover:text-primary hover:bg-muted'
-                    }`}
+                      }`}
                   >
                     {item.name}
                     {isActive && (
@@ -189,14 +187,14 @@ export default function EnhancedHeader() {
                       <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 sm:h-3 sm:w-3 rounded-full border-2 border-background bg-primary" />
                     )}
                   </button>
-                  
+
                   {selectedVehicle && (
                     <div className="absolute top-full right-0 mt-2 px-3 py-2 bg-card border border-border rounded-lg shadow-lg opacity-0 invisible group-hover/vehicle:opacity-100 group-hover/vehicle:visible transition-all duration-200 whitespace-nowrap z-50">
                       <p className="text-xs font-medium text-foreground">{selectedVehicle.brand} {selectedVehicle.model}</p>
                       <p className="text-[10px] text-muted-foreground">{selectedVehicle.plateNumber}</p>
                     </div>
                   )}
-                  
+
                   {!selectedVehicle && (
                     <div className="absolute top-full right-0 mt-2 px-3 py-2 bg-card border border-border rounded-lg shadow-lg opacity-0 invisible group-hover/vehicle:opacity-100 group-hover/vehicle:visible transition-all duration-200 whitespace-nowrap z-50">
                       <p className="text-xs text-muted-foreground">Select your vehicle</p>
@@ -232,9 +230,8 @@ export default function EnhancedHeader() {
                               setTheme(option.value);
                               setShowThemeMenu(false);
                             }}
-                            className={`px-3 lg:px-5 py-2 lg:py-2.5 text-sm font-medium rounded-lg flex items-center gap-2 ${
-                              isActive ? 'text-blue-600 bg-blue-100' : 'text-gray-600 hover:bg-gray-100'
-                            }`}
+                            className={`px-3 lg:px-5 py-2 lg:py-2.5 text-sm font-medium rounded-lg flex items-center gap-2 ${isActive ? 'text-blue-600 bg-blue-100' : 'text-gray-600 hover:bg-gray-100'
+                              }`}
                           >
                             <Icon className="h-4 w-4" />
                             <span className="flex-1 text-left">{option.label}</span>
@@ -261,7 +258,7 @@ export default function EnhancedHeader() {
                   )}
                 </button>
 
-                <NotificationPanel 
+                <NotificationPanel
                   isOpen={showNotifications}
                   onClose={() => setShowNotifications(false)}
                   isAuthenticated={isAuthenticated}
@@ -280,7 +277,7 @@ export default function EnhancedHeader() {
                   </span>
                 )}
               </button>
-              
+
               {/* User Menu - Always visible */}
               <div className="relative hidden md:block">
                 <button
@@ -289,8 +286,8 @@ export default function EnhancedHeader() {
                 >
                   {isAuthenticated && user ? (
                     <>
-                      <img 
-                        src={getAvatarSrc()} 
+                      <img
+                        src={getAvatarSrc()}
                         alt={user.name}
                         onError={handleAvatarError}
                         className="h-7 w-7 sm:h-8 sm:w-8 rounded-full object-cover ring-2 ring-primary/20"
@@ -355,15 +352,13 @@ export default function EnhancedHeader() {
                 className="md:hidden p-2 rounded-lg hover:bg-muted transition-all cursor-pointer"
               >
                 <div className="relative w-5 h-5">
-                  <Menu 
-                    className={`h-5 w-5 text-foreground absolute transition-all duration-300 ${
-                      mobileMenuOpen ? 'rotate-90 opacity-0' : 'rotate-0 opacity-100'
-                    }`} 
+                  <Menu
+                    className={`h-5 w-5 text-foreground absolute transition-all duration-300 ${mobileMenuOpen ? 'rotate-90 opacity-0' : 'rotate-0 opacity-100'
+                      }`}
                   />
-                  <X 
-                    className={`h-5 w-5 text-foreground absolute transition-all duration-300 ${
-                      mobileMenuOpen ? 'rotate-0 opacity-100' : '-rotate-90 opacity-0'
-                    }`} 
+                  <X
+                    className={`h-5 w-5 text-foreground absolute transition-all duration-300 ${mobileMenuOpen ? 'rotate-0 opacity-100' : '-rotate-90 opacity-0'
+                      }`}
                   />
                 </div>
               </button>
@@ -372,20 +367,19 @@ export default function EnhancedHeader() {
 
           {/* Mobile Menu */}
           <div
-  className={`md:hidden overflow-hidden transition-all duration-500 ${
-    mobileMenuOpen 
-      ? 'max-h-[calc(100vh-5rem)] opacity-100 pointer-events-auto' 
-      : 'max-h-0 opacity-0 pointer-events-none'
-  }`}
->
-<div className="py-3 sm:py-4 space-y-2 overflow-y-auto overflow-x-hidden max-h-[calc(100vh-6rem)] pb-6 scroll-smooth...">
-{/* User Info / Login Prompt */}
+            className={`md:hidden overflow-hidden transition-all duration-500 ${mobileMenuOpen
+                ? 'max-h-[calc(100vh-5rem)] opacity-100 pointer-events-auto'
+                : 'max-h-0 opacity-0 pointer-events-none'
+              }`}
+          >
+            <div className="py-3 sm:py-4 space-y-2 overflow-y-auto overflow-x-hidden max-h-[calc(100vh-6rem)] pb-6 scroll-smooth...">
+              {/* User Info / Login Prompt */}
               {isAuthenticated && user ? (
                 <div className="px-3 sm:px-4 py-2.5 sm:py-3 mb-3 sm:mb-4 bg-muted/50 rounded-lg sm:rounded-xl border border-border">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-                      <img 
-                        src={getAvatarSrc()} 
+                      <img
+                        src={getAvatarSrc()}
                         alt={user.name}
                         onError={handleAvatarError}
                         className="h-9 w-9 sm:h-10 sm:w-10 rounded-full object-cover ring-2 ring-primary/20 flex-shrink-0"
@@ -417,20 +411,20 @@ export default function EnhancedHeader() {
                 </div>
               ) : (
                 <div className="mx-3 sm:mx-4 mb-3 sm:mb-4">
-                <button
-                  onClick={() => handleNavigation('/auth/login')}
-                  className="w-full flex items-center justify-center gap-2.5 px-5 py-2.5 rounded-lg sm:rounded-xl bg-primary text-primary-foreground text-sm font-semibold cursor-pointer group relative transition-all duration-300 active:translate-y-0 border border-primary/50"
-                >
-                  <User className="h-4 w-4 relative z-10" />
-                  <span className="relative z-10">Sign In</span>
-                </button>
-              </div>
-              
+                  <button
+                    onClick={() => handleNavigation('/auth/login')}
+                    className="w-full flex items-center justify-center gap-2.5 px-5 py-2.5 rounded-lg sm:rounded-xl bg-primary text-primary-foreground text-sm font-semibold cursor-pointer group relative transition-all duration-300 active:translate-y-0 border border-primary/50"
+                  >
+                    <User className="h-4 w-4 relative z-10" />
+                    <span className="relative z-10">Sign In</span>
+                  </button>
+                </div>
+
               )}
 
               {/* Navigation */}
               {navigation.map((item, index) => {
-                const isActive = item.href === '/' 
+                const isActive = item.href === '/'
                   ? pathname === '/' || pathname === ''
                   : pathname === item.href || pathname.startsWith(item.href + '/');
                 return (
@@ -438,14 +432,12 @@ export default function EnhancedHeader() {
                     key={item.name}
                     onClick={() => handleNavigation(item.href)}
                     style={{ animationDelay: `${index * 50}ms` }}
-                    className={`w-full px-3 sm:px-4 py-3 sm:py-3.5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium text-left transition-all cursor-pointer ${
-                      mobileMenuOpen ? 'animate-slide-up' : ''
-                    } ${
-                      isActive
+                    className={`w-full px-3 sm:px-4 py-3 sm:py-3.5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium text-left transition-all cursor-pointer ${mobileMenuOpen ? 'animate-slide-up' : ''
+                      } ${isActive
                         ? 'border-1 border-grey font-bold bg-[rgb(211,192,255)]'
                         : 'text-foreground hover:bg-muted'
-                    }`}
-                    
+                      }`}
+
                   >
                     {item.name}
                   </button>
@@ -458,7 +450,7 @@ export default function EnhancedHeader() {
                   <p className="px-3 sm:px-4 py-2 text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Account
                   </p>
-                  
+
                   <button
                     onClick={() => {
                       handleVehicleClick();
@@ -506,7 +498,7 @@ export default function EnhancedHeader() {
                   </button>
                 </div>
               )}
-              
+
               {/* Theme Selector */}
               <div className="pt-2 border-t border-border mt-2">
                 <p className="px-3 sm:px-4 py-2 text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider">
@@ -520,11 +512,10 @@ export default function EnhancedHeader() {
                       <button
                         key={option.value}
                         onClick={() => setTheme(option.value)}
-                        className={`flex flex-col items-center gap-1.5 sm:gap-2 p-2.5 sm:p-3 rounded-lg sm:rounded-xl transition-all cursor-pointer ${
-                          isActive
+                        className={`flex flex-col items-center gap-1.5 sm:gap-2 p-2.5 sm:p-3 rounded-lg sm:rounded-xl transition-all cursor-pointer ${isActive
                             ? 'bg-primary/10 text-primary border-2 border-primary'
                             : 'bg-muted hover:bg-muted/80 border-2 border-transparent'
-                        }`}
+                          }`}
                       >
                         <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
                         <span className="text-[10px] sm:text-xs font-medium">{option.label}</span>

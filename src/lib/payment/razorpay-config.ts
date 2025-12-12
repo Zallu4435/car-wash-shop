@@ -3,7 +3,7 @@ export const RAZORPAY_CONFIG = {
   KEY_ID: 'rzp_test_RdDmr0Eqz6uHTl',
   KEY_SECRET: process.env.RAZORPAY_KEY_SECRET || '',
   CURRENCY: 'INR',
-  COMPANY_NAME: 'Car Wash Service',
+  COMPANY_NAME: 'Eazy Wash',
   COMPANY_LOGO: '/logo.png',
   THEME_COLOR: '#3b82f6',
 } as const;

@@ -3,12 +3,12 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { 
-  LayoutDashboard, 
-  Car, 
-  Package, 
-  Users, 
-  ShoppingBag, 
+import {
+  LayoutDashboard,
+  Car,
+  Package,
+  Users,
+  ShoppingBag,
   Calendar,
   Settings,
   LogOut,
@@ -116,11 +116,10 @@ export function AdminSidebar({ sidebarOpen, setSidebarOpen }: AdminSidebarProps)
   return (
     <>
       {/* Mobile sidebar backdrop */}
-      <div 
-        className={`fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden transition-opacity duration-500 ${
-          sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
-        }`}
-        onClick={() => setSidebarOpen(false)} 
+      <div
+        className={`fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden transition-opacity duration-500 ${sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          }`}
+        onClick={() => setSidebarOpen(false)}
       />
 
       {/* Mobile sidebar */}
@@ -143,13 +142,13 @@ export function AdminSidebar({ sidebarOpen, setSidebarOpen }: AdminSidebarProps)
                   Admin Panel
                 </span>
                 <p className="text-[10px] sm:text-xs text-muted-foreground truncate">
-                  CarWash Management
+                  Eazy Wash Admin
                 </p>
               </div>
             </div>
-            <Button 
-              variant="ghost" 
-              size="icon" 
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => setSidebarOpen(false)}
               className="flex-shrink-0 h-8 w-8 sm:h-9 sm:w-9"
             >
@@ -215,8 +214,8 @@ export function AdminSidebar({ sidebarOpen, setSidebarOpen }: AdminSidebarProps)
 
           {/* Mobile Logout */}
           <div className="p-3 sm:p-4 border-t border-border">
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10 h-9 sm:h-10 text-xs sm:text-sm"
               onClick={handleLogout}
             >
@@ -241,7 +240,7 @@ export function AdminSidebar({ sidebarOpen, setSidebarOpen }: AdminSidebarProps)
               </div>
               <div>
                 <span className="text-xl font-bold text-foreground">Admin Panel</span>
-                <p className="text-xs text-muted-foreground mt-0.5">CarWash Management</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Eazy Wash Admin</p>
               </div>
             </div>
           </div>
@@ -303,8 +302,8 @@ export function AdminSidebar({ sidebarOpen, setSidebarOpen }: AdminSidebarProps)
 
           {/* Desktop Logout */}
           <div className="p-4 border-t border-border">
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10"
               onClick={handleLogout}
             >

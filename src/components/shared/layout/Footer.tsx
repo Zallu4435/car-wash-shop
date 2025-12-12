@@ -1,8 +1,8 @@
 'use client';
 
-import { 
-  Facebook, Instagram, Twitter, Linkedin, Mail, Phone, 
-  MapPin, Droplet, ArrowRight, Send 
+import {
+  Facebook, Instagram, Twitter, Linkedin, Mail, Phone,
+  MapPin, Droplet, ArrowRight, Send
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -59,7 +59,7 @@ export default function EnhancedFooter() {
                   </div>
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">CarWash</span>
+                  <span className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">Eazy Wash</span>
                   <span className="text-xs text-muted-foreground -mt-1 font-medium">Premium Service</span>
                 </div>
               </div>
@@ -160,7 +160,7 @@ export default function EnhancedFooter() {
               <ul className="space-y-3 sm:space-y-4">
                 {[
                   { Icon: Phone, label: 'Phone', value: '+91 88489 19507', href: 'tel:+918848919507' },
-                  { Icon: Mail, label: 'Email', value: 'support@carwash.com', href: 'mailto:support@carwash.com' },
+                  { Icon: Mail, label: 'Email', value: 'support@eazywash.com', href: 'mailto:support@eazywash.com' },
                   { Icon: MapPin, label: 'Location', value: 'Mumbai, Maharashtra', href: '#' },
                 ].map((item) => (
                   <li key={item.label} className="flex items-start gap-2 sm:gap-3 group">
@@ -184,13 +184,13 @@ export default function EnhancedFooter() {
         <div className="border-t border-border py-4 sm:py-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-3 sm:gap-4">
             <p className="text-xs sm:text-sm text-muted-foreground text-center md:text-left">
-              &copy; {new Date().getFullYear()} <span className="text-foreground font-medium">CarWash Services</span>. All rights reserved.
+              &copy; {new Date().getFullYear()} <span className="text-foreground font-medium">Eazy Wash Services</span>. All rights reserved.
             </p>
             <div className="flex flex-wrap justify-center gap-4 sm:gap-6 text-xs sm:text-sm text-muted-foreground">
               {['Privacy Policy', 'Terms of Service', 'Cookie Policy'].map((item) => (
-                <a 
+                <a
                   key={item}
-                  href={`/${item.toLowerCase().replace(/\s+/g, '-')}`} 
+                  href={`/${item.toLowerCase().replace(/\s+/g, '-')}`}
                   className="hover:text-primary transition-colors relative group whitespace-nowrap"
                 >
                   {item}

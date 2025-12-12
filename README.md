@@ -1,4 +1,4 @@
-# Car Wash Application
+# Eazy Wash Application
 
 Professional car wash booking and management system.
 

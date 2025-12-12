@@ -7,7 +7,7 @@ import { AuthProvider } from '@/context/AuthContext';
 import { VehicleProvider } from '@/context/VehicleContext';
 import { Toaster } from 'sonner';
 
-const inter = Inter({ 
+const inter = Inter({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-inter',
@@ -15,22 +15,22 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'CarWash - Professional Car Washing Services',
+  title: 'Eazy Wash - Professional Car Washing Services',
   description: 'Book professional car wash and detailing services at your doorstep. Premium quality, affordable prices.',
   keywords: 'car wash, car detailing, mobile car wash, professional car cleaning, doorstep car wash',
-  authors: [{ name: 'CarWash Services' }],
-  creator: 'CarWash',
+  authors: [{ name: 'Eazy Wash Services' }],
+  creator: 'Eazy Wash',
   openGraph: {
     type: 'website',
     locale: 'en_US',
     url: 'https://carwash.com',
-    title: 'CarWash - Professional Car Washing Services',
+    title: 'Eazy Wash - Professional Car Washing Services',
     description: 'Book professional car wash and detailing services at your doorstep.',
-    siteName: 'CarWash',
+    siteName: 'Eazy Wash',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'CarWash - Professional Car Washing Services',
+    title: 'Eazy Wash - Professional Car Washing Services',
     description: 'Book professional car wash and detailing services at your doorstep.',
   },
 };
@@ -66,7 +66,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body 
+      <body
         className={`${inter.variable} font-sans antialiased text-foreground transition-colors duration-300`}
       >
         <QueryProvider>
@@ -74,7 +74,7 @@ export default function RootLayout({
             <VehicleProvider>
               <ThemeProvider>
                 {children}
-                <Toaster 
+                <Toaster
                   position="top-right"
                   expand={false}
                   richColors

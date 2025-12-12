@@ -58,16 +58,16 @@ export default function StaffLayout({ children }: { children: React.ReactNode })
             <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
               <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
                 {profile?.avatar && !avatarError ? (
-                  <img 
-                    src={profile.avatar} 
-                    alt={profile.name} 
-                    className="w-full h-full rounded-full object-cover" 
+                  <img
+                    src={profile.avatar}
+                    alt={profile.name}
+                    className="w-full h-full rounded-full object-cover"
                     onError={() => setAvatarError(true)}
                   />
                 ) : (
-                  <img 
-                    src={DEFAULT_AVATAR} 
-                    alt="Default avatar" 
+                  <img
+                    src={DEFAULT_AVATAR}
+                    alt="Default avatar"
                     className="w-full h-full rounded-full object-cover"
                   />
                 )}
@@ -77,7 +77,7 @@ export default function StaffLayout({ children }: { children: React.ReactNode })
                   {profile?.name || 'Staff Portal'}
                 </span>
                 <p className="text-[10px] sm:text-xs text-muted-foreground truncate">
-                  {profile?.role || 'CarWash Services'}
+                  {profile?.role || 'Eazy Wash'}
                 </p>
               </div>
             </div>
@@ -110,9 +110,8 @@ export default function StaffLayout({ children }: { children: React.ReactNode })
                               setTheme(option.value);
                               setShowThemeMenu(false);
                             }}
-                            className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors cursor-pointer ${
-                              isActive ? 'text-primary bg-primary/10' : 'text-foreground hover:bg-muted'
-                            }`}
+                            className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors cursor-pointer ${isActive ? 'text-primary bg-primary/10' : 'text-foreground hover:bg-muted'
+                              }`}
                           >
                             <Icon className="h-4 w-4" />
                             <span>{option.label}</span>

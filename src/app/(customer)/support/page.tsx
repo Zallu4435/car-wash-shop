@@ -98,8 +98,8 @@ export default function SupportPage() {
                       </div>
                       <p className="font-semibold text-sm sm:text-base text-foreground">Phone</p>
                     </div>
-                    <a 
-                      href="tel:+918848919507" 
+                    <a
+                      href="tel:+918848919507"
                       className="text-xs sm:text-sm text-muted-foreground hover:text-primary transition-colors font-medium break-all"
                     >
                       +91 88489 19507
@@ -114,11 +114,11 @@ export default function SupportPage() {
                       </div>
                       <p className="font-semibold text-sm sm:text-base text-foreground">Email</p>
                     </div>
-                    <a 
-                      href="mailto:support@carwash.com" 
+                    <a
+                      href="mailto:support@eazywash.com"
                       className="text-xs sm:text-sm text-muted-foreground hover:text-primary transition-colors font-medium break-all"
                     >
-                      support@carwash.com
+                      support@eazywash.com
                     </a>
                   </div>
 

@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { 
-  Menu, 
-  Bell, 
-  User, 
-  Settings, 
+import {
+  Menu,
+  Bell,
+  User,
+  Settings,
   LogOut,
   Search,
   Sun,
@@ -46,16 +46,16 @@ export function AdminHeader({ setSidebarOpen }: AdminHeaderProps) {
     const checkDarkMode = () => {
       setIsDark(document.documentElement.classList.contains('dark'));
     };
-    
+
     checkDarkMode();
-    
+
     // Watch for theme changes
     const observer = new MutationObserver(checkDarkMode);
     observer.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ['class']
     });
-    
+
     return () => observer.disconnect();
   }, []);
 
@@ -144,9 +144,8 @@ export function AdminHeader({ setSidebarOpen }: AdminHeaderProps) {
                           setTheme(option.value);
                           setShowThemeMenu(false);
                         }}
-                        className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors cursor-pointer ${
-                          isActive ? 'text-primary bg-primary/10' : 'text-foreground hover:bg-muted'
-                        }`}
+                        className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors cursor-pointer ${isActive ? 'text-primary bg-primary/10' : 'text-foreground hover:bg-muted'
+                          }`}
                       >
                         <Icon className="h-4 w-4" />
                         <span className="flex-1 text-left">{option.label}</span>
@@ -188,8 +187,8 @@ export function AdminHeader({ setSidebarOpen }: AdminHeaderProps) {
               onClick={() => setShowUserMenu(!showUserMenu)}
               className="flex items-center gap-1.5 sm:gap-2 px-1.5 sm:px-2 lg:px-3 py-1.5 sm:py-2 rounded-lg lg:rounded-xl hover:bg-muted transition-colors group cursor-pointer"
             >
-              <img 
-                src={getAvatarSrc()} 
+              <img
+                src={getAvatarSrc()}
                 alt="Admin User"
                 onError={handleAvatarError}
                 className="h-8 w-8 sm:h-9 sm:w-9 lg:h-10 lg:w-10 rounded-full object-cover ring-2 ring-primary/20 flex-shrink-0"
@@ -207,7 +206,7 @@ export function AdminHeader({ setSidebarOpen }: AdminHeaderProps) {
                       Admin User
                     </p>
                     <p className="text-xs text-muted-foreground mt-0.5 truncate">
-                      admin@carwash.com
+                      admin@eazywash.com
                     </p>
                   </div>
 

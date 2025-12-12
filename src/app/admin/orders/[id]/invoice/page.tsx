@@ -14,11 +14,11 @@ import { adminOrdersFetchers } from '@/api/domains/admin-orders/fetchers';
 import { toast } from 'sonner';
 
 const COMPANY_INFO = {
-  name: 'EasyWash Services',
+  name: 'Eazy Wash Services',
   address: '456 Service Road, Sector 5',
   city: 'Bengaluru, Karnataka - 560103',
   phone: '+91 80 5555 1111',
-  email: 'billing@easywash.com',
+  email: 'billing@eazywash.com',
   gst: 'GSTIN29ABCDE1234F1Z5',
 };
 
