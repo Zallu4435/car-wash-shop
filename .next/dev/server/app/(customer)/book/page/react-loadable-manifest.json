@@ -1,9 +1,0 @@
-{
-  "[project]/node_modules/.pnpm/react-leaflet@5.0.0_leaflet@1.9.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/react-leaflet/lib/index.js [app-client] (ecmascript, next/dynamic entry)": {
-    "id": "[project]/node_modules/.pnpm/react-leaflet@5.0.0_leaflet@1.9.4_react-dom@19.2.0_react@19.2.0__react@19.2.0/node_modules/react-leaflet/lib/index.js [app-client] (ecmascript, next/dynamic entry)",
-    "files": [
-      "static/chunks/node_modules__pnpm_9013498a._.js",
-      "static/chunks/9e773_react-leaflet_lib_index_6af5e8ac.js"
-    ]
-  }
-}
