@@ -140,6 +140,7 @@ export interface AdminService {
   name: string;
   description: string;
   category: string;
+  categoryId: string;
   pricing: Array<{ vehicleType: string; price: number }>;
   duration: number;
   status: 'active' | 'inactive';

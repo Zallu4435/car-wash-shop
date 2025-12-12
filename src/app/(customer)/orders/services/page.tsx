@@ -45,7 +45,7 @@ export default function ServiceOrdersPage() {
 
       return matchesSearch && matchesStatus;
     });
-  }, [orders, searchQuery, statusFilter, selectedServiceType]);
+  }, [orders, searchQuery, statusFilter]);
 
   // Pagination Logic
   const totalItems = filteredOrders.length;
