@@ -1,0 +1,17 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/(customer)/layout,_N_T_/(customer)/orders/layout,_N_T_/(customer)/orders/services/layout,_N_T_/(customer)/orders/services/page,_N_T_/orders/services"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/!KGN1c3RvbWVyKQ/orders/services/__PAGE__",
+    "/!KGN1c3RvbWVyKQ/orders/services",
+    "/!KGN1c3RvbWVyKQ/orders",
+    "/!KGN1c3RvbWVyKQ",
+    "/_index",
+    "/_head"
+  ]
+}

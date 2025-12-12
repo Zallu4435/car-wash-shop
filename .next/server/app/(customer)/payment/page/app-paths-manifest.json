@@ -1,0 +1,3 @@
+{
+  "/(customer)/payment/page": "app/(customer)/payment/page.js"
+}

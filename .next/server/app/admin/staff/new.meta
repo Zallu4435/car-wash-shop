@@ -1,0 +1,17 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/admin/layout,_N_T_/admin/staff/layout,_N_T_/admin/staff/new/layout,_N_T_/admin/staff/new/page,_N_T_/admin/staff/new"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/admin/staff/new/__PAGE__",
+    "/admin/staff/new",
+    "/admin/staff",
+    "/admin",
+    "/_index",
+    "/_head"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/(customer)/layout,_N_T_/(customer)/auth/layout,_N_T_/(customer)/auth/login/layout,_N_T_/(customer)/auth/login/page,_N_T_/auth/login"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/!KGN1c3RvbWVyKQ/auth/login/__PAGE__",
+    "/!KGN1c3RvbWVyKQ/auth/login",
+    "/!KGN1c3RvbWVyKQ/auth",
+    "/!KGN1c3RvbWVyKQ",
+    "/_index",
+    "/_head"
+  ]
+}

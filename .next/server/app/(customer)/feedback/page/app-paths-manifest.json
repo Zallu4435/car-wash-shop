@@ -1,0 +1,3 @@
+{
+  "/(customer)/feedback/page": "app/(customer)/feedback/page.js"
+}
