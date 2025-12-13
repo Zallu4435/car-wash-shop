@@ -139,32 +139,6 @@ function safeFormatDate(date: Date | null, formatString: string): string {
   }
 }
 
-function combineDateAndTime(date: Date, time: string): Date {
-  const result = new Date(date);
-  const trimmed = time.trim();
-  const [timePart, meridiemPart] = trimmed.split(/\s+/);
-  const [hourString, minuteString = '0'] = timePart.split(':');
-
-  let hours = Number(hourString);
-  const minutes = Number(minuteString);
-
-  if (Number.isNaN(hours) || Number.isNaN(minutes)) {
-    return result;
-  }
-
-  if (meridiemPart) {
-    const meridiem = meridiemPart.toLowerCase();
-    if (meridiem === 'pm' && hours < 12) {
-      hours += 12;
-    }
-    if (meridiem === 'am' && hours === 12) {
-      hours = 0;
-    }
-  }
-
-  result.setHours(hours, minutes, 0, 0);
-  return result;
-}
 
 function isPastDate(date: Date): boolean {
   const reference = new Date();
@@ -308,7 +282,7 @@ export default function BookServicePage() {
     onSuccess: async (response) => {
       // Payment verified and booking created by backend
       // Fetch created booking to show confirmation
-      const bookingIdToUse = response.bookingId;
+      const bookingIdToUse = response.checkoutResult?.bookingId;
       if (bookingIdToUse) {
         try {
           const updatedBooking = await bookingFetchers.getBookingById(bookingIdToUse);
@@ -557,13 +531,11 @@ export default function BookServicePage() {
 
     try {
       // Prepare booking data (will be created after successful payment)
-      const scheduledDateTime = combineDateAndTime(selectedDate, selectedSlot.startTime);
-
       const bookingData: BookingInput = {
         serviceId: service.id,
         serviceName: service.name,
         vehicleId: selectedVehicle.id,
-        scheduledAt: scheduledDateTime.toISOString(),
+        slotId: selectedSlot.id,
         addressId: selectedAddressId,
         addOns: selectedAddOnIds,
         paymentType: 'advance',

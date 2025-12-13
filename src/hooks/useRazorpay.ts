@@ -86,7 +86,20 @@ export function useRazorpay(options?: UseRazorpayOptions) {
     type: 'service' | 'product';
     amount: number;
     paymentType?: string;
-    bookingData?: Record<string, unknown>;
+    bookingData?: {
+      serviceId: string;
+      serviceName?: string;
+      vehicleId: string;
+      slotId: string;
+      addressId: string;
+      addOns?: string[];
+      couponCode?: string;
+      paymentType: 'full' | 'advance';
+      coordinates?: {
+        latitude: number;
+        longitude: number;
+      };
+    };
     orderData?: ProductOrderPaymentPayload;
   };
 

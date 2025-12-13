@@ -4,7 +4,7 @@ export interface BookingInput {
   serviceId: string;
   serviceName?: string;
   vehicleId: string;
-  scheduledAt: string; // ISO date-time
+  slotId: string; // ID of the selected time slot
   addressId: string; // Backend will fetch full address from this
   addOns?: string[];
   couponCode?: string;
@@ -77,6 +77,7 @@ export interface BookingPreview {
 }
 
 export interface TimeSlot {
+  id: string;
   startTime: string;
   endTime: string;
   isAvailable: boolean;

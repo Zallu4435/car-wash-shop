@@ -103,7 +103,20 @@ export interface PaymentDetails {
   description: string;
   orderId?: string;
   bookingId?: string; // Deprecated - use bookingData instead
-  bookingData?: Record<string, unknown>; // Booking data to be created after payment
+  bookingData?: {
+    serviceId: string;
+    serviceName?: string;
+    vehicleId: string;
+    slotId: string;
+    addressId: string;
+    addOns?: string[];
+    couponCode?: string;
+    paymentType: 'full' | 'advance';
+    coordinates?: {
+      latitude: number;
+      longitude: number;
+    };
+  };
   productOrder?: ProductOrderPaymentPayload; // Product checkout payload
   checkoutType?: 'service' | 'product';
   paymentType?: string;
