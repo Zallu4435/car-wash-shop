@@ -48,3 +48,7 @@ export * from './admin-support/queries';
 // Payment Management
 export * from './admin-payments/fetchers';
 export * from './admin-payments/queries';
+
+// Dashboard
+export * from './admin-dashboard/fetchers';
+export * from './admin-dashboard/queries';

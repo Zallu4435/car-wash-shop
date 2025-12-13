@@ -33,17 +33,11 @@ import {
   XCircle,
   AlertCircle,
   MoreVertical,
-  Filter
+  Filter,
+  Loader2
 } from 'lucide-react';
 import { CountUp } from '@/components/ui/count-up';
-import {
-  mockStats,
-  mockOrders,
-  mockBookings,
-  mockOrderStatusData,
-  mockBookingStatusData,
-  mockActivityData,
-} from './mockData';
+import { useAdminDashboardSummary } from '@/api/domains/admin-dashboard/queries';
 import { cn } from '@/lib/utils/cn';
 import {
   Card,
@@ -70,6 +64,9 @@ export default function AdminDashboardPage() {
   const [chartTab, setChartTab] = useState<'product' | 'service'>('product');
   const router = useRouter();
 
+  // Fetch dashboard data
+  const { data: dashboardData, isLoading, error } = useAdminDashboardSummary(dateRange);
+
   const handleViewAll = () => {
     if (activeTab === 'orders') {
       router.push('/admin/orders');
@@ -77,6 +74,47 @@ export default function AdminDashboardPage() {
       router.push('/admin/requests');
     }
   };
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="text-muted-foreground">Loading dashboard data...</p>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+        <AlertCircle className="h-8 w-8 text-destructive" />
+        <p className="text-muted-foreground">Failed to load dashboard data</p>
+        <Button variant="outline" onClick={() => window.location.reload()}>
+          Retry
+        </Button>
+      </div>
+    );
+  }
+
+  // Extract data with defaults
+  const stats = dashboardData?.stats || {
+    totalRevenue: 0,
+    revenueChange: 0,
+    totalOrders: 0,
+    ordersChange: 0,
+    totalBookings: 0,
+    bookingsChange: 0,
+    totalCustomers: 0,
+    customersChange: 0,
+  };
+
+  const recentOrders = dashboardData?.recentOrders || [];
+  const recentBookings = dashboardData?.recentBookings || [];
+  const orderStatusData = dashboardData?.orderStatusData || [];
+  const bookingStatusData = dashboardData?.bookingStatusData || [];
+  const activityData = dashboardData?.activityData || [];
 
   return (
     <div className="flex flex-col gap-6 p-6 overflow-y-auto">
@@ -112,31 +150,31 @@ export default function AdminDashboardPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatsCard
           title="Total Revenue"
-          value={mockStats.totalRevenue}
+          value={stats.totalRevenue}
           prefix="₹"
           icon={DollarSign}
-          change={mockStats.revenueChange}
+          change={stats.revenueChange}
           description="from last month"
         />
         <StatsCard
           title="Total Orders"
-          value={mockStats.totalOrders}
+          value={stats.totalOrders}
           icon={ShoppingCart}
-          change={mockStats.ordersChange}
+          change={stats.ordersChange}
           description="from last month"
         />
         <StatsCard
           title="Total Bookings"
-          value={mockStats.totalBookings}
+          value={stats.totalBookings}
           icon={Calendar}
-          change={mockStats.bookingsChange}
+          change={stats.bookingsChange}
           description="from last month"
         />
         <StatsCard
           title="Active Customers"
-          value={mockStats.totalCustomers}
+          value={stats.totalCustomers}
           icon={Users}
-          change={mockStats.customersChange}
+          change={stats.customersChange}
           description="from last month"
         />
       </div>
@@ -160,67 +198,73 @@ export default function AdminDashboardPage() {
           </CardHeader>
           <CardContent className="pl-2">
             <div className="h-[300px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart
-                  data={mockActivityData}
-                  margin={{
-                    top: 10,
-                    right: 30,
-                    left: 0,
-                    bottom: 0,
-                  }}
-                >
-                  <defs>
-                    <linearGradient id="colorProduct" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8} />
-                      <stop offset="95%" stopColor="#8884d8" stopOpacity={0} />
-                    </linearGradient>
-                    <linearGradient id="colorService" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#82ca9d" stopOpacity={0.8} />
-                      <stop offset="95%" stopColor="#82ca9d" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-muted" />
-                  <XAxis
-                    dataKey="name"
-                    stroke="#888888"
-                    fontSize={12}
-                    tickLine={false}
-                    axisLine={false}
-                  />
-                  <YAxis
-                    stroke="#888888"
-                    fontSize={12}
-                    tickLine={false}
-                    axisLine={false}
-                    tickFormatter={(value) => `${value}`}
-                  />
-                  <Tooltip
-                    contentStyle={{ backgroundColor: 'hsl(var(--popover))', borderColor: 'hsl(var(--border))', borderRadius: '8px', boxShadow: 'var(--shadow-sm)', color: 'hsl(var(--popover-foreground))' }}
-                    itemStyle={{ color: 'hsl(var(--popover-foreground))' }}
-                  />
-                  {chartTab === 'product' && (
-                    <Area
-                      type="monotone"
-                      dataKey="product"
-                      name="Product Orders"
-                      stroke="#8884d8"
-                      fillOpacity={1}
-                      fill="url(#colorProduct)"
+              {activityData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart
+                    data={activityData}
+                    margin={{
+                      top: 10,
+                      right: 30,
+                      left: 0,
+                      bottom: 0,
+                    }}
+                  >
+                    <defs>
+                      <linearGradient id="colorProduct" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8} />
+                        <stop offset="95%" stopColor="#8884d8" stopOpacity={0} />
+                      </linearGradient>
+                      <linearGradient id="colorService" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#82ca9d" stopOpacity={0.8} />
+                        <stop offset="95%" stopColor="#82ca9d" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-muted" />
+                    <XAxis
+                      dataKey="name"
+                      stroke="#888888"
+                      fontSize={12}
+                      tickLine={false}
+                      axisLine={false}
                     />
-                  )}
-                  {chartTab === 'service' && (
-                    <Area
-                      type="monotone"
-                      dataKey="service"
-                      name="Service Bookings"
-                      stroke="#82ca9d"
-                      fillOpacity={1}
-                      fill="url(#colorService)"
+                    <YAxis
+                      stroke="#888888"
+                      fontSize={12}
+                      tickLine={false}
+                      axisLine={false}
+                      tickFormatter={(value) => `${value}`}
                     />
-                  )}
-                </AreaChart>
-              </ResponsiveContainer>
+                    <Tooltip
+                      contentStyle={{ backgroundColor: 'hsl(var(--popover))', borderColor: 'hsl(var(--border))', borderRadius: '8px', boxShadow: 'var(--shadow-sm)', color: 'hsl(var(--popover-foreground))' }}
+                      itemStyle={{ color: 'hsl(var(--popover-foreground))' }}
+                    />
+                    {chartTab === 'product' && (
+                      <Area
+                        type="monotone"
+                        dataKey="product"
+                        name="Product Orders"
+                        stroke="#8884d8"
+                        fillOpacity={1}
+                        fill="url(#colorProduct)"
+                      />
+                    )}
+                    {chartTab === 'service' && (
+                      <Area
+                        type="monotone"
+                        dataKey="service"
+                        name="Service Bookings"
+                        stroke="#82ca9d"
+                        fillOpacity={1}
+                        fill="url(#colorService)"
+                      />
+                    )}
+                  </AreaChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex items-center justify-center h-full text-muted-foreground">
+                  No activity data available
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -240,10 +284,22 @@ export default function AdminDashboardPage() {
                 <TabsTrigger value="bookings">Bookings</TabsTrigger>
               </TabsList>
               <TabsContent value="orders" className="h-[250px]">
-                <StatusPieChart data={mockOrderStatusData} />
+                {orderStatusData.length > 0 ? (
+                  <StatusPieChart data={orderStatusData} />
+                ) : (
+                  <div className="flex items-center justify-center h-full text-muted-foreground">
+                    No order data available
+                  </div>
+                )}
               </TabsContent>
               <TabsContent value="bookings" className="h-[250px]">
-                <StatusPieChart data={mockBookingStatusData} />
+                {bookingStatusData.length > 0 ? (
+                  <StatusPieChart data={bookingStatusData} />
+                ) : (
+                  <div className="flex items-center justify-center h-full text-muted-foreground">
+                    No booking data available
+                  </div>
+                )}
               </TabsContent>
             </Tabs>
           </CardContent>
@@ -274,21 +330,27 @@ export default function AdminDashboardPage() {
                 <div className="col-span-1 text-right">Payment</div>
               </div>
               <div className="divide-y">
-                {mockOrders.map((order) => (
-                  <div key={order.id} className="grid grid-cols-6 gap-4 p-4 text-sm items-center hover:bg-muted/50 transition-colors">
-                    <div className="font-medium">{order.id}</div>
-                    <div className="flex items-center gap-2">
-                      <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-xs">
-                        {order.customer.charAt(0)}
+                {recentOrders.length > 0 ? (
+                  recentOrders.map((order) => (
+                    <div key={order.id} className="grid grid-cols-6 gap-4 p-4 text-sm items-center hover:bg-muted/50 transition-colors">
+                      <div className="font-medium">{order.id}</div>
+                      <div className="flex items-center gap-2">
+                        <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-xs">
+                          {order.customer.charAt(0)}
+                        </div>
+                        {order.customer}
                       </div>
-                      {order.customer}
+                      <div className="text-muted-foreground">{new Date(order.date).toLocaleDateString()}</div>
+                      <div className="font-medium">₹{order.amount}</div>
+                      <div><StatusBadge status={order.status} /></div>
+                      <div className="text-right"><StatusBadge status={order.paymentStatus} type="payment" /></div>
                     </div>
-                    <div className="text-muted-foreground">{new Date(order.date).toLocaleDateString()}</div>
-                    <div className="font-medium">₹{order.amount}</div>
-                    <div><StatusBadge status={order.status} /></div>
-                    <div className="text-right"><StatusBadge status={order.paymentStatus} type="payment" /></div>
+                  ))
+                ) : (
+                  <div className="p-8 text-center text-muted-foreground">
+                    No recent orders
                   </div>
-                ))}
+                )}
               </div>
             </div>
           </Card>
@@ -306,21 +368,27 @@ export default function AdminDashboardPage() {
                 <div className="col-span-1 text-right">Status</div>
               </div>
               <div className="divide-y">
-                {mockBookings.map((booking) => (
-                  <div key={booking.id} className="grid grid-cols-6 gap-4 p-4 text-sm items-center hover:bg-muted/50 transition-colors">
-                    <div className="font-medium">{booking.id}</div>
-                    <div className="flex items-center gap-2">
-                      <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-xs">
-                        {booking.customer.charAt(0)}
+                {recentBookings.length > 0 ? (
+                  recentBookings.map((booking) => (
+                    <div key={booking.id} className="grid grid-cols-6 gap-4 p-4 text-sm items-center hover:bg-muted/50 transition-colors">
+                      <div className="font-medium">{booking.id.slice(-8)}</div>
+                      <div className="flex items-center gap-2">
+                        <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-xs">
+                          {booking.customer.charAt(0)}
+                        </div>
+                        {booking.customer}
                       </div>
-                      {booking.customer}
+                      <div>{booking.service}</div>
+                      <div className="text-muted-foreground">{new Date(booking.date).toLocaleDateString()}</div>
+                      <div className="font-medium">₹{booking.amount}</div>
+                      <div className="text-right"><StatusBadge status={booking.status} /></div>
                     </div>
-                    <div>{booking.service}</div>
-                    <div className="text-muted-foreground">{new Date(booking.date).toLocaleDateString()}</div>
-                    <div className="font-medium">₹{booking.amount}</div>
-                    <div className="text-right"><StatusBadge status={booking.status} /></div>
+                  ))
+                ) : (
+                  <div className="p-8 text-center text-muted-foreground">
+                    No recent bookings
                   </div>
-                ))}
+                )}
               </div>
             </div>
           </Card>
@@ -385,6 +453,7 @@ function StatusBadge({ status, type = 'status' }: { status: string; type?: 'stat
       case 'completed':
       case 'success':
       case 'confirmed':
+      case 'paid':
         return 'default'; // Usually green or primary
       case 'processing':
       case 'pending':
@@ -404,6 +473,7 @@ function StatusBadge({ status, type = 'status' }: { status: string; type?: 'stat
       case 'completed':
       case 'success':
       case 'confirmed':
+      case 'paid':
         return 'bg-green-500 hover:bg-green-600 text-white border-transparent';
       case 'processing':
       case 'pending':
