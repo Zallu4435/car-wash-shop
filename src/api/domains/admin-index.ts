@@ -1,10 +1,6 @@
 // Admin API - Centralized exports for all admin domains
 // This file provides a single import point for all admin API functionality
 
-// Dashboard
-export * from './admin-dashboard/fetchers';
-export * from './admin-dashboard/queries';
-
 // Staff Management
 export * from './admin-staff/fetchers';
 export * from './admin-staff/queries';

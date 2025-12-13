@@ -1,30 +1,5 @@
 import { BookingStatus, OrderStatus, PaymentStatus, TicketStatus, FeedbackStatus, CODPaymentStatus, Priority, SenderType } from '@/lib/constants/status';
 
-// Dashboard Types
-export interface AdminDashboardSummary {
-  totalRevenue: number;
-  totalOrders: number;
-  totalCustomers: number;
-  totalStaff: number;
-  revenueGrowth: string;
-  ordersGrowth: string;
-  customersGrowth: string;
-  staffGrowth: string;
-  recentOrders: Array<{
-    id: string;
-    customer: string;
-    amount: number;
-    status: string;
-    date: string;
-  }>;
-  topServices: Array<{
-    id: string;
-    name: string;
-    bookings: number;
-    revenue: number;
-  }>;
-}
-
 // Staff Management Types
 export interface AdminStaff {
   id: string;
