@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { FileImage, Plus, Edit, Trash2, Eye } from 'lucide-react';
+import { FileImage, Plus, Edit, Trash2 } from 'lucide-react';
 import { AdminRoutes } from '@/lib/constants/routes';
 import { useState, useMemo } from 'react';
 import { useAdminPosterList, useDeletePoster } from '@/api/domains/admin-marketing/queries';
@@ -73,7 +73,6 @@ export default function PostersPage() {
   }
 
   const activePosters = posters.filter(p => p.status === 'active').length;
-  const totalViews = posters.reduce((sum: number, p: any) => sum + (p.views || 0), 0);
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -94,7 +93,7 @@ export default function PostersPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4">
         <StatCard
           icon={FileImage}
           label="Total Posters"
@@ -112,16 +111,6 @@ export default function PostersPage() {
           change="+13.7%"
           trend="up"
           description="Currently active"
-        />
-        
-        <StatCard
-          icon={Eye}
-          label="Total Views"
-          value={totalViews.toLocaleString()}
-          change="+19.5%"
-          trend="up"
-          description="All time views"
-          className="xs:col-span-2 lg:col-span-1"
         />
       </div>
 
@@ -187,13 +176,6 @@ export default function PostersPage() {
                   title={poster.title}
                   subtitle={poster.location}
                   description={`From: ${poster.startDate} | To: ${poster.endDate}`}
-                  infoBoxes={[
-                    {
-                      icon: Eye,
-                      label: 'Views',
-                      value: poster.views.toLocaleString(),
-                    },
-                  ]}
                   actionButtons={[
                     {
                       label: 'Edit',

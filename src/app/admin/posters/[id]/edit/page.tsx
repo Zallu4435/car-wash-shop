@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useState } from 'react';
+import { use, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -9,36 +9,65 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
+import { ActiveStatusField } from '@/components/shared/form/ActiveStatusField';
 import { ArrowLeft, Save, Image as ImageIcon, X } from 'lucide-react';
 import { AdminRoutes } from '@/lib/constants/routes';
 import { toast } from 'sonner';
 import { posterSchema, PosterFormInput } from '@/schemas/admin/poster';
+import { useAdminPosterDetail, useUpdatePoster } from '@/api/domains/admin-marketing/queries';
+import Loading from '@/components/shared/display/Loading';
+import Error from '@/components/shared/display/Error';
 
 export default function EditPosterPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
-  const [uploadedImage, setUploadedImage] = useState<string>('https://example.com/poster.jpg');
-  
+  const [uploadedImage, setUploadedImage] = useState<string>('');
+
+  const { data: poster, isLoading, error, refetch } = useAdminPosterDetail(id);
+  const updatePosterMutation = useUpdatePoster();
+
   const {
     register,
     handleSubmit,
     control,
     setValue,
+    watch,
+    reset,
     formState: { errors, isSubmitting },
   } = useForm<PosterFormInput>({
     resolver: zodResolver(posterSchema) as any,
     defaultValues: {
-      title: 'Summer Special',
-      description: 'Special summer promotional poster',
-      image: 'https://example.com/poster.jpg',
-      link: 'https://example.com/offers',
-      displayOrder: 1,
-      startDate: '2025-10-20',
-      endDate: '2025-11-30',
       active: true,
+      showButton: false,
+      headingColor: '#ffffff',
+      descriptionColor: '#ffffff',
     },
   });
+
+  const showButton = watch('showButton');
+  const headingColor = watch('headingColor');
+  const descriptionColor = watch('descriptionColor');
+
+  // Populate form when poster data loads
+  useEffect(() => {
+    if (poster) {
+      reset({
+        title: poster.title || '',
+        description: poster.description || '',
+        image: poster.image || '',
+        endDate: poster.endDate || '',
+        headingColor: poster.headingColor || '#ffffff',
+        descriptionColor: poster.descriptionColor || '#ffffff',
+        showButton: poster.showButton || false,
+        buttonText: poster.buttonText || '',
+        buttonLink: poster.buttonLink || '',
+        active: poster.active ?? true,
+        displayOrder: poster.displayOrder || 0,
+      });
+      setUploadedImage(poster.image || '');
+    }
+  }, [poster, reset]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -62,13 +91,26 @@ export default function EditPosterPage({ params }: { params: Promise<{ id: strin
 
   const onSubmit = async (data: PosterFormInput) => {
     try {
-      console.log('Updating poster:', id, data);
-      toast.success('Poster updated successfully!');
+      await updatePosterMutation.mutateAsync({ posterId: id, input: data });
       router.push(AdminRoutes.POSTERS);
     } catch (error) {
-      toast.error('Failed to update poster');
+      // Error handling is done in the mutation hook
     }
   };
+
+  if (isLoading) {
+    return <Loading text="Loading poster..." />;
+  }
+
+  if (error) {
+    return (
+      <Error
+        message="Failed to load poster"
+        details={(error as any)?.message}
+        onRetry={() => refetch()}
+      />
+    );
+  }
 
   return (
     <div className="max-w-2xl space-y-4 sm:space-y-6 pb-6">
@@ -89,7 +131,7 @@ export default function EditPosterPage({ params }: { params: Promise<{ id: strin
             </div>
             <div className="min-w-0">
               <CardTitle className="text-base sm:text-lg md:text-xl">Edit Poster</CardTitle>
-              <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1">Poster ID: {id}</p>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1">Update poster details</p>
             </div>
           </div>
         </CardHeader>
@@ -97,7 +139,7 @@ export default function EditPosterPage({ params }: { params: Promise<{ id: strin
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6">
             {/* Poster Image */}
             <div className="space-y-1.5 sm:space-y-2">
-              <Label htmlFor="image" className="text-xs sm:text-sm">Poster Image</Label>
+              <Label htmlFor="image" className="text-xs sm:text-sm">Poster Image *</Label>
               <div className="flex items-center gap-3 sm:gap-4">
                 {uploadedImage ? (
                   <div className="relative w-full h-48 sm:h-56 md:h-64 rounded-lg sm:rounded-xl overflow-hidden border-2 border-border group">
@@ -131,14 +173,17 @@ export default function EditPosterPage({ params }: { params: Promise<{ id: strin
                 </div>
               </Label>
               <p className="text-[10px] sm:text-xs text-muted-foreground">Recommended: 1200x600px or larger</p>
+              {errors.image && (
+                <p className="text-[10px] sm:text-xs text-red-600 dark:text-red-400">{errors.image.message}</p>
+              )}
             </div>
 
             {/* Title */}
             <div className="space-y-1.5 sm:space-y-2">
-              <Label htmlFor="title" className="text-xs sm:text-sm">Poster Title</Label>
-              <Input 
-                id="title" 
-                placeholder="Summer Special" 
+              <Label htmlFor="title" className="text-xs sm:text-sm">Poster Title *</Label>
+              <Input
+                id="title"
+                placeholder="Summer Special Offer"
                 className="h-9 sm:h-10 text-xs sm:text-sm"
                 {...register('title')}
               />
@@ -152,7 +197,7 @@ export default function EditPosterPage({ params }: { params: Promise<{ id: strin
               <Label htmlFor="description" className="text-xs sm:text-sm">Description <span className="text-[10px] sm:text-xs text-muted-foreground">(Optional)</span></Label>
               <Textarea
                 id="description"
-                placeholder="Describe the poster..."
+                placeholder="Describe the offer or promotion..."
                 rows={3}
                 className="text-xs sm:text-sm resize-none"
                 {...register('description')}
@@ -162,26 +207,26 @@ export default function EditPosterPage({ params }: { params: Promise<{ id: strin
               )}
             </div>
 
-            {/* Link & Display Order */}
+            {/* End Date & Display Order */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div className="space-y-1.5 sm:space-y-2">
-                <Label htmlFor="link" className="text-xs sm:text-sm">Link URL <span className="text-[10px] sm:text-xs text-muted-foreground">(Optional)</span></Label>
-                <Input 
-                  id="link" 
-                  placeholder="https://example.com" 
+                <Label htmlFor="endDate" className="text-xs sm:text-sm">End Date *</Label>
+                <Input
+                  id="endDate"
+                  type="date"
                   className="h-9 sm:h-10 text-xs sm:text-sm"
-                  {...register('link')}
+                  {...register('endDate')}
                 />
-                {errors.link && (
-                  <p className="text-[10px] sm:text-xs text-red-600 dark:text-red-400">{errors.link.message}</p>
+                {errors.endDate && (
+                  <p className="text-[10px] sm:text-xs text-red-600 dark:text-red-400">{errors.endDate.message}</p>
                 )}
               </div>
               <div className="space-y-1.5 sm:space-y-2">
                 <Label htmlFor="displayOrder" className="text-xs sm:text-sm">Display Order <span className="text-[10px] sm:text-xs text-muted-foreground">(Optional)</span></Label>
-                <Input 
-                  id="displayOrder" 
-                  type="number" 
-                  placeholder="1" 
+                <Input
+                  id="displayOrder"
+                  type="number"
+                  placeholder="0"
                   className="h-9 sm:h-10 text-xs sm:text-sm"
                   {...register('displayOrder', { valueAsNumber: true })}
                 />
@@ -191,62 +236,107 @@ export default function EditPosterPage({ params }: { params: Promise<{ id: strin
               </div>
             </div>
 
-            {/* Date Range */}
+            {/* Color Pickers */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div className="space-y-1.5 sm:space-y-2">
-                <Label htmlFor="startDate" className="text-xs sm:text-sm">Start Date <span className="text-[10px] sm:text-xs text-muted-foreground">(Optional)</span></Label>
-                <Input 
-                  id="startDate" 
-                  type="date" 
-                  className="h-9 sm:h-10 text-xs sm:text-sm"
-                  {...register('startDate')}
-                />
-                {errors.startDate && (
-                  <p className="text-[10px] sm:text-xs text-red-600 dark:text-red-400">{errors.startDate.message}</p>
-                )}
+                <Label htmlFor="headingColor" className="text-xs sm:text-sm">Heading Color</Label>
+                <div className="flex items-center gap-2">
+                  <input
+                    id="headingColor"
+                    type="color"
+                    value={headingColor || '#ffffff'}
+                    onChange={(e) => setValue('headingColor', e.target.value)}
+                    className="w-10 h-10 rounded-lg border-2 border-border cursor-pointer"
+                  />
+                  <Input
+                    type="text"
+                    placeholder="#ffffff"
+                    value={headingColor || '#ffffff'}
+                    onChange={(e) => setValue('headingColor', e.target.value)}
+                    className="h-9 sm:h-10 text-xs sm:text-sm flex-1"
+                  />
+                </div>
               </div>
               <div className="space-y-1.5 sm:space-y-2">
-                <Label htmlFor="endDate" className="text-xs sm:text-sm">End Date <span className="text-[10px] sm:text-xs text-muted-foreground">(Optional)</span></Label>
-                <Input 
-                  id="endDate" 
-                  type="date" 
-                  className="h-9 sm:h-10 text-xs sm:text-sm"
-                  {...register('endDate')}
-                />
-                {errors.endDate && (
-                  <p className="text-[10px] sm:text-xs text-red-600 dark:text-red-400">{errors.endDate.message}</p>
-                )}
+                <Label htmlFor="descriptionColor" className="text-xs sm:text-sm">Description Color</Label>
+                <div className="flex items-center gap-2">
+                  <input
+                    id="descriptionColor"
+                    type="color"
+                    value={descriptionColor || '#ffffff'}
+                    onChange={(e) => setValue('descriptionColor', e.target.value)}
+                    className="w-10 h-10 rounded-lg border-2 border-border cursor-pointer"
+                  />
+                  <Input
+                    type="text"
+                    placeholder="#ffffff"
+                    value={descriptionColor || '#ffffff'}
+                    onChange={(e) => setValue('descriptionColor', e.target.value)}
+                    className="h-9 sm:h-10 text-xs sm:text-sm flex-1"
+                  />
+                </div>
               </div>
             </div>
 
-            {/* Active Status */}
-            <div className="flex items-center justify-between p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl border-2 border-border">
-              <div className="min-w-0 flex-1 mr-3">
-                <Label htmlFor="active" className="cursor-pointer text-xs sm:text-sm">Active Status</Label>
-                <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">Poster is visible on the website</p>
-              </div>
+            {/* Show Button Checkbox */}
+            <div className="flex items-center space-x-3 p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl border-2 border-border">
               <Controller
-                name="active"
+                name="showButton"
                 control={control}
                 render={({ field }) => (
-                  <Switch
-                    id="active"
+                  <Checkbox
+                    id="showButton"
                     checked={field.value}
                     onCheckedChange={field.onChange}
-                    className="flex-shrink-0"
                   />
                 )}
               />
+              <div>
+                <Label htmlFor="showButton" className="cursor-pointer text-xs sm:text-sm">Show Call-to-Action Button</Label>
+                <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5">Display a button on the poster for users to click</p>
+              </div>
             </div>
 
-            {errors.image && (
-              <p className="text-[10px] sm:text-xs text-red-600 dark:text-red-400">{errors.image.message}</p>
+            {/* Button Text & Link (Conditional) */}
+            {showButton && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 p-3 sm:p-4 bg-muted/50 rounded-lg sm:rounded-xl border-2 border-dashed border-border">
+                <div className="space-y-1.5 sm:space-y-2">
+                  <Label htmlFor="buttonText" className="text-xs sm:text-sm">Button Text</Label>
+                  <Input
+                    id="buttonText"
+                    placeholder="Book Now"
+                    className="h-9 sm:h-10 text-xs sm:text-sm"
+                    {...register('buttonText')}
+                  />
+                  {errors.buttonText && (
+                    <p className="text-[10px] sm:text-xs text-red-600 dark:text-red-400">{errors.buttonText.message}</p>
+                  )}
+                </div>
+                <div className="space-y-1.5 sm:space-y-2">
+                  <Label htmlFor="buttonLink" className="text-xs sm:text-sm">Button Link</Label>
+                  <Input
+                    id="buttonLink"
+                    placeholder="/services"
+                    className="h-9 sm:h-10 text-xs sm:text-sm"
+                    {...register('buttonLink')}
+                  />
+                  {errors.buttonLink && (
+                    <p className="text-[10px] sm:text-xs text-red-600 dark:text-red-400">{errors.buttonLink.message}</p>
+                  )}
+                </div>
+              </div>
             )}
 
+            {/* Active Status */}
+            <ActiveStatusField
+              control={control}
+              description="Poster is visible on the landing page"
+            />
+
             {/* Submit Button */}
-            <Button type="submit" className="w-full h-10 sm:h-11 text-xs sm:text-sm border-2" disabled={isSubmitting}>
+            <Button type="submit" className="w-full h-10 sm:h-11 text-xs sm:text-sm border-2" disabled={isSubmitting || updatePosterMutation.isPending}>
               <Save className="mr-1.5 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-              {isSubmitting ? 'Updating...' : 'Update Poster'}
+              {isSubmitting || updatePosterMutation.isPending ? 'Updating...' : 'Update Poster'}
             </Button>
           </form>
         </CardContent>

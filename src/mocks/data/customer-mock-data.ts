@@ -10,7 +10,6 @@ import { Notification } from '@/types/notification';
 import { CartItem } from '@/types/cart';
 import { Testimonial } from '@/types/testimonial';
 import { TrustStat } from '@/types/stats';
-import { Poster } from '@/types/poster';
 
 // Mock Services
 export const mockServices: Service[] = [
@@ -633,33 +632,6 @@ export const mockCartItems: CartItem[] = [
   },
 ];
 
-// Mock Posters (Special Offers)
-export const mockPosters: Poster[] = [
-  {
-    id: 'poster_001',
-    title: 'Summer Special Offer',
-    description: 'Get 25% off on all services',
-    imageUrl: '/images/posters/summer-special.jpg',
-    link: '/services',
-    ctaText: 'Book Now',
-    location: 'Home Page',
-    startDate: '2025-10-20',
-    endDate: '2025-11-30',
-    active: true,
-  },
-  {
-    id: 'poster_002',
-    title: 'Premium Products Launch',
-    description: 'Check out our new premium car care range',
-    imageUrl: '/images/posters/new-products.jpg',
-    link: '/products',
-    ctaText: 'Shop Now',
-    location: 'Products Page',
-    startDate: '2025-10-24',
-    endDate: '2025-12-31',
-    active: true,
-  },
-];
 
 
 // Mock Stats for Trust Section
@@ -768,17 +740,17 @@ export const mockTestimonials: Testimonial[] = [
 
 // Mock Service Types
 export const mockServiceTypes = [
-  { 
-    id: 'car', 
-    name: 'Car Services', 
-    icon: 'Car', 
-    description: 'Professional car wash and detailing' 
+  {
+    id: 'car',
+    name: 'Car Services',
+    icon: 'Car',
+    description: 'Professional car wash and detailing'
   },
-  { 
-    id: 'bike', 
-    name: 'Bike Services', 
-    icon: 'Bike', 
-    description: 'Quick bike wash and maintenance' 
+  {
+    id: 'bike',
+    name: 'Bike Services',
+    icon: 'Bike',
+    description: 'Quick bike wash and maintenance'
   },
 ];
 

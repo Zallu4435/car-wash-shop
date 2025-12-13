@@ -57,7 +57,7 @@ export const adminProfileFetchers = {
       return mockAdminProfile;
     }
 
-    const { data } = await apiClient.get<ApiResponse<AdminProfile>>('/api/admin/profile');
+    const { data } = await apiClient.get<ApiResponse<AdminProfile>>('/admin/profile');
     return data.data!;
   },
 
@@ -71,7 +71,7 @@ export const adminProfileFetchers = {
     }
 
     const { data } = await apiClient.put<ApiResponse<AdminProfile>>(
-      '/api/admin/profile',
+      '/admin/profile',
       input
     );
     return data.data!;
@@ -84,7 +84,7 @@ export const adminProfileFetchers = {
     }
 
     const { data } = await apiClient.post<ApiResponse<{ message: string }>>(
-      '/api/admin/profile/change-password',
+      '/admin/profile/change-password',
       input
     );
     return data.data!;
@@ -97,7 +97,7 @@ export const adminProfileFetchers = {
     }
 
     const { data } = await apiClient.get<ApiResponse<NotificationPreferences>>(
-      '/api/admin/profile/notification-preferences'
+      '/admin/profile/notification-preferences'
     );
     return data.data!;
   },
@@ -111,7 +111,7 @@ export const adminProfileFetchers = {
     }
 
     const { data} = await apiClient.put<ApiResponse<NotificationPreferences>>(
-      '/api/admin/profile/notification-preferences',
+      '/admin/profile/notification-preferences',
       preferences
     );
     return data.data!;
@@ -127,7 +127,7 @@ export const adminProfileFetchers = {
     formData.append('avatar', file);
 
     const { data } = await apiClient.post<ApiResponse<{ url: string }>>(
-      '/api/admin/profile/upload-avatar',
+      '/admin/profile/upload-avatar',
       formData,
       {
         headers: {

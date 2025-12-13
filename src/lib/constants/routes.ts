@@ -161,8 +161,8 @@ export const ROUTES = {
     VEHICLE_MODEL_EDIT: (id: string) => `/admin/vehicles/models/${id}/edit`,
 
     // Vehicle Management (API Endpoints)
-    VEHICLE_BRANDS_API: '/api/admin/vehicles/brands',
-    VEHICLE_MODELS_API: '/api/admin/vehicles/models',
+    VEHICLE_BRANDS_API: '/admin/vehicles/brands',
+    VEHICLE_MODELS_API: '/admin/vehicles/models',
 
     // Order Management
     ORDERS: '/admin/orders',

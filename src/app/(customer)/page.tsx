@@ -3,42 +3,32 @@
 import { ServiceCard } from '@/components/customer/ServiceCard';
 import { ProductCard } from '@/components/customer/ProductCard';
 import { PromoCarousel } from '@/components/customer/PromoCarousel';
-import { PosterSection } from '@/components/customer/PosterSection';
 import { Testimonials } from '@/components/customer/Testimonials';
 import { Button } from '@/components/ui/button';
 import { CustomerRoutes } from '@/lib/constants/routes';
 import Link from 'next/link';
 import { useServices } from '@/api/domains/services/queries';
 import { useProducts } from '@/api/domains/products/queries';
+import { useActivePosters } from '@/api/domains/public-posters/queries';
 import { ArrowRight, Sparkles, Users, Award, TrendingUp, MessageSquare } from 'lucide-react';
 import Loading from '@/components/shared/display/Loading';
-import { mockTestimonials, mockTrustStats, mockPosters } from '@/mocks/data/customer-mock-data';
+import { mockTestimonials, mockTrustStats } from '@/mocks/data/customer-mock-data';
 
 export default function HomePage() {
   // API calls
   const { data: servicesResponse, isLoading: servicesLoading } = useServices({ limit: 3 });
   const { data: productsResponse, isLoading: productsLoading } = useProducts({ limit: 4 });
-  
+  const { data: posters = [], isLoading: postersLoading } = useActivePosters();
+
   const services = servicesResponse?.data || [];
   const products = productsResponse?.data || [];
-  
+
   // Mock data from centralized file
-  const posters = mockPosters.slice(0, 2);
   const testimonials = mockTestimonials;
   const trustStats = mockTrustStats;
-  
-  // Convert posters to promos format for the carousel
-  const promos = posters.map(poster => ({
-    id: poster.id,
-    title: poster.title,
-    description: poster.description || 'Limited time offer',
-    image: poster.imageUrl || '',
-    link: poster.link || '/services',
-    ctaText: poster.ctaText || 'Learn More',
-  }));
 
   // Loading state
-  if (servicesLoading || productsLoading) {
+  if (servicesLoading || productsLoading || postersLoading) {
     return <Loading />;
   }
 
@@ -49,7 +39,7 @@ export default function HomePage() {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/3 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent"></div>
 
         <div className="container-custom">
-          <PromoCarousel promos={promos} />
+          <PromoCarousel posters={posters} />
         </div>
 
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1/3 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent"></div>
@@ -116,39 +106,7 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Marketing Posters */}
-      {posters.length > 0 && (
-        <section className="section-padding-lg bg-accent/5 relative">
-          <div className="absolute top-10 right-10 w-32 h-32 bg-accent/10 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-10 left-10 w-32 h-32 bg-primary/10 rounded-full blur-3xl"></div>
-
-          <div className="container-custom relative z-10">
-            <div className="text-center mb-10 sm:mb-12 md:mb-16">
-              <div className="inline-flex items-center gap-2 mb-3 sm:mb-4 px-4 sm:px-5 py-2 sm:py-2.5 bg-accent/10 text-accent-foreground rounded-full text-xs sm:text-sm font-semibold border border-accent/20">
-                <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                <span>Limited Time Offers</span>
-              </div>
-              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-2 sm:mb-3 md:mb-4">
-                Special Offers
-              </h2>
-              <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
-                Don't miss out on our exclusive deals and promotions designed just for you
-              </p>
-            </div>
-            <PosterSection
-              posters={posters.map(p => ({
-                id: p.id,
-                title: p.title,
-                description: p.description,
-                imageUrl: p.imageUrl,
-                link: p.link || '/services',
-                ctaText: p.ctaText || 'Learn More'
-              }))}
-              layout="grid"
-            />
-          </div>
-        </section>
-      )}
+      {/* Marketing Posters section removed - using carousel only */}
 
       {/* Wave Divider */}
       <div className="relative h-12 sm:h-16">
@@ -246,7 +204,7 @@ export default function HomePage() {
             {trustStats.map((stat) => {
               // Map icon names to components
               const IconComponent = stat.icon === 'users' ? Users : stat.icon === 'award' ? Award : TrendingUp;
-              
+
               return (
                 <div key={stat.id} className="bg-primary-foreground/15 backdrop-blur-sm border-2 border-primary-foreground/30 rounded-2xl p-6 sm:p-8 text-center hover:bg-primary-foreground/20 hover:border-primary-foreground/40 hover:scale-105 transition-all duration-300 group shadow-lg">
                   <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-primary-foreground/25 rounded-xl mb-3 sm:mb-4 group-hover:scale-110 transition-transform shadow-md">
@@ -260,7 +218,7 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-      
+
     </div>
   );
 }

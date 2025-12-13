@@ -1,19 +1,28 @@
 export interface Poster {
   id: string;
   title: string;
-  description: string;
-  imageUrl: string;
-  link: string;
-  ctaText: string;
+  description?: string;
+  image: string;
+  endDate: string;
+  headingColor?: string;
+  descriptionColor?: string;
+  showButton?: boolean;
+  buttonText?: string;
+  buttonLink?: string;
+  active?: boolean;
+  displayOrder?: number;
+  // Legacy fields for compatibility
+  imageUrl?: string;
+  link?: string;
+  ctaText?: string;
   location?: string;
   startDate?: string;
-  endDate?: string;
-  active: boolean;
+  status?: 'active' | 'inactive';
 }
 
 export interface PosterFilters {
-  location?: string;
-  active?: boolean;
+  search?: string;
+  status?: string;
   page?: number;
   limit?: number;
 }
