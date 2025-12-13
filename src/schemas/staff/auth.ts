@@ -8,7 +8,34 @@ import { z } from 'zod';
 const phoneValidation = z
   .string()
   .trim()
-  .regex(/^[6-9]\d{9}$/, 'Please enter a valid 10-digit mobile number starting with 6-9');
+  .min(10, 'Phone number is required')
+  .regex(/^[6-9]\d{9}$/, 'Please enter a valid 10-digit Indian mobile number starting with 6-9');
+
+// Email validation
+const emailValidation = z
+  .string()
+  .trim()
+  .email('Please enter a valid email address')
+  .max(100, 'Email is too long');
+
+// Identifier validation (email or phone)
+const identifierValidation = z
+  .string()
+  .trim()
+  .min(1, 'Email or phone number is required')
+  .refine(
+    (val) => {
+      // Check if it's an email
+      if (val.includes('@')) {
+        return emailValidation.safeParse(val).success;
+      }
+      // Otherwise check if it's a valid phone
+      return phoneValidation.safeParse(val).success;
+    },
+    {
+      message: 'Please enter a valid email address or phone number',
+    }
+  );
 
 // OTP validation
 const otpValidation = z
@@ -21,10 +48,7 @@ const otpValidation = z
 // ============================================
 
 export const staffLoginSchema = z.object({
-  identifier: z
-    .string()
-    .trim()
-    .min(1, 'Phone number or email is required'),
+  identifier: identifierValidation,
   password: z
     .string()
     .min(1, 'Password is required'),

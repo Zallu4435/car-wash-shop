@@ -54,11 +54,25 @@ apiClient.interceptors.response.use(
       }
     }
 
-    // On unauthorized (after failed refresh), clear token and redirect to login
+    // On unauthorized (after failed refresh), clear token and redirect to login (except on public pages)
     if (error.response?.status === 401) {
       setGlobalAccessToken(null);
-      if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/auth') && !window.location.pathname.startsWith('/admin/auth') && !window.location.pathname.startsWith('/staff/auth')) {
-        window.location.href = '/auth/login';
+      if (typeof window !== 'undefined') {
+        const pathname = window.location.pathname;
+        // Don't redirect to login if already on auth pages
+        const isAuthPage = pathname.startsWith('/auth') ||
+          pathname.startsWith('/admin/auth') ||
+          pathname.startsWith('/staff/auth');
+        // Don't redirect on public pages (homepage, services, products)
+        const isPublicPage = pathname === '/' ||
+          pathname === '/services' ||
+          pathname.startsWith('/services/') ||
+          pathname === '/products' ||
+          pathname.startsWith('/products/');
+
+        if (!isAuthPage && !isPublicPage) {
+          window.location.href = '/auth/login';
+        }
       }
     }
 

@@ -35,11 +35,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { data: fetchedUser, isLoading } = useCurrentUser();
   const logoutMutation = useLogout();
 
-  // Initialize token from localStorage on mount
+  // Initialize token from sessionStorage on mount (isolated per tab)
   const [accessToken, setAccessTokenState] = useState<string | null>(() => {
     if (typeof window === 'undefined') return null;
     try {
-      return localStorage.getItem('auth_access_token');
+      return sessionStorage.getItem('auth_access_token');
     } catch {
       return null;
     }
@@ -101,12 +101,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(undefined);
       deleteCookie(COOKIE_IS_LOGGED);
       deleteCookie(COOKIE_ROLE);
-      // Clear token from localStorage
+      // Clear token from sessionStorage
       if (typeof window !== 'undefined') {
         try {
-          localStorage.removeItem('auth_access_token');
+          sessionStorage.removeItem('auth_access_token');
         } catch (error) {
-          console.error('Failed to clear token from localStorage:', error);
+          console.error('Failed to clear token from sessionStorage:', error);
         }
       }
       logoutMutation.mutate();

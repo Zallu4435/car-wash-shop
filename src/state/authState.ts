@@ -1,10 +1,10 @@
 const TOKEN_STORAGE_KEY = 'auth_access_token';
 
-// Initialize token from localStorage if available
+// Initialize token from sessionStorage if available (isolated per tab)
 function getStoredToken(): string | null {
   if (typeof window === 'undefined') return null;
   try {
-    return localStorage.getItem(TOKEN_STORAGE_KEY);
+    return sessionStorage.getItem(TOKEN_STORAGE_KEY);
   } catch {
     return null;
   }
@@ -17,16 +17,16 @@ const listeners = new Set<Listener>();
 export function setAccessToken(token: string | null) {
   accessToken = token;
   
-  // Persist to localStorage
+  // Persist to sessionStorage (isolated per tab, prevents cross-tab token conflicts)
   if (typeof window !== 'undefined') {
     try {
       if (token) {
-        localStorage.setItem(TOKEN_STORAGE_KEY, token);
+        sessionStorage.setItem(TOKEN_STORAGE_KEY, token);
       } else {
-        localStorage.removeItem(TOKEN_STORAGE_KEY);
+        sessionStorage.removeItem(TOKEN_STORAGE_KEY);
       }
     } catch (error) {
-      console.error('Failed to persist token to localStorage:', error);
+      console.error('Failed to persist token to sessionStorage:', error);
     }
   }
   
@@ -34,7 +34,7 @@ export function setAccessToken(token: string | null) {
 }
 
 export function getAccessToken() {
-  // If token is null but might be in localStorage, try to load it
+  // If token is null but might be in sessionStorage, try to load it
   if (!accessToken && typeof window !== 'undefined') {
     const stored = getStoredToken();
     if (stored) {
