@@ -51,13 +51,7 @@ export default function EnhancedFooter() {
             {/* Brand Section */}
             <div className="lg:col-span-5">
               {/* Logo */}
-              <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
-                <div className="relative">
-                  <div className="absolute inset-0 bg-primary rounded-lg sm:rounded-xl blur-md sm:blur-lg opacity-50"></div>
-                  <div className="relative bg-primary p-2 sm:p-3 rounded-lg sm:rounded-xl shadow-xl">
-                    <Droplet className="h-6 w-6 sm:h-7 sm:w-7 text-primary-foreground" />
-                  </div>
-                </div>
+              <div className="mb-4 sm:mb-6">
                 <div className="flex flex-col">
                   <span className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">Eazy Wash</span>
                   <span className="text-xs text-muted-foreground -mt-1 font-medium">Premium Service</span>

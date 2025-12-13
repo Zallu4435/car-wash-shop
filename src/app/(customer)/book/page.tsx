@@ -1067,12 +1067,12 @@ export default function BookServicePage() {
                     </div>
                   </div>
 
-                  <div className="rounded-xl border-2 border-orange-200 bg-orange-50 p-4 dark:border-orange-800/60 dark:bg-orange-950/30">
+                  <div className="rounded-xl border-2 border-gray-500 bg-gray-600 p-4">
                     <div className="flex items-start gap-3">
-                      <ShieldCheck className="mt-1 h-5 w-5 text-orange-500" />
+                      <ShieldCheck className="mt-1 h-5 w-5 text-white" />
                       <div className="space-y-2">
-                        <p className="text-sm font-semibold text-orange-900 dark:text-orange-200">Cancellation Policy</p>
-                        <p className="text-xs text-orange-700 dark:text-orange-300">
+                        <p className="text-sm font-semibold text-white">Cancellation Policy</p>
+                        <p className="text-xs text-white">
                           Upfront deposit required. If you cancel, this amount is forfeited. Deposit will be adjusted against your final service bill.
                         </p>
                       </div>
