@@ -26,6 +26,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Calendar } from '@/components/ui/calendar';
+import { Progress } from '@/components/ui/progress';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
 import { MapPicker } from '@/components/shared/selectors/MapPicker';
@@ -592,39 +593,7 @@ export default function BookServicePage() {
     );
   }
 
-  const StepIcon = ({ step, index }: { step: StepConfig; index: number }) => {
-    const Icon = step.icon;
-    const isActive = currentStep === step.id;
-    const isCompleted = index < currentStepIndex;
 
-    return (
-      <div
-        className={cn(
-          'flex flex-col gap-2 rounded-xl border px-3 py-3 sm:px-4 sm:py-4 transition-all',
-          isActive
-            ? 'border-primary bg-primary/10 shadow-lg'
-            : isCompleted
-              ? 'border-green-500/60 bg-green-500/10'
-              : 'border-border bg-muted/30'
-        )}
-      >
-        <div className="flex items-center gap-2">
-          <div
-            className={cn(
-              'rounded-full p-2',
-              isActive ? 'bg-primary text-primary-foreground' : isCompleted ? 'bg-green-500 text-white' : 'bg-muted text-muted-foreground'
-            )}
-          >
-            <Icon className="h-4 w-4" />
-          </div>
-          <div className="min-w-0">
-            <p className={cn('text-sm font-semibold', isActive ? 'text-primary' : 'text-foreground')}>{step.title}</p>
-            <p className="text-xs text-muted-foreground line-clamp-2">{step.description}</p>
-          </div>
-        </div>
-      </div>
-    );
-  };
 
   const SummaryItem = ({
     icon,
@@ -656,39 +625,38 @@ export default function BookServicePage() {
   return (
     <div className="min-h-screen bg-background pb-32 lg:pb-16">
       <div className="container-custom py-6 sm:py-8 lg:py-10">
-        <Button
-          variant="ghost"
-          className="mb-4 h-9 sm:h-10"
-          onClick={() => router.back()}
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back
-        </Button>
-
-        <div className="mb-6 flex flex-col gap-3 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">
-          <div className="min-w-0">
-            <div className="flex items-center gap-3">
-              <div className="rounded-2xl border-2 border-primary/30 bg-primary/5 p-3">
-                <Sparkles className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-foreground sm:text-2xl md:text-3xl">Book {service.name}</h1>
-                <p className="text-xs text-muted-foreground sm:text-sm">Complete the steps below to secure your slot</p>
-              </div>
+        {/* Unified Booking Header */}
+        <div className="mb-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <Button
+              variant="ghost"
+              className="h-9 px-2 text-muted-foreground hover:text-foreground"
+              onClick={() => router.back()}
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back
+            </Button>
+            <div className="text-sm font-medium text-muted-foreground">
+              Step <span className="text-foreground">{currentStepIndex + 1}</span> of {stepsConfig.length}
             </div>
           </div>
-          <Badge variant="secondary" className="text-xs sm:text-sm">
-            Estimated {totalDuration} mins • Starting {formatCurrency(selectedVehiclePrice || baseServicePrice)}
-          </Badge>
+
+          <div className="space-y-1 px-1">
+            <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+              {stepsConfig[currentStepIndex].title}
+            </h1>
+            <p className="flex items-center gap-2 text-sm text-muted-foreground">
+              Booking <span className="font-semibold text-foreground">{service.name}</span>
+              <span className="hidden sm:inline">•</span>
+              <span className="hidden sm:inline">{stepsConfig[currentStepIndex].description}</span>
+            </p>
+          </div>
+
+          <Progress value={((currentStepIndex + 1) / stepsConfig.length) * 100} className="h-1" />
         </div>
 
         <div className="grid gap-4 sm:gap-6 lg:gap-8 xl:grid-cols-[2.2fr_1fr]">
           <div className="space-y-4 sm:space-y-5">
-            <div className="grid gap-3 sm:grid-cols-2">
-              {stepsConfig.map((step, index) => (
-                <StepIcon key={step.id} step={step} index={index} />
-              ))}
-            </div>
 
             {currentStep === 'vehicle' && (
               <Card className="border-2">
