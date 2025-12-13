@@ -1,6 +1,5 @@
 'use client';
 
-import { HeroBanner } from '@/components/customer/HeroBanner';
 import { ServiceCard } from '@/components/customer/ServiceCard';
 import { ProductCard } from '@/components/customer/ProductCard';
 import { PromoCarousel } from '@/components/customer/PromoCarousel';
@@ -13,7 +12,7 @@ import { useServices } from '@/api/domains/services/queries';
 import { useProducts } from '@/api/domains/products/queries';
 import { ArrowRight, Sparkles, Users, Award, TrendingUp, MessageSquare } from 'lucide-react';
 import Loading from '@/components/shared/display/Loading';
-import { mockTestimonials, mockTrustStats, mockBanners, mockPosters } from '@/mocks/data/customer-mock-data';
+import { mockTestimonials, mockTrustStats, mockPosters } from '@/mocks/data/customer-mock-data';
 
 export default function HomePage() {
   // API calls
@@ -28,14 +27,14 @@ export default function HomePage() {
   const testimonials = mockTestimonials;
   const trustStats = mockTrustStats;
   
-  // Convert banners to promos format
-  const promos = mockBanners.slice(0, 2).map(banner => ({
-    id: banner.id,
-    title: banner.title,
-    description: banner.subtitle || 'Limited time offer',
-    image: banner.imageUrl || '',
-    link: banner.ctaLink || '/services',
-    ctaText: banner.ctaText || 'Learn More',
+  // Convert posters to promos format for the carousel
+  const promos = posters.map(poster => ({
+    id: poster.id,
+    title: poster.title,
+    description: poster.description || 'Limited time offer',
+    image: poster.imageUrl || '',
+    link: poster.link || '/services',
+    ctaText: poster.ctaText || 'Learn More',
   }));
 
   // Loading state
@@ -45,12 +44,6 @@ export default function HomePage() {
 
   return (
     <div className="bg-background text-foreground">
-      {/* Hero Section */}
-      <HeroBanner />
-
-      {/* Section Divider */}
-      <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent"></div>
-
       {/* Promo Carousel */}
       <section className="section-padding bg-muted/30 relative">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/3 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent"></div>

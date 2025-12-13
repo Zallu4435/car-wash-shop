@@ -11,7 +11,6 @@ import { CartItem } from '@/types/cart';
 import { Testimonial } from '@/types/testimonial';
 import { TrustStat } from '@/types/stats';
 import { Poster } from '@/types/poster';
-import { Banner } from '@/types/banner';
 
 // Mock Services
 export const mockServices: Service[] = [
@@ -662,37 +661,6 @@ export const mockPosters: Poster[] = [
   },
 ];
 
-// Mock Banners (Promo Carousel)
-export const mockBanners: Banner[] = [
-  {
-    id: 'banner_001',
-    title: 'Premium Wash - 20% Off',
-    subtitle: 'Limited Time Offer',
-    position: 'hero',
-    pages: ['Home'],
-    imageUrl: '/images/banners/premium-wash.jpg',
-    ctaText: 'Book Now',
-    ctaLink: '/services/svc_001',
-    startDate: '2025-10-20',
-    endDate: '2025-11-30',
-    active: true,
-    order: 1,
-  },
-  {
-    id: 'banner_002',
-    title: 'New Products Available',
-    subtitle: 'Shop our latest car care products',
-    position: 'middle',
-    pages: ['Products'],
-    imageUrl: '/images/banners/new-products.jpg',
-    ctaText: 'Shop Now',
-    ctaLink: '/products',
-    startDate: '2025-10-24',
-    endDate: '2025-12-31',
-    active: true,
-    order: 2,
-  },
-];
 
 // Mock Stats for Trust Section
 export const mockTrustStats: TrustStat[] = [

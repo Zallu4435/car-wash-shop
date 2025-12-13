@@ -176,10 +176,6 @@ export const ROUTES = {
     REQUEST_ASSIGN: (id: string) => `/admin/requests/${id}/assign`,
 
     // Marketing
-    BANNERS: '/admin/banners',
-    BANNER_NEW: '/admin/banners/new',
-    BANNER_EDIT: (id: string) => `/admin/banners/${id}/edit`,
-
     POSTERS: '/admin/posters',
     POSTER_NEW: '/admin/posters/new',
     POSTER_EDIT: (id: string) => `/admin/posters/${id}/edit`,

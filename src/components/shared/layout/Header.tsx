@@ -134,16 +134,6 @@ export default function EnhancedHeader() {
           <div className="flex items-center justify-between h-16 sm:h-20">
             {/* Logo Section */}
             <button onClick={() => handleNavigation('/')} className="flex items-center gap-2 sm:gap-3 group cursor-pointer">
-              <div className="relative">
-                <div className="absolute inset-0 bg-primary rounded-lg sm:rounded-xl blur-md sm:blur-lg opacity-40 group-hover:opacity-60 transition-all"></div>
-                <div className="relative bg-primary rounded-lg sm:rounded-xl  transition-all overflow-hidden w-10 h-10 sm:w-12 sm:h-12">
-                  <img
-                    src="/images/logo.png"
-                    alt="Eazy Wash Logo"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              </div>
               <div className="flex flex-col">
                 <span className="text-base sm:text-xl font-bold text-foreground tracking-tight">
                   Eazy Wash

@@ -575,47 +575,6 @@ export interface CreateVehicleModelInput {
   type: 'sedan' | 'suv' | 'hatchback' | 'luxury' | 'bike';
 }
 
-// Banner & Marketing Types
-export interface AdminBanner {
-  id: string;
-  title: string;
-  description?: string;
-  image: string;
-  link?: string;
-  position: number;
-  status: 'active' | 'inactive';
-  validFrom: string;
-  validUntil: string;
-  createdAt: string;
-  // Analytics fields
-  impressions?: number;
-  clicks?: number;
-  pages?: string;
-  startDate?: string;
-  endDate?: string;
-  active?: boolean; // Deprecated: use status instead
-}
-
-export interface CreateBannerInput {
-  title: string;
-  description?: string;
-  image: string;
-  link?: string;
-  position: number;
-  validFrom: string;
-  validUntil: string;
-}
-
-export interface UpdateBannerInput {
-  title?: string;
-  description?: string;
-  image?: string;
-  link?: string;
-  position?: number;
-  status?: 'active' | 'inactive';
-  validFrom?: string;
-  validUntil?: string;
-}
 
 // Feedback & Support Types
 export interface AdminFeedback {
