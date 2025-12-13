@@ -3,9 +3,9 @@
 import { use, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { 
-  Star, Clock, ArrowLeft, Sparkles, ShieldCheck, 
-  Timer, Info, CarFront 
+import {
+  Star, Clock, ArrowLeft, Sparkles, ShieldCheck,
+  Timer, Info, CarFront
 } from 'lucide-react';
 
 import { CustomerRoutes } from '@/lib/constants/routes';
@@ -50,10 +50,10 @@ const AVAILABLE_ADDONS = [
 export default function ServiceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
-  
+
   const { data: service, isLoading: serviceLoading } = useService(id);
   const { data: reviews = [] } = useReviewsByService(id);
-  
+
   const [selectedAddOns, setSelectedAddOns] = useState<string[]>([]);
 
   const vehiclePricing = useMemo(() => (
@@ -77,10 +77,10 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
   // Error state
   if (!service) {
     return (
-      <Error 
-        message="Service Not Found" 
-        onRetry={() => router.push(CustomerRoutes.SERVICES)} 
-        details="We couldn't locate the service details." 
+      <Error
+        message="Service Not Found"
+        onRetry={() => router.push(CustomerRoutes.SERVICES)}
+        details="We couldn't locate the service details."
       />
     );
   }
@@ -102,11 +102,11 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
   return (
     <div className="min-h-screen bg-background pb-32 lg:pb-12">
       <div className="container-custom max-w-7xl mx-auto px-4 py-6 sm:py-8">
-        
+
         {/* Navigation */}
         <nav className="mb-6">
-          <Link 
-            href={CustomerRoutes.SERVICES} 
+          <Link
+            href={CustomerRoutes.SERVICES}
             className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -115,15 +115,15 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
         </nav>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          
+
           {/* Left Column - Main Content */}
           <div className="lg:col-span-8 space-y-8">
-            
+
             {/* Hero Section */}
             <div className="space-y-4">
               <div className="relative aspect-video w-full overflow-hidden rounded-2xl border bg-muted shadow-sm">
                 {service.imageUrl ? (
-                  <img 
+                  <img
                     src={service.imageUrl}
                     alt={service.name}
                     className="h-full w-full object-cover transition-transform hover:scale-105 duration-700"
@@ -163,13 +163,13 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
 
             <Separator />
 
-              {/* Vehicle Pricing Grid - Responsive Hybrid */}
-              <section className="space-y-4">
+            {/* Vehicle Pricing Grid - Responsive Hybrid */}
+            <section className="space-y-4">
               <div className="flex items-center gap-2">
                 <CarFront className="h-5 w-5 text-primary" />
                 <h3 className="text-lg font-semibold">Vehicle Pricing</h3>
               </div>
-              
+
               {/* GRID LAYOUT: 
                   - Mobile: grid-cols-2 (Dense) 
                   - Desktop (md+): grid-cols-3 (Spacious, like your screenshot) 
@@ -218,7 +218,7 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
                 {AVAILABLE_ADDONS.map((addon) => {
                   const isSelected = selectedAddOns.includes(addon.id);
                   return (
-                    <div 
+                    <div
                       key={addon.id}
                       onClick={() => toggleAddOn(addon.id)}
                       className={cn(
@@ -257,15 +257,6 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
               </CardContent>
             </Card>
 
-            {/* Reviews Section */}
-            <div className="pt-4">
-              <ReviewsList
-                reviews={reviews}
-                averageRating={averageRating}
-                totalReviews={reviews.length}
-                serviceName={service.name}
-              />
-            </div>
           </div>
 
           {/* Right Column - Sticky Summary */}
@@ -276,14 +267,14 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
                   <CardTitle className="text-lg">Booking Summary</CardTitle>
                 </CardHeader>
                 <CardContent className="p-6 space-y-6">
-                  
+
                   {/* Breakdown */}
                   <div className="space-y-3">
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Base Duration</span>
                       <span>{service.duration} mins</span>
                     </div>
-                    
+
                     {selectedAddOns.length > 0 && (
                       <>
                         <Separator className="my-2" />
@@ -300,9 +291,9 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
                         })}
                       </>
                     )}
-                    
+
                     <Separator className="my-2" />
-                    
+
                     <div className="flex justify-between items-center">
                       <span className="font-semibold">Est. Total Time</span>
                       <div className="flex items-center gap-1.5 text-primary font-bold text-lg">

@@ -1,7 +1,6 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 
 interface PaginationProps {
@@ -10,8 +9,7 @@ interface PaginationProps {
   totalItems: number;
   pageSize: number;
   onPageChange: (page: number) => void;
-  onPageSizeChange: (pageSize: number) => void;
-  pageSizeOptions?: number[];
+  onPageSizeChange?: (pageSize: number) => void;
   className?: string;
 }
 
@@ -21,8 +19,6 @@ export function Pagination({
   totalItems,
   pageSize,
   onPageChange,
-  onPageSizeChange,
-  pageSizeOptions = [10, 20, 50, 100],
   className = '',
 }: PaginationProps) {
   const startItem = totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1;
@@ -72,29 +68,11 @@ export function Pagination({
 
   return (
     <div className={`flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 ${className}`}>
-      {/* Items info and page size selector */}
-      <div className="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
+      {/* Items info */}
+      <div className="text-xs sm:text-sm text-muted-foreground">
         <span>
           Showing {startItem} to {endItem} of {totalItems} items
         </span>
-        <div className="flex items-center gap-2">
-          <span className="hidden sm:inline">Show</span>
-          <Select
-            value={pageSize.toString()}
-            onValueChange={(value) => onPageSizeChange(Number(value))}
-          >
-            <SelectTrigger className="h-8 w-16 sm:w-20">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {pageSizeOptions.map((size) => (
-                <SelectItem key={size} value={size.toString()}>
-                  {size}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
       </div>
 
       {/* Pagination controls */}
