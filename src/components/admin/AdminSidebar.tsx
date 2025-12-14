@@ -13,18 +13,18 @@ import {
   Settings,
   LogOut,
   FileText,
-  Tag,
   Megaphone,
   UserCog,
   Clock,
-  Shield,
   ChevronRight,
   Ticket,
   Folder,
   Star,
   X,
   CreditCard,
-  Search
+  Search,
+  Phone,
+  CarFront
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -56,13 +56,13 @@ const navigationGroups = [
       { name: 'Services', href: AdminRoutes.SERVICES, icon: Car },
       { name: 'Products', href: AdminRoutes.PRODUCTS, icon: Package },
       { name: 'Categories', href: AdminRoutes.CATEGORIES, icon: Folder },
+      { name: 'Vehicle Types', href: AdminRoutes.VEHICLE_TYPES, icon: CarFront },
     ]
   },
   {
     title: 'Marketing',
     items: [
       { name: 'Posters', href: AdminRoutes.POSTERS, icon: Megaphone },
-      { name: 'Coupons', href: AdminRoutes.COUPONS, icon: Tag },
     ]
   },
   {
@@ -70,7 +70,6 @@ const navigationGroups = [
     items: [
       { name: 'Staff', href: AdminRoutes.STAFF, icon: UserCog },
       { name: 'Customers', href: AdminRoutes.CUSTOMERS, icon: Users },
-      { name: 'Vehicles', href: AdminRoutes.VEHICLES, icon: Car },
     ]
   },
   {
@@ -84,6 +83,7 @@ const navigationGroups = [
     title: 'System',
     items: [
       { name: 'Settings', href: AdminRoutes.SETTINGS, icon: Settings },
+      { name: 'Contacts', href: AdminRoutes.CONTACTS, icon: Phone },
     ]
   }
 ];
@@ -129,12 +129,6 @@ export function AdminSidebar({ sidebarOpen, setSidebarOpen }: AdminSidebarProps)
           {/* Mobile Header */}
           <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-border">
             <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-              <div className="relative flex-shrink-0">
-                <div className="absolute inset-0 bg-primary rounded-lg sm:rounded-xl blur-md opacity-40"></div>
-                <div className="relative p-2 sm:p-2.5 bg-gradient-to-br from-primary to-primary/80 rounded-lg sm:rounded-xl shadow-lg">
-                  <Shield className="h-5 w-5 sm:h-6 sm:w-6 text-primary-foreground" />
-                </div>
-              </div>
               <div className="min-w-0 flex-1">
                 <span className="text-base sm:text-lg font-bold text-foreground block truncate">
                   Admin Panel
@@ -230,12 +224,6 @@ export function AdminSidebar({ sidebarOpen, setSidebarOpen }: AdminSidebarProps)
           {/* Desktop Header */}
           <div className="px-6 py-5 border-b border-border">
             <div className="flex items-center gap-3">
-              <div className="relative">
-                <div className="absolute inset-0 bg-primary rounded-xl blur-lg opacity-40"></div>
-                <div className="relative p-3 bg-gradient-to-br from-primary to-primary/80 rounded-xl shadow-xl">
-                  <Shield className="h-7 w-7 text-primary-foreground" />
-                </div>
-              </div>
               <div>
                 <span className="text-xl font-bold text-foreground">Admin Panel</span>
                 <p className="text-xs text-muted-foreground mt-0.5">Eazy Wash Admin</p>

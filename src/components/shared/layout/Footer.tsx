@@ -2,9 +2,10 @@
 
 import {
   Facebook, Instagram, Twitter, Linkedin, Mail, Phone,
-  MapPin, Droplet, ArrowRight, Send
+  MapPin, ArrowRight, Send
 } from 'lucide-react';
 import { useState } from 'react';
+import { usePublicPlatformContact } from '@/api/domains/public-contacts/queries';
 
 const footerLinks = {
   services: [
@@ -15,21 +16,30 @@ const footerLinks = {
   ],
   company: [
     { name: 'About Us', href: '/about' },
-    { name: 'Contact', href: '/support' },
     { name: 'Careers', href: '/careers' },
     { name: 'Feedback', href: '/feedback' },
   ],
   support: [
-    { name: 'Help Center', href: '/support' },
     { name: 'Track Order', href: '/orders' },
     { name: 'FAQs', href: '/faqs' },
-    { name: 'Complaints', href: '/support/complaints' },
   ],
+};
+
+// Fallback data in case API fails
+const fallbackContact = {
+  phone: '+91 88489 19507',
+  email: 'support@eazywash.com',
+  location: 'Mumbai, Maharashtra',
+  description: 'Professional car wash and detailing services delivered right to your doorstep. Experience premium quality with every wash.',
+  socialLinks: { facebook: '', instagram: '', twitter: '', linkedin: '' },
 };
 
 export default function EnhancedFooter() {
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
+
+  const { data: contactData } = usePublicPlatformContact();
+  const contact = contactData || fallbackContact;
 
   const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,6 +51,21 @@ export default function EnhancedFooter() {
       }, 3000);
     }
   };
+
+  // Build social links array dynamically
+  const socialLinks = [
+    { Icon: Facebook, url: contact.socialLinks?.facebook, label: 'Facebook' },
+    { Icon: Instagram, url: contact.socialLinks?.instagram, label: 'Instagram' },
+    { Icon: Twitter, url: contact.socialLinks?.twitter, label: 'Twitter' },
+    { Icon: Linkedin, url: contact.socialLinks?.linkedin, label: 'LinkedIn' },
+  ].filter(link => link.url);
+
+  // Build contact items dynamically
+  const contactItems = [
+    { Icon: Phone, label: 'Phone', value: contact.phone, href: `tel:${contact.phone?.replace(/\s+/g, '')}` },
+    { Icon: Mail, label: 'Email', value: contact.email, href: `mailto:${contact.email}` },
+    { Icon: MapPin, label: 'Location', value: contact.location, href: '#' },
+  ].filter(item => item.value);
 
   return (
     <footer className="bg-card border-t border-border">
@@ -60,7 +85,7 @@ export default function EnhancedFooter() {
 
               {/* Description */}
               <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed mb-4 sm:mb-6 max-w-md">
-                Professional car wash and detailing services delivered right to your doorstep. Experience premium quality with every wash.
+                {contact.description}
               </p>
 
               {/* Newsletter */}
@@ -99,16 +124,31 @@ export default function EnhancedFooter() {
 
               {/* Social Links */}
               <div className="flex gap-2 sm:gap-3">
-                {[Facebook, Instagram, Twitter, Linkedin].map((Icon, idx) => (
-                  <a
-                    key={idx}
-                    href="#"
-                    className="p-2 sm:p-3 rounded-lg sm:rounded-xl bg-muted hover:bg-primary hover:text-primary-foreground transition-all duration-300 group"
-                    aria-label={`Social link ${idx + 1}`}
-                  >
-                    <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground group-hover:text-primary-foreground transition-colors" />
-                  </a>
-                ))}
+                {socialLinks.length > 0 ? (
+                  socialLinks.map(({ Icon, url, label }) => (
+                    <a
+                      key={label}
+                      href={url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="p-2 sm:p-3 rounded-lg sm:rounded-xl bg-muted hover:bg-primary hover:text-primary-foreground transition-all duration-300 group"
+                      aria-label={label}
+                    >
+                      <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground group-hover:text-primary-foreground transition-colors" />
+                    </a>
+                  ))
+                ) : (
+                  // Show placeholder icons if no social links configured
+                  [Facebook, Instagram, Twitter, Linkedin].map((Icon, idx) => (
+                    <span
+                      key={idx}
+                      className="p-2 sm:p-3 rounded-lg sm:rounded-xl bg-muted opacity-50 cursor-not-allowed"
+                      aria-label="Social link not configured"
+                    >
+                      <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
+                    </span>
+                  ))
+                )}
               </div>
             </div>
 
@@ -152,11 +192,7 @@ export default function EnhancedFooter() {
             <div className="lg:col-span-3">
               <h4 className="text-foreground font-semibold mb-4 sm:mb-5 text-xs sm:text-sm uppercase tracking-wider">Get in Touch</h4>
               <ul className="space-y-3 sm:space-y-4">
-                {[
-                  { Icon: Phone, label: 'Phone', value: '+91 88489 19507', href: 'tel:+918848919507' },
-                  { Icon: Mail, label: 'Email', value: 'support@eazywash.com', href: 'mailto:support@eazywash.com' },
-                  { Icon: MapPin, label: 'Location', value: 'Mumbai, Maharashtra', href: '#' },
-                ].map((item) => (
+                {contactItems.map((item) => (
                   <li key={item.label} className="flex items-start gap-2 sm:gap-3 group">
                     <div className="p-2 sm:p-2.5 rounded-lg sm:rounded-xl bg-muted group-hover:bg-primary transition-all duration-300 flex-shrink-0">
                       <item.Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground group-hover:text-primary-foreground transition-colors" />

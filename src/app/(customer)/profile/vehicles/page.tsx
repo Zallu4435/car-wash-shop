@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Plus, Trash2, Car, Bike, Edit, Star } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Car, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -10,26 +10,41 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { toast } from 'sonner';
 import { useVehicleContext } from '@/context/VehicleContext';
 import { useVehicles, useDeleteVehicle, useUpdateVehicle } from '@/api/domains/vehicles/queries';
+import { usePublicVehicleCategories, usePublicVehicleTypes } from '@/api/domains/public-vehicle-types/queries';
 import { EmptyState } from '@/components/shared/display/EmptyState';
 import { AddVehicleModal } from '@/components/shared/forms/AddVehicleModal';
-import { EditVehicleDialog } from '@/components/shared/dialogs/EditVehicleDialog';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
 import type { Vehicle } from '@/types/vehicle';
 import { CustomerRoutes } from '@/lib/constants/routes';
-import { getVehicleCategory, isCarType, getVehicleDisplayType } from '@/utils/vehicle';
+import { getVehicleCategory, getVehicleDisplayType } from '@/utils/vehicle';
 
 export default function VehiclesPage() {
   const router = useRouter();
   const { data: vehiclesData, isLoading, error } = useVehicles();
+  const { data: categories } = usePublicVehicleCategories();
+  const { data: vehicleTypes } = usePublicVehicleTypes();
   const { selectVehicle } = useVehicleContext();
   const deleteVehicleMutation = useDeleteVehicle();
   const updateVehicleMutation = useUpdateVehicle();
   const [deleteVehicleId, setDeleteVehicleId] = useState<string | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [editVehicle, setEditVehicle] = useState<Vehicle | null>(null);
 
   const vehicles = vehiclesData || [];
+
+  // Helper to get category icon
+  const getCategoryIcon = (slug: string): string => {
+    const cat = categories?.find(c => c.slug === slug);
+    return cat?.icon || (slug === 'bike' ? '🏍️' : '🚗');
+  };
+
+  // Helper to get type icon
+  const getTypeIcon = (category: string, bodyType: string): string => {
+    const type = vehicleTypes?.find(t => t.category === category && t.bodyType === bodyType);
+    if (type?.icon) return type.icon;
+    // Fallback to category icon
+    return getCategoryIcon(category);
+  };
 
   const handleDelete = (id: string) => {
     deleteVehicleMutation.mutate(id, {
@@ -52,10 +67,6 @@ export default function VehiclesPage() {
     });
   };
 
-  const handleEdit = (vehicle: Vehicle) => {
-    setEditVehicle(vehicle);
-  };
-
   const handleAddVehicle = () => {
     setIsAddModalOpen(true);
   };
@@ -68,15 +79,8 @@ export default function VehiclesPage() {
     return <Error message="Failed to load vehicles" />;
   }
 
-  const carVehicles = vehicles.filter(v => getVehicleCategory(v) === 'car');
-  const bikeVehicles = vehicles.filter(v => getVehicleCategory(v) === 'bike');
-
   const VehicleCard = ({ vehicle }: { vehicle: Vehicle }) => {
-    const vehicleIsCar = isCarType(vehicle);
-    const Icon = vehicleIsCar ? Car : Bike;
-    const vehicleImage = vehicleIsCar
-      ? '/images/vehicles/car-placeholder.svg'
-      : '/images/vehicles/bike-placeholder.svg';
+    const typeIcon = getTypeIcon(vehicle.category, vehicle.bodyType);
 
     return (
       <Card className={`border-2 hover:shadow-lg transition-all group ${vehicle.isPrimary ? 'border-primary/50' : ''}`}>
@@ -84,13 +88,9 @@ export default function VehiclesPage() {
           {/* Desktop Layout */}
           <div className="hidden sm:flex items-start gap-3 sm:gap-4">
             <div
-              className="p-2 sm:p-3 rounded-lg sm:rounded-xl flex-shrink-0 transition-transform group-hover:scale-105 bg-gradient-to-br from-primary/5 to-primary/10"
+              className="p-2 sm:p-3 rounded-lg sm:rounded-xl flex-shrink-0 transition-transform group-hover:scale-105 bg-gradient-to-br from-primary/5 to-primary/10 flex items-center justify-center"
             >
-              <img
-                src={vehicleImage}
-                alt={`${getVehicleDisplayType(vehicle)}`}
-                className="h-16 w-16 sm:h-20 sm:w-20 md:h-24 md:w-24 object-contain"
-              />
+              <span className="text-4xl sm:text-5xl md:text-6xl">{typeIcon}</span>
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-2 mb-1.5 sm:mb-2">
@@ -123,15 +123,6 @@ export default function VehiclesPage() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="hover:bg-primary/10 hover:text-primary h-8 w-8 sm:h-9 sm:w-9"
-                onClick={() => handleEdit(vehicle)}
-                title="Edit Vehicle"
-              >
-                <Edit className="h-4 w-4 sm:h-5 sm:w-5" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
                 className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20 h-8 w-8 sm:h-9 sm:w-9"
                 onClick={() => setDeleteVehicleId(vehicle.id)}
                 title="Delete Vehicle"
@@ -146,13 +137,9 @@ export default function VehiclesPage() {
           <div className="sm:hidden">
             <div className="flex items-start gap-3 mb-3">
               <div
-                className="p-2 rounded-lg flex-shrink-0 bg-gradient-to-br from-primary/5 to-primary/10"
+                className="p-2 rounded-lg flex-shrink-0 bg-gradient-to-br from-primary/5 to-primary/10 flex items-center justify-center"
               >
-                <img
-                  src={vehicleImage}
-                  alt={`${getVehicleDisplayType(vehicle)}`}
-                  className="h-14 w-14 object-contain"
-                />
+                <span className="text-3xl">{typeIcon}</span>
               </div>
               <div className="flex-1 min-w-0">
                 <h3 className="font-bold text-base text-foreground line-clamp-2 mb-1 capitalize">
@@ -183,15 +170,6 @@ export default function VehiclesPage() {
                   Set Primary
                 </Button>
               )}
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex-1 h-9"
-                onClick={() => handleEdit(vehicle)}
-              >
-                <Edit className="h-4 w-4 mr-1.5" />
-                Edit
-              </Button>
               <Button
                 variant="outline"
                 size="sm"
@@ -267,41 +245,31 @@ export default function VehiclesPage() {
             />
           ) : (
             <div className="max-w-6xl mx-auto space-y-6 sm:space-y-8">
-              {/* Cars Section */}
-              {carVehicles.length > 0 && (
-                <div>
-                  <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-                    <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
-                      <Car className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-                    </div>
-                    <h2 className="text-xl sm:text-2xl font-bold">Cars</h2>
-                    <Badge variant="secondary" className="text-xs sm:text-sm">{carVehicles.length}</Badge>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                    {carVehicles.map((vehicle) => (
-                      <VehicleCard key={vehicle.id} vehicle={vehicle} />
-                    ))}
-                  </div>
-                </div>
-              )}
+              {/* Dynamic Category Sections */}
+              {(() => {
+                // Group vehicles by category
+                const groupedVehicles = vehicles.reduce((acc, vehicle) => {
+                  const category = getVehicleCategory(vehicle) || 'other';
+                  if (!acc[category]) acc[category] = [];
+                  acc[category].push(vehicle);
+                  return acc;
+                }, {} as Record<string, typeof vehicles>);
 
-              {/* Bikes Section */}
-              {bikeVehicles.length > 0 && (
-                <div>
-                  <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-                    <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
-                      <Bike className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                return Object.entries(groupedVehicles).map(([category, categoryVehicles]) => (
+                  <div key={category}>
+                    <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+                      <span className="text-2xl sm:text-3xl">{getCategoryIcon(category)}</span>
+                      <h2 className="text-xl sm:text-2xl font-bold capitalize">{category}s</h2>
+                      <Badge variant="secondary" className="text-xs sm:text-sm">{categoryVehicles.length}</Badge>
                     </div>
-                    <h2 className="text-xl sm:text-2xl font-bold">Bikes</h2>
-                    <Badge variant="secondary" className="text-xs sm:text-sm">{bikeVehicles.length}</Badge>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                      {categoryVehicles.map((vehicle) => (
+                        <VehicleCard key={vehicle.id} vehicle={vehicle} />
+                      ))}
+                    </div>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                    {bikeVehicles.map((vehicle) => (
-                      <VehicleCard key={vehicle.id} vehicle={vehicle} />
-                    ))}
-                  </div>
-                </div>
-              )}
+                ));
+              })()}
             </div>
           )}
         </div>
@@ -311,13 +279,6 @@ export default function VehiclesPage() {
       <AddVehicleModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
-      />
-
-      {/* Edit Vehicle Dialog */}
-      <EditVehicleDialog
-        open={!!editVehicle}
-        onOpenChange={(open) => !open && setEditVehicle(null)}
-        vehicle={editVehicle}
       />
 
       {/* Delete Confirmation Dialog */}

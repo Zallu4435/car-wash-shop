@@ -18,7 +18,6 @@ const navigation = [
   { name: 'Home', href: '/' },
   { name: 'Services', href: '/services' },
   { name: 'Products', href: '/products' },
-  { name: 'Support', href: '/support' },
 ];
 
 const DEFAULT_AVATAR = '/images/avatars/default-avatar.svg';

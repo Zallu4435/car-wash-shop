@@ -30,12 +30,6 @@ export const useOrder = (orderId: string) => {
   });
 };
 
-export const useValidateCoupon = () => {
-  return useMutation({
-    mutationFn: ({ code, amount }: { code: string; amount: number }) =>
-      orderFetchers.validateCoupon(code, amount),
-  });
-};
 
 export const useCreateProductOrder = () => {
   const queryClient = useQueryClient();

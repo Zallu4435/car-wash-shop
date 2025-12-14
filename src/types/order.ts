@@ -26,6 +26,17 @@ export interface OrderAddress {
   phone?: string;
 }
 
+// Invoice details snapshot - captures company info at order time for invoice immutability
+export interface InvoiceDetails {
+  companyName?: string;
+  address?: string;
+  city?: string;
+  phone?: string;
+  email?: string;
+  gst?: string;
+  website?: string;
+}
+
 export interface Order {
   id: string;
   orderNumber: string;
@@ -41,6 +52,7 @@ export interface Order {
   items: OrderItem[];
   deliveryAddress?: OrderAddress | string;
   trackingNumber?: string;
+  invoiceDetails?: InvoiceDetails | null;
   meta?: Record<string, string | number | boolean | null | undefined>;
   createdAt: string;
   updatedAt: string;
@@ -67,12 +79,6 @@ export interface OrderFilters {
   limit?: number;
 }
 
-export interface CouponValidation {
-  code: string;
-  isValid: boolean;
-  discount: number;
-  message?: string;
-}
 
 export interface CreateProductOrderInput {
   items: CreateOrderItemInput[];

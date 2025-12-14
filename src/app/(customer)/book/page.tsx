@@ -1199,17 +1199,6 @@ export default function BookServicePage() {
               </CardContent>
             </Card>
 
-            <Card className="border-2 border-primary/40 bg-primary/5">
-              <CardContent className="space-y-3 p-4">
-                <p className="text-sm font-semibold text-primary">Need Support?</p>
-                <p className="text-xs text-primary/80">
-                  Have a question about this booking? Reach out to our support team and we will help you out.
-                </p>
-                <Button variant="outline" className="w-full" asChild>
-                  <Link href={CustomerRoutes.SUPPORT}>Contact Support</Link>
-                </Button>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </div>

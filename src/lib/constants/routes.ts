@@ -51,15 +51,8 @@ export const ROUTES = {
     PROFILE_SECURITY: '/profile/security',
     PROFILE_DELETE: '/profile/delete',
 
-    // Support
+    // Feedback
     FEEDBACK: '/feedback',
-    SUPPORT: '/support',
-    SUPPORT_FAQ: '/support/faq',
-    COMPLAINTS: '/support/complaints',
-    COMPLAINTS_LIST: '/support/complaints/list',
-    COMPLAINT_DETAIL: (id: string) => `/support/complaints/${id}`,
-    SUPPORT_TICKETS: '/support/tickets',
-    SUPPORT_TOPICS: '/support/topics',
 
     // Legal
     TERMS: '/terms',
@@ -76,7 +69,6 @@ export const ROUTES = {
     BOOKINGS_SLOTS: '/bookings/slots',
     SERVICES_CATEGORIES: '/services/categories',
     PRODUCTS_CATEGORIES: '/products/categories',
-    COUPONS_APPLY: '/coupons/apply',
     CHECKOUT_SESSION: '/checkout/session',
     CHECKOUT_SUCCESS: '/checkout/success',
     CHECKOUT_FAILURE: '/checkout/failure',
@@ -147,23 +139,6 @@ export const ROUTES = {
     CUSTOMERS: '/admin/customers',
     CUSTOMER_DETAIL: (id: string) => `/admin/customers/${id}`,
 
-    // Vehicle Management (Pages)
-    VEHICLES: '/admin/vehicles',
-    VEHICLE_TYPES: '/admin/vehicles/types',
-    VEHICLE_TYPE_NEW: '/admin/vehicles/types/new',
-    VEHICLE_TYPE_EDIT: (id: string) => `/admin/vehicles/types/${id}/edit`,
-    VEHICLE_BODY_TYPES: '/admin/vehicles/body-types',
-    VEHICLE_BODY_TYPE_NEW: '/admin/vehicles/body-types/new',
-    VEHICLE_BODY_TYPE_EDIT: (id: string) => `/admin/vehicles/body-types/${id}/edit`,
-    VEHICLE_MODELS: '/admin/vehicles/models',
-    VEHICLE_MODEL_NEW: '/admin/vehicles/models/new',
-    VEHICLE_MODEL_DETAIL: (id: string) => `/admin/vehicles/models/${id}`,
-    VEHICLE_MODEL_EDIT: (id: string) => `/admin/vehicles/models/${id}/edit`,
-
-    // Vehicle Management (API Endpoints)
-    VEHICLE_BRANDS_API: '/admin/vehicles/brands',
-    VEHICLE_MODELS_API: '/admin/vehicles/models',
-
     // Order Management
     ORDERS: '/admin/orders',
     ORDER_DETAIL: (id: string) => `/admin/orders/${id}`,
@@ -180,11 +155,6 @@ export const ROUTES = {
     POSTER_NEW: '/admin/posters/new',
     POSTER_EDIT: (id: string) => `/admin/posters/${id}/edit`,
 
-    // Coupons
-    COUPONS: '/admin/coupons',
-    COUPON_NEW: '/admin/coupons/new',
-    COUPON_DETAIL: (id: string) => `/admin/coupons/${id}`,
-    COUPON_EDIT: (id: string) => `/admin/coupons/${id}/edit`,
 
     // Payment Management
     PAYMENTS: '/admin/payments',
@@ -200,7 +170,6 @@ export const ROUTES = {
     REPORTS_ORDERS: '/admin/reports/orders',
     REPORTS_STAFF: '/admin/reports/staff',
     REPORTS_PAYMENTS: '/admin/reports/payments',
-    REPORTS_COUPONS: '/admin/reports/coupons',
 
     // Feedback & Support
     FEEDBACK: '/admin/feedback',
@@ -214,6 +183,12 @@ export const ROUTES = {
     PROFILE: '/admin/profile',
     NOTIFICATIONS: '/admin/notifications',
     SLOTS: '/admin/slots',
+
+    // Vehicle Types
+    VEHICLE_TYPES: '/admin/vehicle-types',
+
+    // Contacts
+    CONTACTS: '/admin/contacts',
   },
 
   // Special Routes

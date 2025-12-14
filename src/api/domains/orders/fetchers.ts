@@ -5,7 +5,6 @@ import type {
   Order,
   OrderFeedbackInput,
   OrderFilters,
-  CouponValidation,
 } from '@/types/order';
 import { CustomerRoutes } from '@/lib/constants/routes';
 // Mocks removed; always hit API for orders endpoints
@@ -75,14 +74,4 @@ export const orderFetchers = {
     return data.data!;
   },
 
-  async validateCoupon(
-    code: string,
-    amount: number
-  ): Promise<CouponValidation> {
-    const { data } = await apiClient.post<ApiResponse<CouponValidation>>(
-      CustomerRoutes.COUPONS_APPLY,
-      { code, amount }
-    );
-    return data.data!;
-  },
 };

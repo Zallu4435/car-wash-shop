@@ -39,7 +39,7 @@ export function middleware(request: NextRequest) {
   
   // Protected customer-only routes (require login)
   const customerRoutes = ['/account', '/orders', '/cart', '/checkout', '/profile', 
-                          '/notifications', '/book', '/feedback', '/support', '/payment'];
+                          '/notifications', '/book', '/feedback', '/payment'];
   const isCustomerRoute = customerRoutes.some(route => {
     if (route === '/') return pathname === '/';
     return pathname === route || pathname.startsWith(route + '/');

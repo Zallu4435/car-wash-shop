@@ -3,7 +3,7 @@ import type { Vehicle } from '@/types/vehicle';
 /**
  * Get vehicle category from vehicle (handles both old and new format)
  */
-export function getVehicleCategory(vehicle: Vehicle | null): 'car' | 'bike' | null {
+export function getVehicleCategory(vehicle: Vehicle | null): string | null {
   if (!vehicle) return null;
   if (vehicle.category) return vehicle.category;
   // Legacy: infer from type

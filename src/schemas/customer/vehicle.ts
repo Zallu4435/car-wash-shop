@@ -46,16 +46,7 @@ export const addVehicleSchema = z.object({
 });
 
 // ============================================
-// Edit Vehicle Schema
-// ============================================
-
-export const editVehicleSchema = addVehicleSchema.extend({
-  id: z.string().min(1, 'Vehicle ID is required'),
-});
-
-// ============================================
 // Type Exports
 // ============================================
 
 export type AddVehicleInput = z.infer<typeof addVehicleSchema>;
-export type EditVehicleInput = z.infer<typeof editVehicleSchema>;

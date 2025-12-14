@@ -26,12 +26,12 @@ interface OrderTrackerProps {
   scheduledTime?: string;
 }
 
-export function OrderTracker({ 
-  currentStatus, 
-  statusHistory, 
+export function OrderTracker({
+  currentStatus,
+  statusHistory,
   isService = false,
   scheduledDate,
-  scheduledTime 
+  scheduledTime
 }: OrderTrackerProps) {
   const normalizedCurrentStatus = (currentStatus || '').toLowerCase();
   const isCancelled = normalizedCurrentStatus === 'cancelled';
@@ -60,8 +60,8 @@ export function OrderTracker({
   const statuses = isService
     ? serviceStatuses
     : shouldShowCancelled
-    ? [...orderBaseStatuses, { id: 'cancelled', label: 'Cancelled', icon: XCircle }]
-    : orderBaseStatuses;
+      ? [...orderBaseStatuses, { id: 'cancelled', label: 'Cancelled', icon: XCircle }]
+      : orderBaseStatuses;
 
   const getCurrentStatusIndex = () => statuses.findIndex((s) => s.id === normalizedCurrentStatus);
 
@@ -79,7 +79,7 @@ export function OrderTracker({
 
   const formatScheduledDateTime = () => {
     if (!scheduledDate) return null;
-    
+
     try {
       // Try to parse the scheduled date
       const date = new Date(scheduledDate);
@@ -95,7 +95,7 @@ export function OrderTracker({
               month: 'long',
               day: 'numeric'
             });
-            
+
             if (scheduledTime) {
               // Format time (assuming HH:MM format)
               const [hours, minutes] = scheduledTime.split(':');
@@ -111,7 +111,7 @@ export function OrderTracker({
         }
         return scheduledDate;
       }
-      
+
       // Valid date object
       const formattedDate = date.toLocaleDateString('en-US', {
         weekday: 'long',
@@ -119,7 +119,7 @@ export function OrderTracker({
         month: 'long',
         day: 'numeric'
       });
-      
+
       if (scheduledTime) {
         const [hours, minutes] = scheduledTime.split(':');
         if (hours && minutes) {
@@ -160,11 +160,10 @@ export function OrderTracker({
                 {/* Connector Line */}
                 {index < statuses.length - 1 && (
                   <div
-                    className={`absolute left-[18px] sm:left-[22px] top-10 sm:top-12 w-[3px] h-8 sm:h-10 transition-all duration-300 rounded-full ${
-                      !isCancelled && index < currentIndex
-                        ? 'bg-green-500 dark:bg-green-400 shadow-[0_0_8px_rgba(34,197,94,0.4)]' 
+                    className={`absolute left-[18px] sm:left-[22px] top-10 sm:top-12 w-[3px] h-8 sm:h-10 transition-all duration-300 rounded-full ${!isCancelled && index < currentIndex
+                        ? 'bg-green-500 dark:bg-green-400 shadow-[0_0_8px_rgba(34,197,94,0.4)]'
                         : 'bg-gray-300 dark:bg-gray-600'
-                    }`}
+                      }`}
                   />
                 )}
 
@@ -172,39 +171,36 @@ export function OrderTracker({
                 <div className="flex items-start gap-3 sm:gap-4">
                   {/* Icon */}
                   <div
-                    className={`relative z-10 flex items-center justify-center w-9 h-9 sm:w-11 sm:h-11 rounded-full border-2 flex-shrink-0 transition-all ${
-                      state === 'completed'
+                    className={`relative z-10 flex items-center justify-center w-9 h-9 sm:w-11 sm:h-11 rounded-full border-2 flex-shrink-0 transition-all ${state === 'completed'
                         ? 'bg-green-500 dark:bg-green-600 border-green-500 dark:border-green-600 shadow-lg shadow-green-500/30'
                         : state === 'active'
-                        ? 'bg-blue-50 dark:bg-blue-950 border-blue-500 dark:border-blue-400 shadow-lg shadow-blue-500/20'
-                        : state === 'cancelled'
-                        ? 'bg-red-100 dark:bg-red-950 border-red-400 dark:border-red-500 shadow-lg shadow-red-500/30'
-                        : 'bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-600'
-                    }`}
+                          ? 'bg-blue-50 dark:bg-blue-950 border-blue-500 dark:border-blue-400 shadow-lg shadow-blue-500/20'
+                          : state === 'cancelled'
+                            ? 'bg-red-100 dark:bg-red-950 border-red-400 dark:border-red-500 shadow-lg shadow-red-500/30'
+                            : 'bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-600'
+                      }`}
                   >
                     <StatusIcon
-                      className={`h-4 w-4 sm:h-5 sm:w-5 ${
-                        state === 'completed'
+                      className={`h-4 w-4 sm:h-5 sm:w-5 ${state === 'completed'
                           ? 'text-white'
                           : state === 'active'
-                          ? 'text-blue-600 dark:text-blue-400'
-                        : state === 'cancelled'
-                          ? 'text-red-600 dark:text-red-400'
-                          : 'text-gray-400 dark:text-gray-500'
-                      }`}
+                            ? 'text-blue-600 dark:text-blue-400'
+                            : state === 'cancelled'
+                              ? 'text-red-600 dark:text-red-400'
+                              : 'text-gray-400 dark:text-gray-500'
+                        }`}
                     />
                   </div>
 
                   {/* Content */}
                   <div className="flex-1 pt-0.5 sm:pt-1 min-w-0">
                     <p
-                      className={`font-semibold text-sm sm:text-base ${
-                        state === 'completed' || state === 'active'
+                      className={`font-semibold text-sm sm:text-base ${state === 'completed' || state === 'active'
                           ? 'text-foreground'
                           : state === 'cancelled'
-                          ? 'text-red-600 dark:text-red-400'
-                          : 'text-muted-foreground'
-                      }`}
+                            ? 'text-red-600 dark:text-red-400'
+                            : 'text-muted-foreground'
+                        }`}
                     >
                       {status.label}
                     </p>
@@ -213,15 +209,15 @@ export function OrderTracker({
                         {historyItem.timestamp}
                       </p>
                     )}
-                    {state === 'active' && 
-                     normalizedCurrentStatus !== 'delivered' && 
-                     normalizedCurrentStatus !== 'completed' &&
-                     status.id !== 'delivered' && (
-                      <div className="mt-1.5 sm:mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-100 dark:bg-blue-950 rounded-full border border-blue-200 dark:border-blue-800">
-                        <div className="w-1.5 h-1.5 bg-blue-500 dark:bg-blue-400 rounded-full animate-pulse" />
-                        <span className="text-xs font-medium text-blue-700 dark:text-blue-300">In Progress</span>
-                      </div>
-                    )}
+                    {state === 'active' &&
+                      normalizedCurrentStatus !== 'delivered' &&
+                      normalizedCurrentStatus !== 'completed' &&
+                      status.id !== 'delivered' && (
+                        <div className="mt-1.5 sm:mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-100 dark:bg-blue-950 rounded-full border border-blue-200 dark:border-blue-800">
+                          <div className="w-1.5 h-1.5 bg-blue-500 dark:bg-blue-400 rounded-full animate-pulse" />
+                          <span className="text-xs font-medium text-blue-700 dark:text-blue-300">In Progress</span>
+                        </div>
+                      )}
                     {state === 'cancelled' && (
                       <div className="mt-1.5 sm:mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 bg-red-100 dark:bg-red-950 rounded-full border border-red-200 dark:border-red-800">
                         <div className="w-1.5 h-1.5 bg-red-500 dark:bg-red-400 rounded-full animate-pulse" />
@@ -240,14 +236,14 @@ export function OrderTracker({
           <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-border">
             <div className="p-3 sm:p-4 bg-gradient-to-br from-primary/5 to-primary/10 rounded-lg sm:rounded-xl border border-primary/20">
               <p className="text-xs sm:text-sm font-medium text-muted-foreground mb-0.5 sm:mb-1">
-                {isService 
-                  ? (normalizedCurrentStatus === 'delivered' || normalizedCurrentStatus === 'completed' 
-                      ? 'Scheduled On' 
-                      : 'Scheduled For')
+                {isService
+                  ? (normalizedCurrentStatus === 'delivered' || normalizedCurrentStatus === 'completed'
+                    ? 'Scheduled On'
+                    : 'Scheduled For')
                   : 'Estimated Delivery'}
               </p>
               <p className="text-base sm:text-lg font-bold text-primary">
-                {isService 
+                {isService
                   ? (formatScheduledDateTime() || 'As per booking schedule')
                   : 'Oct 26, 2025'}
               </p>

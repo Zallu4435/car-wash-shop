@@ -20,9 +20,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { OrderTracker } from '@/components/customer/OrderTracker';
 import { Separator } from '@/components/ui/separator';
 import { useOrder } from '@/api/domains/orders/queries';
-import { useReviewByOrder, useReviewsByProduct } from '@/api/domains/reviews/queries';
+import { useReviewByOrder } from '@/api/domains/reviews/queries';
 import { ReviewModal } from '@/components/customer/ReviewModal';
-import { ReviewsList } from '@/components/customer/ReviewsList';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
 
@@ -38,7 +37,6 @@ export default function ProductOrderDetailPage({ params }: { params: Promise<{ i
 
   const { data: orderReview } = useReviewByOrder(id);
   const productId = order?.items?.[0]?.productId;
-  const { data: productReviews = [] } = useReviewsByProduct(productId || 'product_001');
 
   const normalizedStatus = (order?.status || '').toLowerCase();
   const isCompleted = ['completed', 'delivered'].includes(normalizedStatus);
@@ -86,9 +84,7 @@ export default function ProductOrderDetailPage({ params }: { params: Promise<{ i
     return parts.join('\n');
   })();
 
-  const averageRating = productReviews.length
-    ? productReviews.reduce((sum, review) => sum + review.rating, 0) / productReviews.length
-    : 0;
+
 
   return (
     <div className="min-h-screen bg-background pb-32 lg:pb-8">
@@ -135,10 +131,10 @@ export default function ProductOrderDetailPage({ params }: { params: Promise<{ i
                       <p className="font-semibold text-sm sm:text-base text-foreground">
                         {order.createdAt
                           ? new Date(order.createdAt).toLocaleDateString('en-US', {
-                              year: 'numeric',
-                              month: 'long',
-                              day: 'numeric',
-                            })
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                          })
                           : 'Date unavailable'}
                       </p>
                     </div>
@@ -171,20 +167,20 @@ export default function ProductOrderDetailPage({ params }: { params: Promise<{ i
                         const unitPrice = item.price ?? item.unitPrice ?? 0;
                         const lineTotal = item.subtotal ?? unitPrice * quantity;
                         return (
-                        <div key={`${item.productId}-${index}`} className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl">
-                          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
-                            <Package className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+                          <div key={`${item.productId}-${index}`} className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl">
+                            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
+                              <Package className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-semibold text-sm sm:text-base text-foreground truncate">
+                                {item.productName || item.name || 'Product'}
+                              </h3>
+                              <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1">
+                                Quantity: {quantity}
+                              </p>
+                              <p className="text-base sm:text-lg font-bold text-primary mt-1 sm:mt-2">₹{lineTotal}</p>
+                            </div>
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold text-sm sm:text-base text-foreground truncate">
-                              {item.productName || item.name || 'Product'}
-                            </h3>
-                            <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1">
-                              Quantity: {quantity}
-                            </p>
-                            <p className="text-base sm:text-lg font-bold text-primary mt-1 sm:mt-2">₹{lineTotal}</p>
-                          </div>
-                        </div>
                         );
                       })
                     ) : (
@@ -245,9 +241,8 @@ export default function ProductOrderDetailPage({ params }: { params: Promise<{ i
                               {[1, 2, 3, 4, 5].map((star) => (
                                 <Star
                                   key={star}
-                                  className={`h-4 w-4 sm:h-5 sm:w-5 ${
-                                    star <= orderReview.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
-                                  }`}
+                                  className={`h-4 w-4 sm:h-5 sm:w-5 ${star <= orderReview.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
+                                    }`}
                                 />
                               ))}
                               <span className="text-sm sm:text-base font-medium text-foreground ml-1">
@@ -316,14 +311,7 @@ export default function ProductOrderDetailPage({ params }: { params: Promise<{ i
             </div>
           </div>
 
-          <div className="mt-6 sm:mt-8">
-            <ReviewsList
-              reviews={productReviews}
-              averageRating={averageRating}
-              totalReviews={productReviews.length}
-              productName={order.items?.[0]?.productName}
-            />
-          </div>
+
         </div>
       </section>
 

@@ -238,6 +238,17 @@ export interface AdminOrderAddress {
   phone?: string;
 }
 
+// Invoice details snapshot - captures company info at order time for invoice immutability
+export interface InvoiceDetails {
+  companyName?: string;
+  address?: string;
+  city?: string;
+  phone?: string;
+  email?: string;
+  gst?: string;
+  website?: string;
+}
+
 export interface AdminOrder {
   id: string;
   orderNumber: string;
@@ -255,6 +266,7 @@ export interface AdminOrder {
   createdAt: string;
   updatedAt: string;
   deliveryAddress?: AdminOrderAddress;
+  invoiceDetails?: InvoiceDetails | null;
   notes?: Array<{
     note: string;
     addedBy?: string;
@@ -385,44 +397,6 @@ export interface BookingFilters {
   limit?: number;
 }
 
-// Coupon Management Types
-export interface AdminCoupon {
-  id: string;
-  code: string;
-  description: string;
-  type: 'percentage' | 'fixed';
-  value: number;
-  minOrderValue: number;
-  maxDiscount?: number;
-  usageLimit: number;
-  usedCount: number;
-  status: 'active' | 'inactive' | 'expired';
-  validFrom: string;
-  validUntil: string;
-  createdAt: string;
-  active?: boolean; // Deprecated: use status instead
-}
-
-export interface CreateCouponInput {
-  code: string;
-  description: string;
-  type: 'percentage' | 'fixed';
-  value: number;
-  minOrderValue: number;
-  maxDiscount?: number;
-  usageLimit: number;
-  validFrom: string;
-  validUntil: string;
-  applicableServices?: string[];
-  applicableProducts?: string[];
-}
-
-export interface UpdateCouponInput {
-  description?: string;
-  status?: 'active' | 'inactive';
-  usageLimit?: number;
-  validUntil?: string;
-}
 
 // Report Types
 export interface RevenueReport {
@@ -518,38 +492,6 @@ export interface UpdateAdminProfileInput {
   phone?: string;
   avatar?: string;
 }
-
-// Vehicle Management Types
-export interface VehicleBrand {
-  id: string;
-  name: string;
-  logo?: string;
-  status: 'active' | 'inactive';
-  modelCount: number;
-  createdAt: string;
-}
-
-export interface VehicleModel {
-  id: string;
-  brandId: string;
-  brandName: string;
-  name: string;
-  type: 'sedan' | 'suv' | 'hatchback' | 'luxury' | 'bike';
-  status: 'active' | 'inactive';
-  createdAt: string;
-}
-
-export interface CreateVehicleBrandInput {
-  name: string;
-  logo?: string;
-}
-
-export interface CreateVehicleModelInput {
-  brandId: string;
-  name: string;
-  type: 'sedan' | 'suv' | 'hatchback' | 'luxury' | 'bike';
-}
-
 
 // Feedback & Support Types
 export interface AdminFeedback {

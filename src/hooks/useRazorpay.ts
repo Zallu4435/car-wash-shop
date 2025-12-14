@@ -93,7 +93,6 @@ export function useRazorpay(options?: UseRazorpayOptions) {
       slotId: string;
       addressId: string;
       addOns?: string[];
-      couponCode?: string;
       paymentType: 'full' | 'advance';
       coordinates?: {
         latitude: number;

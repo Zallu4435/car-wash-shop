@@ -7,7 +7,6 @@ export interface BookingInput {
   slotId: string; // ID of the selected time slot
   addressId: string; // Backend will fetch full address from this
   addOns?: string[];
-  couponCode?: string;
   paymentType: 'full' | 'advance';
   coordinates?: {
     latitude: number;
@@ -70,10 +69,6 @@ export interface BookingPreview {
   taxAmount: number;
   totalAmount: number;
   advanceAmount?: number;
-  couponApplied?: {
-    code: string;
-    discount: number;
-  };
 }
 
 export interface TimeSlot {

@@ -71,9 +71,6 @@ export default function NotFound() {
                 <Link href={CustomerRoutes.PRODUCTS}>Products</Link>
               </Button>
               <Button asChild variant="ghost" size="sm" className="text-xs sm:text-sm h-8 sm:h-9">
-                <Link href={CustomerRoutes.SUPPORT}>Support</Link>
-              </Button>
-              <Button asChild variant="ghost" size="sm" className="text-xs sm:text-sm h-8 sm:h-9">
                 <Link href={CustomerRoutes.LOGIN}>Login</Link>
               </Button>
             </div>

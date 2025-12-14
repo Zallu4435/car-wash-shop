@@ -18,17 +18,6 @@ const paymentMethodValidation = z
     { message: 'Please select a valid payment method' }
   ) as any;
 
-// Coupon code validation (optional)
-const couponCodeValidation = z
-  .string()
-  .trim()
-  .min(3, 'Coupon code must be at least 3 characters')
-  .max(20, 'Coupon code is too long')
-  .regex(/^[A-Z0-9-]+$/i, 'Invalid coupon code format')
-  .transform((val) => val.toUpperCase())
-  .optional()
-  .or(z.literal(''));
-
 // Order amount validation
 const amountValidation = z
   .number()
@@ -42,7 +31,6 @@ const amountValidation = z
 export const checkoutSchema = z.object({
   addressId: addressIdValidation,
   paymentMethod: paymentMethodValidation,
-  couponCode: couponCodeValidation,
   subtotal: amountValidation,
   discount: z.number().min(0).default(0),
   deliveryFee: z.number().min(0).default(0),
@@ -76,7 +64,6 @@ export const createCheckoutSessionSchema = z.object({
     ) as any,
   amount: z.number().positive('Amount must be greater than 0'),
   addressId: addressIdValidation,
-  couponCode: couponCodeValidation,
 });
 
 // ============================================

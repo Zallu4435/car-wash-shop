@@ -12,14 +12,13 @@ import { MapPicker } from '@/components/shared/selectors/MapPicker';
 import { ShoppingBag, MapPin, CreditCard, Lock } from 'lucide-react';
 import { useCart, useClearCart } from '@/api/domains/cart/queries';
 import { useAddresses } from '@/api/domains/addresses/queries';
-import { useCreateProductOrder, useValidateCoupon } from '@/api/domains/orders/queries';
+import { useCreateProductOrder } from '@/api/domains/orders/queries';
 import Loading from '@/components/shared/display/Loading';
 import { toast } from 'sonner';
 import { useConfirmation } from '@/hooks/useConfirmation';
 import { StorageKeys } from '@/lib/constants/storage';
 import type { RazorpaySuccessResponse } from '@/lib/payment/razorpay-types';
 import { AddressSelectionModal } from '@/components/customer/AddressSelectionModal';
-import { CouponInput } from '@/components/shared/forms/CouponInput';
 import { useRazorpay } from '@/hooks/useRazorpay';
 import { CustomerRoutes } from '@/lib/constants/routes';
 import { useAuth } from '@/context/AuthContext';
@@ -62,19 +61,16 @@ export default function CheckoutPage() {
   const [showMapPicker, setShowMapPicker] = useState(false);
   const [showAddressModal, setShowAddressModal] = useState(false);
   const [selectedAddressId, setSelectedAddressId] = useState<string>('');
-  const [appliedCoupon, setAppliedCoupon] = useState('');
-  const [discount, setDiscount] = useState(0);
-  
+
   // Constants
   const MIN_ORDER_AMOUNT = 100;
   const FREE_DELIVERY_MIN = 500;
   const COD_FEE = 40;
-  
+
   // API calls
   const { data: cart, isLoading: cartLoading } = useCart();
   const clearCartMutation = useClearCart();
   const { data: addresses = [], isLoading: addressesLoading } = useAddresses();
-  const validateCouponMutation = useValidateCoupon();
   const createProductOrderMutation = useCreateProductOrder();
 
   // Razorpay integration
@@ -154,8 +150,7 @@ export default function CheckoutPage() {
     ? directPurchase.price * directPurchase.quantity
     : cart?.subtotal || 0;
   const deliveryFee = paymentMethod === 'cod' ? COD_FEE : 0;
-  const finalAmount = subtotal - discount;
-  const total = finalAmount + deliveryFee;
+  const total = subtotal + deliveryFee;
   const orderItemCount = isDirectPurchase
     ? directPurchase.quantity
     : cart?.items.length || 0;
@@ -165,7 +160,7 @@ export default function CheckoutPage() {
   const orderDescription = isDirectPurchase
     ? `Order for ${directPurchase.quantity} unit${directPurchase.quantity > 1 ? 's' : ''} of ${directPurchase.name}`
     : `Order for ${orderItemCount} item${orderItemCount !== 1 ? 's' : ''}`;
-  
+
   // Validation checks
   const hasCartItems = cart && cart.items.length > 0;
   const hasOrderItems = isDirectPurchase || hasCartItems;
@@ -300,7 +295,7 @@ export default function CheckoutPage() {
             items: orderItems,
             addressId: selectedAddressId,
             paymentMethod: 'cod',
-            discount,
+            discount: 0,
             tax: 0,
             shippingFee: deliveryFee,
             source: isDirectPurchase ? 'direct' : 'cart',
@@ -359,11 +354,10 @@ export default function CheckoutPage() {
         const productOrderPayload = {
           items: orderItems,
           addressId: selectedAddressId,
-          discount,
+          discount: 0,
           tax: 0,
           shippingFee: deliveryFee,
           source: isDirectPurchase ? 'direct' : 'cart',
-          notes: appliedCoupon ? `Coupon: ${appliedCoupon}` : undefined,
         };
 
         await processPayment({
@@ -379,7 +373,7 @@ export default function CheckoutPage() {
           notes: {
             items: orderItemCount.toString(),
             subtotal: subtotal.toString(),
-            discount: discount.toString(),
+            discount: '0',
             deliveryFee: deliveryFee.toString(),
             addressId: selectedAddressId,
           },
@@ -393,32 +387,6 @@ export default function CheckoutPage() {
     }
   };
 
-  const handleApplyCoupon = async (code: string) => {
-    try {
-      const result = await validateCouponMutation.mutateAsync({
-        code: code,
-        amount: subtotal,
-      });
-      
-      if (result.isValid) {
-        setAppliedCoupon(code);
-        setDiscount(result.discount);
-        toast.success(`Coupon applied! You saved ₹${result.discount}`);
-      } else {
-        toast.error('Invalid or expired coupon code');
-      }
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Failed to validate coupon. Please try again.';
-      toast.error(message);
-      console.error('Coupon validation error:', error);
-    }
-  };
-
-  const handleRemoveCoupon = () => {
-    setAppliedCoupon('');
-    setDiscount(0);
-    toast.info('Coupon removed');
-  };
 
   // Loading state
   if (isBuyNowMode && isLoadingDirectPurchase) {
@@ -492,19 +460,19 @@ export default function CheckoutPage() {
                       </p>
                     </div>
                   )}
-                  
+
                   <div className="flex flex-wrap gap-2">
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       onClick={() => setShowAddressModal(true)}
                       className="flex-1 sm:flex-none h-9 sm:h-10 text-xs sm:text-sm border-2"
                     >
                       <MapPin className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                       Change Address
                     </Button>
-                    
-                    <Button 
-                      variant="outline" 
+
+                    <Button
+                      variant="outline"
                       onClick={() => setShowMapPicker(!showMapPicker)}
                       className="flex-1 sm:flex-none h-9 sm:h-10 text-xs sm:text-sm border-2"
                     >
@@ -512,7 +480,7 @@ export default function CheckoutPage() {
                       {showMapPicker ? 'Hide Map' : 'Pick on Map'}
                     </Button>
                   </div>
-                  
+
                   {showMapPicker && (
                     <div className="mt-3 sm:mt-4">
                       <MapPicker
@@ -546,12 +514,12 @@ export default function CheckoutPage() {
 
               {/* Delivery Fee Notice */}
               <DeliveryFeeNotice
-                orderAmount={finalAmount}
+                orderAmount={subtotal}
                 paymentMethod={paymentMethod}
                 codFee={COD_FEE}
                 freeDeliveryMin={FREE_DELIVERY_MIN}
               />
-              
+
               {/* Minimum Order Warning */}
               {!isMinimumOrderMet && (
                 <Card className="border-2 border-orange-200 dark:border-orange-900/50 bg-orange-50 dark:bg-orange-950/20">
@@ -593,34 +561,22 @@ export default function CheckoutPage() {
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4 sm:space-y-6">
-                  {/* Coupon Code Section */}
-                  <CouponInput
-                    onApply={handleApplyCoupon}
-                    onRemove={handleRemoveCoupon}
-                    appliedCoupon={appliedCoupon}
-                    discount={discount}
-                    isLoading={validateCouponMutation.isPending}
-                    subtotal={subtotal}
-                    minOrderAmount={MIN_ORDER_AMOUNT}
-                    size="md"
-                  />
-
                   <PricingBreakdown
                     subtotal={subtotal}
-                    discount={discount}
+                    discount={0}
                     deliveryFee={deliveryFee}
                     total={total}
                   />
-                  <Button 
-                    onClick={handlePlaceOrder} 
-                    className="w-full shadow-lg h-11 sm:h-12 text-sm sm:text-base border-2" 
+                  <Button
+                    onClick={handlePlaceOrder}
+                    className="w-full shadow-lg h-11 sm:h-12 text-sm sm:text-base border-2"
                     size="lg"
                     disabled={isProcessingPayment || isRazorpayLoading || !canPlaceOrder}
                   >
                     <Lock className="mr-2 h-4 w-4" />
                     {isProcessingPayment || isRazorpayLoading ? 'Processing...' : 'Place Order'}
                   </Button>
-                  
+
                   {/* Validation Messages */}
                   {!selectedAddressId && (
                     <p className="text-xs text-red-600 dark:text-red-400 text-center">
@@ -659,21 +615,18 @@ export default function CheckoutPage() {
                       <p className="text-xs text-muted-foreground">
                         {deliveryFee > 0 ? `+₹${deliveryFee} delivery` : 'Free delivery'}
                       </p>
-                      <p className="text-xs font-medium text-green-600">
-                        Save ₹{discount}
-                      </p>
                     </div>
                   </div>
-                  <Button 
-                    onClick={handlePlaceOrder} 
-                    className="w-full shadow-lg h-12 text-sm font-semibold border-2" 
+                  <Button
+                    onClick={handlePlaceOrder}
+                    className="w-full shadow-lg h-12 text-sm font-semibold border-2"
                     size="lg"
                     disabled={isProcessingPayment || isRazorpayLoading || !canPlaceOrder}
                   >
                     <Lock className="mr-2 h-4 w-4" />
                     {isProcessingPayment || isRazorpayLoading ? 'Processing...' : `Place Order - ₹${total}`}
                   </Button>
-                  
+
                   {/* Mobile Validation Messages */}
                   {!canPlaceOrder && (
                     <p className="text-xs text-center text-red-600 dark:text-red-400 mt-2">
@@ -686,7 +639,7 @@ export default function CheckoutPage() {
           </div>
         </div>
       </section>
-      
+
       {/* Address Selection Modal */}
       <AddressSelectionModal
         open={showAddressModal}
@@ -696,7 +649,7 @@ export default function CheckoutPage() {
         onSelectAddress={handleSelectAddress}
         onAddressAdded={handleAddressAdded}
       />
-      
+
       {/* Confirmation Dialog */}
       <ConfirmDialog />
     </div>

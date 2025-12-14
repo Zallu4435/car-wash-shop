@@ -21,9 +21,6 @@ export * from './admin-orders/queries';
 export * from './admin-requests/fetchers';
 export * from './admin-requests/queries';
 
-// Coupon Management
-export * from './admin-coupons/fetchers';
-export * from './admin-coupons/queries';
 
 // Reports
 export * from './admin-reports/fetchers';
@@ -33,15 +30,11 @@ export * from './admin-reports/queries';
 export * from './admin-settings/fetchers';
 export * from './admin-settings/queries';
 
-// Vehicle Management
-export * from './admin-vehicles/fetchers';
-export * from './admin-vehicles/queries';
-
 // Marketing (Banners, Posters)
 export * from './admin-marketing/fetchers';
 export * from './admin-marketing/queries';
 
-// Support (Feedback, Tickets)
+// Support (Feedback, Tickets) - Admin support remains for admin panel
 export * from './admin-support/fetchers';
 export * from './admin-support/queries';
 

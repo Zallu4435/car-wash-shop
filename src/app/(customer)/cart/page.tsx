@@ -2,13 +2,11 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Trash2, Minus, Plus, ShoppingCart, ShoppingBag, Tag } from 'lucide-react';
+import { Trash2, Minus, Plus, ShoppingCart, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { CartSummary } from '@/components/customer/CartSummary';
-import { CouponInput } from '@/components/shared/forms/CouponInput';
 import { useCart, useUpdateCartItem, useRemoveFromCart } from '@/api/domains/cart/queries';
-import { useValidateCoupon } from '@/api/domains/orders/queries';
 import Loading from '@/components/shared/display/Loading';
 import { EmptyState } from '@/components/shared/display/EmptyState';
 import { toast } from 'sonner';
@@ -16,18 +14,15 @@ import { CustomerRoutes } from '@/lib/constants/routes';
 
 export default function CartPage() {
   const router = useRouter();
-  const [appliedCoupon, setAppliedCoupon] = useState('');
-  const [discount, setDiscount] = useState(0);
 
   // API calls
   const { data: cart, isLoading: cartLoading } = useCart();
   const updateCartItemMutation = useUpdateCartItem();
   const removeFromCartMutation = useRemoveFromCart();
-  const validateCouponMutation = useValidateCoupon();
 
   const items = cart?.items || [];
   const subtotal = cart?.subtotal || 0;
-  const total = subtotal - discount;
+  const total = subtotal;
 
   const updateQuantity = (id: string, change: number) => {
     const item = items.find(item => item.id === id);
@@ -42,31 +37,6 @@ export default function CartPage() {
 
   const removeItem = (id: string) => {
     removeFromCartMutation.mutate(id);
-  };
-
-  const handleApplyCoupon = async (code: string) => {
-    try {
-      const result = await validateCouponMutation.mutateAsync({
-        code: code,
-        amount: subtotal,
-      });
-      
-      if (result.isValid) {
-        setAppliedCoupon(code);
-        setDiscount(result.discount);
-        toast.success(`Coupon applied! You saved ₹${result.discount}`);
-      } else {
-        toast.error('Invalid or expired coupon code');
-      }
-    } catch (error: any) {
-      toast.error(error?.message || 'Failed to validate coupon');
-    }
-  };
-
-  const handleRemoveCoupon = () => {
-    setAppliedCoupon('');
-    setDiscount(0);
-    toast.info('Coupon removed');
   };
 
   // Loading state
@@ -178,33 +148,13 @@ export default function CartPage() {
                   </Card>
                 ))}
 
-                {/* Coupon Section */}
-                <Card className="border-2 border-border">
-                  <CardContent className="p-4 sm:p-5 md:p-6">
-                    <div className="flex items-center gap-2 mb-3 sm:mb-4">
-                      <Tag className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
-                      <h3 className="font-semibold text-xs sm:text-sm lg:text-base text-foreground">Apply Coupon</h3>
-                    </div>
-                    <CouponInput
-                      onApply={handleApplyCoupon}
-                      onRemove={handleRemoveCoupon}
-                      appliedCoupon={appliedCoupon}
-                      discount={discount}
-                      isLoading={validateCouponMutation.isPending}
-                      subtotal={subtotal}
-                      minOrderAmount={100}
-                      showLabel={false}
-                      size="sm"
-                    />
-                  </CardContent>
-                </Card>
               </div>
 
               {/* Order Summary */}
               <div className="lg:col-span-1">
                 <CartSummary
                   subtotal={subtotal}
-                  discount={discount}
+                  discount={0}
                   total={total}
                   onCheckout={() => router.push(CustomerRoutes.CHECKOUT)}
                 />

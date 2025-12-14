@@ -19,9 +19,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { OrderTracker } from '@/components/customer/OrderTracker';
 import { Separator } from '@/components/ui/separator';
 import { useBooking } from '@/api/domains/bookings/queries';
-import { useReviewByBooking, useReviewsByService } from '@/api/domains/reviews/queries';
+import { useReviewByBooking } from '@/api/domains/reviews/queries';
 import { ReviewModal } from '@/components/customer/ReviewModal';
-import { ReviewsList } from '@/components/customer/ReviewsList';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
 import type { BookingAddress } from '@/types/booking';
@@ -56,7 +55,6 @@ export default function ServiceOrderDetailPage({ params }: { params: Promise<{ i
 
   const { data: bookingReview } = useReviewByBooking(id);
   const serviceId = booking?.serviceId;
-  const { data: serviceReviews = [] } = useReviewsByService(serviceId || 'service_001');
 
   const normalizedStatus = (booking?.status || '').toLowerCase();
   const isCompleted = normalizedStatus === 'completed' || normalizedStatus === 'delivered';
@@ -152,9 +150,7 @@ export default function ServiceOrderDetailPage({ params }: { params: Promise<{ i
 
   const amount = booking.amount ?? booking.totalAmount ?? 0;
 
-  const averageRating = serviceReviews.length
-    ? serviceReviews.reduce((sum, review) => sum + review.rating, 0) / serviceReviews.length
-    : 0;
+
 
   return (
     <div className="min-h-screen bg-background pb-32 lg:pb-8">
@@ -382,14 +378,7 @@ export default function ServiceOrderDetailPage({ params }: { params: Promise<{ i
             </div>
           </div>
 
-          <div className="mt-6 sm:mt-8">
-            <ReviewsList
-              reviews={serviceReviews}
-              averageRating={averageRating}
-              totalReviews={serviceReviews.length}
-              serviceName={booking.serviceName}
-            />
-          </div>
+
         </div>
       </section>
 

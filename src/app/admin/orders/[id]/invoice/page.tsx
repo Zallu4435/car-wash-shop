@@ -13,13 +13,15 @@ import Error from '@/components/shared/display/Error';
 import { adminOrdersFetchers } from '@/api/domains/admin-orders/fetchers';
 import { toast } from 'sonner';
 
-const COMPANY_INFO = {
-  name: 'Eazy Wash Services',
+// Fallback company info for old orders without invoiceDetails snapshot
+const FALLBACK_COMPANY_INFO = {
+  companyName: 'Eazy Wash Services',
   address: '456 Service Road, Sector 5',
   city: 'Bengaluru, Karnataka - 560103',
   phone: '+91 80 5555 1111',
   email: 'billing@eazywash.com',
   gst: 'GSTIN29ABCDE1234F1Z5',
+  website: 'www.eazywash.com',
 };
 
 const formatCurrency = (value?: number) =>
@@ -39,7 +41,7 @@ const formatAddress = (address?: {
 export default function AdminOrderInvoicePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
-  const { data: order, isLoading, error, refetch } = useAdminOrderDetail(id);
+  const { data: order, isLoading: isLoadingOrder, error: orderError, refetch } = useAdminOrderDetail(id);
 
   const handleDownload = async () => {
     try {
@@ -58,12 +60,12 @@ export default function AdminOrderInvoicePage({ params }: { params: Promise<{ id
     }
   };
 
-  if (isLoading) {
+  if (isLoadingOrder) {
     return <Loading text="Preparing invoice..." />;
   }
 
-  if (error || !order) {
-    const errorMessage = error instanceof Error ? error.message : undefined;
+  if (orderError || !order) {
+    const errorMessage = (orderError as any)?.message;
     return (
       <Error
         message="Unable to load invoice"
@@ -80,6 +82,9 @@ export default function AdminOrderInvoicePage({ params }: { params: Promise<{ id
   dueDate.setDate(dueDate.getDate() + 7);
 
   const items = order.items || [];
+
+  // Use snapshotted invoice details from order, fallback for old orders without snapshot
+  const COMPANY_INFO = order.invoiceDetails || FALLBACK_COMPANY_INFO;
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -121,7 +126,7 @@ export default function AdminOrderInvoicePage({ params }: { params: Promise<{ id
                 <h3 className="font-semibold text-foreground">From:</h3>
               </div>
               <div className="space-y-1 text-sm">
-                <p className="font-bold text-foreground">{COMPANY_INFO.name}</p>
+                <p className="font-bold text-foreground">{COMPANY_INFO.companyName}</p>
                 <p className="text-muted-foreground">{COMPANY_INFO.address}</p>
                 <p className="text-muted-foreground">{COMPANY_INFO.city}</p>
                 <p className="text-muted-foreground flex items-center gap-2 mt-2">
