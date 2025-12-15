@@ -1,109 +1,104 @@
 import { apiClient } from '@/api/client';
 import type { ApiResponse } from '@/types/api';
-import type {
-  AdminCustomerDetail,
-} from '@/types/admin';
-import { AdminRoutes } from '@/lib/constants/routes';
 
-const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true';
+export interface CustomerListItem {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  status: 'active' | 'suspended';
+  avatar?: string;
+  joinedDate: string;
+  totalOrders: number;
+  totalBookings: number;
+  totalSpent: number;
+  lastOrderDate: string | null;
+}
 
-const mockCustomerDetails: Record<string, AdminCustomerDetail> = {
-  CUST001: {
-    id: 'CUST001',
-    name: 'Rajesh Kumar',
-    email: 'rajesh.kumar@gmail.com',
-    phone: '+91 98765 43210',
-    status: 'active',
-    totalOrders: 24,
-    totalSpent: 18560,
-    joinedDate: '2023-01-15',
-    lastOrderDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    addresses: [
-      {
-        id: 'ADDR001',
-        type: 'Home',
-        address: '123, MG Road, Koramangala, Bangalore - 560034',
-        isPrimary: true,
-      },
-      {
-        id: 'ADDR002',
-        type: 'Office',
-        address: '456, Brigade Road, Indiranagar, Bangalore - 560038',
-        isPrimary: false,
-      },
-    ],
-    vehicles: [
-      {
-        id: 'VEH001',
-        brand: 'Honda',
-        model: 'City',
-        number: 'KA-01-AB-1234',
-        type: 'Sedan',
-      },
-      {
-        id: 'VEH002',
-        brand: 'Maruti',
-        model: 'Swift',
-        number: 'KA-01-CD-5678',
-        type: 'Hatchback',
-      },
-    ],
-    recentOrders: [
-      {
-        id: 'ORD101',
-        service: 'Premium Car Wash',
-        amount: 599,
-        status: 'completed',
-        date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-      },
-      {
-        id: 'ORD102',
-        service: 'Interior Detailing',
-        amount: 899,
-        status: 'completed',
-        date: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-      },
-    ],
-    orderStats: {
-      completed: 22,
-      cancelled: 1,
-      pending: 1,
-    },
-  },
-};
+export interface CustomerListResponse {
+  data: CustomerListItem[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  stats: {
+    total: number;
+    active: number;
+    suspended: number;
+  };
+}
+
+export interface CustomerDetail extends CustomerListItem {
+  vehicles: {
+    id: string;
+    brand: string;
+    model: string;
+    number: string;
+    type: string;
+    icon?: string;
+  }[];
+  addresses: {
+    id: string;
+    type: string;
+    address: string;
+    isPrimary: boolean;
+  }[];
+  recentOrders: {
+    id: string;
+    type: string;
+    amount: number;
+    status: string;
+    date: string;
+  }[];
+  recentBookings: {
+    id: string;
+    type: string;
+    service: string;
+    amount: number;
+    status: string;
+    date: string;
+  }[];
+  orderStats: {
+    completed: number;
+    cancelled: number;
+    pending: number;
+  };
+}
+
+export interface CustomerListParams {
+  search?: string;
+  status?: 'active' | 'suspended';
+  page?: number;
+  limit?: number;
+}
 
 export const adminCustomersFetchers = {
-  async getCustomerById(customerId: string): Promise<AdminCustomerDetail> {
-    if (USE_MOCK_DATA) {
-      await new Promise(resolve => setTimeout(resolve, 300));
-      const customerDetail = mockCustomerDetails[customerId];
-      if (!customerDetail) {
-        throw new Error('Customer not found');
-      }
-      return customerDetail;
-    }
+  async getCustomerList(params: CustomerListParams = {}): Promise<CustomerListResponse> {
+    const queryParams = new URLSearchParams();
+    if (params.search) queryParams.append('search', params.search);
+    if (params.status) queryParams.append('status', params.status);
+    if (params.page) queryParams.append('page', params.page.toString());
+    if (params.limit) queryParams.append('limit', params.limit.toString());
 
-    const { data } = await apiClient.get<ApiResponse<AdminCustomerDetail>>(
-      AdminRoutes.CUSTOMER_DETAIL(customerId)
+    const { data } = await apiClient.get<ApiResponse<CustomerListResponse>>(
+      `/admin/customers?${queryParams.toString()}`
+    );
+    return data.data!;
+  },
+
+  async getCustomerById(customerId: string): Promise<CustomerDetail> {
+    const { data } = await apiClient.get<ApiResponse<CustomerDetail>>(
+      `/admin/customers/${customerId}`
     );
     return data.data!;
   },
 
   async updateCustomerStatus(
     customerId: string,
-    status: 'active' | 'inactive' | 'blocked'
-  ): Promise<AdminCustomerDetail> {
-    if (USE_MOCK_DATA) {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      const customerDetail = mockCustomerDetails[customerId];
-      if (!customerDetail) {
-        throw new Error('Customer not found');
-      }
-      return { ...customerDetail, status };
-    }
-
-    const { data } = await apiClient.patch<ApiResponse<AdminCustomerDetail>>(
-      AdminRoutes.CUSTOMER_DETAIL(customerId),
+    status: 'active' | 'suspended'
+  ): Promise<CustomerListItem> {
+    const { data } = await apiClient.patch<ApiResponse<CustomerListItem>>(
+      `/admin/customers/${customerId}/status`,
       { status }
     );
     return data.data!;

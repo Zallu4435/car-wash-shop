@@ -8,11 +8,7 @@ import { useVehicleContext } from '@/context/VehicleContext';
 import { useRouter, usePathname } from 'next/navigation';
 import { NotificationPanel } from '@/components/shared/notification/NotificationPanel';
 import { getVehicleDisplayType } from '@/utils/vehicle';
-import { VehicleSelectionModal } from '@/components/shared/selectors/VehicleSelectionModal';
 import { useCart } from '@/api/domains/cart/queries';
-import { useUpdateVehicle } from '@/api/domains/vehicles/queries';
-import type { Vehicle } from '@/types/vehicle';
-import { toast } from 'sonner';
 
 const navigation = [
   { name: 'Home', href: '/' },
@@ -30,13 +26,11 @@ export default function EnhancedHeader() {
   const [showThemeMenu, setShowThemeMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [showVehicleModal, setShowVehicleModal] = useState(false);
   const [avatarError, setAvatarError] = useState(false);
 
   const { theme, resolvedTheme, setTheme } = useTheme();
   const { user, isAuthenticated, logout, isLoading } = useAuth();
-  const { selectedVehicle, selectVehicle, clearVehicle, hasVehicles } = useVehicleContext();
-  const updateVehicleMutation = useUpdateVehicle();
+  const { selectedVehicle, clearVehicle } = useVehicleContext();
 
   const { data: cartData } = useCart();
   const cartCount = cartData?.items?.length || 0;
@@ -76,22 +70,7 @@ export default function EnhancedHeader() {
   };
 
   const handleVehicleClick = () => {
-    setShowVehicleModal(true);
-  };
-
-  const handleVehicleSelect = (vehicle: Vehicle) => {
-    selectVehicle(vehicle.id);
-    updateVehicleMutation.mutate({
-      id: vehicle.id,
-      input: { isPrimary: true }
-    }, {
-      onSuccess: () => {
-        toast.success(`${getVehicleDisplayType(vehicle)} is now your primary vehicle`);
-      },
-      onError: () => {
-        toast.error('Failed to set as primary vehicle');
-      }
-    });
+    handleNavigation('/profile/vehicles');
   };
 
   const handleUserIconClick = () => {
@@ -523,12 +502,6 @@ export default function EnhancedHeader() {
         </nav>
       </header>
 
-      <VehicleSelectionModal
-        isOpen={showVehicleModal}
-        onClose={() => setShowVehicleModal(false)}
-        onSelect={handleVehicleSelect}
-        selectedVehicleId={selectedVehicle?.id}
-      />
     </>
   );
 }

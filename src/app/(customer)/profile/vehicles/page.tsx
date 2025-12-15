@@ -193,7 +193,7 @@ export default function VehiclesPage() {
         <div className="container-custom py-4 sm:py-6">
           <Button
             variant="ghost"
-            onClick={() => router.push(CustomerRoutes.PROFILE)}
+            onClick={() => router.back()}
             className="mb-4 h-9 px-3 text-sm hover:bg-muted/80 transition-colors"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />

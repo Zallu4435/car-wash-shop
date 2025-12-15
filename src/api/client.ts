@@ -76,6 +76,16 @@ apiClient.interceptors.response.use(
       }
     }
 
+    // Handle suspended account - redirect to suspended page
+    if (error.response?.status === 403) {
+      const errorCode = (error.response?.data as any)?.error?.code;
+      if (errorCode === 'ACCOUNT_SUSPENDED' && typeof window !== 'undefined') {
+        setGlobalAccessToken(null);
+        window.location.href = '/suspended';
+        return Promise.reject({ message: 'Account suspended', code: 403 });
+      }
+    }
+
     const errorMessage =
       error.response?.data?.message ||
       error.response?.data?.error?.message ||
