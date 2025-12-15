@@ -2,19 +2,14 @@
 
 import React, { useState } from 'react';
 import {
-  BarChart,
-  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  LineChart,
-  Line,
   PieChart,
   Pie,
   Cell,
-  Legend,
   AreaChart,
   Area,
   Sector
@@ -26,13 +21,7 @@ import {
   Users,
   TrendingUp,
   TrendingDown,
-  Package,
-  CreditCard,
-  Clock,
-  CheckCircle,
-  XCircle,
   AlertCircle,
-  MoreVertical,
   Filter,
   Loader2
 } from 'lucide-react';
@@ -56,24 +45,16 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-import { useRouter } from 'next/navigation';
+
 
 export default function AdminDashboardPage() {
   const [dateRange, setDateRange] = useState('month');
-  const [activeTab, setActiveTab] = useState('orders');
   const [chartTab, setChartTab] = useState<'product' | 'service'>('product');
-  const router = useRouter();
 
   // Fetch dashboard data
   const { data: dashboardData, isLoading, error } = useAdminDashboardSummary(dateRange);
 
-  const handleViewAll = () => {
-    if (activeTab === 'orders') {
-      router.push('/admin/orders');
-    } else {
-      router.push('/admin/requests');
-    }
-  };
+
 
   // Loading state
   if (isLoading) {
@@ -110,8 +91,7 @@ export default function AdminDashboardPage() {
     customersChange: 0,
   };
 
-  const recentOrders = dashboardData?.recentOrders || [];
-  const recentBookings = dashboardData?.recentBookings || [];
+
   const orderStatusData = dashboardData?.orderStatusData || [];
   const bookingStatusData = dashboardData?.bookingStatusData || [];
   const activityData = dashboardData?.activityData || [];
@@ -305,95 +285,6 @@ export default function AdminDashboardPage() {
           </CardContent>
         </Card>
       </div>
-
-      {/* Recent Transactions Section */}
-      <Tabs defaultValue="orders" className="w-full" onValueChange={setActiveTab}>
-        <div className="flex items-center justify-between mb-4">
-          <TabsList>
-            <TabsTrigger value="orders">Recent Orders</TabsTrigger>
-            <TabsTrigger value="bookings">Recent Bookings</TabsTrigger>
-          </TabsList>
-          <Button variant="ghost" size="sm" className="text-sm" onClick={handleViewAll}>
-            View All
-          </Button>
-        </div>
-
-        <TabsContent value="orders">
-          <Card>
-            <div className="rounded-md border">
-              <div className="grid grid-cols-6 gap-4 p-4 font-medium bg-muted/50 border-b text-sm">
-                <div className="col-span-1">Order ID</div>
-                <div className="col-span-1">Customer</div>
-                <div className="col-span-1">Date</div>
-                <div className="col-span-1">Amount</div>
-                <div className="col-span-1">Status</div>
-                <div className="col-span-1 text-right">Payment</div>
-              </div>
-              <div className="divide-y">
-                {recentOrders.length > 0 ? (
-                  recentOrders.map((order) => (
-                    <div key={order.id} className="grid grid-cols-6 gap-4 p-4 text-sm items-center hover:bg-muted/50 transition-colors">
-                      <div className="font-medium">{order.id}</div>
-                      <div className="flex items-center gap-2">
-                        <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-xs">
-                          {order.customer.charAt(0)}
-                        </div>
-                        {order.customer}
-                      </div>
-                      <div className="text-muted-foreground">{new Date(order.date).toLocaleDateString()}</div>
-                      <div className="font-medium">₹{order.amount}</div>
-                      <div><StatusBadge status={order.status} /></div>
-                      <div className="text-right"><StatusBadge status={order.paymentStatus} type="payment" /></div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="p-8 text-center text-muted-foreground">
-                    No recent orders
-                  </div>
-                )}
-              </div>
-            </div>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="bookings">
-          <Card>
-            <div className="rounded-md border">
-              <div className="grid grid-cols-6 gap-4 p-4 font-medium bg-muted/50 border-b text-sm">
-                <div className="col-span-1">Booking ID</div>
-                <div className="col-span-1">Customer</div>
-                <div className="col-span-1">Service</div>
-                <div className="col-span-1">Date</div>
-                <div className="col-span-1">Amount</div>
-                <div className="col-span-1 text-right">Status</div>
-              </div>
-              <div className="divide-y">
-                {recentBookings.length > 0 ? (
-                  recentBookings.map((booking) => (
-                    <div key={booking.id} className="grid grid-cols-6 gap-4 p-4 text-sm items-center hover:bg-muted/50 transition-colors">
-                      <div className="font-medium">{booking.id.slice(-8)}</div>
-                      <div className="flex items-center gap-2">
-                        <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-xs">
-                          {booking.customer.charAt(0)}
-                        </div>
-                        {booking.customer}
-                      </div>
-                      <div>{booking.service}</div>
-                      <div className="text-muted-foreground">{new Date(booking.date).toLocaleDateString()}</div>
-                      <div className="font-medium">₹{booking.amount}</div>
-                      <div className="text-right"><StatusBadge status={booking.status} /></div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="p-8 text-center text-muted-foreground">
-                    No recent bookings
-                  </div>
-                )}
-              </div>
-            </div>
-          </Card>
-        </TabsContent>
-      </Tabs>
     </div>
   );
 }

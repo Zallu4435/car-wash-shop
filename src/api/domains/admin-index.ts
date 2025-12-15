@@ -21,11 +21,6 @@ export * from './admin-orders/queries';
 export * from './admin-requests/fetchers';
 export * from './admin-requests/queries';
 
-
-// Reports
-export * from './admin-reports/fetchers';
-export * from './admin-reports/queries';
-
 // Settings & Profile
 export * from './admin-settings/fetchers';
 export * from './admin-settings/queries';
@@ -37,10 +32,6 @@ export * from './admin-marketing/queries';
 // Support (Feedback, Tickets) - Admin support remains for admin panel
 export * from './admin-support/fetchers';
 export * from './admin-support/queries';
-
-// Payment Management
-export * from './admin-payments/fetchers';
-export * from './admin-payments/queries';
 
 // Dashboard
 export * from './admin-dashboard/fetchers';

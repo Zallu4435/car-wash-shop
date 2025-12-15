@@ -1,17 +1,14 @@
 import { apiClient } from '@/api/client';
-import type { ApiResponse, PaginatedResponse } from '@/types/api';
+import type { ApiResponse } from '@/types/api';
 import type {
-  AdminCustomer,
   AdminCustomerDetail,
-  CustomerFilters,
 } from '@/types/admin';
 import { AdminRoutes } from '@/lib/constants/routes';
 
 const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true';
 
-// Mock data
-const mockCustomers: AdminCustomer[] = [
-  {
+const mockCustomerDetails: Record<string, AdminCustomerDetail> = {
+  CUST001: {
     id: 'CUST001',
     name: 'Rajesh Kumar',
     email: 'rajesh.kumar@gmail.com',
@@ -21,56 +18,6 @@ const mockCustomers: AdminCustomer[] = [
     totalSpent: 18560,
     joinedDate: '2023-01-15',
     lastOrderDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-  },
-  {
-    id: 'CUST002',
-    name: 'Priya Sharma',
-    email: 'priya.sharma@gmail.com',
-    phone: '+91 98765 43211',
-    status: 'active',
-    totalOrders: 18,
-    totalSpent: 14200,
-    joinedDate: '2023-02-20',
-    lastOrderDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-  },
-  {
-    id: 'CUST003',
-    name: 'Amit Patel',
-    email: 'amit.patel@gmail.com',
-    phone: '+91 98765 43212',
-    status: 'active',
-    totalOrders: 32,
-    totalSpent: 25800,
-    joinedDate: '2022-11-10',
-    lastOrderDate: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-  },
-  {
-    id: 'CUST004',
-    name: 'Sneha Reddy',
-    email: 'sneha.reddy@gmail.com',
-    phone: '+91 98765 43213',
-    status: 'inactive',
-    totalOrders: 8,
-    totalSpent: 6400,
-    joinedDate: '2023-06-05',
-    lastOrderDate: '2023-12-15',
-  },
-  {
-    id: 'CUST005',
-    name: 'Vikram Singh',
-    email: 'vikram.singh@gmail.com',
-    phone: '+91 98765 43214',
-    status: 'active',
-    totalOrders: 15,
-    totalSpent: 11250,
-    joinedDate: '2023-04-12',
-    lastOrderDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-  },
-];
-
-const mockCustomerDetails: Record<string, AdminCustomerDetail> = {
-  CUST001: {
-    ...mockCustomers[0],
     addresses: [
       {
         id: 'ADDR001',
@@ -126,53 +73,6 @@ const mockCustomerDetails: Record<string, AdminCustomerDetail> = {
 };
 
 export const adminCustomersFetchers = {
-  async getCustomerList(filters?: CustomerFilters): Promise<PaginatedResponse<AdminCustomer>> {
-    if (USE_MOCK_DATA) {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      let filteredCustomers = [...mockCustomers];
-
-      // Apply filters
-      if (filters?.status) {
-        filteredCustomers = filteredCustomers.filter(c => c.status === filters.status);
-      }
-      if (filters?.search) {
-        const searchLower = filters.search.toLowerCase();
-        filteredCustomers = filteredCustomers.filter(c =>
-          c.name.toLowerCase().includes(searchLower) ||
-          c.email.toLowerCase().includes(searchLower) ||
-          c.phone.includes(searchLower)
-        );
-      }
-      if (filters?.fromDate) {
-        filteredCustomers = filteredCustomers.filter(c => c.joinedDate >= filters.fromDate!);
-      }
-      if (filters?.toDate) {
-        filteredCustomers = filteredCustomers.filter(c => c.joinedDate <= filters.toDate!);
-      }
-
-      // Pagination
-      const page = filters?.page || 1;
-      const limit = filters?.limit || 10;
-      const startIndex = (page - 1) * limit;
-      const endIndex = startIndex + limit;
-      const paginatedCustomers = filteredCustomers.slice(startIndex, endIndex);
-
-      return {
-        data: paginatedCustomers,
-        total: filteredCustomers.length,
-        page,
-        limit,
-        totalPages: Math.ceil(filteredCustomers.length / limit),
-      };
-    }
-
-    const { data } = await apiClient.get<ApiResponse<PaginatedResponse<AdminCustomer>>>(
-      AdminRoutes.CUSTOMERS,
-      { params: filters }
-    );
-    return data.data!;
-  },
-
   async getCustomerById(customerId: string): Promise<AdminCustomerDetail> {
     if (USE_MOCK_DATA) {
       await new Promise(resolve => setTimeout(resolve, 300));

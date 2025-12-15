@@ -166,10 +166,6 @@ export const ROUTES = {
 
     // Reports
     REPORTS: '/admin/reports',
-    REPORTS_SERVICES: '/admin/reports/services',
-    REPORTS_ORDERS: '/admin/reports/orders',
-    REPORTS_STAFF: '/admin/reports/staff',
-    REPORTS_PAYMENTS: '/admin/reports/payments',
 
     // Feedback & Support
     FEEDBACK: '/admin/feedback',

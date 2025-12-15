@@ -1,36 +1,65 @@
 import { useQuery } from '@tanstack/react-query';
-import { adminReportsFetchers } from './fetchers';
+import {
+    adminReportsFetchers,
+    type ReportFilters,
+    type OrdersReportResponse,
+    type BookingsReportResponse,
+    type OrdersSummary,
+    type BookingsSummary,
+} from './fetchers';
 
+// Query keys
 export const adminReportsKeys = {
-  all: ['admin-reports'] as const,
-  revenue: (fromDate?: string, toDate?: string) => 
-    [...adminReportsKeys.all, 'revenue', fromDate, toDate] as const,
-  staffPerformance: (fromDate?: string, toDate?: string) => 
-    [...adminReportsKeys.all, 'staff-performance', fromDate, toDate] as const,
-  service: (fromDate?: string, toDate?: string) => 
-    [...adminReportsKeys.all, 'service', fromDate, toDate] as const,
+    all: ['admin-reports'] as const,
+    orders: (filters: ReportFilters) => [...adminReportsKeys.all, 'orders', filters] as const,
+    bookings: (filters: ReportFilters) => [...adminReportsKeys.all, 'bookings', filters] as const,
+    ordersSummary: (filters: ReportFilters) => [...adminReportsKeys.all, 'orders-summary', filters] as const,
+    bookingsSummary: (filters: ReportFilters) => [...adminReportsKeys.all, 'bookings-summary', filters] as const,
 };
 
-export const useRevenueReport = (fromDate?: string, toDate?: string) => {
-  return useQuery({
-    queryKey: adminReportsKeys.revenue(fromDate, toDate),
-    queryFn: () => adminReportsFetchers.getRevenueReport(fromDate, toDate),
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  });
-};
+/**
+ * Hook to fetch orders report with filters
+ */
+export function useOrdersReport(filters: ReportFilters = {}) {
+    return useQuery<OrdersReportResponse, Error>({
+        queryKey: adminReportsKeys.orders(filters),
+        queryFn: () => adminReportsFetchers.getOrdersReport(filters),
+        staleTime: 1000 * 60, // 1 minute
+    });
+}
 
-export const useStaffPerformanceReport = (fromDate?: string, toDate?: string) => {
-  return useQuery({
-    queryKey: adminReportsKeys.staffPerformance(fromDate, toDate),
-    queryFn: () => adminReportsFetchers.getStaffPerformanceReport(fromDate, toDate),
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  });
-};
+/**
+ * Hook to fetch bookings report with filters
+ */
+export function useBookingsReport(filters: ReportFilters = {}) {
+    return useQuery<BookingsReportResponse, Error>({
+        queryKey: adminReportsKeys.bookings(filters),
+        queryFn: () => adminReportsFetchers.getBookingsReport(filters),
+        staleTime: 1000 * 60, // 1 minute
+    });
+}
 
-export const useServiceReport = (fromDate?: string, toDate?: string) => {
-  return useQuery({
-    queryKey: adminReportsKeys.service(fromDate, toDate),
-    queryFn: () => adminReportsFetchers.getServiceReport(fromDate, toDate),
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  });
-};
+/**
+ * Hook to fetch orders summary
+ */
+export function useOrdersSummary(filters: ReportFilters = {}) {
+    return useQuery<OrdersSummary, Error>({
+        queryKey: adminReportsKeys.ordersSummary(filters),
+        queryFn: () => adminReportsFetchers.getOrdersSummary(filters),
+        staleTime: 1000 * 60, // 1 minute
+    });
+}
+
+/**
+ * Hook to fetch bookings summary
+ */
+export function useBookingsSummary(filters: ReportFilters = {}) {
+    return useQuery<BookingsSummary, Error>({
+        queryKey: adminReportsKeys.bookingsSummary(filters),
+        queryFn: () => adminReportsFetchers.getBookingsSummary(filters),
+        staleTime: 1000 * 60, // 1 minute
+    });
+}
+
+// Re-export types and fetchers for convenience
+export * from './fetchers';

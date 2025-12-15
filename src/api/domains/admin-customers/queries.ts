@@ -1,21 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminCustomersFetchers } from './fetchers';
-import type { CustomerFilters } from '@/types/admin';
 import { toast } from 'sonner';
 
 export const adminCustomersKeys = {
   all: ['admin-customers'] as const,
-  list: (filters?: CustomerFilters) => [...adminCustomersKeys.all, 'list', filters] as const,
   detail: (id: string) => [...adminCustomersKeys.all, 'detail', id] as const,
-};
-
-export const useAdminCustomerList = (filters?: CustomerFilters) => {
-  return useQuery({
-    queryKey: adminCustomersKeys.list(filters),
-    queryFn: () => adminCustomersFetchers.getCustomerList(filters),
-    staleTime: 2 * 60 * 1000, // 2 minutes
-    placeholderData: (previousData) => previousData,
-  });
 };
 
 export const useAdminCustomerDetail = (customerId: string) => {

@@ -98,15 +98,6 @@ export interface AdminCustomerDetail extends AdminCustomer {
   };
 }
 
-export interface CustomerFilters {
-  status?: 'active' | 'inactive' | 'blocked';
-  search?: string;
-  fromDate?: string;
-  toDate?: string;
-  page?: number;
-  limit?: number;
-}
-
 // Service Management Types
 export interface AdminService {
   id: string;
@@ -395,54 +386,6 @@ export interface BookingFilters {
   search?: string;
   page?: number;
   limit?: number;
-}
-
-
-// Report Types
-export interface RevenueReport {
-  totalRevenue: number;
-  revenueByService: Array<{
-    service: string;
-    revenue: number;
-    bookings: number;
-  }>;
-  revenueByProduct: Array<{
-    product: string;
-    revenue: number;
-    sales: number;
-  }>;
-  revenueByMonth: Array<{
-    month: string;
-    revenue: number;
-  }>;
-  revenueByPaymentMethod: Array<{
-    method: string;
-    amount: number;
-    count: number;
-  }>;
-}
-
-export interface StaffPerformanceReport {
-  staffId: string;
-  staffName: string;
-  totalJobs: number;
-  completedJobs: number;
-  cancelledJobs: number;
-  avgRating: number;
-  totalEarnings: number;
-  completionRate: number;
-  onTimeRate: number;
-}
-
-export interface ServiceReport {
-  serviceId: string;
-  serviceName: string;
-  totalBookings: number;
-  completedBookings: number;
-  cancelledBookings: number;
-  totalRevenue: number;
-  avgRating: number;
-  popularityTrend: string;
 }
 
 // Notification Types

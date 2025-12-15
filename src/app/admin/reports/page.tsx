@@ -1,576 +1,730 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { 
- 
-  BarChart3,
-  PieChart,
-  Activity,
-  IndianRupee,
+import React, { useState, useMemo } from 'react';
+import {
+  FileText,
+  Download,
+  Printer,
+  Calendar,
+  Search,
+  Filter,
+  ChevronUp,
+  ChevronDown,
+  Loader2,
+  AlertCircle,
+  Package,
+  Car,
+  TrendingUp,
+  DollarSign,
   Users,
-  ShoppingBag,
-  Star
+  X,
 } from 'lucide-react';
-import { useRevenueReport, useStaffPerformanceReport, useServiceReport } from '@/api/domains/admin-reports/queries';
-import Loading from '@/components/shared/display/Loading';
-import Error from '@/components/shared/display/Error';
-import { EmptyState } from '@/components/shared/display/EmptyState';
-import { ExportButton } from '@/components/admin/ExportButton';
-import { ProgressBar } from '@/components/admin/ProgressBar';
-import { StatCard } from '@/components/admin/StatCard';
-import { PerformanceCard } from '@/components/admin/PerformanceCard';
+import { cn } from '@/lib/utils/cn';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  useOrdersReport,
+  useBookingsReport,
+  useOrdersSummary,
+  useBookingsSummary,
+  adminReportsFetchers,
+  type ReportFilters,
+  type OrderReportItem,
+  type BookingReportItem,
+} from '@/api/domains/admin-reports/queries';
+import { CountUp } from '@/components/ui/count-up';
+
+type SortDirection = 'asc' | 'desc';
+type ReportType = 'orders' | 'bookings';
+
+const ORDER_STATUSES = ['pending', 'processing', 'confirmed', 'packed', 'shipped', 'out-for-delivery', 'delivered', 'cancelled', 'returned'];
+const BOOKING_STATUSES = ['pending', 'confirmed', 'cancelled', 'completed', 'couldnt_reach'];
+const PAYMENT_STATUSES = ['pending', 'paid', 'refunded', 'failed'];
+
+const PRESET_OPTIONS = [
+  { value: 'today', label: 'Today' },
+  { value: 'week', label: 'This Week' },
+  { value: 'month', label: 'This Month' },
+  { value: 'year', label: 'This Year' },
+  { value: 'all', label: 'All Time' },
+];
 
 export default function ReportsPage() {
-  const [timeRange, setTimeRange] = useState('last-12-months');
-  const [selectedTab, setSelectedTab] = useState('overview');
-  
-  // Calculate date range based on selection using useMemo to avoid recalculation
-  const { fromDate, toDate } = useMemo(() => {
-    const today = new Date();
-    const fromDate = new Date();
-    
-    switch (timeRange) {
-      case 'last-7-days':
-        fromDate.setDate(today.getDate() - 7);
-        break;
-      case 'last-30-days':
-        fromDate.setDate(today.getDate() - 30);
-        break;
-      case 'last-3-months':
-        fromDate.setMonth(today.getMonth() - 3);
-        break;
-      case 'last-6-months':
-        fromDate.setMonth(today.getMonth() - 6);
-        break;
-      case 'last-12-months':
-        fromDate.setMonth(today.getMonth() - 12);
-        break;
-      default:
-        fromDate.setMonth(today.getMonth() - 12);
-    }
-    
-    return {
-      fromDate: fromDate.toISOString().split('T')[0],
-      toDate: today.toISOString().split('T')[0],
-    };
-  }, [timeRange]);
-  
-  const { data: revenueReport, isLoading: revenueLoading, error: revenueError, refetch: refetchRevenue } = useRevenueReport(fromDate, toDate);
-  const { data: staffReport, isLoading: staffLoading, error: staffError, refetch: refetchStaff } = useStaffPerformanceReport(fromDate, toDate);
-  const { data: serviceReport, isLoading: serviceLoading, error: serviceError, refetch: refetchService } = useServiceReport(fromDate, toDate);
+  const [reportType, setReportType] = useState<ReportType>('orders');
+  const [filters, setFilters] = useState<ReportFilters>({
+    preset: 'month',
+    page: 1,
+    limit: 20,
+  });
+  const [searchInput, setSearchInput] = useState('');
+  const [sortBy, setSortBy] = useState<string>('createdAt');
+  const [sortOrder, setSortOrder] = useState<SortDirection>('desc');
 
-  const isLoading = revenueLoading || staffLoading || serviceLoading;
-  const error = revenueError || staffError || serviceError;
+  // Build API filters
+  const apiFilters = useMemo(() => ({
+    ...filters,
+    search: searchInput || undefined,
+    sortBy,
+    sortOrder,
+  }), [filters, searchInput, sortBy, sortOrder]);
 
-  // Prepare export data based on selected tab
-  const getExportData = () => {
-    if (selectedTab === 'overview' || selectedTab === 'revenue') {
-      return {
-        data: revenueReport?.revenueByMonth || [],
-        headers: ['month', 'revenue'],
-        filename: `revenue-report-${timeRange}-${new Date().toISOString().split('T')[0]}`,
-        title: 'Revenue Report',
-      };
-    } else if (selectedTab === 'services') {
-      return {
-        data: serviceReport || [],
-        headers: ['serviceName', 'totalBookings', 'completedBookings', 'cancelledBookings', 'totalRevenue', 'avgRating'],
-        filename: `services-report-${timeRange}-${new Date().toISOString().split('T')[0]}`,
-        title: 'Services Report',
-      };
-    } else if (selectedTab === 'customers') {
-      return {
-        data: staffReport || [],
-        headers: ['staffName', 'completedJobs', 'totalEarnings', 'avgRating', 'completionRate'],
-        filename: `staff-report-${timeRange}-${new Date().toISOString().split('T')[0]}`,
-        title: 'Staff Performance Report',
-      };
-    }
-    return {
-      data: [],
-      headers: [],
-      filename: 'report',
-      title: 'Report',
-    };
+  // Queries
+  const ordersQuery = useOrdersReport(reportType === 'orders' ? apiFilters : {});
+  const bookingsQuery = useBookingsReport(reportType === 'bookings' ? apiFilters : {});
+  const ordersSummaryQuery = useOrdersSummary(reportType === 'orders' ? apiFilters : {});
+  const bookingsSummaryQuery = useBookingsSummary(reportType === 'bookings' ? apiFilters : {});
+
+  const isLoading = reportType === 'orders'
+    ? ordersQuery.isLoading || ordersSummaryQuery.isLoading
+    : bookingsQuery.isLoading || bookingsSummaryQuery.isLoading;
+
+  const error = reportType === 'orders'
+    ? ordersQuery.error || ordersSummaryQuery.error
+    : bookingsQuery.error || bookingsSummaryQuery.error;
+
+  // Handlers
+  const handlePresetChange = (preset: string) => {
+    setFilters(prev => ({
+      ...prev,
+      preset: preset as ReportFilters['preset'],
+      startDate: undefined,
+      endDate: undefined,
+      page: 1,
+    }));
   };
 
-  const exportConfig = getExportData();
+  const handleDateChange = (field: 'startDate' | 'endDate', value: string) => {
+    setFilters(prev => ({
+      ...prev,
+      [field]: value,
+      preset: undefined,
+      page: 1,
+    }));
+  };
 
-  if (isLoading) {
-    return <Loading text="Loading reports..." />;
-  }
+  const handleStatusChange = (status: string) => {
+    setFilters(prev => ({
+      ...prev,
+      status: status === 'all' ? undefined : status,
+      page: 1,
+    }));
+  };
 
-  if (error) {
-    return <Error message="Failed to load reports" details={error?.message} onRetry={() => {
-      refetchRevenue();
-      refetchStaff();
-      refetchService();
-    }} />;
-  }
+  const handlePaymentStatusChange = (paymentStatus: string) => {
+    setFilters(prev => ({
+      ...prev,
+      paymentStatus: paymentStatus === 'all' ? undefined : paymentStatus,
+      page: 1,
+    }));
+  };
+
+  const handleSearch = () => {
+    setFilters(prev => ({ ...prev, page: 1 }));
+  };
+
+  const handleSort = (column: string) => {
+    if (sortBy === column) {
+      setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(column);
+      setSortOrder('desc');
+    }
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setFilters(prev => ({ ...prev, page: newPage }));
+  };
+
+  const handleExportPdf = () => {
+    if (reportType === 'orders') {
+      adminReportsFetchers.exportOrdersPdf(apiFilters);
+    } else {
+      adminReportsFetchers.exportBookingsPdf(apiFilters);
+    }
+  };
+
+  const handleExportCsv = () => {
+    if (reportType === 'orders') {
+      adminReportsFetchers.exportOrdersCsv(apiFilters);
+    } else {
+      adminReportsFetchers.exportBookingsCsv(apiFilters);
+    }
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const clearFilters = () => {
+    setFilters({ preset: 'all', page: 1, limit: 20 });
+    setSearchInput('');
+  };
+
+  const hasActiveFilters = filters.status || filters.paymentStatus || searchInput || filters.startDate || filters.endDate;
 
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <div className="flex flex-col gap-6 p-6 overflow-y-auto">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
-        <div className="min-w-0 flex-1">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground truncate">
-            Reports & Analytics
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-black flex items-center gap-2">
+            <FileText className="h-8 w-8" />
+            Reports
           </h1>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1 truncate">
-            Comprehensive business insights and metrics
+          <p className="text-muted-foreground mt-1">
+            Generate and export detailed reports for orders and bookings.
           </p>
         </div>
-        <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
-          <Select value={timeRange} onValueChange={setTimeRange}>
-            <SelectTrigger className="w-full sm:w-48 h-9 sm:h-10 text-xs sm:text-sm border-2">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="last-7-days">Last 7 Days</SelectItem>
-              <SelectItem value="last-30-days">Last 30 Days</SelectItem>
-              <SelectItem value="last-3-months">Last 3 Months</SelectItem>
-              <SelectItem value="last-6-months">Last 6 Months</SelectItem>
-              <SelectItem value="last-12-months">Last 12 Months</SelectItem>
-            </SelectContent>
-          </Select>
-          <ExportButton
-            data={exportConfig.data}
-            filename={exportConfig.filename}
-            headers={exportConfig.headers}
-            title={exportConfig.title}
-            filters={{
-              'Time Range': timeRange.replace(/-/g, ' '),
-              'From Date': fromDate,
-              'To Date': toDate,
-              'Tab': selectedTab,
-            }}
-            variant="outline"
-            className="w-full sm:w-auto h-9 sm:h-10 text-xs sm:text-sm border-2"
-          />
+        <div className="flex items-center gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="gap-2">
+                <Download className="h-4 w-4" />
+                Export
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={handleExportPdf}>
+                <FileText className="h-4 w-4 mr-2" />
+                Export as PDF
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleExportCsv}>
+                <FileText className="h-4 w-4 mr-2" />
+                Export as CSV
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Button variant="outline" onClick={handlePrint} className="gap-2">
+            <Printer className="h-4 w-4" />
+            Print
+          </Button>
         </div>
       </div>
 
-      {/* Tabs */}
-      <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto gap-1.5 sm:gap-2 p-1.5 sm:p-2 bg-muted border-2 border-border rounded-lg sm:rounded-xl">
-          <TabsTrigger 
-            value="overview" 
-            className="text-xs sm:text-sm py-2 sm:py-2.5 px-2 sm:px-3 rounded-md sm:rounded-lg border-2 border-border font-medium transition-all data-[state=active]:border-primary data-[state=active]:border-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-xl data-[state=active]:scale-105 hover:bg-muted hover:border-muted-foreground/30"
-          >
-            Overview
+      {/* Report Type Tabs */}
+      <Tabs value={reportType} onValueChange={(v) => setReportType(v as ReportType)} className="w-full">
+        <TabsList className="grid w-full max-w-md grid-cols-2">
+          <TabsTrigger value="orders" className="gap-2">
+            <Package className="h-4 w-4" />
+            Orders
           </TabsTrigger>
-          <TabsTrigger 
-            value="revenue" 
-            className="text-xs sm:text-sm py-2 sm:py-2.5 px-2 sm:px-3 rounded-md sm:rounded-lg border-2 border-border font-medium transition-all data-[state=active]:border-primary data-[state=active]:border-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-xl data-[state=active]:scale-105 hover:bg-muted hover:border-muted-foreground/30"
-          >
-            Revenue
-          </TabsTrigger>
-          <TabsTrigger 
-            value="customers" 
-            className="text-xs sm:text-sm py-2 sm:py-2.5 px-2 sm:px-3 rounded-md sm:rounded-lg border-2 border-border font-medium transition-all data-[state=active]:border-primary data-[state=active]:border-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-xl data-[state=active]:scale-105 hover:bg-muted hover:border-muted-foreground/30"
-          >
-            Customers
-          </TabsTrigger>
-          <TabsTrigger 
-            value="services" 
-            className="text-xs sm:text-sm py-2 sm:py-2.5 px-2 sm:px-3 rounded-md sm:rounded-lg border-2 border-border font-medium transition-all data-[state=active]:border-primary data-[state=active]:border-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-xl data-[state=active]:scale-105 hover:bg-muted hover:border-muted-foreground/30"
-          >
-            Services
+          <TabsTrigger value="bookings" className="gap-2">
+            <Car className="h-4 w-4" />
+            Bookings
           </TabsTrigger>
         </TabsList>
       </Tabs>
-      
-      {/* Tab Content Indicator */}
-      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-muted-foreground">
-        <span>Showing: <span className="font-semibold text-foreground capitalize">{selectedTab}</span></span>
-        <span className="hidden sm:inline">•</span>
-        <span className="font-medium text-[10px] sm:text-sm">{timeRange.replace(/-/g, ' ')}</span>
-        <span className="hidden sm:inline">•</span>
-        <span className="text-[10px] sm:text-xs">
-          {fromDate} to {toDate}
-        </span>
-      </div>
 
-      {/* Overview Tab */}
-      {selectedTab === 'overview' && (
-        <>
-          {/* KPI Cards */}
-          <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-            <StatCard
-              icon={IndianRupee}
-              label="Total Revenue"
-              value={`₹${revenueReport?.totalRevenue?.toLocaleString('en-IN') || '0'}`}
-              change="+12.5%"
-              trend="up"
-              description="This period"
-              valueClassName="text-primary"
-            />
-            
-            <StatCard
-              icon={ShoppingBag}
-              label="Total Orders"
-              value={String(revenueReport?.revenueByService?.reduce((sum, s) => sum + s.bookings, 0) || 0)}
-              change="+8.3%"
-              trend="up"
-              description="Total bookings"
-            />
-            
-            <StatCard
-              icon={Users}
-              label="Top Services"
-              value={String(serviceReport?.length || 0)}
-              change="+15.2%"
-              trend="up"
-              description="Active services"
-            />
-            
-            <StatCard
-              icon={Star}
-              label="Avg. Rating"
-              value={serviceReport && serviceReport.length > 0 ? ((serviceReport.reduce((sum, s) => sum + s.avgRating, 0) / serviceReport.length).toFixed(1)) : '0'}
-              change="+0.3"
-              trend="up"
-              description="Customer satisfaction"
-            />
-          </div>
-
-      {/* Revenue Trend Chart */}
-      <Card className="border-2 border-border">
-        <CardHeader className="pb-3 sm:pb-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
-            <div className="flex items-center gap-2">
-              <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
-              <CardTitle className="text-sm sm:text-base lg:text-lg">Revenue Trend</CardTitle>
-            </div>
-            <Badge variant="outline" className="text-xs w-fit">
-              {timeRange.replace(/-/g, ' ')}
-            </Badge>
-          </div>
+      {/* Filters Section */}
+      <Card>
+        <CardHeader className="pb-4">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Filter className="h-5 w-5" />
+            Filters
+          </CardTitle>
         </CardHeader>
-        <CardContent>
-          {revenueReport?.revenueByMonth && revenueReport.revenueByMonth.length > 0 ? (
-            <div className="space-y-3 sm:space-y-4">
-              {revenueReport.revenueByMonth.map((data, index) => {
-                const revenue = data.revenue || 0;
-                const maxRev = Math.max(...revenueReport.revenueByMonth.map(d => d.revenue || 0));
-                const percentage = maxRev > 0 ? Math.round((revenue / maxRev) * 100) : 0;
-                return (
-                  <div key={`${data.month}-${index}`}>
-                    <div className="flex items-center justify-between text-xs sm:text-sm mb-1.5 sm:mb-2">
-                      <span className="font-medium text-foreground w-8 sm:w-12">{data.month}</span>
-                      <span className="font-bold text-foreground w-20 sm:w-24 text-right">
-                        ₹{(revenue / 1000).toFixed(0)}K
-                      </span>
-                    </div>
-                    <div className="h-2 sm:h-3 bg-muted rounded-full overflow-hidden">
-                      <div 
-                        className="h-full rounded-full transition-all duration-1000 ease-out"
-                        style={{ 
-                          width: `${percentage}%`,
-                          background: `linear-gradient(90deg, hsl(var(--primary)), hsl(var(--primary) / 0.8))`
-                        }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <EmptyState
-              icon={BarChart3}
-              title="No revenue data"
-              description="No revenue data available for this period"
-            />
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Service Distribution & Top Products */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-        {/* Service Distribution */}
-        <Card className="border-2 border-border">
-          <CardHeader className="pb-3 sm:pb-4">
-            <div className="flex items-center gap-2">
-              <PieChart className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
-              <CardTitle className="text-sm sm:text-base lg:text-lg">Service Distribution</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {serviceReport && serviceReport.length > 0 ? (
-              <div className="space-y-3 sm:space-y-4">
-                {serviceReport.slice(0, 5).map((service, index) => {
-                const serviceName = service.serviceName;
-                const serviceValue = service.totalBookings;
-                const totalBookings = serviceReport.reduce((sum, s) => sum + (s.totalBookings || 0), 0);
-                const servicePercentage = totalBookings > 0 ? Math.round((serviceValue / totalBookings) * 100) : 0;
-                const colors = ['hsl(221 83% 53%)', 'hsl(160 60% 45%)', 'hsl(30 80% 55%)', 'hsl(280 65% 60%)', 'hsl(340 75% 55%)'];
-                const opacity = 1 - (index * 0.1);
-                
-                return (
-                  <ProgressBar
-                    key={serviceName}
-                    percentage={servicePercentage}
-                    color={colors[index]}
-                    opacity={opacity}
-                    height="sm"
-                    label={serviceName}
-                    value={serviceValue}
-                  />
-                );
-                })}
-              </div>
-            ) : (
-              <EmptyState
-                icon={PieChart}
-                title="No service data"
-                description="No service distribution data available"
-              />
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Top Products */}
-        <Card className="border-2 border-border">
-          <CardHeader className="pb-3 sm:pb-4">
-            <div className="flex items-center gap-2">
-              <Activity className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
-              <CardTitle className="text-sm sm:text-base lg:text-lg">Top Selling Products</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {revenueReport?.revenueByProduct && revenueReport.revenueByProduct.length > 0 ? (
-              <div className="space-y-3 sm:space-y-4">
-                {revenueReport.revenueByProduct.slice(0, 5).map((product, index) => (
-                <div key={product.product} className="flex items-center gap-3 sm:gap-4">
-                  <div 
-                    className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center font-bold text-xs sm:text-sm flex-shrink-0"
-                    style={{ 
-                      backgroundColor: 'hsl(var(--primary) / 0.1)',
-                      color: 'hsl(var(--primary))'
-                    }}
+        <CardContent className="space-y-4">
+          {/* Date Filters Row */}
+          <div className="flex flex-wrap gap-4 items-end">
+            {/* Preset Buttons */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-muted-foreground">Quick Filters</label>
+              <div className="flex gap-2 flex-wrap">
+                {PRESET_OPTIONS.map(preset => (
+                  <Button
+                    key={preset.value}
+                    variant={filters.preset === preset.value ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => handlePresetChange(preset.value)}
                   >
-                    #{index + 1}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-xs sm:text-sm text-foreground truncate">
-                      {product.product}
-                    </p>
-                    <p className="text-[10px] sm:text-xs text-muted-foreground">
-                      {product.sales} sales
-                    </p>
-                  </div>
-                  <div className="text-right flex-shrink-0">
-                    <p className="font-bold text-xs sm:text-sm text-foreground">
-                      ₹{(product.revenue / 1000).toFixed(1)}K
-                    </p>
-                  </div>
-                </div>
+                    {preset.label}
+                  </Button>
                 ))}
               </div>
-            ) : (
-              <EmptyState
-                icon={Activity}
-                title="No product data"
-                description="No product sales data available"
-              />
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Staff Performance */}
-      <Card className="border-2 border-border">
-        <CardHeader className="pb-3 sm:pb-4">
-          <div className="flex items-center gap-2">
-            <Users className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
-            <CardTitle className="text-sm sm:text-base lg:text-lg">Staff Performance</CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {staffReport && staffReport.length > 0 ? (
-            <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-              {staffReport.slice(0, 4).map((staff) => (
-                <div 
-                  key={staff.staffId}
-                  className="p-3 sm:p-4 lg:p-5 rounded-lg sm:rounded-xl border-2 border-border bg-muted/50"
-                >
-                  <div className="flex items-center justify-between mb-1.5 sm:mb-2">
-                    <p className="text-[10px] sm:text-xs lg:text-sm text-muted-foreground truncate flex-1">
-                      {staff.staffName}
-                    </p>
-                    <Badge 
-                      variant="outline"
-                      className="gap-0.5 sm:gap-1 text-[10px] sm:text-xs flex-shrink-0 ml-1"
-                    >
-                      ⭐ {staff.avgRating.toFixed(1)}
-                    </Badge>
-                  </div>
-                  <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-primary">
-                    {staff.completedJobs}
-                  </p>
-                  <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">
-                    {staff.completionRate.toFixed(1)}% completion
-                  </p>
-                </div>
-              ))}
             </div>
-          ) : (
-            <EmptyState
-              icon={Users}
-              title="No staff data"
-              description="No staff performance data available"
-            />
-          )}
+
+            {/* Custom Date Range */}
+            <div className="flex gap-2 items-end">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-muted-foreground">From</label>
+                <Input
+                  type="date"
+                  value={filters.startDate || ''}
+                  onChange={(e) => handleDateChange('startDate', e.target.value)}
+                  className="w-40"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-muted-foreground">To</label>
+                <Input
+                  type="date"
+                  value={filters.endDate || ''}
+                  onChange={(e) => handleDateChange('endDate', e.target.value)}
+                  className="w-40"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Status and Search Row */}
+          <div className="flex flex-wrap gap-4 items-end">
+            {/* Status Filter */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-muted-foreground">Status</label>
+              <Select value={filters.status || 'all'} onValueChange={handleStatusChange}>
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="All Statuses" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  {(reportType === 'orders' ? ORDER_STATUSES : BOOKING_STATUSES).map(status => (
+                    <SelectItem key={status} value={status} className="capitalize">
+                      {status.replace(/_/g, ' ')}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Payment Status Filter */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-muted-foreground">Payment</label>
+              <Select value={filters.paymentStatus || 'all'} onValueChange={handlePaymentStatusChange}>
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="All Payments" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Payments</SelectItem>
+                  {PAYMENT_STATUSES.map(status => (
+                    <SelectItem key={status} value={status} className="capitalize">
+                      {status}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Search */}
+            <div className="flex-1 min-w-[200px] space-y-2">
+              <label className="text-sm font-medium text-muted-foreground">Search</label>
+              <div className="flex gap-2">
+                <Input
+                  placeholder={reportType === 'orders' ? 'Search by order number or phone...' : 'Search by service or phone...'}
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                  className="flex-1"
+                />
+                <Button onClick={handleSearch} size="icon" variant="secondary">
+                  <Search className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Clear Filters */}
+            {hasActiveFilters && (
+              <Button variant="ghost" onClick={clearFilters} className="gap-2 text-muted-foreground">
+                <X className="h-4 w-4" />
+                Clear
+              </Button>
+            )}
+          </div>
         </CardContent>
       </Card>
-      </>
+
+      {/* Summary Cards */}
+      {reportType === 'orders' && ordersSummaryQuery.data && (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <SummaryCard
+            title="Total Orders"
+            value={ordersSummaryQuery.data.totalCount}
+            icon={Package}
+            color="bg-blue-500"
+          />
+          <SummaryCard
+            title="Total Revenue"
+            value={ordersSummaryQuery.data.totalRevenue}
+            prefix="₹"
+            icon={DollarSign}
+            color="bg-green-500"
+          />
+          <SummaryCard
+            title="Avg Order Value"
+            value={ordersSummaryQuery.data.avgOrderValue}
+            prefix="₹"
+            icon={TrendingUp}
+            color="bg-purple-500"
+          />
+          <SummaryCard
+            title="Total Discount"
+            value={ordersSummaryQuery.data.totalDiscount}
+            prefix="₹"
+            icon={Users}
+            color="bg-orange-500"
+          />
+        </div>
       )}
 
-      {/* Revenue Tab */}
-      {selectedTab === 'revenue' && (
-        <>
-          <Card className="border-2 border-border">
-            <CardHeader className="pb-3 sm:pb-4">
-              <CardTitle className="text-sm sm:text-base lg:text-lg">Revenue Analytics</CardTitle>
-              <p className="text-xs sm:text-sm text-muted-foreground">Detailed revenue breakdown and trends</p>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4 sm:space-y-6">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-                  <div className="p-3 sm:p-4 bg-primary/10 rounded-lg sm:rounded-xl border-2 border-primary/20">
-                    <p className="text-xs sm:text-sm text-muted-foreground">Total Revenue</p>
-                    <p className="text-xl sm:text-2xl font-bold text-primary">₹{revenueReport?.totalRevenue?.toLocaleString('en-IN') || '0'}</p>
-                  </div>
-                  <div className="p-3 sm:p-4 bg-primary/10 rounded-lg sm:rounded-xl border-2 border-primary/20">
-                    <p className="text-xs sm:text-sm text-muted-foreground">By Services</p>
-                    <p className="text-xl sm:text-2xl font-bold text-primary">
-                      ₹{revenueReport?.revenueByService?.reduce((sum, s) => sum + s.revenue, 0)?.toLocaleString('en-IN') || '0'}
-                    </p>
-                  </div>
-                  <div className="p-3 sm:p-4 bg-primary/10 rounded-lg sm:rounded-xl border-2 border-primary/20">
-                    <p className="text-xs sm:text-sm text-muted-foreground">By Products</p>
-                    <p className="text-xl sm:text-2xl font-bold text-primary">
-                      ₹{revenueReport?.revenueByProduct?.reduce((sum, p) => sum + p.revenue, 0)?.toLocaleString('en-IN') || '0'}
-                    </p>
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="font-semibold text-sm sm:text-base mb-2 sm:mb-3">Revenue by Service</h3>
-                  <div className="space-y-2 sm:space-y-3">
-                    {revenueReport?.revenueByService?.map((service, index) => (
-                      <div key={index} className="flex items-center justify-between p-2.5 sm:p-3 bg-muted rounded-lg sm:rounded-xl border-2 border-border">
-                        <span className="font-medium text-xs sm:text-sm truncate flex-1 mr-2">{service.service}</span>
-                        <div className="text-right flex-shrink-0">
-                          <p className="font-bold text-xs sm:text-sm">₹{service.revenue.toLocaleString('en-IN')}</p>
-                          <p className="text-[10px] sm:text-xs text-muted-foreground">{service.bookings} bookings</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="font-semibold text-sm sm:text-base mb-2 sm:mb-3">Revenue by Payment Method</h3>
-                  <div className="space-y-2 sm:space-y-3">
-                    {revenueReport?.revenueByPaymentMethod?.map((method, index) => (
-                      <div key={index} className="flex items-center justify-between p-2.5 sm:p-3 bg-muted rounded-lg sm:rounded-xl border-2 border-border">
-                        <span className="font-medium text-xs sm:text-sm truncate flex-1 mr-2">{method.method}</span>
-                        <div className="text-right flex-shrink-0">
-                          <p className="font-bold text-xs sm:text-sm">₹{method.amount.toLocaleString('en-IN')}</p>
-                          <p className="text-[10px] sm:text-xs text-muted-foreground">{method.count} transactions</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </>
+      {reportType === 'bookings' && bookingsSummaryQuery.data && (
+        <div className="grid gap-4 md:grid-cols-3">
+          <SummaryCard
+            title="Total Bookings"
+            value={bookingsSummaryQuery.data.totalCount}
+            icon={Car}
+            color="bg-blue-500"
+          />
+          <SummaryCard
+            title="Total Revenue"
+            value={bookingsSummaryQuery.data.totalRevenue}
+            prefix="₹"
+            icon={DollarSign}
+            color="bg-green-500"
+          />
+          <SummaryCard
+            title="Avg Booking Value"
+            value={bookingsSummaryQuery.data.avgBookingValue}
+            prefix="₹"
+            icon={TrendingUp}
+            color="bg-purple-500"
+          />
+        </div>
       )}
 
-      {/* Services Tab */}
-      {selectedTab === 'services' && (
-        <>
-          <Card className="border-2 border-border">
-            <CardHeader className="pb-3 sm:pb-4">
-              <CardTitle className="text-sm sm:text-base lg:text-lg">Service Performance</CardTitle>
-              <p className="text-xs sm:text-sm text-muted-foreground">Detailed service analytics and ratings</p>
-            </CardHeader>
-            <CardContent>
-              {serviceReport && serviceReport.length > 0 ? (
-                <div className="space-y-3 sm:space-y-4">
-                  {serviceReport.map((service) => (
-                    <PerformanceCard
-                      key={service.serviceId}
-                      id={service.serviceId}
-                      name={service.serviceName}
-                      rating={service.avgRating}
-                      metrics={[
-                        { label: 'Total Bookings', value: service.totalBookings },
-                        { label: 'Completed', value: service.completedBookings, highlight: true },
-                        { label: 'Cancelled', value: service.cancelledBookings },
-                        { label: 'Revenue', value: `₹${service.totalRevenue.toLocaleString('en-IN')}`, highlight: true },
-                      ]}
-                      badge={{ label: 'Trend', value: service.popularityTrend }}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <EmptyState
-                  icon={Activity}
-                  title="No service data"
-                  description="No service performance data available"
-                />
-              )}
-            </CardContent>
-          </Card>
-        </>
+      {/* Loading State */}
+      {isLoading && (
+        <div className="flex flex-col items-center justify-center min-h-[300px] gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-muted-foreground">Loading report data...</p>
+        </div>
       )}
 
-      {/* Customers Tab */}
-      {selectedTab === 'customers' && (
-        <>
-          <Card className="border-2 border-border">
-            <CardHeader className="pb-3 sm:pb-4">
-              <CardTitle className="text-sm sm:text-base lg:text-lg">Staff Performance Details</CardTitle>
-              <p className="text-xs sm:text-sm text-muted-foreground">Detailed staff metrics and performance</p>
-            </CardHeader>
-            <CardContent>
-              {staffReport && staffReport.length > 0 ? (
-                <div className="space-y-3 sm:space-y-4">
-                  {staffReport.map((staff) => (
-                    <PerformanceCard
-                      key={staff.staffId}
-                      id={staff.staffId}
-                      name={staff.staffName}
-                      rating={staff.avgRating}
-                      metrics={[
-                        { label: 'Total Jobs', value: staff.totalJobs },
-                        { label: 'Completed', value: staff.completedJobs, highlight: true },
-                        { label: 'Completion Rate', value: `${staff.completionRate.toFixed(1)}%` },
-                        { label: 'Earnings', value: `₹${staff.totalEarnings.toLocaleString('en-IN')}` },
-                      ]}
-                      badge={{ label: 'On-Time Rate', value: `${staff.onTimeRate.toFixed(1)}%` }}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <EmptyState
-                  icon={Users}
-                  title="No staff data"
-                  description="No staff performance data available"
-                />
-              )}
-            </CardContent>
-          </Card>
-        </>
+      {/* Error State */}
+      {error && (
+        <div className="flex flex-col items-center justify-center min-h-[300px] gap-4">
+          <AlertCircle className="h-8 w-8 text-destructive" />
+          <p className="text-muted-foreground">Failed to load report data</p>
+          <Button variant="outline" onClick={() => window.location.reload()}>
+            Retry
+          </Button>
+        </div>
       )}
+
+      {/* Orders Table */}
+      {reportType === 'orders' && ordersQuery.data && !isLoading && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Orders Report</CardTitle>
+            <CardDescription>
+              Showing {ordersQuery.data.orders.length} of {ordersQuery.data.pagination.total} orders
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b bg-muted/50">
+                  <SortableHeader column="orderNumber" label="Order #" sortBy={sortBy} sortOrder={sortOrder} onSort={handleSort} />
+                  <SortableHeader column="customerName" label="Customer" sortBy={sortBy} sortOrder={sortOrder} onSort={handleSort} />
+                  <th className="p-3 text-left font-medium">Email</th>
+                  <SortableHeader column="createdAt" label="Date" sortBy={sortBy} sortOrder={sortOrder} onSort={handleSort} />
+                  <th className="p-3 text-left font-medium">Items</th>
+                  <th className="p-3 text-left font-medium">Payment Method</th>
+                  <SortableHeader column="totalAmount" label="Total" sortBy={sortBy} sortOrder={sortOrder} onSort={handleSort} />
+                  <SortableHeader column="status" label="Status" sortBy={sortBy} sortOrder={sortOrder} onSort={handleSort} />
+                  <th className="p-3 text-left font-medium">Payment</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {ordersQuery.data.orders.map((order) => (
+                  <OrderRow key={order.id} order={order} />
+                ))}
+              </tbody>
+            </table>
+
+            {/* Pagination */}
+            <Pagination
+              currentPage={ordersQuery.data.pagination.page}
+              totalPages={ordersQuery.data.pagination.totalPages}
+              onPageChange={handlePageChange}
+            />
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Bookings Table */}
+      {reportType === 'bookings' && bookingsQuery.data && !isLoading && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Bookings Report</CardTitle>
+            <CardDescription>
+              Showing {bookingsQuery.data.bookings.length} of {bookingsQuery.data.pagination.total} bookings
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b bg-muted/50">
+                  <th className="p-3 text-left font-medium">ID</th>
+                  <SortableHeader column="customerName" label="Customer" sortBy={sortBy} sortOrder={sortOrder} onSort={handleSort} />
+                  <SortableHeader column="serviceName" label="Service" sortBy={sortBy} sortOrder={sortOrder} onSort={handleSort} />
+                  <th className="p-3 text-left font-medium">Vehicle</th>
+                  <SortableHeader column="scheduledAt" label="Scheduled" sortBy={sortBy} sortOrder={sortOrder} onSort={handleSort} />
+                  <SortableHeader column="amount" label="Amount" sortBy={sortBy} sortOrder={sortOrder} onSort={handleSort} />
+                  <th className="p-3 text-left font-medium">Payment Type</th>
+                  <SortableHeader column="status" label="Status" sortBy={sortBy} sortOrder={sortOrder} onSort={handleSort} />
+                  <th className="p-3 text-left font-medium">Payment</th>
+                  <th className="p-3 text-left font-medium">Staff</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {bookingsQuery.data.bookings.map((booking) => (
+                  <BookingRow key={booking.id} booking={booking} />
+                ))}
+              </tbody>
+            </table>
+
+            {/* Pagination */}
+            <Pagination
+              currentPage={bookingsQuery.data.pagination.page}
+              totalPages={bookingsQuery.data.pagination.totalPages}
+              onPageChange={handlePageChange}
+            />
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+// Sub-components
+
+function SummaryCard({
+  title,
+  value,
+  prefix = '',
+  icon: Icon,
+  color,
+}: {
+  title: string;
+  value: number;
+  prefix?: string;
+  icon: React.ElementType;
+  color: string;
+}) {
+  return (
+    <Card className="hover:shadow-md transition-all">
+      <CardContent className="p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-muted-foreground">{title}</p>
+            <p className="text-2xl font-bold mt-1">
+              <CountUp end={value} prefix={prefix} duration={1500} separator="," />
+            </p>
+          </div>
+          <div className={cn('p-3 rounded-full', color)}>
+            <Icon className="h-5 w-5 text-white" />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function SortableHeader({
+  column,
+  label,
+  sortBy,
+  sortOrder,
+  onSort,
+}: {
+  column: string;
+  label: string;
+  sortBy: string;
+  sortOrder: SortDirection;
+  onSort: (column: string) => void;
+}) {
+  const isActive = sortBy === column;
+
+  return (
+    <th
+      className="p-3 text-left font-medium cursor-pointer hover:bg-muted/80 transition-colors"
+      onClick={() => onSort(column)}
+    >
+      <div className="flex items-center gap-1">
+        {label}
+        {isActive ? (
+          sortOrder === 'asc' ? (
+            <ChevronUp className="h-4 w-4" />
+          ) : (
+            <ChevronDown className="h-4 w-4" />
+          )
+        ) : (
+          <ChevronDown className="h-4 w-4 opacity-30" />
+        )}
+      </div>
+    </th>
+  );
+}
+
+function StatusBadge({ status }: { status: string }) {
+  const getColor = (s: string) => {
+    switch (s.toLowerCase()) {
+      case 'delivered':
+      case 'completed':
+      case 'paid':
+        return 'bg-green-500 text-white';
+      case 'processing':
+      case 'confirmed':
+      case 'shipped':
+        return 'bg-blue-500 text-white';
+      case 'pending':
+        return 'bg-yellow-500 text-white';
+      case 'cancelled':
+      case 'failed':
+      case 'refunded':
+        return 'bg-red-500 text-white';
+      default:
+        return 'bg-gray-500 text-white';
+    }
+  };
+
+  return (
+    <Badge className={cn('capitalize font-normal', getColor(status))}>
+      {status.replace(/_/g, ' ')}
+    </Badge>
+  );
+}
+
+function OrderRow({ order }: { order: OrderReportItem }) {
+  return (
+    <tr className="hover:bg-muted/50 transition-colors">
+      <td className="p-3 font-medium">{order.orderNumber || order.id.slice(-8)}</td>
+      <td className="p-3">
+        <div>
+          <div className="font-medium">{order.customerName}</div>
+          <div className="text-xs text-muted-foreground">{order.customerPhone}</div>
+        </div>
+      </td>
+      <td className="p-3 text-muted-foreground">{order.customerEmail}</td>
+      <td className="p-3 text-muted-foreground">{new Date(order.date).toLocaleDateString()}</td>
+      <td className="p-3">{order.itemsCount}</td>
+      <td className="p-3 capitalize">{order.paymentMethod}</td>
+      <td className="p-3 font-medium">₹{order.totalAmount.toLocaleString()}</td>
+      <td className="p-3"><StatusBadge status={order.status} /></td>
+      <td className="p-3"><StatusBadge status={order.paymentStatus} /></td>
+    </tr>
+  );
+}
+
+function BookingRow({ booking }: { booking: BookingReportItem }) {
+  return (
+    <tr className="hover:bg-muted/50 transition-colors">
+      <td className="p-3 font-medium">{booking.id.slice(-8)}</td>
+      <td className="p-3">
+        <div>
+          <div className="font-medium">{booking.customerName}</div>
+          <div className="text-xs text-muted-foreground">{booking.customerPhone}</div>
+        </div>
+      </td>
+      <td className="p-3">{booking.serviceName}</td>
+      <td className="p-3 text-muted-foreground capitalize">
+        {booking.vehicleCategory} {booking.vehicleBodyType}
+      </td>
+      <td className="p-3 text-muted-foreground">{new Date(booking.scheduledAt).toLocaleDateString()}</td>
+      <td className="p-3 font-medium">₹{booking.amount.toLocaleString()}</td>
+      <td className="p-3 capitalize">{booking.paymentType}</td>
+      <td className="p-3"><StatusBadge status={booking.status} /></td>
+      <td className="p-3"><StatusBadge status={booking.paymentStatus} /></td>
+      <td className="p-3 text-muted-foreground">{booking.staffName}</td>
+    </tr>
+  );
+}
+
+function Pagination({
+  currentPage,
+  totalPages,
+  onPageChange,
+}: {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}) {
+  if (totalPages <= 1) return null;
+
+  const pages = [];
+  const showEllipsisStart = currentPage > 3;
+  const showEllipsisEnd = currentPage < totalPages - 2;
+
+  if (showEllipsisStart) {
+    pages.push(1);
+    if (currentPage > 4) pages.push('...');
+  }
+
+  for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) {
+    pages.push(i);
+  }
+
+  if (showEllipsisEnd) {
+    if (currentPage < totalPages - 3) pages.push('...');
+    pages.push(totalPages);
+  }
+
+  return (
+    <div className="flex items-center justify-between mt-6 pt-4 border-t">
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => onPageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+      >
+        Previous
+      </Button>
+      <div className="flex gap-1">
+        {pages.map((page, i) => (
+          page === '...' ? (
+            <span key={`ellipsis-${i}`} className="px-3 py-1">...</span>
+          ) : (
+            <Button
+              key={page}
+              variant={currentPage === page ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => onPageChange(page as number)}
+              className="w-10"
+            >
+              {page}
+            </Button>
+          )
+        ))}
+      </div>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => onPageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+      >
+        Next
+      </Button>
     </div>
   );
 }
