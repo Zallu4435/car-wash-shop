@@ -186,6 +186,10 @@ export const ROUTES = {
 
     // Contacts
     CONTACTS: '/admin/contacts',
+
+    // Complaints
+    COMPLAINTS: '/admin/complaints',
+    COMPLAINT_DETAIL: (id: string) => `/admin/complaints/${id}`,
   },
 
   // Special Routes

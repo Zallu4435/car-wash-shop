@@ -455,6 +455,71 @@ export interface AdminFeedback {
   createdAt: string;
 }
 
+// Complaint Types
+export type ComplaintCategory =
+  | 'service_quality'
+  | 'staff_behavior'
+  | 'damage_loss'
+  | 'wrong_service'
+  | 'overcharged'
+  | 'other';
+
+export type ComplaintStatus =
+  | 'pending'
+  | 'in_progress'
+  | 'resolved_call'
+  | 'resolved_message'
+  | 'invalid'
+  | 'ignored';
+
+export interface AdminComplaintOrderDetails {
+  type: 'booking' | 'productOrder';
+  id: string;
+  orderNumber: string;
+  serviceName?: string;
+  items?: Array<{ productName: string; quantity: number }>;
+  amount: number;
+  status: string;
+  scheduledAt?: string;
+}
+
+export interface AdminComplaint {
+  id: string;
+  userId: string;
+  customerName: string;
+  customerEmail?: string;
+  customerPhone?: string;
+  referenceType: 'booking' | 'productOrder';
+  referenceId: string;
+  orderDetails?: AdminComplaintOrderDetails | null;
+  category: ComplaintCategory;
+  description: string;
+  status: ComplaintStatus;
+  adminResponse?: string | null;
+  resolvedAt?: string | null;
+  resolvedBy?: {
+    id: string;
+    name: string;
+    email?: string;
+  } | null;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface AdminComplaintFilters {
+  status?: ComplaintStatus;
+  category?: ComplaintCategory;
+  referenceType?: 'booking' | 'productOrder';
+  search?: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface ResolveComplaintInput {
+  status: ComplaintStatus;
+  adminResponse?: string;
+}
+
 
 
 // COD Management Types

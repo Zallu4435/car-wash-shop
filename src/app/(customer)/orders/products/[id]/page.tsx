@@ -12,22 +12,31 @@ import {
   FileText,
   XCircle,
   Star,
-  Edit
+  Edit,
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
+  MessageSquare
 } from 'lucide-react';
 import { CustomerRoutes } from '@/lib/constants/routes';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { OrderTracker } from '@/components/customer/OrderTracker';
 import { Separator } from '@/components/ui/separator';
 import { useOrder } from '@/api/domains/orders/queries';
 import { useReviewByOrder } from '@/api/domains/reviews/queries';
+import { useComplaintByReference, useCanFileComplaint } from '@/api/domains/complaints/queries';
 import { ReviewModal } from '@/components/customer/ReviewModal';
+import { ComplaintModal } from '@/components/customer/ComplaintModal';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
+import { COMPLAINT_CATEGORY_LABELS } from '@/types/complaint';
 
 export default function ProductOrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const [showReviewModal, setShowReviewModal] = useState(false);
+  const [showComplaintModal, setShowComplaintModal] = useState(false);
 
   const {
     data: order,
@@ -36,6 +45,8 @@ export default function ProductOrderDetailPage({ params }: { params: Promise<{ i
   } = useOrder(id);
 
   const { data: orderReview } = useReviewByOrder(id);
+  const { data: existingComplaint } = useComplaintByReference('productOrder', id);
+  const { data: canFileData } = useCanFileComplaint('productOrder', id);
   const productId = order?.items?.[0]?.productId;
 
   const normalizedStatus = (order?.status || '').toLowerCase();
@@ -284,6 +295,117 @@ export default function ProductOrderDetailPage({ params }: { params: Promise<{ i
                 </Card>
               )}
 
+              {/* Complaint Section */}
+              {isCompleted && (
+                <Card className="border-2 border-border">
+                  <CardContent className="p-4 sm:p-6">
+                    <div className="flex items-start gap-3 sm:gap-4">
+                      <AlertTriangle className="h-5 w-5 sm:h-6 sm:w-6 text-orange-500 flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        {existingComplaint ? (
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between gap-2">
+                              <h3 className="font-semibold text-sm sm:text-base text-foreground">
+                                Your Complaint
+                              </h3>
+                              <Badge
+                                variant="outline"
+                                className={`text-xs ${existingComplaint.status === 'resolved'
+                                  ? 'border-green-500 text-green-600 bg-green-50 dark:bg-green-950/20'
+                                  : existingComplaint.status === 'in_progress'
+                                    ? 'border-blue-500 text-blue-600 bg-blue-50 dark:bg-blue-950/20'
+                                    : 'border-orange-500 text-orange-600 bg-orange-50 dark:bg-orange-950/20'
+                                  }`}
+                              >
+                                {existingComplaint.status === 'resolved' && <CheckCircle2 className="h-3 w-3 mr-1" />}
+                                {existingComplaint.status === 'in_progress' && <Clock className="h-3 w-3 mr-1" />}
+                                {existingComplaint.status === 'pending' && <Clock className="h-3 w-3 mr-1" />}
+                                {existingComplaint.statusLabel}
+                              </Badge>
+                            </div>
+
+                            <div className="p-3 bg-muted/50 rounded-lg space-y-2">
+                              <div className="flex items-center gap-2">
+                                <Badge variant="secondary" className="text-xs">
+                                  {COMPLAINT_CATEGORY_LABELS[existingComplaint.category]}
+                                </Badge>
+                                <span className="text-xs text-muted-foreground">
+                                  Filed {new Date(existingComplaint.createdAt).toLocaleDateString()}
+                                </span>
+                              </div>
+                              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                                {existingComplaint.description}
+                              </p>
+                            </div>
+
+                            {existingComplaint.adminResponse && (
+                              <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <MessageSquare className="h-3.5 w-3.5 text-primary" />
+                                  <span className="text-xs font-medium text-primary">Our Response</span>
+                                </div>
+                                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                                  {existingComplaint.adminResponse}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        ) : canFileData?.canFile ? (
+                          <div>
+                            <h3 className="font-semibold text-sm sm:text-base text-foreground mb-1 sm:mb-2">
+                              Having an Issue?
+                            </h3>
+                            <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">
+                              If you experienced any problems with this order, let us know and we&apos;ll help resolve it
+                              {canFileData.daysRemaining && (
+                                <span className="block mt-1 text-orange-600 dark:text-orange-400">
+                                  ⏰ {canFileData.daysRemaining} {canFileData.daysRemaining === 1 ? 'day' : 'days'} remaining to file
+                                </span>
+                              )}
+                            </p>
+                            <Button
+                              onClick={() => setShowComplaintModal(true)}
+                              variant="outline"
+                              className="h-10 sm:h-11 text-xs sm:text-sm border-2 border-orange-500/50 text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950/20"
+                            >
+                              <AlertTriangle className="mr-2 h-4 w-4" />
+                              File a Complaint
+                            </Button>
+                          </div>
+                        ) : canFileData?.reason === 'window_expired' ? (
+                          <div>
+                            <h3 className="font-semibold text-sm sm:text-base text-muted-foreground mb-1">
+                              Complaint Window Closed
+                            </h3>
+                            <p className="text-xs sm:text-sm text-muted-foreground">
+                              The 7-day window to file a complaint has passed. Contact support for assistance.
+                            </p>
+                          </div>
+                        ) : (
+                          // Default: show button (handles loading state and when canFile is true)
+                          <div>
+                            <h3 className="font-semibold text-sm sm:text-base text-foreground mb-1 sm:mb-2">
+                              Having an Issue?
+                            </h3>
+                            <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">
+                              If you experienced any problems with this order, let us know and we&apos;ll help resolve it
+                            </p>
+                            <Button
+                              onClick={() => setShowComplaintModal(true)}
+                              variant="outline"
+                              className="h-10 sm:h-11 text-xs sm:text-sm border-2 border-orange-500/50 text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950/20"
+                            >
+                              <AlertTriangle className="mr-2 h-4 w-4" />
+                              File a Complaint
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button asChild variant="outline" className="flex-1 h-10 sm:h-11">
                   <Link href={CustomerRoutes.ORDER_INVOICE(id)} className="text-xs sm:text-sm">
@@ -323,6 +445,15 @@ export default function ProductOrderDetailPage({ params }: { params: Promise<{ i
         itemName={order.items?.[0]?.productName || 'Order'}
         isService={false}
         existingReview={orderReview}
+      />
+
+      <ComplaintModal
+        isOpen={showComplaintModal}
+        onClose={() => setShowComplaintModal(false)}
+        referenceType="productOrder"
+        referenceId={id}
+        orderName={order.items?.[0]?.productName || 'Product Order'}
+        daysRemaining={canFileData?.daysRemaining}
       />
     </div>
   );

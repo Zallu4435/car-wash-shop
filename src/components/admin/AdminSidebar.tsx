@@ -24,7 +24,8 @@ import {
   Search,
   Phone,
   CarFront,
-  Sparkles
+  Sparkles,
+  AlertTriangle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -77,6 +78,7 @@ const navigationGroups = [
     title: 'Support',
     items: [
       { name: 'Feedback', href: AdminRoutes.FEEDBACK, icon: Star },
+      { name: 'Complaints', href: AdminRoutes.COMPLAINTS, icon: AlertTriangle },
     ]
   },
   {
