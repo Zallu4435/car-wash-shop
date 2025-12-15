@@ -11,20 +11,20 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const isLoginPage = pathname?.includes('/admin/auth');
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="h-screen overflow-hidden bg-background">
       {!isLoginPage && (
         <>
           {/* Sidebar */}
           <AdminSidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
           {/* Main content */}
-          <div className="lg:pl-80">
+          <div className="lg:pl-80 h-full flex flex-col">
             {/* Header */}
             <AdminHeader setSidebarOpen={setSidebarOpen} />
 
-            {/* Page content with custom scrollbar */}
-            <main className="py-6 min-h-screen">
-              <div className="px-4 sm:px-6 lg:px-8">
+            {/* Page content - takes remaining height */}
+            <main className="flex-1 overflow-y-auto flex flex-col">
+              <div className="px-4 sm:px-6 lg:px-8 py-6 flex-1 flex flex-col">
                 {children}
               </div>
             </main>

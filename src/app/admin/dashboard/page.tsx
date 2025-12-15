@@ -97,7 +97,7 @@ export default function AdminDashboardPage() {
   const activityData = dashboardData?.activityData || [];
 
   return (
-    <div className="flex flex-col gap-6 p-6 overflow-y-auto">
+    <div className="flex flex-col gap-6 p-6 h-full">
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
@@ -160,8 +160,8 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* Charts Section */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="col-span-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7 flex-1 min-h-[500px]">
+        <Card className="col-span-4 flex flex-col">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <div>
               <CardTitle>Orders & Bookings</CardTitle>
@@ -176,8 +176,8 @@ export default function AdminDashboardPage() {
               </TabsList>
             </Tabs>
           </CardHeader>
-          <CardContent className="pl-2">
-            <div className="h-[300px] w-full">
+          <CardContent className="pl-2 flex-1 min-h-0">
+            <div className="h-full w-full">
               {activityData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart
@@ -250,20 +250,20 @@ export default function AdminDashboardPage() {
         </Card>
 
         {/* Status Distribution Charts */}
-        <Card className="col-span-3">
+        <Card className="col-span-3 flex flex-col">
           <CardHeader>
             <CardTitle>Order & Booking Status</CardTitle>
             <CardDescription>
               Current distribution of statuses
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <Tabs defaultValue="orders" className="w-full">
+          <CardContent className="flex-1 min-h-0">
+            <Tabs defaultValue="orders" className="w-full h-full flex flex-col">
               <TabsList className="grid w-full grid-cols-2 mb-4">
                 <TabsTrigger value="orders">Orders</TabsTrigger>
                 <TabsTrigger value="bookings">Bookings</TabsTrigger>
               </TabsList>
-              <TabsContent value="orders" className="h-[250px]">
+              <TabsContent value="orders" className="flex-1 min-h-0">
                 {orderStatusData.length > 0 ? (
                   <StatusPieChart data={orderStatusData} />
                 ) : (
@@ -272,7 +272,7 @@ export default function AdminDashboardPage() {
                   </div>
                 )}
               </TabsContent>
-              <TabsContent value="bookings" className="h-[250px]">
+              <TabsContent value="bookings" className="flex-1 min-h-0">
                 {bookingStatusData.length > 0 ? (
                   <StatusPieChart data={bookingStatusData} />
                 ) : (
