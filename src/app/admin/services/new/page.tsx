@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 import { serviceSchema, ServiceFormInput } from '@/schemas/admin/service';
 import { AdminRoutes } from '@/lib/constants/routes';
 import { useCreateService } from '@/api/domains/admin-catalog/queries';
+import { useAdminVehicleCategories, useAdminVehicleTypes } from '@/api/domains/admin-vehicle-types/queries';
 
 export default function NewServicePage() {
   const router = useRouter();
@@ -39,6 +40,10 @@ export default function NewServicePage() {
   const pricing = watch('pricing');
 
   const createService = useCreateService();
+
+  // Fetch dynamic vehicle categories and types
+  const { data: vehicleCategories } = useAdminVehicleCategories();
+  const { data: vehicleTypesForCategory } = useAdminVehicleTypes(category);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -168,17 +173,21 @@ export default function NewServicePage() {
                   <Select
                     onValueChange={(value) => {
                       field.onChange(value);
-                      // Reset vehicle type when category changes
-                      setValue('vehicleType', '');
+                      // Reset pricing when category changes
+                      setValue('pricing', []);
                     }}
                     value={field.value}
                   >
                     <SelectTrigger id="category" className="h-9 sm:h-10 text-xs sm:text-sm">
-                      <SelectValue placeholder="Select category (Bike or Car)" />
+                      <SelectValue placeholder="Select a vehicle category" />
                     </SelectTrigger>
                     <SelectContent className="force-sheet-bg border-2 rounded-lg">
-                      <SelectItem value="bike" className="text-xs sm:text-sm rounded-md">Bike</SelectItem>
-                      <SelectItem value="car" className="text-xs sm:text-sm rounded-md">Car</SelectItem>
+                      {vehicleCategories?.map((cat) => (
+                        <SelectItem key={cat._id} value={cat.slug} className="text-xs sm:text-sm rounded-md">
+                          <span className="mr-2">{cat.icon}</span>
+                          {cat.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 )}
@@ -229,15 +238,15 @@ export default function NewServicePage() {
               {!category && (
                 <p className="text-xs text-muted-foreground">Select a category to set prices for vehicle types</p>
               )}
-              {category && (
+              {category && vehicleTypesForCategory && vehicleTypesForCategory.length > 0 && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                  {(category === 'car'
-                    ? ['sedan', 'suv', 'hatchback', 'luxury']
-                    : ['super-bike', 'sports-bike', 'cruiser', 'scooty']
-                  ).map((vt, idx) => (
-                    <div key={vt} className="space-y-1.5">
+                  {vehicleTypesForCategory.map((vt) => (
+                    <div key={vt._id} className="space-y-1.5">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs sm:text-sm font-medium capitalize">{vt.replace('-', ' ')}</span>
+                        <span className="text-xs sm:text-sm font-medium">
+                          {vt.icon && <span className="mr-1.5">{vt.icon}</span>}
+                          {vt.name}
+                        </span>
                       </div>
                       <div className="relative">
                         <IndianRupee className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
@@ -245,17 +254,17 @@ export default function NewServicePage() {
                           type="number"
                           placeholder="499"
                           className="pl-9 sm:pl-10 h-9 sm:h-10 text-xs sm:text-sm"
-                          value={pricing?.find((p: any) => p.vehicleType === vt)?.price ?? ''}
+                          value={pricing?.find((p: any) => p.vehicleType === vt.bodyType)?.price ?? ''}
                           onChange={(e) => {
                             const value = Number(e.target.value);
                             const current = pricing || [];
-                            const exists = current.findIndex((p: any) => p.vehicleType === vt);
+                            const exists = current.findIndex((p: any) => p.vehicleType === vt.bodyType);
                             if (exists >= 0) {
                               const next = [...current];
-                              next[exists] = { vehicleType: vt, price: value };
+                              next[exists] = { vehicleType: vt.bodyType, price: value };
                               setValue('pricing', next as any, { shouldValidate: true });
                             } else {
-                              setValue('pricing', [...current, { vehicleType: vt, price: value }] as any, { shouldValidate: true });
+                              setValue('pricing', [...current, { vehicleType: vt.bodyType, price: value }] as any, { shouldValidate: true });
                             }
                           }}
                         />
@@ -263,6 +272,9 @@ export default function NewServicePage() {
                     </div>
                   ))}
                 </div>
+              )}
+              {category && vehicleTypesForCategory && vehicleTypesForCategory.length === 0 && (
+                <p className="text-xs text-muted-foreground">No vehicle types found for this category. Please add vehicle types in Vehicle Types management.</p>
               )}
               {errors.pricing && (
                 <p className="text-[10px] sm:text-xs text-red-600 dark:text-red-400">{(errors as any).pricing?.message || 'Please set at least one price'}</p>

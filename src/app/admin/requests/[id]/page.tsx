@@ -230,6 +230,33 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
 
               <Separator />
 
+              {/* Add-Ons */}
+              {booking.addOns && booking.addOns.length > 0 && (
+                <>
+                  <div className="p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl">
+                    <h3 className="font-semibold text-sm sm:text-base mb-2 sm:mb-3 text-foreground">Add-Ons</h3>
+                    <div className="space-y-2">
+                      {booking.addOns.map((addon, index) => (
+                        <div
+                          key={addon.addonId || index}
+                          className="flex items-center justify-between p-2 sm:p-3 bg-background rounded-lg border-2 border-border"
+                        >
+                          <span className="text-xs sm:text-sm font-medium text-foreground">{addon.name}</span>
+                          <span className="text-xs sm:text-sm font-semibold text-primary">₹{addon.price}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-3 pt-2 border-t border-border flex justify-between items-center">
+                      <span className="text-xs sm:text-sm text-muted-foreground">Add-Ons Total</span>
+                      <span className="text-sm sm:text-base font-bold text-primary">
+                        ₹{booking.addOns.reduce((sum, addon) => sum + addon.price, 0)}
+                      </span>
+                    </div>
+                  </div>
+                  <Separator />
+                </>
+              )}
+
               {/* Vehicle Info */}
               {booking.vehicleDetails && (
                 <>

@@ -223,22 +223,45 @@ export default function ServiceOrderDetailPage({ params }: { params: Promise<{ i
                     <CardTitle className="text-base sm:text-lg">Service Details</CardTitle>
                   </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-3">
+                  {/* Main Service */}
                   <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl">
-                    <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-blue-500/10 to-blue-500/5 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
-                      <Wrench className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600 dark:text-blue-400" />
+                    <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-500/10 to-blue-500/5 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
+                      <Wrench className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600 dark:text-blue-400" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="font-semibold text-sm sm:text-base text-foreground truncate">
                         {booking.serviceName || 'Service Booking'}
                       </h3>
-                      <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1">
+                      <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
                         {booking.scheduledAt
                           ? new Date(booking.scheduledAt).toLocaleString()
                           : 'Schedule information unavailable'}
                       </p>
-                      <p className="text-base sm:text-lg font-bold text-primary mt-1 sm:mt-2">₹{amount}</p>
                     </div>
+                  </div>
+
+                  {/* Add-Ons (if any) */}
+                  {booking.addOns && booking.addOns.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Add-Ons</p>
+                      {booking.addOns.map((addon, index) => (
+                        <div
+                          key={addon.addonId || addon.id || index}
+                          className="flex items-center justify-between py-2 px-3 bg-muted/50 rounded-lg"
+                        >
+                          <span className="text-sm text-foreground">{addon.name}</span>
+                          <span className="text-sm font-medium text-primary">₹{addon.price}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Total */}
+                  <Separator />
+                  <div className="flex items-center justify-between pt-1">
+                    <span className="text-sm font-medium text-muted-foreground">Total Amount</span>
+                    <span className="text-lg sm:text-xl font-bold text-primary">₹{amount}</span>
                   </div>
                 </CardContent>
               </Card>

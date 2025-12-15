@@ -57,9 +57,11 @@ export interface Booking {
 }
 
 export interface AddOn {
-  id: string;
+  id?: string;
+  addonId?: string;
   name: string;
   price: number;
+  duration?: number;
 }
 
 export interface BookingPreview {

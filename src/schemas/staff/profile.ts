@@ -33,20 +33,6 @@ const areaValidation = z
   .min(3, 'Service area must be at least 3 characters')
   .max(100, 'Service area cannot exceed 100 characters');
 
-// Avatar validation (optional)
-const avatarValidation = z
-  .instanceof(File)
-  .refine((file) => file.size <= 5 * 1024 * 1024, {
-    message: 'Avatar must be less than 5MB',
-  })
-  .refine(
-    (file) => ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(file.type),
-    {
-      message: 'Avatar must be a JPEG, PNG, or WebP image',
-    }
-  )
-  .optional();
-
 // ============================================
 // Staff Profile Edit Schema
 // ============================================
@@ -56,7 +42,6 @@ export const staffProfileEditSchema = z.object({
   phone: phoneValidation,
   email: emailValidation,
   area: areaValidation,
-  avatar: avatarValidation,
 });
 
 // ============================================

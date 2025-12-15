@@ -39,7 +39,7 @@ import { useAddresses } from '@/api/domains/addresses/queries';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { useAuth } from '@/context/AuthContext';
 import { CustomerRoutes } from '@/lib/constants/routes';
-import { mockAddOns } from '@/mocks/data/customer-mock-data';
+import { useActiveAddons } from '@/api/domains/addons/queries';
 import type { Vehicle } from '@/types/vehicle';
 import type { Booking, BookingInput, TimeSlot } from '@/types/booking';
 import type { Location as MapLocation } from '@/lib/maps';
@@ -206,11 +206,14 @@ export default function BookServicePage() {
   } | null>(null);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
+  // Fetch all add-ons and filter to selected IDs
+  const { data: allAddons = [] } = useActiveAddons();
+
   const addOnDetails = useMemo(() => {
     return selectedAddOnIds
-      .map((id) => mockAddOns.find((addon) => addon.id === id))
-      .filter((addon): addon is typeof mockAddOns[number] => Boolean(addon));
-  }, [selectedAddOnIds]);
+      .map((id) => allAddons.find((addon) => addon._id === id))
+      .filter((addon): addon is typeof allAddons[number] => Boolean(addon));
+  }, [selectedAddOnIds, allAddons]);
 
   const baseServicePrice = useMemo(() => {
     if (!service?.pricing || service.pricing.length === 0) return 0;
@@ -985,7 +988,7 @@ export default function BookServicePage() {
                       <div className="space-y-2">
                         <Separator />
                         {addOnDetails.map((addon) => (
-                          <div key={addon.id} className="flex items-center justify-between text-sm">
+                          <div key={addon._id} className="flex items-center justify-between text-sm">
                             <span className="text-muted-foreground">{addon.name}</span>
                             <span className="font-medium text-foreground">{formatCurrency(addon.price)}</span>
                           </div>
@@ -1186,7 +1189,7 @@ export default function BookServicePage() {
                   {addOnDetails.length ? (
                     <ul className="mt-2 space-y-1">
                       {addOnDetails.map((addon) => (
-                        <li key={addon.id} className="flex items-center justify-between">
+                        <li key={addon._id} className="flex items-center justify-between">
                           <span>{addon.name}</span>
                           <span>{formatCurrency(addon.price)}</span>
                         </li>

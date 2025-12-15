@@ -32,12 +32,7 @@ export const PAYMENT_STATUS = {
   PARTIAL: 'partial',
 } as const;
 
-export const TICKET_STATUS = {
-  OPEN: 'open',
-  IN_PROGRESS: 'in_progress',
-  RESOLVED: 'resolved',
-  CLOSED: 'closed',
-} as const;
+
 
 export const FEEDBACK_STATUS = {
   PENDING: 'pending',
@@ -131,7 +126,7 @@ export const DISCOUNT_TYPE = {
 export type BookingStatus = (typeof BOOKING_STATUS)[keyof typeof BOOKING_STATUS];
 export type OrderStatus = (typeof ORDER_STATUS)[keyof typeof ORDER_STATUS];
 export type PaymentStatus = (typeof PAYMENT_STATUS)[keyof typeof PAYMENT_STATUS];
-export type TicketStatus = (typeof TICKET_STATUS)[keyof typeof TICKET_STATUS];
+
 export type FeedbackStatus = (typeof FEEDBACK_STATUS)[keyof typeof FEEDBACK_STATUS];
 export type CODPaymentStatus = (typeof COD_PAYMENT_STATUS)[keyof typeof COD_PAYMENT_STATUS];
 export type Priority = (typeof PRIORITY)[keyof typeof PRIORITY];

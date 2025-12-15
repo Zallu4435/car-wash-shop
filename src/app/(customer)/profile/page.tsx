@@ -1,11 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { AvatarUploader } from '@/components/shared/media/AvatarUploader';
 import { Separator } from '@/components/ui/separator';
 import Loading from '@/components/shared/display/Loading';
 import { User, Mail, Phone, MapPin, Car, LogOut, Shield } from 'lucide-react';
@@ -20,7 +19,6 @@ import { CustomerRoutes } from '@/lib/constants/routes';
 
 export default function ProfilePage() {
   const router = useRouter();
-  const [avatar, setAvatar] = useState<string>('');
 
   // API calls
   const { data: user, isLoading: userLoading } = useCurrentUser();
@@ -49,19 +47,8 @@ export default function ProfilePage() {
         email: user.email || '',
         phone: user.phone || '',
       });
-      setAvatar('');
     }
   }, [user, reset]);
-
-  const handleAvatarUpload = (file: File) => {
-    // In production, upload to server
-    toast.success('Profile picture updated!');
-  };
-
-  const handleRemoveAvatar = () => {
-    setAvatar('');
-    toast.success('Profile picture removed');
-  };
 
   const onSubmit = (data: ProfileEditInput) => {
     updateProfileMutation.mutate(data, {
@@ -131,24 +118,7 @@ export default function ProfilePage() {
             </div>
 
             {/* Avatar Section */}
-            <Card className="border-2">
-              <CardHeader className="pb-3 sm:pb-4">
-                <div className="flex items-center gap-2">
-                  <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
-                    <User className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-                  </div>
-                  <CardTitle className="text-base sm:text-lg">Profile Picture</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <AvatarUploader
-                  currentAvatar={avatar}
-                  onUpload={handleAvatarUpload}
-                  onRemove={handleRemoveAvatar}
-                  size="lg"
-                />
-              </CardContent>
-            </Card>
+            {/* Profile picture upload removed per requirements */}
 
             {/* Profile Information */}
             <Card className="border-2">

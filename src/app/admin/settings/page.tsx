@@ -12,7 +12,6 @@ import {
   Lock,
   Mail,
   Phone,
-  Camera,
   Save,
   Shield,
   Check
@@ -23,7 +22,6 @@ import {
   useAdminProfile,
   useUpdateAdminProfile,
   useChangePassword,
-  useUploadAvatar,
 } from '@/api/domains/admin-profile/queries';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
@@ -38,7 +36,6 @@ export default function SettingsPage() {
   const { data: profile, isLoading: profileLoading, error: profileError, refetch: refetchProfile } = useAdminProfile();
   const updateProfileMutation = useUpdateAdminProfile();
   const changePasswordMutation = useChangePassword();
-  const uploadAvatarMutation = useUploadAvatar();
 
   // Profile state
   const [profileData, setProfileData] = useState({
@@ -110,30 +107,6 @@ export default function SettingsPage() {
       setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
     } catch (error) {
       toast.error('Failed to change password');
-    }
-  };
-
-  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      toast.error('Please select an image file');
-      return;
-    }
-
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('Image size should be less than 5MB');
-      return;
-    }
-
-    try {
-      await uploadAvatarMutation.mutateAsync(file);
-      toast.success('Profile picture updated successfully!');
-    } catch (error) {
-      toast.error('Failed to upload profile picture');
     }
   };
 
@@ -212,43 +185,14 @@ export default function SettingsPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4 sm:space-y-6">
-                  {/* Profile Picture Section */}
-                  <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 p-3 sm:p-4 bg-muted/30 rounded-lg sm:rounded-xl">
-                    <div className="relative group">
-                      <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-primary/10 flex items-center justify-center ring-2 sm:ring-4 ring-background overflow-hidden">
-                        {profile?.avatar ? (
-                          <img src={profile.avatar} alt={profileData.name} className="w-full h-full object-cover" />
-                        ) : (
-                          <User className="h-10 w-10 sm:h-12 sm:w-12 text-primary" />
-                        )}
-                      </div>
-                      <input
-                        type="file"
-                        id="avatar-upload"
-                        accept="image/*"
-                        onChange={handleAvatarUpload}
-                        className="hidden"
-                      />
-                      <label
-                        htmlFor="avatar-upload"
-                        className="absolute bottom-0 right-0 p-1.5 sm:p-2 bg-primary text-primary-foreground rounded-full shadow-lg hover:bg-primary/90 transition-colors cursor-pointer"
-                      >
-                        <Camera className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                      </label>
+                  {/* Profile picture upload removed per requirements */}
+                  <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-muted/30 rounded-lg sm:rounded-xl">
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-primary/10 flex items-center justify-center ring-2 ring-background overflow-hidden">
+                      <User className="h-8 w-8 sm:h-10 sm:w-10 text-primary" />
                     </div>
-                    <div className="text-center sm:text-left">
+                    <div className="text-left">
                       <h3 className="font-semibold text-base sm:text-lg">{profileData.name}</h3>
                       <p className="text-xs sm:text-sm text-muted-foreground">{profileData.role}</p>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="mt-2 h-8 text-xs border-2"
-                        onClick={() => document.getElementById('avatar-upload')?.click()}
-                        disabled={uploadAvatarMutation.isPending}
-                      >
-                        <Camera className="mr-1.5 sm:mr-2 h-3 w-3" />
-                        {uploadAvatarMutation.isPending ? 'Uploading...' : 'Change Photo'}
-                      </Button>
                     </div>
                   </div>
 

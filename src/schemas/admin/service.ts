@@ -7,9 +7,8 @@ export const serviceSchema = z.object({
     .max(100, 'Service name must not exceed 100 characters')
     .trim(),
   category: z
-    .enum(['bike', 'car'], {
-      errorMap: () => ({ message: 'Please select either Bike or Car' }),
-    }),
+    .string()
+    .min(1, 'Please select a vehicle category'),
   description: z
     .string()
     .min(10, 'Description must be at least 10 characters')

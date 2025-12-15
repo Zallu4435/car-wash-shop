@@ -20,13 +20,13 @@ import { cancelBookingSchema, CancelBookingInput } from '@/schemas/customer/book
 export default function CancelOrderPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
-  
+
   // Determine if it's a booking based on ID prefix
   const isBooking = id.startsWith('booking_');
   const detailHref = isBooking
     ? CustomerRoutes.ORDER_SERVICE_DETAIL(id)
     : CustomerRoutes.ORDER_PRODUCT_DETAIL(id);
-  
+
   const cancelOrderMutation = useCancelOrder();
   const cancelBookingMutation = useCancelBooking();
 
@@ -109,15 +109,15 @@ export default function CancelOrderPage({ params }: { params: Promise<{ id: stri
               <CardContent>
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                   {/* Warning */}
-                  <div className="bg-amber-50 dark:bg-amber-950/20 border-2 border-amber-200 dark:border-amber-800 rounded-xl p-4">
+                  <div className="bg-red-600 dark:bg-red-700 border-2 border-red-700 dark:border-red-600 rounded-xl p-4">
                     <div className="flex items-start gap-3">
-                      <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+                      <AlertTriangle className="h-5 w-5 text-white mt-0.5 flex-shrink-0" />
                       <div>
-                        <p className="font-semibold text-amber-900 dark:text-amber-100 mb-1">
+                        <p className="font-semibold text-white mb-1">
                           Warning: This action cannot be undone
                         </p>
-                        <p className="text-sm text-amber-800 dark:text-amber-200">
-                          {isBooking 
+                        <p className="text-sm text-red-100">
+                          {isBooking
                             ? 'Are you sure you want to cancel this booking? Cancellation charges may apply based on the timing.'
                             : 'Are you sure you want to cancel this order? Your refund will be processed within 5-7 business days.'}
                         </p>
@@ -130,10 +130,10 @@ export default function CancelOrderPage({ params }: { params: Promise<{ id: stri
                     <Label htmlFor="reason">
                       Reason for Cancellation <span className="text-red-500">*</span>
                     </Label>
-                    <Textarea 
+                    <Textarea
                       id="reason"
                       {...register('reason')}
-                      placeholder={isBooking 
+                      placeholder={isBooking
                         ? "Please tell us why you're cancelling this booking..."
                         : "Please tell us why you're cancelling this order..."}
                       rows={5}
@@ -148,17 +148,17 @@ export default function CancelOrderPage({ params }: { params: Promise<{ id: stri
 
                   {/* Action Buttons */}
                   <div className="flex flex-col sm:flex-row gap-3 pt-4">
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      className="flex-1" 
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="flex-1"
                       onClick={() => router.back()}
                     >
                       {isBooking ? 'Keep Booking' : 'Keep Order'}
                     </Button>
-                    <Button 
-                      type="submit" 
-                      variant="destructive" 
+                    <Button
+                      type="submit"
+                      variant="destructive"
                       className="flex-1 shadow-lg"
                     >
                       <XCircle className="mr-2 h-4 w-4" />

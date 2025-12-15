@@ -11,6 +11,7 @@ import {
 import { CustomerRoutes } from '@/lib/constants/routes';
 import { useService } from '@/api/domains/services/queries';
 import { useReviewsByService } from '@/api/domains/reviews/queries';
+import { useActiveAddons } from '@/api/domains/addons/queries';
 import { ReviewsList } from '@/components/customer/ReviewsList';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
@@ -22,37 +23,18 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils/cn';
 
-// Define this centrally or import it. DO NOT hardcode it inside JSX while importing it for logic.
-const AVAILABLE_ADDONS = [
-  {
-    id: 'addon_wax',
-    name: 'Wax Coating',
-    description: 'Protective wax layer for long-lasting shine',
-    price: 150,
-    duration: 15,
-  },
-  {
-    id: 'addon_polish',
-    name: 'Polish',
-    description: 'Deep polish to remove minor scratches',
-    price: 200,
-    duration: 20,
-  },
-  {
-    id: 'addon_engine',
-    name: 'Engine Bay Cleaning',
-    description: 'Professional engine compartment cleaning',
-    price: 250,
-    duration: 20,
-  },
-];
-
 export default function ServiceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
 
   const { data: service, isLoading: serviceLoading } = useService(id);
   const { data: reviews = [] } = useReviewsByService(id);
+
+  // Extract category name for add-ons filter (handle both string and object)
+  const categoryName = typeof service?.category === 'string'
+    ? service.category
+    : service?.category?.name;
+  const { data: availableAddons = [], isLoading: addonsLoading } = useActiveAddons(categoryName);
 
   const [selectedAddOns, setSelectedAddOns] = useState<string[]>([]);
 
@@ -72,7 +54,7 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
   }, [reviews]);
 
   // Loading state
-  if (serviceLoading) return <Loading text="Fetching service details..." />;
+  if (serviceLoading || addonsLoading) return <Loading text="Fetching service details..." />;
 
   // Error state
   if (!service) {
@@ -87,10 +69,11 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
 
   const calculateDuration = () => {
     const addOnsDuration = selectedAddOns.reduce((sum, addonId) => {
-      const addon = AVAILABLE_ADDONS.find((a) => a.id === addonId);
+      const addon = availableAddons.find((a) => a._id === addonId);
       return sum + (addon?.duration || 0);
     }, 0);
-    return (service.duration || 30) + addOnsDuration;
+    const baseDuration = typeof service.duration === 'number' ? service.duration : Number(service.duration) || 30;
+    return baseDuration + addOnsDuration;
   };
 
   const toggleAddOn = (addonId: string) => {
@@ -215,45 +198,48 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
                 </div>
               </CardHeader>
               <CardContent className="p-4 sm:p-6 grid gap-4">
-                {AVAILABLE_ADDONS.map((addon) => {
-                  const isSelected = selectedAddOns.includes(addon.id);
-                  return (
-                    <div
-                      key={addon.id}
-                      onClick={() => toggleAddOn(addon.id)}
-                      className={cn(
-                        "relative flex cursor-pointer items-start gap-4 rounded-xl border p-4 transition-all duration-200 hover:bg-accent",
-                        isSelected ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border"
-                      )}
-                    >
-                      <Checkbox
-                        id={addon.id}
-                        checked={isSelected}
-                        className="mt-1"
-                        // Prevent double toggle event since parent has onClick
-                        onClick={(e) => e.stopPropagation()}
-                        onCheckedChange={() => toggleAddOn(addon.id)}
-                      />
-                      <div className="flex-1 space-y-1">
-                        <div className="flex items-center justify-between">
-                          <label htmlFor={addon.id} className="font-semibold cursor-pointer">
-                            {addon.name}
-                          </label>
-                          <span className="font-bold text-primary">
-                            +₹{addon.price}
-                          </span>
-                        </div>
-                        <p className="text-sm text-muted-foreground pr-8">
-                          {addon.description}
-                        </p>
-                        <div className="flex items-center gap-1 mt-2 text-xs font-medium text-muted-foreground">
-                          <Timer className="h-3 w-3" />
-                          <span>+{addon.duration} mins</span>
+                {availableAddons.length === 0 ? (
+                  <p className="text-center text-sm text-muted-foreground py-4">No add-ons available for this service.</p>
+                ) : (
+                  availableAddons.map((addon) => {
+                    const isSelected = selectedAddOns.includes(addon._id);
+                    return (
+                      <div
+                        key={addon._id}
+                        onClick={() => toggleAddOn(addon._id)}
+                        className={cn(
+                          "relative flex cursor-pointer items-start gap-4 rounded-xl border p-4 transition-all duration-200 hover:bg-accent",
+                          isSelected ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border"
+                        )}
+                      >
+                        <Checkbox
+                          id={addon._id}
+                          checked={isSelected}
+                          className="mt-1"
+                          onClick={(e) => e.stopPropagation()}
+                          onCheckedChange={() => toggleAddOn(addon._id)}
+                        />
+                        <div className="flex-1 space-y-1">
+                          <div className="flex items-center justify-between">
+                            <label htmlFor={addon._id} className="font-semibold cursor-pointer">
+                              {addon.name}
+                            </label>
+                            <span className="font-bold text-primary">
+                              +₹{addon.price}
+                            </span>
+                          </div>
+                          <p className="text-sm text-muted-foreground pr-8">
+                            {addon.description}
+                          </p>
+                          <div className="flex items-center gap-1 mt-2 text-xs font-medium text-muted-foreground">
+                            <Timer className="h-3 w-3" />
+                            <span>+{addon.duration} mins</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })
+                )}
               </CardContent>
             </Card>
 
@@ -279,7 +265,7 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
                       <>
                         <Separator className="my-2" />
                         {selectedAddOns.map((addonId) => {
-                          const addon = AVAILABLE_ADDONS.find((a) => a.id === addonId);
+                          const addon = availableAddons.find((a) => a._id === addonId);
                           return (
                             <div key={addonId} className="flex justify-between text-sm items-center">
                               <span className="text-muted-foreground truncate max-w-[160px]">{addon?.name}</span>

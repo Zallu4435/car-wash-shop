@@ -134,24 +134,6 @@ export const deleteAccountSchema = z.object({
 });
 
 // ============================================
-// Profile Picture Upload Schema
-// ============================================
-
-export const profilePictureSchema = z.object({
-  file: z
-    .instanceof(File)
-    .refine((file) => file.size <= 5 * 1024 * 1024, {
-      message: 'Image must be less than 5MB',
-    })
-    .refine(
-      (file) => ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(file.type),
-      {
-        message: 'Only JPEG, PNG, and WebP images are allowed',
-      }
-    ),
-});
-
-// ============================================
 // Notification Preferences Schema
 // ============================================
 
@@ -187,6 +169,5 @@ export type UpdateEmailVerifyInput = z.infer<typeof updateEmailVerifySchema>;
 export type UpdatePhoneRequestInput = z.infer<typeof updatePhoneRequestSchema>;
 export type UpdatePhoneVerifyInput = z.infer<typeof updatePhoneVerifySchema>;
 export type DeleteAccountInput = z.infer<typeof deleteAccountSchema>;
-export type ProfilePictureInput = z.infer<typeof profilePictureSchema>;
 export type NotificationPreferencesInput = z.infer<typeof notificationPreferencesSchema>;
 export type PrivacySettingsInput = z.infer<typeof privacySettingsSchema>;

@@ -1,4 +1,4 @@
-import { BookingStatus, OrderStatus, PaymentStatus, TicketStatus, FeedbackStatus, CODPaymentStatus, Priority, SenderType } from '@/lib/constants/status';
+import { BookingStatus, OrderStatus, PaymentStatus, FeedbackStatus, CODPaymentStatus, Priority, SenderType } from '@/lib/constants/status';
 
 // Staff Management Types
 export interface AdminStaff {
@@ -357,7 +357,12 @@ export interface AdminBookingDetail extends AdminBooking {
     status?: string;
     skills?: string[];
   } | string | null;
-  addOns?: string[];
+  addOns?: Array<{
+    addonId?: string;
+    name: string;
+    price: number;
+    duration?: number;
+  }>;
   feedback?: {
     rating?: number;
     comment?: string;
@@ -450,44 +455,7 @@ export interface AdminFeedback {
   createdAt: string;
 }
 
-export interface AdminTicket {
-  id: string;
-  ticketNumber: string;
-  customerId: string;
-  customerName: string;
-  customer?: string; // Alias for customerName
-  email?: string;
-  subject: string;
-  description: string;
-  status: TicketStatus;
-  priority: Priority;
-  assignedTo?: string;
-  createdAt: string;
-  updatedAt: string;
-  date?: string; // Alias for createdAt
-}
 
-export interface AdminTicketDetail extends AdminTicket {
-  messages: Array<{
-    id: string;
-    sender: string;
-    senderType: SenderType;
-    message: string;
-    timestamp: string;
-    attachments?: string[];
-  }>;
-}
-
-export interface UpdateTicketStatusInput {
-  status: Exclude<TicketStatus, 'open'>;
-  assignedTo?: string;
-  note?: string;
-}
-
-export interface AddTicketMessageInput {
-  message: string;
-  attachments?: string[];
-}
 
 // COD Management Types
 export interface CODTransaction {

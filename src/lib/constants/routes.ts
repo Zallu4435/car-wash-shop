@@ -167,10 +167,8 @@ export const ROUTES = {
     // Reports
     REPORTS: '/admin/reports',
 
-    // Feedback & Support
+    // Feedback
     FEEDBACK: '/admin/feedback',
-    TICKETS: '/admin/tickets',
-    TICKET_DETAIL: (id: string) => `/admin/tickets/${id}`,
 
     // Settings
     SETTINGS: '/admin/settings',
@@ -182,6 +180,9 @@ export const ROUTES = {
 
     // Vehicle Types
     VEHICLE_TYPES: '/admin/vehicle-types',
+
+    // Add-ons
+    ADDONS: '/admin/add-ons',
 
     // Contacts
     CONTACTS: '/admin/contacts',

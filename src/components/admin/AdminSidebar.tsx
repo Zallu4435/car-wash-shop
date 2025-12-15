@@ -17,14 +17,14 @@ import {
   UserCog,
   Clock,
   ChevronRight,
-  Ticket,
   Folder,
   Star,
   X,
   CreditCard,
   Search,
   Phone,
-  CarFront
+  CarFront,
+  Sparkles
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -57,6 +57,7 @@ const navigationGroups = [
       { name: 'Products', href: AdminRoutes.PRODUCTS, icon: Package },
       { name: 'Categories', href: AdminRoutes.CATEGORIES, icon: Folder },
       { name: 'Vehicle Types', href: AdminRoutes.VEHICLE_TYPES, icon: CarFront },
+      { name: 'Add-ons', href: AdminRoutes.ADDONS, icon: Sparkles },
     ]
   },
   {
@@ -76,7 +77,6 @@ const navigationGroups = [
     title: 'Support',
     items: [
       { name: 'Feedback', href: AdminRoutes.FEEDBACK, icon: Star },
-      { name: 'Tickets', href: AdminRoutes.TICKETS, icon: Ticket },
     ]
   },
   {

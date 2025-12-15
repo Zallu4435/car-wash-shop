@@ -1,8 +1,7 @@
 import { apiClient } from '@/api/client';
 import type { ApiResponse, PaginatedResponse } from '@/types/api';
-import type { AdminFeedback, AdminTicket, AdminTicketDetail, UpdateTicketStatusInput, AddTicketMessageInput } from '@/types/admin';
+import type { AdminFeedback } from '@/types/admin';
 import { AdminRoutes } from '@/lib/constants/routes';
-import { PRIORITY, TICKET_STATUS, SENDER_TYPE } from '@/lib/constants/status';
 
 const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true';
 
@@ -82,55 +81,6 @@ const mockFeedback: AdminFeedback[] = [
   },
 ];
 
-const mockTickets: AdminTicket[] = [
-  {
-    id: 'TKT001',
-    ticketNumber: 'TKT-2024-001',
-    customerId: 'CUST001',
-    customerName: 'Rajesh Kumar',
-    subject: 'Payment not reflected',
-    description: 'I made a payment but it is not showing in my account.',
-    priority: PRIORITY.HIGH,
-    status: TICKET_STATUS.OPEN,
-    createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-    updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-  },
-  {
-    id: 'TKT002',
-    ticketNumber: 'TKT-2024-002',
-    customerId: 'CUST002',
-    customerName: 'Priya Sharma',
-    subject: 'Booking cancellation issue',
-    description: 'Unable to cancel my booking from the app.',
-    priority: PRIORITY.MEDIUM,
-    status: TICKET_STATUS.IN_PROGRESS,
-    createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-    updatedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-  },
-];
-
-const mockTicketDetails: Record<string, AdminTicketDetail> = {
-  TKT001: {
-    ...mockTickets[0],
-    messages: [
-      {
-        id: 'MSG001',
-        sender: 'Rajesh Kumar',
-        senderType: SENDER_TYPE.CUSTOMER,
-        message: 'I made a payment of ₹599 but it is not showing in my account.',
-        timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-      },
-      {
-        id: 'MSG002',
-        sender: 'Support Team',
-        senderType: SENDER_TYPE.ADMIN,
-        message: 'We are looking into this issue. Please provide your transaction ID.',
-        timestamp: new Date(Date.now() - 20 * 60 * 60 * 1000).toISOString(),
-      },
-    ],
-  },
-};
-
 export const adminSupportFetchers = {
   // Feedback
   async getFeedbackList(filters?: {
@@ -202,120 +152,6 @@ export const adminSupportFetchers = {
     const { data } = await apiClient.patch<ApiResponse<AdminFeedback>>(
       `${AdminRoutes.FEEDBACK}/${feedbackId}`,
       { status }
-    );
-    return data.data!;
-  },
-
-  // Support Tickets
-  async getTicketList(filters?: {
-    search?: string;
-    status?: string;
-    priority?: string;
-    page?: number;
-    limit?: number;
-  }): Promise<PaginatedResponse<AdminTicket>> {
-    if (USE_MOCK_DATA) {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      let filteredTickets = [...mockTickets];
-
-      // Apply filters
-      if (filters?.search) {
-        const searchLower = filters.search.toLowerCase();
-        filteredTickets = filteredTickets.filter(t =>
-          t.ticketNumber.toLowerCase().includes(searchLower) ||
-          t.customerName.toLowerCase().includes(searchLower) ||
-          t.subject.toLowerCase().includes(searchLower)
-        );
-      }
-      if (filters?.status) {
-        filteredTickets = filteredTickets.filter(t => t.status === filters.status);
-      }
-      if (filters?.priority) {
-        filteredTickets = filteredTickets.filter(t => t.priority === filters.priority);
-      }
-
-      // Pagination
-      const page = filters?.page || 1;
-      const limit = filters?.limit || 10;
-      const startIndex = (page - 1) * limit;
-      const endIndex = startIndex + limit;
-      const paginatedTickets = filteredTickets.slice(startIndex, endIndex);
-
-      return {
-        data: paginatedTickets,
-        total: filteredTickets.length,
-        page,
-        limit,
-        totalPages: Math.ceil(filteredTickets.length / limit),
-      };
-    }
-
-    const { data } = await apiClient.get<ApiResponse<PaginatedResponse<AdminTicket>>>(
-      AdminRoutes.TICKETS,
-      { params: filters }
-    );
-    return data.data!;
-  },
-
-  async getTicketById(ticketId: string): Promise<AdminTicketDetail> {
-    if (USE_MOCK_DATA) {
-      await new Promise(resolve => setTimeout(resolve, 300));
-      const ticket = mockTicketDetails[ticketId];
-      if (!ticket) throw new Error('Ticket not found');
-      return ticket;
-    }
-
-    const { data } = await apiClient.get<ApiResponse<AdminTicketDetail>>(
-      AdminRoutes.TICKET_DETAIL(ticketId)
-    );
-    return data.data!;
-  },
-
-  async updateTicketStatus(
-    ticketId: string,
-    input: UpdateTicketStatusInput
-  ): Promise<AdminTicketDetail> {
-    if (USE_MOCK_DATA) {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      const ticket = mockTicketDetails[ticketId];
-      if (!ticket) throw new Error('Ticket not found');
-      return { ...ticket, status: input.status, updatedAt: new Date().toISOString() };
-    }
-
-    const { data } = await apiClient.patch<ApiResponse<AdminTicketDetail>>(
-      AdminRoutes.TICKET_DETAIL(ticketId),
-      input
-    );
-    return data.data!;
-  },
-
-  async addTicketMessage(
-    ticketId: string,
-    input: AddTicketMessageInput
-  ): Promise<AdminTicketDetail> {
-    if (USE_MOCK_DATA) {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      const ticket = mockTicketDetails[ticketId];
-      if (!ticket) throw new Error('Ticket not found');
-      return {
-        ...ticket,
-        messages: [
-          ...ticket.messages,
-          {
-            id: `MSG${String(ticket.messages.length + 1).padStart(3, '0')}`,
-            sender: 'Support Team',
-            senderType: 'admin' as const,
-            message: input.message,
-            timestamp: new Date().toISOString(),
-          },
-        ],
-        updatedAt: new Date().toISOString(),
-      };
-    }
-
-    const { data } = await apiClient.post<ApiResponse<AdminTicketDetail>>(
-      `${AdminRoutes.TICKET_DETAIL(ticketId)}/messages`,
-      input
     );
     return data.data!;
   },

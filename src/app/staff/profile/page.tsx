@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { AvatarUploader } from '@/components/shared/media/AvatarUploader';
 import { User, Phone, Mail, MapPin, Star, Briefcase, Edit, LogOut, IndianRupee, TrendingUp, CheckCircle, Save, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -26,14 +25,12 @@ export default function StaffProfilePage() {
   const logoutMutation = useStaffLogout();
   
   const [isEditing, setIsEditing] = useState(false);
-  const [avatar, setAvatar] = useState<string>('');
 
   const {
     register,
     handleSubmit,
     formState: { errors },
     reset,
-    setValue,
   } = useForm<StaffProfileEditInput>({
     resolver: zodResolver(staffProfileEditSchema) as any,
   });
@@ -62,7 +59,6 @@ export default function StaffProfilePage() {
 
   const handleCancel = () => {
     setIsEditing(false);
-    setAvatar('');
     // Reset form to original profile values
     reset({
       name: profile?.name || '',
@@ -72,24 +68,11 @@ export default function StaffProfilePage() {
     });
   };
 
-  const handleAvatarUpload = (file: File) => {
-    // Set the file in form
-    setValue('avatar', file);
-    toast.success('Profile picture updated!');
-  };
-
-  const handleRemoveAvatar = () => {
-    setAvatar('');
-    setValue('avatar', undefined);
-    toast.success('Profile picture removed');
-  };
-
   const onSubmit = (data: StaffProfileEditInput) => {
     // TODO: Call API to update profile
     console.log('Saving profile:', data);
     toast.success('Profile updated successfully!');
     setIsEditing(false);
-    setAvatar('');
   };
 
   if (isLoading) {
@@ -154,42 +137,28 @@ export default function StaffProfilePage() {
               </div>
             </CardHeader>
             <CardContent className="space-y-3 sm:space-y-4">
-              {/* Profile Picture */}
-              {isEditing ? (
-                <div className="p-3 sm:p-4">
-                  <AvatarUploader
-                    currentAvatar={avatar || profile?.avatar}
-                    onUpload={handleAvatarUpload}
-                    onRemove={handleRemoveAvatar}
-                    size="md"
+              {/* Profile picture upload removed per requirements */}
+              <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
+                  <img 
+                    src={profile?.avatar || '/images/avatars/default-avatar.svg'} 
+                    alt="Profile" 
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = '/images/avatars/default-avatar.svg';
+                    }}
                   />
-                  {errors.avatar && (
-                    <p className="text-xs text-red-600 dark:text-red-400 text-center mt-2">{errors.avatar.message}</p>
-                  )}
                 </div>
-              ) : (
-                <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl">
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
-                    <img 
-                      src={profile?.avatar || '/images/avatars/default-avatar.svg'} 
-                      alt="Profile" 
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = '/images/avatars/default-avatar.svg';
-                      }}
-                    />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="font-bold text-base sm:text-lg text-foreground truncate">
-                      {profile?.name ?? '—'}
-                    </p>
-                    <p className="text-xs sm:text-sm text-muted-foreground truncate">
-                      {profile?.role ?? '—'}
-                    </p>
-                  </div>
+                <div className="min-w-0 flex-1">
+                  <p className="font-bold text-base sm:text-lg text-foreground truncate">
+                    {profile?.name ?? '—'}
+                  </p>
+                  <p className="text-xs sm:text-sm text-muted-foreground truncate">
+                    {profile?.role ?? '—'}
+                  </p>
                 </div>
-              )}
+              </div>
 
               <Separator />
 
