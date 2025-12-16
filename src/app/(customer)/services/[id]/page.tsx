@@ -4,15 +4,13 @@ import { use, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
-  Star, Clock, ArrowLeft, Sparkles, ShieldCheck,
+  Clock, ArrowLeft, Sparkles, ShieldCheck,
   Timer, Info, CarFront
 } from 'lucide-react';
 
 import { CustomerRoutes } from '@/lib/constants/routes';
 import { useService } from '@/api/domains/services/queries';
-import { useReviewsByService } from '@/api/domains/reviews/queries';
 import { useActiveAddons } from '@/api/domains/addons/queries';
-import { ReviewsList } from '@/components/customer/ReviewsList';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
 
@@ -28,7 +26,6 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
   const router = useRouter();
 
   const { data: service, isLoading: serviceLoading } = useService(id);
-  const { data: reviews = [] } = useReviewsByService(id);
 
   // Extract category name for add-ons filter (handle both string and object)
   const categoryName = typeof service?.category === 'string'
@@ -41,17 +38,6 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
   const vehiclePricing = useMemo(() => (
     Array.isArray(service?.pricing) ? service?.pricing ?? [] : []
   ), [service?.pricing]);
-
-  // Safe calculation for base price (lowest available)
-  const basePriceStart = useMemo(() => {
-    if (!vehiclePricing.length) return 0;
-    return Math.min(...vehiclePricing.map((p: any) => Number(p.price) || 0));
-  }, [vehiclePricing]);
-
-  const averageRating = useMemo(() => {
-    if (!reviews.length) return 0;
-    return reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length;
-  }, [reviews]);
 
   // Loading state
   if (serviceLoading || addonsLoading) return <Loading text="Fetching service details..." />;
@@ -116,13 +102,7 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
                     <CarFront className="h-20 w-20 text-muted-foreground/40" />
                   </div>
                 )}
-                <div className="absolute top-4 right-4">
-                  <Badge variant="secondary" className="backdrop-blur-md bg-background/80 shadow-sm border-primary/20">
-                    <Star className="mr-1 h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-                    <span className="font-semibold">{averageRating.toFixed(1)}</span>
-                    <span className="ml-1 text-muted-foreground">({reviews.length})</span>
-                  </Badge>
-                </div>
+                {/* Rating badge removed */}
               </div>
 
               <div>

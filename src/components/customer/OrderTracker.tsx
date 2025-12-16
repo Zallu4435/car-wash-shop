@@ -53,12 +53,13 @@ export function OrderTracker({
   ];
 
   const shouldShowCancelled =
-    !isService &&
-    (normalizedCurrentStatus === 'cancelled' ||
-      statusHistory.some((item) => (item.status || '').toLowerCase() === 'cancelled'));
+    normalizedCurrentStatus === 'cancelled' ||
+    statusHistory.some((item) => (item.status || '').toLowerCase() === 'cancelled');
 
   const statuses = isService
-    ? serviceStatuses
+    ? shouldShowCancelled
+      ? [...serviceStatuses, { id: 'cancelled', label: 'Cancelled', icon: XCircle }]
+      : serviceStatuses
     : shouldShowCancelled
       ? [...orderBaseStatuses, { id: 'cancelled', label: 'Cancelled', icon: XCircle }]
       : orderBaseStatuses;
@@ -161,8 +162,8 @@ export function OrderTracker({
                 {index < statuses.length - 1 && (
                   <div
                     className={`absolute left-[18px] sm:left-[22px] top-10 sm:top-12 w-[3px] h-8 sm:h-10 transition-all duration-300 rounded-full ${!isCancelled && index < currentIndex
-                        ? 'bg-green-500 dark:bg-green-400 shadow-[0_0_8px_rgba(34,197,94,0.4)]'
-                        : 'bg-gray-300 dark:bg-gray-600'
+                      ? 'bg-green-500 dark:bg-green-400 shadow-[0_0_8px_rgba(34,197,94,0.4)]'
+                      : 'bg-gray-300 dark:bg-gray-600'
                       }`}
                   />
                 )}
@@ -172,22 +173,22 @@ export function OrderTracker({
                   {/* Icon */}
                   <div
                     className={`relative z-10 flex items-center justify-center w-9 h-9 sm:w-11 sm:h-11 rounded-full border-2 flex-shrink-0 transition-all ${state === 'completed'
-                        ? 'bg-green-500 dark:bg-green-600 border-green-500 dark:border-green-600 shadow-lg shadow-green-500/30'
-                        : state === 'active'
-                          ? 'bg-blue-50 dark:bg-blue-950 border-blue-500 dark:border-blue-400 shadow-lg shadow-blue-500/20'
-                          : state === 'cancelled'
-                            ? 'bg-red-100 dark:bg-red-950 border-red-400 dark:border-red-500 shadow-lg shadow-red-500/30'
-                            : 'bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-600'
+                      ? 'bg-green-500 dark:bg-green-600 border-green-500 dark:border-green-600 shadow-lg shadow-green-500/30'
+                      : state === 'active'
+                        ? 'bg-blue-50 dark:bg-blue-950 border-blue-500 dark:border-blue-400 shadow-lg shadow-blue-500/20'
+                        : state === 'cancelled'
+                          ? 'bg-red-100 dark:bg-red-950 border-red-400 dark:border-red-500 shadow-lg shadow-red-500/30'
+                          : 'bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-600'
                       }`}
                   >
                     <StatusIcon
                       className={`h-4 w-4 sm:h-5 sm:w-5 ${state === 'completed'
-                          ? 'text-white'
-                          : state === 'active'
-                            ? 'text-blue-600 dark:text-blue-400'
-                            : state === 'cancelled'
-                              ? 'text-red-600 dark:text-red-400'
-                              : 'text-gray-400 dark:text-gray-500'
+                        ? 'text-white'
+                        : state === 'active'
+                          ? 'text-blue-600 dark:text-blue-400'
+                          : state === 'cancelled'
+                            ? 'text-red-600 dark:text-red-400'
+                            : 'text-gray-400 dark:text-gray-500'
                         }`}
                     />
                   </div>
@@ -196,10 +197,10 @@ export function OrderTracker({
                   <div className="flex-1 pt-0.5 sm:pt-1 min-w-0">
                     <p
                       className={`font-semibold text-sm sm:text-base ${state === 'completed' || state === 'active'
-                          ? 'text-foreground'
-                          : state === 'cancelled'
-                            ? 'text-red-600 dark:text-red-400'
-                            : 'text-muted-foreground'
+                        ? 'text-foreground'
+                        : state === 'cancelled'
+                          ? 'text-red-600 dark:text-red-400'
+                          : 'text-muted-foreground'
                         }`}
                     >
                       {status.label}

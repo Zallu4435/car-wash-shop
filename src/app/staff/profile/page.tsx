@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { User, Phone, Mail, MapPin, Star, Briefcase, Edit, LogOut, IndianRupee, TrendingUp, CheckCircle, Save, X } from 'lucide-react';
+import { User, Phone, Mail, MapPin, Briefcase, Edit, LogOut, IndianRupee, TrendingUp, CheckCircle, Save, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useRouter } from 'next/navigation';
@@ -330,38 +330,6 @@ export default function StaffProfilePage() {
                 <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">
                   Completed successfully
                 </p>
-              </div>
-
-              {/* Average Rating */}
-              <div className="p-3 sm:p-4 bg-primary/5 rounded-lg sm:rounded-xl border-2 border-primary/20">
-                <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
-                  <Star className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary flex-shrink-0" />
-                  <p className="text-[10px] sm:text-xs text-foreground uppercase tracking-wide">
-                    Avg Rating
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <p className="text-3xl sm:text-4xl font-bold text-foreground">{profile?.avgRating ?? '—'}</p>
-                  <div className="flex gap-0.5">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <Star
-                        key={star}
-                        className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${
-                          star <= 4
-                            ? 'fill-amber-400 text-amber-400'
-                            : star === 5
-                            ? 'fill-amber-200 text-amber-200'
-                            : 'text-muted-foreground'
-                        }`}
-                      />
-                    ))}
-                  </div>
-                </div>
-                {profile?.totalReviews && (
-                  <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">
-                    Based on {profile.totalReviews} reviews
-                  </p>
-                )}
               </div>
 
               {/* Total Earnings */}

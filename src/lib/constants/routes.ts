@@ -34,6 +34,7 @@ export const ROUTES = {
     ORDER_PRODUCT_DETAIL: (id: string) => `/orders/products/${id}`,
     ORDER_SERVICE_DETAIL: (id: string) => `/orders/services/${id}`,
     ORDER_CANCEL: (id: string) => `/orders/${id}/cancel`,
+    ORDER_CANCEL_BOOKING: (id: string) => `/orders/${id}/cancel?type=booking`,
     ORDER_INVOICE: (id: string) => `/orders/${id}/invoice`,
 
     // Payment
@@ -190,6 +191,9 @@ export const ROUTES = {
     // Complaints
     COMPLAINTS: '/admin/complaints',
     COMPLAINT_DETAIL: (id: string) => `/admin/complaints/${id}`,
+
+    // Refunds
+    REFUNDS: '/admin/refunds',
   },
 
   // Special Routes

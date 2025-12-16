@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Star, Clock, ArrowRight } from 'lucide-react';
+import { Clock, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface Service {
@@ -19,8 +19,6 @@ interface Service {
   description: string;
   pricing: Array<{ vehicleType: string; price: number }>;
   duration: number;
-  rating: number;
-  reviewCount: number;
   imageUrl?: string;
 }
 
@@ -88,13 +86,8 @@ export function ServiceCard({
             {service.description}
           </p>
 
-          {/* Rating & Duration */}
+          {/* Duration */}
           <div className="flex items-center gap-2 sm:gap-3 md:gap-4 mb-3 sm:mb-4 md:mb-5 lg:mb-6 pb-3 sm:pb-4 md:pb-5 lg:pb-6 border-b border-border">
-            <div className="flex items-center gap-1 sm:gap-1.5">
-              <Star className="h-3 w-3 sm:h-3.5 sm:w-3.5 md:h-4 md:w-4 fill-amber-400 text-amber-400 flex-shrink-0" />
-              <span className="text-xs sm:text-sm font-semibold text-foreground">{service.rating}</span>
-              <span className="text-[10px] sm:text-xs text-muted-foreground">({service.reviewCount})</span>
-            </div>
             <div className="flex items-center gap-1 sm:gap-1.5 text-muted-foreground">
               <Clock className="h-3 w-3 sm:h-3.5 sm:w-3.5 md:h-4 md:w-4 flex-shrink-0" />
               <span className="text-xs sm:text-sm font-medium">{service.duration} min</span>

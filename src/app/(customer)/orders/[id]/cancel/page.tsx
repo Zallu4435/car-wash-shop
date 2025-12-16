@@ -1,31 +1,58 @@
 'use client';
 
 // @ts-nocheck
-import { use } from 'react';
-import { useRouter } from 'next/navigation';
+import { use, useMemo } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, AlertTriangle, XCircle } from 'lucide-react';
+import { ArrowLeft, AlertTriangle, XCircle, CheckCircle, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { CustomerRoutes } from '@/lib/constants/routes';
 import { useCancelOrder } from '@/api/domains/orders/queries';
-import { useCancelBooking } from '@/api/domains/bookings/queries';
+import { useCancelBooking, useBooking } from '@/api/domains/bookings/queries';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { cancelBookingSchema, CancelBookingInput } from '@/schemas/customer/booking';
+import Loading from '@/components/shared/display/Loading';
 
 export default function CancelOrderPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
+  const searchParams = useSearchParams();
 
-  // Determine if it's a booking based on ID prefix
-  const isBooking = id.startsWith('booking_');
+  // Determine if it's a booking based on query param
+  const isBooking = searchParams.get('type') === 'booking';
   const detailHref = isBooking
     ? CustomerRoutes.ORDER_SERVICE_DETAIL(id)
     : CustomerRoutes.ORDER_PRODUCT_DETAIL(id);
+
+  // Fetch booking details to calculate refund eligibility
+  const { data: booking, isLoading: bookingLoading } = useBooking(isBooking ? id : '');
+
+  // Calculate refund eligibility - within 1 hour of booking creation
+  const refundInfo = useMemo(() => {
+    if (!isBooking || !booking?.createdAt) {
+      return { eligible: false, reason: '', checked: false };
+    }
+
+    const now = new Date();
+    const bookingCreatedAt = new Date(booking.createdAt);
+    const hoursSinceBooking = (now.getTime() - bookingCreatedAt.getTime()) / (1000 * 60 * 60);
+    const isEligible = hoursSinceBooking <= 1;
+
+    return {
+      eligible: isEligible,
+      reason: isEligible
+        ? 'Cancelled within 1 hour of booking'
+        : 'Cancellation window expired (more than 1 hour since booking)',
+      checked: true,
+      minutesRemaining: isEligible ? Math.max(0, Math.floor(60 - hoursSinceBooking * 60)) : 0,
+    };
+  }, [isBooking, booking?.createdAt]);
 
   const cancelOrderMutation = useCancelOrder();
   const cancelBookingMutation = useCancelBooking();
@@ -45,8 +72,12 @@ export default function CancelOrderPage({ params }: { params: Promise<{ id: stri
   const onSubmit = (data: CancelBookingInput) => {
     if (isBooking) {
       cancelBookingMutation.mutate(id, {
-        onSuccess: () => {
-          toast.success('Booking cancelled successfully');
+        onSuccess: (response: any) => {
+          if (response?.refund?.eligible) {
+            toast.success('Booking cancelled. Refund will be processed within 3-5 business days.');
+          } else {
+            toast.success('Booking cancelled successfully');
+          }
           router.push(CustomerRoutes.ORDERS);
         },
         onError: (error: any) => {
@@ -65,6 +96,10 @@ export default function CancelOrderPage({ params }: { params: Promise<{ id: stri
       });
     }
   };
+
+  if (isBooking && bookingLoading) {
+    return <Loading text="Loading booking details..." />;
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -108,6 +143,51 @@ export default function CancelOrderPage({ params }: { params: Promise<{ id: stri
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                  {/* Refund Eligibility Badge - only for bookings */}
+                  {isBooking && refundInfo.checked && (
+                    <div className={`rounded-xl p-4 border-2 ${refundInfo.eligible
+                      ? 'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800'
+                      : 'bg-orange-50 dark:bg-orange-950/20 border-orange-200 dark:border-orange-800'
+                      }`}>
+                      <div className="flex items-start gap-3">
+                        {refundInfo.eligible ? (
+                          <CheckCircle className="h-5 w-5 text-green-700 dark:text-green-400 mt-0.5 flex-shrink-0" />
+                        ) : (
+                          <Clock className="h-5 w-5 text-orange-600 dark:text-orange-400 mt-0.5 flex-shrink-0" />
+                        )}
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <p className={`font-semibold ${refundInfo.eligible
+                              ? 'text-green-900 dark:text-green-300'
+                              : 'text-orange-700 dark:text-orange-300'
+                              }`}>
+                              {refundInfo.eligible ? 'Eligible for Full Refund' : 'Not Eligible for Refund'}
+                            </p>
+                            <Badge variant={refundInfo.eligible ? 'default' : 'secondary'} className="text-xs">
+                              {refundInfo.eligible ? '✓ Refundable' : '✗ Non-refundable'}
+                            </Badge>
+                          </div>
+                          <p className={`text-sm ${refundInfo.eligible
+                            ? 'text-green-700 dark:text-green-400'
+                            : 'text-orange-600 dark:text-orange-400'
+                            }`}>
+                            {refundInfo.reason}
+                          </p>
+                          {refundInfo.eligible && refundInfo.minutesRemaining && refundInfo.minutesRemaining > 0 && (
+                            <p className="text-xs text-green-700 dark:text-green-500 mt-1">
+                              ⏰ {refundInfo.minutesRemaining} minutes remaining for full refund
+                            </p>
+                          )}
+                          {refundInfo.eligible && (
+                            <p className="text-xs text-green-700 dark:text-green-400 mt-2">
+                              Your refund will be processed within 3-5 business days.
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Warning */}
                   <div className="bg-red-600 dark:bg-red-700 border-2 border-red-700 dark:border-red-600 rounded-xl p-4">
                     <div className="flex items-start gap-3">
@@ -118,7 +198,9 @@ export default function CancelOrderPage({ params }: { params: Promise<{ id: stri
                         </p>
                         <p className="text-sm text-red-100">
                           {isBooking
-                            ? 'Are you sure you want to cancel this booking? Cancellation charges may apply based on the timing.'
+                            ? refundInfo.eligible
+                              ? 'Your full refund will be processed within 3-5 business days after cancellation.'
+                              : 'This booking is no longer eligible for a refund as it was created more than 1 hour ago.'
                             : 'Are you sure you want to cancel this order? Your refund will be processed within 5-7 business days.'}
                         </p>
                       </div>

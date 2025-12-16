@@ -25,7 +25,8 @@ import {
   Phone,
   CarFront,
   Sparkles,
-  AlertTriangle
+  AlertTriangle,
+  RefreshCw
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -49,6 +50,7 @@ const navigationGroups = [
       { name: 'Slot Management', href: AdminRoutes.SLOTS, icon: Clock },
       { name: 'Orders', href: AdminRoutes.ORDERS, icon: ShoppingBag },
       { name: 'Payments', href: AdminRoutes.PAYMENTS, icon: CreditCard },
+      { name: 'Refunds', href: AdminRoutes.REFUNDS, icon: RefreshCw },
     ]
   },
   {

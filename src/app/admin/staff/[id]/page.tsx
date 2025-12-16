@@ -2,7 +2,7 @@
 
 import { use } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Edit, Phone, Mail, Star, Briefcase, IndianRupee, Calendar, Ban, Trash2 } from 'lucide-react';
+import { ArrowLeft, Edit, Phone, Mail, Briefcase, IndianRupee, Calendar, Ban, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -119,10 +119,7 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
                   <p className="text-xs sm:text-sm text-muted-foreground mb-1">Joined Date</p>
                   <p className="text-xs sm:text-sm font-semibold text-foreground">{staffMember.joinedDate}</p>
                 </div>
-                <div>
-                  <p className="text-xs sm:text-sm text-muted-foreground mb-1">Rating</p>
-                  <p className="text-xs sm:text-sm font-semibold text-foreground">⭐ {staffMember.avgRating}</p>
-                </div>
+                {/* Rating removed */}
               </div>
             </CardContent>
           </Card>
@@ -161,46 +158,7 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
 
         {/* Stats */}
         <div className="xl:col-span-1 space-y-4 sm:space-y-6">
-          <Card className="border-2 border-border rounded-lg sm:rounded-xl">
-            <CardHeader className="pb-3 sm:pb-4">
-              <div className="flex items-center gap-1.5 sm:gap-2">
-                <Star className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
-                <CardTitle className="text-sm sm:text-base lg:text-lg">Performance</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3 sm:space-y-4">
-              <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                <div className="p-2.5 sm:p-3 md:p-4 bg-muted rounded-lg sm:rounded-xl border-2 border-border">
-                  <div className="flex items-center gap-1 sm:gap-1.5 mb-0.5 sm:mb-1">
-                    <Briefcase className="h-3 w-3 sm:h-3.5 sm:w-3.5 md:h-4 md:w-4 text-muted-foreground flex-shrink-0" />
-                    <p className="text-[9px] sm:text-[10px] md:text-xs text-muted-foreground uppercase tracking-wide">Jobs</p>
-                  </div>
-                  <p className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-foreground">{staffMember.totalJobs}</p>
-                  <p className="text-[9px] sm:text-[10px] md:text-xs text-muted-foreground mt-0.5 sm:mt-1">Completed</p>
-                </div>
-
-                <div className="p-2.5 sm:p-3 md:p-4 bg-primary/10 rounded-lg sm:rounded-xl border-2 border-primary/20">
-                  <div className="flex items-center gap-1 sm:gap-1.5 mb-0.5 sm:mb-1">
-                    <IndianRupee className="h-3 w-3 sm:h-3.5 sm:w-3.5 md:h-4 md:w-4 text-primary flex-shrink-0" />
-                    <p className="text-[9px] sm:text-[10px] md:text-xs text-muted-foreground uppercase tracking-wide">Earned</p>
-                  </div>
-                  <p className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-primary">₹{(staffMember.earnings / 1000).toFixed(0)}K</p>
-                  <p className="text-[9px] sm:text-[10px] md:text-xs text-muted-foreground mt-0.5 sm:mt-1">Lifetime</p>
-                </div>
-              </div>
-
-              <div className="p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl border-2 border-border">
-                <div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-2">
-                  <Star className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
-                  <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Avg Rating</p>
-                </div>
-                <p className="text-3xl sm:text-4xl font-bold text-foreground">⭐ {staffMember.avgRating}</p>
-                <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">Based on {staffMember.totalJobs} reviews</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Danger Zone */}
+          {/* Performance card simplified – rating removed */}
           <DangerZone
             description="Irreversible actions that affect this staff member"
             actions={[

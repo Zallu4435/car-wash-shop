@@ -3,7 +3,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
-  Star, 
   MessageSquare, 
   Users,
   Package,
@@ -39,11 +38,10 @@ export default function AdminFeedbackPage() {
   // Combine search and filters for API
   const filters = useMemo(() => ({
     search: search || undefined,
-    rating: filterValues.rating || undefined,
     type: activeTab === 'all' ? undefined : activeTab === 'services' ? 'service' : 'product',
     page,
     pageSize,
-  }), [search, filterValues, page, pageSize, activeTab]);
+  }), [search, page, pageSize, activeTab]);
 
   const { data: feedbackData, isLoading, error, refetch } = useAdminFeedbackList(filters);
   
@@ -74,10 +72,6 @@ export default function AdminFeedbackPage() {
     );
   }
 
-  // Calculate stats from all feedback (not filtered by tab)
-  const avgRating = allFeedback.length > 0 
-    ? (allFeedback.reduce((sum: number, item: any) => sum + (item.rating || 0), 0) / allFeedback.length).toFixed(1)
-    : '0.0';
   const serviceFeedback = allFeedback.filter((item: any) => item.feedbackType === 'service').length;
   const productReviews = allFeedback.filter((item: any) => item.feedbackType === 'product').length;
   const totalAllFeedback = allFeedback.length;
@@ -218,14 +212,7 @@ export default function AdminFeedbackPage() {
           description="Product feedback"
         />
         
-        <StatCard
-          icon={Star}
-          label="Avg Rating"
-          value={`${avgRating} ⭐`}
-          change="+0.5"
-          trend="up"
-          description="Customer satisfaction"
-        />
+        {/* Rating stat removed */}
       </div>
 
       {/* Feedback List */}
@@ -237,22 +224,11 @@ export default function AdminFeedbackPage() {
           </div>
         </CardHeader>
         <CardContent>
-          {/* Search & Filter */}
+          {/* Search (rating filter removed) */}
           <SearchFilter
             searchPlaceholder="Search feedback by customer or message..."
             onSearchChange={setSearch}
-            filterOptions={[
-              {
-                label: 'Rating',
-                value: 'rating',
-                options: [
-                  { label: 'All Ratings', value: '' },
-                  { label: '5 Stars', value: '5' },
-                  { label: '4 Stars', value: '4' },
-                  { label: '3 Stars & Below', value: '3' },
-                ],
-              },
-            ]}
+            filterOptions={[]}
             onFilterChange={setFilterValues}
             className="mb-4 sm:mb-6"
           />
@@ -274,10 +250,7 @@ export default function AdminFeedbackPage() {
                   month: 'short', 
                   day: 'numeric' 
                 });
-                const starRating = Array.from({ length: 5 }).map((_, i) => (
-                  i < item.rating ? '⭐' : '☆'
-                )).join('');
-                
+                const starRating = ''; // ratings removed
                 return (
                   <TransactionCard
                     key={item.id}
@@ -293,16 +266,9 @@ export default function AdminFeedbackPage() {
                       className: isBlocked ? 'border-2 text-destructive' : '',
                     }}
                     title={item.customerName}
-                    subtitle={`${starRating} ${item.rating}.0 | ${feedbackDate}`}
+                    subtitle={feedbackDate}
                     description={item.comment || 'No comment provided'}
-                    infoBoxes={[
-                      {
-                        icon: Star,
-                        label: 'Rating',
-                        value: `${item.rating}.0`,
-                        valueClassName: 'text-orange-500',
-                      },
-                    ]}
+                    infoBoxes={[]}
                     actionButtons={[
                       {
                         label: 'Helpful',

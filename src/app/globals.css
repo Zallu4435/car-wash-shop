@@ -250,35 +250,32 @@
 @layer utilities {
   /* Force sheet background to correct theme values regardless of parent styles */
   .force-sheet-bg {
-    background-color: hsl(var(--card));
-  }
-  [data-theme='dark'] .force-sheet-bg {
-    background-color: hsl(var(--background)) !important;
-  }
-  [data-theme='light'] .force-sheet-bg {
     background-color: #ffffff !important;
+  }
+  .dark .force-sheet-bg {
+    background-color: hsl(222 13% 14%) !important;
   }
 
   /* Vehicle selection modal hardening */
   .vehicle-modal-bg {
-    background-color: #ffffff;
+    background-color: #ffffff !important;
   }
-  [data-theme='dark'] .vehicle-modal-bg {
-    background-color: hsl(var(--background)) !important;
+  .dark .vehicle-modal-bg {
+    background-color: hsl(222 13% 11%) !important;
   }
 
   /* Force white text inside modal in dark mode */
-  [data-theme='dark'] .vehicle-modal-bg, 
-  [data-theme='dark'] .vehicle-modal-bg .text-foreground {
-    color: hsl(var(--foreground)) !important;
+  .dark .vehicle-modal-bg, 
+  .dark .vehicle-modal-bg .text-foreground {
+    color: hsl(220 13% 98%) !important;
   }
 
   /* Vehicle selection item surface */
   .vehicle-card {
-    background-color: #ffffff;
+    background-color: #ffffff !important;
   }
-  [data-theme='dark'] .vehicle-card {
-    background-color: hsl(var(--background)) !important;
+  .dark .vehicle-card {
+    background-color: hsl(222 13% 14%) !important;
   }
 
   /* Container utilities */

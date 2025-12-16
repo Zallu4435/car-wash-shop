@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Star, ShoppingCart } from 'lucide-react';
+import { ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAddToCart } from '@/api/domains/cart/queries';
 import type { Product } from '@/types/product';
@@ -54,14 +54,7 @@ export function ProductCard({ product }: ProductCardProps) {
             <h3 className="font-medium text-base text-foreground leading-snug line-clamp-1 group-hover:text-primary transition-colors">
               {product.name}
             </h3>
-            {/* Rating - Subtle */}
-            {(product.rating !== undefined) && (
-              <div className="flex items-center gap-1">
-                <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                <span className="text-xs text-muted-foreground font-medium">{product.rating}</span>
-                <span className="text-[10px] text-muted-foreground/60">({product.reviewCount})</span>
-              </div>
-            )}
+            {/* Rating removed */}
           </div>
 
           <div className="mt-auto flex items-end justify-between gap-4">

@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { cartFetchers } from './fetchers';
-import type { AddToCartInput, UpdateCartItemInput } from '@/types/cart';
+import type { AddToCartInput, UpdateCartItemInput, Cart } from '@/types/cart';
 import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
 
@@ -11,7 +11,7 @@ export const cartKeys = {
 
 export const useCart = () => {
   const { isAuthenticated } = useAuth();
-  
+
   return useQuery({
     queryKey: cartKeys.detail(),
     queryFn: cartFetchers.getCart,
@@ -42,11 +42,45 @@ export const useUpdateCartItem = () => {
   return useMutation({
     mutationFn: ({ itemId, input }: { itemId: string; input: UpdateCartItemInput }) =>
       cartFetchers.updateCartItem(itemId, input),
-    onSuccess: (data) => {
-      queryClient.setQueryData(cartKeys.detail(), data);
-      toast.success('Cart updated');
+    // Optimistic update - update UI immediately before server responds
+    onMutate: async ({ itemId, input }) => {
+      // Cancel any outgoing refetches to avoid overwriting optimistic update
+      await queryClient.cancelQueries({ queryKey: cartKeys.detail() });
+
+      // Snapshot the previous value
+      const previousCart = queryClient.getQueryData(cartKeys.detail()) as Cart | undefined;
+
+      // Optimistically update the cart
+      if (previousCart && input.quantity !== undefined) {
+        const updatedItems = previousCart.items.map(item => {
+          if (item.id === itemId) {
+            return { ...item, quantity: input.quantity! };
+          }
+          return item;
+        });
+
+        // Recalculate totals
+        const subtotal = updatedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+        queryClient.setQueryData(cartKeys.detail(), {
+          ...previousCart,
+          items: updatedItems,
+          subtotal,
+          total: subtotal,
+          itemCount: updatedItems.reduce((count, item) => count + item.quantity, 0),
+        });
+      }
+
+      // Return context with previous cart for rollback
+      return { previousCart };
     },
-    onError: (error: any) => {
+    // onSuccess: No action needed - optimistic update already applied
+    // Server response is only used for rollback in onError
+    onError: (error: any, _variables, context) => {
+      // Rollback to previous cart on error
+      if (context?.previousCart) {
+        queryClient.setQueryData(cartKeys.detail(), context.previousCart);
+      }
       toast.error(error.message || 'Failed to update cart');
     },
   });

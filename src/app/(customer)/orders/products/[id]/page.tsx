@@ -11,8 +11,6 @@ import {
   Calendar,
   FileText,
   XCircle,
-  Star,
-  Edit,
   AlertTriangle,
   CheckCircle2,
   Clock,
@@ -25,9 +23,7 @@ import { Badge } from '@/components/ui/badge';
 import { OrderTracker } from '@/components/customer/OrderTracker';
 import { Separator } from '@/components/ui/separator';
 import { useOrder } from '@/api/domains/orders/queries';
-import { useReviewByOrder } from '@/api/domains/reviews/queries';
 import { useComplaintByReference, useCanFileComplaint } from '@/api/domains/complaints/queries';
-import { ReviewModal } from '@/components/customer/ReviewModal';
 import { ComplaintModal } from '@/components/customer/ComplaintModal';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
@@ -35,7 +31,6 @@ import { COMPLAINT_CATEGORY_LABELS } from '@/types/complaint';
 
 export default function ProductOrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const [showReviewModal, setShowReviewModal] = useState(false);
   const [showComplaintModal, setShowComplaintModal] = useState(false);
 
   const {
@@ -44,7 +39,6 @@ export default function ProductOrderDetailPage({ params }: { params: Promise<{ i
     error
   } = useOrder(id);
 
-  const { data: orderReview } = useReviewByOrder(id);
   const { data: existingComplaint } = useComplaintByReference('productOrder', id);
   const { data: canFileData } = useCanFileComplaint('productOrder', id);
   const productId = order?.items?.[0]?.productId;
@@ -237,64 +231,6 @@ export default function ProductOrderDetailPage({ params }: { params: Promise<{ i
                 </CardContent>
               </Card>
 
-              {isCompleted && (
-                <Card className="border-2 border-border bg-gradient-to-br from-primary/5 to-background">
-                  <CardContent className="p-4 sm:p-6">
-                    <div className="flex items-start gap-3 sm:gap-4">
-                      <Star className="h-5 w-5 sm:h-6 sm:w-6 text-primary flex-shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-sm sm:text-base text-foreground mb-1 sm:mb-2">
-                          {orderReview ? 'Your Review' : 'Rate Your Experience'}
-                        </h3>
-                        {orderReview ? (
-                          <div className="space-y-2 sm:space-y-3">
-                            <div className="flex items-center gap-2">
-                              {[1, 2, 3, 4, 5].map((star) => (
-                                <Star
-                                  key={star}
-                                  className={`h-4 w-4 sm:h-5 sm:w-5 ${star <= orderReview.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
-                                    }`}
-                                />
-                              ))}
-                              <span className="text-sm sm:text-base font-medium text-foreground ml-1">
-                                {orderReview.rating}.0
-                              </span>
-                            </div>
-                            {orderReview.comment && (
-                              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                                {orderReview.comment}
-                              </p>
-                            )}
-                            <Button
-                              onClick={() => setShowReviewModal(true)}
-                              variant="outline"
-                              size="sm"
-                              className="mt-2 h-9 text-xs sm:text-sm border-2"
-                            >
-                              <Edit className="mr-2 h-3.5 w-3.5" />
-                              Edit Review
-                            </Button>
-                          </div>
-                        ) : (
-                          <div>
-                            <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">
-                              Share your experience to help others and improve our service
-                            </p>
-                            <Button
-                              onClick={() => setShowReviewModal(true)}
-                              className="h-10 sm:h-11 shadow-lg text-xs sm:text-sm border-2"
-                            >
-                              <Star className="mr-2 h-4 w-4" />
-                              Write a Review
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
               {/* Complaint Section */}
               {isCompleted && (
                 <Card className="border-2 border-border">
@@ -436,16 +372,6 @@ export default function ProductOrderDetailPage({ params }: { params: Promise<{ i
 
         </div>
       </section>
-
-      <ReviewModal
-        isOpen={showReviewModal}
-        onClose={() => setShowReviewModal(false)}
-        orderId={id}
-        productId={productId}
-        itemName={order.items?.[0]?.productName || 'Order'}
-        isService={false}
-        existingReview={orderReview}
-      />
 
       <ComplaintModal
         isOpen={showComplaintModal}

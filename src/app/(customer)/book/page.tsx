@@ -1010,13 +1010,13 @@ export default function BookServicePage() {
                     </div>
                   </div>
 
-                  <div className="rounded-xl border-2 border-gray-500 bg-gray-600 p-4">
+                  <div className="rounded-xl border-2 border-border bg-muted/50 p-4">
                     <div className="flex items-start gap-3">
-                      <ShieldCheck className="mt-1 h-5 w-5 text-white" />
+                      <ShieldCheck className="mt-1 h-5 w-5 text-primary" />
                       <div className="space-y-2">
-                        <p className="text-sm font-semibold text-white">Cancellation Policy</p>
-                        <p className="text-xs text-white">
-                          Upfront deposit required. If you cancel, this amount is forfeited. Deposit will be adjusted against your final service bill.
+                        <p className="text-sm font-semibold text-foreground">Cancellation Policy</p>
+                        <p className="text-xs text-muted-foreground">
+                          Full refund available if cancelled within 1 hour of booking. Refunds are processed within 3-5 business days. Deposit will be adjusted against your final service bill.
                         </p>
                       </div>
                     </div>

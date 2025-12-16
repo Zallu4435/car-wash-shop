@@ -8,8 +8,6 @@ import {
   Calendar,
   Wrench,
   XCircle,
-  Star,
-  Edit,
   Car,
   FileText,
   AlertTriangle,
@@ -24,9 +22,7 @@ import { Badge } from '@/components/ui/badge';
 import { OrderTracker } from '@/components/customer/OrderTracker';
 import { Separator } from '@/components/ui/separator';
 import { useBooking } from '@/api/domains/bookings/queries';
-import { useReviewByBooking } from '@/api/domains/reviews/queries';
 import { useComplaintByReference, useCanFileComplaint } from '@/api/domains/complaints/queries';
-import { ReviewModal } from '@/components/customer/ReviewModal';
 import { ComplaintModal } from '@/components/customer/ComplaintModal';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
@@ -53,7 +49,6 @@ const formatAddress = (address?: BookingAddress | string) => {
 
 export default function ServiceOrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const [showReviewModal, setShowReviewModal] = useState(false);
   const [showComplaintModal, setShowComplaintModal] = useState(false);
 
   const {
@@ -62,7 +57,6 @@ export default function ServiceOrderDetailPage({ params }: { params: Promise<{ i
     error
   } = useBooking(id);
 
-  const { data: bookingReview } = useReviewByBooking(id);
   const { data: existingComplaint } = useComplaintByReference('booking', id);
   const { data: canFileData } = useCanFileComplaint('booking', id);
   const serviceId = booking?.serviceId;
@@ -145,6 +139,7 @@ export default function ServiceOrderDetailPage({ params }: { params: Promise<{ i
   };
 
   const trackerStatus = (() => {
+    if (normalizedStatus === 'cancelled') return 'cancelled';
     if (normalizedStatus === 'completed') return 'delivered';
     if (normalizedStatus === 'in_progress') return 'shipped';
     if (normalizedStatus === 'confirmed') return 'confirmed';
@@ -329,64 +324,6 @@ export default function ServiceOrderDetailPage({ params }: { params: Promise<{ i
                 </Card>
               )}
 
-              {isCompleted && (
-                <Card className="border-2 border-border bg-gradient-to-br from-primary/5 to-background">
-                  <CardContent className="p-4 sm:p-6">
-                    <div className="flex items-start gap-3 sm:gap-4">
-                      <Star className="h-5 w-5 sm:h-6 sm:w-6 text-primary flex-shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-sm sm:text-base text-foreground mb-1 sm:mb-2">
-                          {bookingReview ? 'Your Review' : 'Rate Your Experience'}
-                        </h3>
-                        {bookingReview ? (
-                          <div className="space-y-2 sm:space-y-3">
-                            <div className="flex items-center gap-2">
-                              {[1, 2, 3, 4, 5].map((star) => (
-                                <Star
-                                  key={star}
-                                  className={`h-4 w-4 sm:h-5 sm:w-5 ${star <= bookingReview.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
-                                    }`}
-                                />
-                              ))}
-                              <span className="text-sm sm:text-base font-medium text-foreground ml-1">
-                                {bookingReview.rating}.0
-                              </span>
-                            </div>
-                            {bookingReview.comment && (
-                              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                                {bookingReview.comment}
-                              </p>
-                            )}
-                            <Button
-                              onClick={() => setShowReviewModal(true)}
-                              variant="outline"
-                              size="sm"
-                              className="mt-2 h-9 text-xs sm:text-sm border-2"
-                            >
-                              <Edit className="mr-2 h-3.5 w-3.5" />
-                              Edit Review
-                            </Button>
-                          </div>
-                        ) : (
-                          <div>
-                            <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">
-                              Share your experience to help others and improve our service
-                            </p>
-                            <Button
-                              onClick={() => setShowReviewModal(true)}
-                              className="h-10 sm:h-11 shadow-lg text-xs sm:text-sm border-2"
-                            >
-                              <Star className="mr-2 h-4 w-4" />
-                              Write a Review
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
               {/* Complaint Section - Only show for completed bookings */}
               {isCompleted && (
                 <Card className="border-2 border-border">
@@ -501,13 +438,13 @@ export default function ServiceOrderDetailPage({ params }: { params: Promise<{ i
                 </Card>
               )}
 
-              {!isCompleted && (
+              {!isCompleted && normalizedStatus !== 'cancelled' && (
                 <Button
                   asChild
                   variant="outline"
                   className="w-full h-10 sm:h-11 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20"
                 >
-                  <Link href={CustomerRoutes.ORDER_CANCEL(id)} className="text-xs sm:text-sm">
+                  <Link href={CustomerRoutes.ORDER_CANCEL_BOOKING(id)} className="text-xs sm:text-sm">
                     <XCircle className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                     Cancel Booking
                   </Link>
@@ -529,16 +466,6 @@ export default function ServiceOrderDetailPage({ params }: { params: Promise<{ i
 
         </div>
       </section>
-
-      <ReviewModal
-        isOpen={showReviewModal}
-        onClose={() => setShowReviewModal(false)}
-        bookingId={id}
-        serviceId={serviceId}
-        itemName={booking.serviceName || 'Service'}
-        isService
-        existingReview={bookingReview}
-      />
 
       <ComplaintModal
         isOpen={showComplaintModal}

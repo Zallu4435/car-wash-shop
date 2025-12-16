@@ -1,7 +1,7 @@
 'use client';
 
 import { Card, CardContent } from '@/components/ui/card';
-import { Star, Quote } from 'lucide-react';
+import { Quote } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 interface Testimonial {
@@ -9,7 +9,6 @@ interface Testimonial {
   name: string;
   role: string;
   content: string;
-  rating: number;
   image?: string;
 }
 
@@ -61,20 +60,6 @@ export function Testimonials({ testimonials }: TestimonialsProps) {
                   <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-primary/10 rounded-xl group-hover:scale-110 transition-transform">
                     <Quote className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                   </div>
-                </div>
-
-                {/* Rating */}
-                <div className="flex gap-0.5 sm:gap-1 mb-3 sm:mb-4">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <Star
-                      key={i}
-                      className={`h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5 ${
-                        i < testimonial.rating
-                          ? 'fill-amber-400 text-amber-400'
-                          : 'text-gray-300 dark:text-gray-600'
-                      }`}
-                    />
-                  ))}
                 </div>
 
                 {/* Content */}

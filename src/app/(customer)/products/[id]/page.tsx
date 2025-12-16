@@ -2,7 +2,7 @@
 
 import { use, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Star, ShoppingCart, Minus, Plus, Package, CheckCircle, ShoppingBag } from 'lucide-react';
+import { ArrowLeft, ShoppingCart, Minus, Plus, Package, CheckCircle, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -12,8 +12,6 @@ import { CustomerRoutes } from '@/lib/constants/routes';
 import { StorageKeys } from '@/lib/constants/storage';
 import { useProduct } from '@/api/domains/products/queries';
 import { useAddToCart } from '@/api/domains/cart/queries';
-import { useReviewsByProduct } from '@/api/domains/reviews/queries';
-import { ReviewsList } from '@/components/customer/ReviewsList';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
 import { useRouter } from 'next/navigation';
@@ -26,12 +24,6 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   // API calls
   const { data: product, isLoading: productLoading } = useProduct(id);
   const addToCartMutation = useAddToCart();
-  const { data: reviews = [] } = useReviewsByProduct(id);
-  
-  // Calculate average rating
-  const averageRating = reviews.length > 0 
-    ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length 
-    : 0;
 
   // Loading state
   if (productLoading) {
@@ -207,13 +199,8 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                     </Badge>
                     <h1 className="text-2xl font-bold text-foreground mb-3">{product.name}</h1>
                     
-                    {/* Rating & Stock */}
+                    {/* Stock */}
                     <div className="flex flex-wrap items-center gap-3">
-                      <div className="flex items-center gap-2 p-2 bg-muted rounded-lg">
-                        <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-                        <span className="font-semibold text-foreground text-sm">4.5</span>
-                        <span className="text-xs text-muted-foreground">(89)</span>
-                      </div>
                       <Badge 
                         variant={product.isAvailable ? 'default' : 'error'}
                         className="px-2 py-1 text-xs"
@@ -325,15 +312,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             </div>
           </div>
 
-          {/* Customer Reviews Section - Full Width */}
-          <div className="mt-8 lg:mt-12">
-            <ReviewsList
-              reviews={reviews}
-              averageRating={averageRating}
-              totalReviews={reviews.length}
-              productName={product.name}
-            />
-          </div>
+          {/* Reviews removed */}
         </div>
       </section>
     </div>
