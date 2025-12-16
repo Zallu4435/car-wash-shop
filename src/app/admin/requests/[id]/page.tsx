@@ -391,21 +391,23 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
             </CardContent>
           </Card>
 
-          {/* Danger Zone */}
-          <DangerZone
-            description="Irreversible actions that affect this service request"
-            actions={[
-              {
-                title: 'Cancel Request',
-                description: 'Cancel the service request and notify customer with refund',
-                buttonText: 'Cancel Request',
-                buttonIcon: XCircle,
-                onClick: handleCancelRequest,
-                variant: 'outline',
-                buttonClassName: 'border-orange-300 dark:border-orange-800 text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950/30',
-              },
-            ]}
-          />
+          {/* Danger Zone - Show only if booking is not already cancelled */}
+          {booking.status !== 'cancelled' && (
+            <DangerZone
+              description="Irreversible actions that affect this service request"
+              actions={[
+                {
+                  title: 'Cancel Request',
+                  description: 'Cancel the service request and notify customer with refund',
+                  buttonText: 'Cancel Request',
+                  buttonIcon: XCircle,
+                  onClick: handleCancelRequest,
+                  variant: 'outline',
+                  buttonClassName: 'border-orange-300 dark:border-orange-800 text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950/30',
+                },
+              ]}
+            />
+          )}
         </div>
       </div>
 

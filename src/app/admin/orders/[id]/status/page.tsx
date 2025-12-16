@@ -96,76 +96,98 @@ export default function OrderStatusPage({ params }: { params: Promise<{ id: stri
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="p-4 bg-muted rounded-xl">
-            <p className="text-sm text-muted-foreground mb-2">Selected Status</p>
+            <p className="text-sm text-muted-foreground mb-2">Current Status</p>
             <Badge className={currentStatus?.color}>
               <span className="mr-2">{currentStatus?.icon}</span>
               {currentStatus?.label}
             </Badge>
           </div>
 
-          <div className="space-y-3">
-            <Label>Select New Status</Label>
-            <RadioGroup value={status} onValueChange={setPendingStatus}>
-              {statusOptions.map((option) => (
-                <div
-                  key={option.value}
-                  className={`flex items-center space-x-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                    status === option.value ? 'border-primary bg-primary/5' : 'border-border hover:bg-muted'
-                  }`}
-                  onClick={() => setPendingStatus(option.value)}
+          {order?.status === 'cancelled' ? (
+            <>
+              <div className="p-4 bg-red-50 dark:bg-red-950/20 rounded-xl border-2 border-red-200 dark:border-red-800">
+                <p className="text-sm text-red-900 dark:text-red-100">
+                  <strong>Status Locked:</strong> This order has been cancelled. Status changes are no longer allowed.
+                </p>
+              </div>
+
+              <div className="flex gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => router.push(AdminRoutes.ORDER_DETAIL(id))}
                 >
-                  <RadioGroupItem value={option.value} id={option.value} />
-                  <Label htmlFor={option.value} className="flex items-center gap-3 flex-1 cursor-pointer">
-                    <span className="text-2xl">{option.icon}</span>
-                    <div>
-                      <p className="font-semibold text-foreground">{option.label}</p>
-                      <p className="text-xs text-muted-foreground capitalize">
-                        {option.value.replace(/-/g, ' ')}
-                      </p>
+                  Back to Order
+                </Button>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="space-y-3">
+                <Label>Select New Status</Label>
+                <RadioGroup value={status} onValueChange={setPendingStatus}>
+                  {statusOptions.map((option) => (
+                    <div
+                      key={option.value}
+                      className={`flex items-center space-x-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${status === option.value ? 'border-primary bg-primary/5' : 'border-border hover:bg-muted'
+                        }`}
+                      onClick={() => setPendingStatus(option.value)}
+                    >
+                      <RadioGroupItem value={option.value} id={option.value} />
+                      <Label htmlFor={option.value} className="flex items-center gap-3 flex-1 cursor-pointer">
+                        <span className="text-2xl">{option.icon}</span>
+                        <div>
+                          <p className="font-semibold text-foreground">{option.label}</p>
+                          <p className="text-xs text-muted-foreground capitalize">
+                            {option.value.replace(/-/g, ' ')}
+                          </p>
+                        </div>
+                      </Label>
                     </div>
-                  </Label>
-                </div>
-              ))}
-            </RadioGroup>
-          </div>
+                  ))}
+                </RadioGroup>
+              </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="notes">
-              Additional Notes <span className="text-xs text-muted-foreground">(Optional)</span>
-            </Label>
-            <Textarea
-              id="notes"
-              placeholder="Add tracking details, delivery partner info, or any other message for this update"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={4}
-            />
-            <p className="text-xs text-muted-foreground">
-              Notes will be stored with the order and shared with the customer notification.
-            </p>
-          </div>
+              <div className="space-y-2">
+                <Label htmlFor="notes">
+                  Additional Notes <span className="text-xs text-muted-foreground">(Optional)</span>
+                </Label>
+                <Textarea
+                  id="notes"
+                  placeholder="Add tracking details, delivery partner info, or any other message for this update"
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  rows={4}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Notes will be stored with the order and shared with the customer notification.
+                </p>
+              </div>
 
-          <div className="p-4 bg-blue-50 dark:bg-blue-950/20 rounded-xl border-2 border-blue-200 dark:border-blue-800">
-            <p className="text-sm text-blue-900 dark:text-blue-100">
-              <strong>Reminder:</strong> Customers receive instant notifications for every status update.
-            </p>
-          </div>
+              <div className="p-4 bg-blue-50 dark:bg-blue-950/20 rounded-xl border-2 border-blue-200 dark:border-blue-800">
+                <p className="text-sm text-blue-900 dark:text-blue-100">
+                  <strong>Reminder:</strong> Customers receive instant notifications for every status update.
+                </p>
+              </div>
 
-          <div className="flex gap-3">
-            <Button
-              type="button"
-              variant="outline"
-              className="flex-1"
-              onClick={() => router.push(AdminRoutes.ORDER_DETAIL(id))}
-              disabled={isPending}
-            >
-              Cancel
-            </Button>
-            <Button onClick={handleUpdate} className="flex-1 shadow-lg" disabled={isPending}>
-              <Save className="mr-2 h-5 w-5" />
-              {isPending ? 'Updating...' : 'Update Status'}
-            </Button>
-          </div>
+              <div className="flex gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => router.push(AdminRoutes.ORDER_DETAIL(id))}
+                  disabled={isPending}
+                >
+                  Cancel
+                </Button>
+                <Button onClick={handleUpdate} className="flex-1 shadow-lg" disabled={isPending}>
+                  <Save className="mr-2 h-5 w-5" />
+                  {isPending ? 'Updating...' : 'Update Status'}
+                </Button>
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
     </div>

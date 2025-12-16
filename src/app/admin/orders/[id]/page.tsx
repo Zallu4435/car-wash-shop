@@ -103,14 +103,14 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
           >
             Manage Status
           </Button>
-            <Button
-              variant="outline"
-              className="border-2"
-              onClick={() => router.push(AdminRoutes.ORDER_INVOICE(id))}
-            >
-              <FileText className="mr-2 h-4 w-4" />
-              Invoice
-            </Button>
+          <Button
+            variant="outline"
+            className="border-2"
+            onClick={() => router.push(AdminRoutes.ORDER_INVOICE(id))}
+          >
+            <FileText className="mr-2 h-4 w-4" />
+            Invoice
+          </Button>
         </div>
       </div>
 
@@ -220,25 +220,35 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Select value={status} onValueChange={handleStatusUpdate} disabled={isUpdating}>
-                <SelectTrigger className="h-9 sm:h-10 text-xs sm:text-sm border-2 rounded-lg">
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent className="force-sheet-bg border-2 rounded-lg">
-                  {statusOptions.map((option) => (
-                    <SelectItem
-                      value={option.value}
-                      key={option.value}
-                      className="text-xs sm:text-sm rounded-md capitalize"
-                    >
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-muted-foreground">
-                Need to add notes? Use the <strong>Manage Status</strong> action for a detailed update.
-              </p>
+              {status === 'cancelled' ? (
+                <div className="p-3 sm:p-4 bg-red-50 dark:bg-red-950/20 rounded-lg sm:rounded-xl border-2 border-red-200 dark:border-red-800">
+                  <p className="text-xs sm:text-sm text-red-600 dark:text-red-400">
+                    This order has been cancelled. Status changes are no longer allowed.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <Select value={status} onValueChange={handleStatusUpdate} disabled={isUpdating}>
+                    <SelectTrigger className="h-9 sm:h-10 text-xs sm:text-sm border-2 rounded-lg">
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                    <SelectContent className="force-sheet-bg border-2 rounded-lg">
+                      {statusOptions.map((option) => (
+                        <SelectItem
+                          value={option.value}
+                          key={option.value}
+                          className="text-xs sm:text-sm rounded-md capitalize"
+                        >
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    Need to add notes? Use the <strong>Manage Status</strong> action for a detailed update.
+                  </p>
+                </>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -278,11 +288,10 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                 <div className="flex justify-between gap-2 text-xs sm:text-sm">
                   <span className="text-muted-foreground">Delivery Fee</span>
                   <span
-                    className={`font-semibold flex-shrink-0 ${
-                      (order.shippingFee || 0) === 0
+                    className={`font-semibold flex-shrink-0 ${(order.shippingFee || 0) === 0
                         ? 'text-green-600 dark:text-green-400'
                         : 'text-foreground'
-                    }`}
+                      }`}
                   >
                     {(order.shippingFee || 0) === 0 ? 'FREE' : formatCurrency(order.shippingFee)}
                   </span>

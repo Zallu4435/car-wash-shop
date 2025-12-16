@@ -1,15 +1,14 @@
 'use client';
 
-// @ts-nocheck
 import { use, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { CheckCircle, ArrowLeft, XCircle } from 'lucide-react';
+import { CheckCircle, ArrowLeft, XCircle, Banknote, Smartphone, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useUpdateJobStatus } from '@/api/domains/staff/queries';
+import { useStaffJobDetail } from '@/api/domains/staff/staff-jobs/queries';
 import { StaffRoutes } from '@/lib/constants/routes';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -20,8 +19,9 @@ import { apiClient } from '@/api/client';
 export default function CompleteJobPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
-  const updateJobStatus = useUpdateJobStatus();
+  const { data: job, isLoading: isLoadingJob } = useStaffJobDetail(id);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<'cash' | 'online' | null>(null);
   const { confirm, ConfirmDialog } = useConfirmation();
 
   const {
@@ -34,6 +34,10 @@ export default function CompleteJobPage({ params }: { params: Promise<{ id: stri
       jobId: id,
     },
   });
+
+  // Check if the job is already fully paid (prepaid)
+  const isFullyPrepaid = job?.paymentType === 'full' && job?.paymentStatus === 'paid';
+  const balanceAmount = job ? (job.totalAmount || job.amount || 0) - (job.advanceAmount || 0) : 0;
 
   const handleCouldntReach = async () => {
     const confirmed = await confirm({
@@ -65,25 +69,33 @@ export default function CompleteJobPage({ params }: { params: Promise<{ id: stri
 
   const onSubmit = async (data: CompleteJobInput) => {
     try {
+      // For non-prepaid orders, require payment method selection
+      if (!isFullyPrepaid && !selectedPaymentMethod) {
+        toast.error('Please select how you received the payment');
+        return;
+      }
+
       setIsProcessingPayment(true);
 
-      const paymentReceived = await confirm({
-        title: 'Payment Confirmation',
-        description: 'Have you received the payment from the customer?',
-        confirmText: 'Yes, Payment Received',
-        cancelText: 'No, Not Received',
-        type: 'warning',
-      });
+      // For non-prepaid orders, confirm payment collection
+      if (!isFullyPrepaid) {
+        const paymentConfirmed = await confirm({
+          title: 'Confirm Payment Collection',
+          description: `You are about to mark this job as complete.\n\nPayment collected: ₹${balanceAmount.toLocaleString('en-IN')}\nPayment method: ${selectedPaymentMethod === 'cash' ? 'Cash' : 'Online (GPay/UPI)'}`,
+          confirmText: 'Yes, Complete Job',
+          cancelText: 'Cancel',
+          type: 'warning',
+        });
 
-      if (!paymentReceived) {
-        setIsProcessingPayment(false);
-        toast.info('Please collect the payment before marking the job as completed.');
-        return;
+        if (!paymentConfirmed) {
+          setIsProcessingPayment(false);
+          return;
+        }
       }
 
       const response = await apiClient.patch(`/staff/jobs/${id}`, {
         status: 'completed',
-        paymentReceived: true,
+        paymentMethod: isFullyPrepaid ? undefined : selectedPaymentMethod,
         notes: data.notes,
       });
 
@@ -97,6 +109,14 @@ export default function CompleteJobPage({ params }: { params: Promise<{ id: stri
       setIsProcessingPayment(false);
     }
   };
+
+  if (isLoadingJob) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-2xl mx-auto space-y-4 sm:space-y-6">
@@ -120,6 +140,90 @@ export default function CompleteJobPage({ params }: { params: Promise<{ id: stri
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6">
+
+            {/* Payment Status Info */}
+            {isFullyPrepaid ? (
+              <div className="p-3 sm:p-4 bg-green-500/10 rounded-lg sm:rounded-xl border border-green-500/20">
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+                  <p className="text-xs sm:text-sm font-medium text-green-700 dark:text-green-300">
+                    Fully Paid Online
+                  </p>
+                </div>
+                <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">
+                  This customer has already paid the full amount (₹{(job?.totalAmount || job?.amount || 0).toLocaleString('en-IN')}) online. No payment collection needed.
+                </p>
+              </div>
+            ) : (
+              <>
+                {/* Payment Collection Required */}
+                <div className="p-3 sm:p-4 bg-amber-500/10 rounded-lg sm:rounded-xl border border-amber-500/20">
+                  <p className="text-xs sm:text-sm font-medium text-amber-700 dark:text-amber-300">
+                    Balance to Collect: ₹{balanceAmount.toLocaleString('en-IN')}
+                  </p>
+                  {job?.advanceAmount && job.advanceAmount > 0 && (
+                    <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">
+                      Advance paid: ₹{job.advanceAmount.toLocaleString('en-IN')} | Total: ₹{(job.totalAmount || job.amount || 0).toLocaleString('en-IN')}
+                    </p>
+                  )}
+                </div>
+
+                {/* Payment Method Selection */}
+                <div className="space-y-2">
+                  <Label className="text-xs sm:text-sm">How was payment received?</Label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedPaymentMethod('cash')}
+                      className={`relative p-4 rounded-xl border-2 transition-all ${selectedPaymentMethod === 'cash'
+                        ? 'border-green-500 bg-green-500/20 ring-2 ring-green-500/30'
+                        : 'border-border hover:border-primary/50 hover:bg-muted/50'
+                        }`}
+                    >
+                      {selectedPaymentMethod === 'cash' && (
+                        <div className="absolute top-2 right-2 h-5 w-5 bg-green-500 rounded-full flex items-center justify-center">
+                          <CheckCircle className="h-3.5 w-3.5 text-white" />
+                        </div>
+                      )}
+                      <Banknote className={`h-6 w-6 mx-auto mb-2 ${selectedPaymentMethod === 'cash' ? 'text-green-600 dark:text-green-400' : 'text-muted-foreground'
+                        }`} />
+                      <p className={`text-xs sm:text-sm font-medium ${selectedPaymentMethod === 'cash' ? 'text-green-700 dark:text-green-300' : 'text-foreground'
+                        }`}>
+                        Cash
+                      </p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                        Paid in cash
+                      </p>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setSelectedPaymentMethod('online')}
+                      className={`relative p-4 rounded-xl border-2 transition-all ${selectedPaymentMethod === 'online'
+                        ? 'border-green-500 bg-green-500/20 ring-2 ring-green-500/30'
+                        : 'border-border hover:border-primary/50 hover:bg-muted/50'
+                        }`}
+                    >
+                      {selectedPaymentMethod === 'online' && (
+                        <div className="absolute top-2 right-2 h-5 w-5 bg-green-500 rounded-full flex items-center justify-center">
+                          <CheckCircle className="h-3.5 w-3.5 text-white" />
+                        </div>
+                      )}
+                      <Smartphone className={`h-6 w-6 mx-auto mb-2 ${selectedPaymentMethod === 'online' ? 'text-green-600 dark:text-green-400' : 'text-muted-foreground'
+                        }`} />
+                      <p className={`text-xs sm:text-sm font-medium ${selectedPaymentMethod === 'online' ? 'text-green-700 dark:text-green-300' : 'text-foreground'
+                        }`}>
+                        Online / UPI
+                      </p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                        GPay, PhonePe, etc.
+                      </p>
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+
             {/* Service Notes */}
             <div className="space-y-2">
               <Label htmlFor="notes" className="text-xs sm:text-sm">Service Notes <span className="text-[10px] sm:text-xs text-muted-foreground">(Optional)</span></Label>
@@ -136,21 +240,14 @@ export default function CompleteJobPage({ params }: { params: Promise<{ id: stri
               <p className="text-[10px] sm:text-xs text-muted-foreground">
                 Add any important details about this service
               </p>
-          </div>
-
-          {/* Confirmation */}
-          <div className="p-3 sm:p-4 bg-primary/5 rounded-lg sm:rounded-xl border border-primary/20">
-            <p className="text-xs sm:text-sm text-muted-foreground">
-              <strong className="text-foreground">Note:</strong> Make sure you have collected the balance payment before marking as complete
-            </p>
-          </div>
+            </div>
 
             {/* Submit Button */}
-            <Button 
+            <Button
               type="submit"
-              className="w-full shadow-lg h-10 sm:h-11 lg:h-12 text-xs sm:text-sm lg:text-base border-2" 
+              className="w-full shadow-lg h-10 sm:h-11 lg:h-12 text-xs sm:text-sm lg:text-base border-2"
               size="lg"
-              disabled={isProcessingPayment || updateJobStatus.isPending}
+              disabled={isProcessingPayment || (!isFullyPrepaid && !selectedPaymentMethod)}
             >
               <CheckCircle className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
               {isProcessingPayment ? 'Processing...' : 'Mark as Completed'}

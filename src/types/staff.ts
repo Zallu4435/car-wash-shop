@@ -31,12 +31,15 @@ export interface StaffJobDetail {
   customer: {
     name: string;
     phone: string;
+    email?: string;
   };
   datetime: string;
   status: BookingStatus;
   notes: string[];
   location: string;
   amount?: number;
+  totalAmount?: number;
+  advanceAmount?: number;
   coordinates?: {
     latitude: number;
     longitude: number;
@@ -45,6 +48,8 @@ export interface StaffJobDetail {
     category: 'car' | 'bike';
     bodyType: string;
   };
+  paymentType?: 'full' | 'advance';
+  paymentStatus?: 'pending' | 'paid' | 'refunded';
   paymentInfo?: {
     method: string;
     status: string;
@@ -69,6 +74,7 @@ export interface StaffJobFilters {
 export interface UpdateJobStatusInput {
   status: Exclude<BookingStatus, 'pending' | 'confirmed' | 'assigned'>;
   notes?: string;
+  paymentMethod?: 'cash' | 'online';
 }
 
 export interface StaffPaymentSummary {

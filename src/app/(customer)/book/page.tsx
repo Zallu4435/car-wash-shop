@@ -27,6 +27,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Calendar } from '@/components/ui/calendar';
 import { Progress } from '@/components/ui/progress';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
 import { MapPicker } from '@/components/shared/selectors/MapPicker';
@@ -205,6 +207,7 @@ export default function BookServicePage() {
     orderId: string;
   } | null>(null);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [selectedPaymentType, setSelectedPaymentType] = useState<'full' | 'advance'>('advance');
 
   // Fetch all add-ons and filter to selected IDs
   const { data: allAddons = [] } = useActiveAddons();
@@ -262,10 +265,14 @@ export default function BookServicePage() {
     return (selectedVehiclePrice || 0) + addOnsTotal;
   }, [selectedVehiclePrice, addOnsTotal]);
 
-  const depositAmount = useMemo(() => {
+  const advanceAmount = useMemo(() => {
     const raw = Math.round(totalAmount * DEPOSIT_PERCENTAGE);
     return raw > 0 ? raw : totalAmount;
   }, [totalAmount]);
+
+  const payableAmount = useMemo(() => {
+    return selectedPaymentType === 'full' ? totalAmount : advanceAmount;
+  }, [selectedPaymentType, totalAmount, advanceAmount]);
 
   const baseDuration = useMemo(() => {
     if (typeof service?.duration === 'number') {
@@ -292,7 +299,7 @@ export default function BookServicePage() {
           const updatedBooking = await bookingFetchers.getBookingById(bookingIdToUse);
           setBookingConfirmation(updatedBooking);
           setDepositInfo({
-            amount: depositAmount,
+            amount: payableAmount,
             paymentId: response.razorpay_payment_id,
             orderId: response.razorpay_order_id,
           });
@@ -307,7 +314,7 @@ export default function BookServicePage() {
       setIsProcessingPayment(false);
     },
     onFailure: () => {
-      toast.error('Deposit payment failed. Please try again. Your slot is still available.');
+      toast.error('Payment failed. Please try again. Your slot is still available.');
       setIsProcessingPayment(false);
       // Booking remains in pending status, slot remains available
     },
@@ -516,14 +523,14 @@ export default function BookServicePage() {
     toast.success('Location confirmed.');
   };
 
-  const handleDepositPayment = async () => {
+  const handlePayment = async () => {
     if (!service || !selectedVehicle || !selectedDate || !selectedSlot || !selectedAddress || !selectedLocation) {
       toast.error('Complete all previous steps before payment.');
       return;
     }
 
-    if (!depositAmount || depositAmount <= 0) {
-      toast.error('Unable to compute deposit amount.');
+    if (!payableAmount || payableAmount <= 0) {
+      toast.error('Unable to compute payment amount.');
       return;
     }
 
@@ -542,19 +549,23 @@ export default function BookServicePage() {
         slotId: selectedSlot.id,
         addressId: selectedAddressId,
         addOns: selectedAddOnIds,
-        paymentType: 'advance',
+        paymentType: selectedPaymentType,
         coordinates: selectedLocation ? {
           latitude: selectedLocation.latitude,
           longitude: selectedLocation.longitude,
         } : undefined,
       };
 
+      const paymentDescription = selectedPaymentType === 'full'
+        ? `Full Payment for ${service.name}`
+        : `Advance (30%) for ${service.name}`;
+
       // Process payment with bookingData (booking will be created after payment success)
       await processPayment({
         bookingData: bookingData,
-        amount: depositAmount,
-        description: `Deposit for ${service.name}`,
-        paymentType: 'advance',
+        amount: payableAmount,
+        description: paymentDescription,
+        paymentType: selectedPaymentType,
         userName,
         userEmail,
         userPhone,
@@ -563,7 +574,8 @@ export default function BookServicePage() {
           vehicleId: selectedVehicle.id,
           scheduledDate: serviceDateKey,
           slot: `${selectedSlot.startTime} - ${selectedSlot.endTime}`,
-          deposit: String(depositAmount),
+          paymentType: selectedPaymentType,
+          amount: String(payableAmount),
         },
       });
     } catch (error: any) {
@@ -972,13 +984,14 @@ export default function BookServicePage() {
                     <div className="rounded-lg bg-primary/10 p-2">
                       <CreditCard className="h-5 w-5 text-primary" />
                     </div>
-                    <CardTitle className="text-base sm:text-lg">Review & Pay Deposit</CardTitle>
+                    <CardTitle className="text-base sm:text-lg">Review & Pay</CardTitle>
                   </div>
                   <p className="text-xs text-muted-foreground sm:text-sm">
-                    Pay a small deposit to confirm your booking. This amount will be adjusted in the final invoice.
+                    Choose your payment option and confirm your booking.
                   </p>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  {/* Price Breakdown */}
                   <div className="space-y-3 rounded-xl border-2 border-border bg-muted/40 p-4">
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-muted-foreground">Service Price</span>
@@ -997,17 +1010,90 @@ export default function BookServicePage() {
                     )}
                     <Separator />
                     <div className="flex items-center justify-between text-sm font-semibold">
-                      <span className="text-foreground">Total Estimate</span>
+                      <span className="text-foreground">Total Amount</span>
                       <span className="text-primary">{formatCurrency(totalAmount)}</span>
                     </div>
-                    <div className="flex items-center justify-between rounded-lg bg-primary/10 px-3 py-2 text-sm font-semibold text-primary">
-                      <span>Deposit (30%)</span>
-                      <span>{formatCurrency(depositAmount)}</span>
+                  </div>
+
+                  {/* Payment Option Selector */}
+                  <div className="space-y-3">
+                    <h3 className="text-sm font-semibold text-foreground">Choose Payment Option</h3>
+                    <RadioGroup
+                      value={selectedPaymentType}
+                      onValueChange={(value) => setSelectedPaymentType(value as 'full' | 'advance')}
+                      className="space-y-3"
+                    >
+                      {/* Full Payment Option */}
+                      <div
+                        className={cn(
+                          'flex items-start gap-3 rounded-xl border-2 p-4 cursor-pointer transition-all',
+                          selectedPaymentType === 'full'
+                            ? 'border-primary bg-primary/5'
+                            : 'border-border hover:border-primary/40'
+                        )}
+                        onClick={() => setSelectedPaymentType('full')}
+                      >
+                        <RadioGroupItem value="full" id="payment-full" className="mt-0.5" />
+                        <div className="flex-1">
+                          <Label htmlFor="payment-full" className="cursor-pointer">
+                            <div className="flex items-center gap-2">
+                              <div className={cn(
+                                'p-1.5 rounded-lg',
+                                selectedPaymentType === 'full' ? 'bg-primary/10' : 'bg-muted'
+                              )}>
+                                <CreditCard className="h-4 w-4" />
+                              </div>
+                              <span className="font-semibold text-foreground">Pay Full Amount</span>
+                            </div>
+                            <p className="mt-1 text-xs text-muted-foreground">
+                              Pay {formatCurrency(totalAmount)} now via Razorpay. No balance due after service.
+                            </p>
+                          </Label>
+                        </div>
+                      </div>
+
+                      {/* Advance Payment Option */}
+                      <div
+                        className={cn(
+                          'flex items-start gap-3 rounded-xl border-2 p-4 cursor-pointer transition-all',
+                          selectedPaymentType === 'advance'
+                            ? 'border-primary bg-primary/5'
+                            : 'border-border hover:border-primary/40'
+                        )}
+                        onClick={() => setSelectedPaymentType('advance')}
+                      >
+                        <RadioGroupItem value="advance" id="payment-advance" className="mt-0.5" />
+                        <div className="flex-1">
+                          <Label htmlFor="payment-advance" className="cursor-pointer">
+                            <div className="flex items-center gap-2">
+                              <div className={cn(
+                                'p-1.5 rounded-lg',
+                                selectedPaymentType === 'advance' ? 'bg-primary/10' : 'bg-muted'
+                              )}>
+                                <Wallet className="h-4 w-4" />
+                              </div>
+                              <span className="font-semibold text-foreground">Pay Advance (30%)</span>
+                            </div>
+                            <p className="mt-1 text-xs text-muted-foreground">
+                              Pay {formatCurrency(advanceAmount)} now. Balance of {formatCurrency(totalAmount - advanceAmount)} due after service.
+                            </p>
+                          </Label>
+                        </div>
+                      </div>
+                    </RadioGroup>
+                  </div>
+
+                  {/* Payment Summary */}
+                  <div className="rounded-xl border-2 border-primary/30 bg-primary/5 p-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-semibold text-foreground">Amount to Pay Now</span>
+                      <span className="text-lg font-bold text-primary">{formatCurrency(payableAmount)}</span>
                     </div>
-                    <div className="flex items-center justify-between text-xs text-muted-foreground">
-                      <span>Pay on completion</span>
-                      <span>{formatCurrency(totalAmount - depositAmount)}</span>
-                    </div>
+                    {selectedPaymentType === 'advance' && (
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Remaining {formatCurrency(totalAmount - advanceAmount)} payable after service completion
+                      </p>
+                    )}
                   </div>
 
                   <div className="rounded-xl border-2 border-border bg-muted/50 p-4">
@@ -1016,7 +1102,7 @@ export default function BookServicePage() {
                       <div className="space-y-2">
                         <p className="text-sm font-semibold text-foreground">Cancellation Policy</p>
                         <p className="text-xs text-muted-foreground">
-                          Full refund available if cancelled within 1 hour of booking. Refunds are processed within 3-5 business days. Deposit will be adjusted against your final service bill.
+                          Full refund available if cancelled within 1 hour of booking. Refunds are processed within 3-5 business days.
                         </p>
                       </div>
                     </div>
@@ -1027,13 +1113,13 @@ export default function BookServicePage() {
                       Back
                     </Button>
                     <Button
-                      onClick={handleDepositPayment}
+                      onClick={handlePayment}
                       disabled={isProcessingPayment || razorpayLoading}
                     >
                       {(isProcessingPayment || razorpayLoading) && (
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       )}
-                      Pay Deposit & Confirm ({formatCurrency(depositAmount)})
+                      {selectedPaymentType === 'full' ? 'Pay & Confirm' : 'Pay Advance & Confirm'} ({formatCurrency(payableAmount)})
                     </Button>
                   </div>
                 </CardContent>
@@ -1099,13 +1185,18 @@ export default function BookServicePage() {
 
                   <SummaryItem
                     icon={<CreditCard className="h-4 w-4 text-primary" />}
-                    label="Deposit"
+                    label={selectedPaymentType === 'full' ? 'Payment' : 'Advance Paid'}
                     value={
                       <div className="space-y-1 text-sm text-foreground">
-                        <p className="font-semibold">{formatCurrency(depositInfo?.amount || depositAmount)}</p>
+                        <p className="font-semibold">{formatCurrency(depositInfo?.amount || payableAmount)}</p>
                         {depositInfo && (
                           <p className="text-xs text-muted-foreground">
                             Paid via Razorpay • Ref: {depositInfo.paymentId}
+                          </p>
+                        )}
+                        {selectedPaymentType === 'advance' && (
+                          <p className="text-xs text-muted-foreground">
+                            Balance due: {formatCurrency(totalAmount - (depositInfo?.amount || advanceAmount))}
                           </p>
                         )}
                       </div>
@@ -1117,7 +1208,9 @@ export default function BookServicePage() {
                     <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
                       <li>• Our team will review your booking and assign staff.</li>
                       <li>• You can manage this booking from your orders dashboard.</li>
-                      <li>• Remaining balance is payable after service completion.</li>
+                      {selectedPaymentType === 'advance' && (
+                        <li>• Remaining balance is payable after service completion.</li>
+                      )}
                     </ul>
                   </div>
 
@@ -1178,8 +1271,8 @@ export default function BookServicePage() {
                       <span className="font-semibold text-foreground">{formatCurrency(totalAmount)}</span>
                     </div>
                     <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
-                      <span>Deposit</span>
-                      <span>{formatCurrency(depositAmount)}</span>
+                      <span>{selectedPaymentType === 'full' ? 'Full Payment' : 'Advance (30%)'}</span>
+                      <span>{formatCurrency(payableAmount)}</span>
                     </div>
                   </div>
                 )}
