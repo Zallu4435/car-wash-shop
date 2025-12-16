@@ -87,3 +87,43 @@ export const useUpdateStaffStatus = () => {
     },
   });
 };
+
+/**
+ * Get staff collections for admin (pending/received handovers)
+ */
+export const useStaffCollections = (staffId: string, options?: { days?: number; status?: string }) => {
+  return useQuery({
+    queryKey: [...adminStaffKeys.detail(staffId), 'collections', options] as const,
+    queryFn: () => adminStaffFetchers.getStaffCollections(staffId, options),
+    enabled: !!staffId,
+    staleTime: 30 * 1000, // 30 seconds
+  });
+};
+
+/**
+ * Mark a date's collection as received by admin
+ */
+export const useMarkHandoverReceived = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ staffId, date }: { staffId: string; date: string }) =>
+      adminStaffFetchers.markHandoverReceived(staffId, date),
+    onSuccess: (data, variables) => {
+      // Invalidate all collections queries for this staff member
+      queryClient.invalidateQueries({
+        predicate: (query) => {
+          const key = query.queryKey;
+          return Array.isArray(key) &&
+            key[0] === 'admin-staff' &&
+            key[1] === 'detail' &&
+            key[2] === variables.staffId &&
+            key[3] === 'collections';
+        }
+      });
+      toast.success(`Collection for ${new Date(variables.date).toLocaleDateString('en-IN')} marked as received`);
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Failed to mark handover as received');
+    },
+  });
+};

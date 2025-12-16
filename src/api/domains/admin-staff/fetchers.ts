@@ -247,4 +247,83 @@ export const adminStaffFetchers = {
     );
     return data.data!;
   },
+
+  /**
+   * Get staff collections grouped by date (for admin)
+   */
+  async getStaffCollections(staffId: string, options?: { days?: number; status?: string }): Promise<StaffCollectionsResponse> {
+    if (USE_MOCK_DATA) {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      return {
+        staffId,
+        staffName: 'Mock Staff',
+        collections: [],
+        summary: { totalPending: 0, pendingDays: 0 },
+      };
+    }
+
+    const { data } = await apiClient.get<ApiResponse<StaffCollectionsResponse>>(
+      `${AdminRoutes.STAFF_DETAIL(staffId)}/collections`,
+      { params: options }
+    );
+    return data.data!;
+  },
+
+  /**
+   * Mark a date's collection as received by admin
+   */
+  async markHandoverReceived(staffId: string, date: string): Promise<HandoverResult> {
+    if (USE_MOCK_DATA) {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      return {
+        date,
+        cashAmount: 0,
+        onlineAmount: 0,
+        totalAmount: 0,
+        bookingCount: 0,
+        status: 'received',
+        receivedBy: 'Admin',
+        receivedAt: new Date().toISOString(),
+      };
+    }
+
+    const { data } = await apiClient.post<ApiResponse<HandoverResult>>(
+      `${AdminRoutes.STAFF_DETAIL(staffId)}/handover`,
+      { date }
+    );
+    return data.data!;
+  },
 };
+
+// Types for staff collections
+export interface CollectionItem {
+  date: string;
+  cash: number;
+  online: number;
+  total: number;
+  count: number;
+  handoverStatus: 'pending' | 'received';
+  receivedBy: string | null;
+  receivedAt: string | null;
+}
+
+export interface StaffCollectionsResponse {
+  staffId: string;
+  staffName: string;
+  collections: CollectionItem[];
+  summary: {
+    totalPending: number;
+    pendingDays: number;
+  };
+}
+
+export interface HandoverResult {
+  date: string;
+  cashAmount: number;
+  onlineAmount: number;
+  totalAmount: number;
+  bookingCount: number;
+  status: 'received';
+  receivedBy: string;
+  receivedAt: string;
+}

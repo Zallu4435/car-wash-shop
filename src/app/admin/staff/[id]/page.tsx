@@ -2,7 +2,7 @@
 
 import { use } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Edit, Phone, Mail, Briefcase, IndianRupee, Calendar, Ban, Trash2 } from 'lucide-react';
+import { ArrowLeft, Edit, Phone, Mail, Briefcase, IndianRupee, Calendar, Ban, Trash2, Banknote, Smartphone, CheckCircle, Clock, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -11,7 +11,7 @@ import { useConfirmation } from '@/hooks/useConfirmation';
 import { toast } from 'sonner';
 import { DangerZone } from '@/components/admin/DangerZone';
 import { AdminRoutes } from '@/lib/constants/routes';
-import { useAdminStaffDetail, useDeleteStaff, useUpdateStaffStatus } from '@/api/domains/admin-staff/queries';
+import { useAdminStaffDetail, useDeleteStaff, useUpdateStaffStatus, useStaffCollections, useMarkHandoverReceived } from '@/api/domains/admin-staff/queries';
 
 export default function StaffDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -21,10 +21,13 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
   const { data: staffMember, isLoading } = useAdminStaffDetail(id);
   const deleteStaff = useDeleteStaff();
   const updateStaffStatus = useUpdateStaffStatus();
+  const { data: collectionsData, isLoading: isLoadingCollections } = useStaffCollections(id);
+  const markHandover = useMarkHandoverReceived();
+  const handoverConfirmation = useConfirmation();
 
   const handleDeleteClick = async () => {
     if (!staffMember) return;
-    
+
     const confirmed = await deleteConfirmation.confirm({
       type: 'delete',
       title: 'Delete Staff Member?',
@@ -154,6 +157,121 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
               </div>
             </CardContent>
           </Card>
+
+          {/* Collections / Cash Handover */}
+          <Card className="border-2 border-border rounded-lg sm:rounded-xl">
+            <CardHeader className="pb-3 sm:pb-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <IndianRupee className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+                  <CardTitle className="text-sm sm:text-base lg:text-lg">Collections</CardTitle>
+                </div>
+                {collectionsData?.summary && collectionsData.summary.pendingDays > 0 && (
+                  <Badge variant="secondary" className="bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300">
+                    {collectionsData.summary.pendingDays} pending
+                  </Badge>
+                )}
+              </div>
+              {collectionsData?.summary && collectionsData.summary.totalPending > 0 && (
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                  Total pending: <span className="font-semibold text-amber-600">₹{collectionsData.summary.totalPending.toLocaleString('en-IN')}</span>
+                </p>
+              )}
+            </CardHeader>
+            <CardContent>
+              {isLoadingCollections ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                </div>
+              ) : !collectionsData?.collections || collectionsData.collections.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <IndianRupee className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">No collections found</p>
+                </div>
+              ) : (
+                <div className="space-y-2 sm:space-y-3">
+                  {collectionsData.collections.map((collection) => (
+                    <div
+                      key={collection.date}
+                      className={`flex items-center justify-between p-3 sm:p-4 rounded-xl border-2 ${collection.handoverStatus === 'received'
+                        ? 'bg-green-50/50 dark:bg-green-900/10 border-green-200 dark:border-green-800/30'
+                        : 'bg-amber-50/50 dark:bg-amber-900/10 border-amber-200 dark:border-amber-800/30'
+                        }`}
+                    >
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+                          <span className="text-sm font-semibold">
+                            {new Date(collection.date).toLocaleDateString('en-IN', {
+                              weekday: 'short',
+                              day: 'numeric',
+                              month: 'short',
+                            })}
+                          </span>
+                          {collection.handoverStatus === 'received' ? (
+                            <Badge variant="default" className="text-[10px] bg-green-600">
+                              <CheckCircle className="h-3 w-3 mr-1" />
+                              Received
+                            </Badge>
+                          ) : (
+                            <Badge variant="secondary" className="text-[10px] bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300">
+                              <Clock className="h-3 w-3 mr-1" />
+                              Pending
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <Banknote className="h-3 w-3" />
+                            ₹{collection.cash.toLocaleString('en-IN')}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Smartphone className="h-3 w-3" />
+                            ₹{collection.online.toLocaleString('en-IN')}
+                          </span>
+                        </div>
+                        {collection.receivedBy && (
+                          <p className="text-[10px] text-muted-foreground mt-1">
+                            By {collection.receivedBy} on {new Date(collection.receivedAt!).toLocaleDateString('en-IN')}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex flex-col items-end gap-2">
+                        <p className="text-lg font-bold text-primary">
+                          ₹{collection.total.toLocaleString('en-IN')}
+                        </p>
+                        {collection.handoverStatus === 'pending' && (
+                          <Button
+                            size="sm"
+                            onClick={async () => {
+                              const confirmed = await handoverConfirmation.confirm({
+                                title: 'Mark as Received',
+                                description: `Confirm you have received ₹${collection.total.toLocaleString('en-IN')} from ${staffMember?.name} for ${new Date(collection.date).toLocaleDateString('en-IN')}?`,
+                                confirmText: 'Yes, Received',
+                                cancelText: 'Cancel',
+                              });
+                              if (confirmed) {
+                                markHandover.mutate({ staffId: id, date: collection.date });
+                              }
+                            }}
+                            disabled={markHandover.isPending}
+                            className="h-8 text-xs"
+                          >
+                            {markHandover.isPending ? (
+                              <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                            ) : (
+                              <CheckCircle className="h-3 w-3 mr-1" />
+                            )}
+                            Mark Received
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
 
         {/* Stats */}
@@ -164,8 +282,8 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
             actions={[
               {
                 title: staffMember.status === 'active' ? 'Suspend Staff Member' : 'Activate Staff Member',
-                description: staffMember.status === 'active' 
-                  ? 'Prevent staff from accepting new jobs' 
+                description: staffMember.status === 'active'
+                  ? 'Prevent staff from accepting new jobs'
                   : 'Reactivate staff member to accept new jobs',
                 buttonText: staffMember.status === 'active' ? 'Suspend' : 'Activate',
                 buttonIcon: Ban,
@@ -182,9 +300,9 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
                     itemName: staffMember.name,
                   });
                   if (confirmed) {
-                    await updateStaffStatus.mutateAsync({ 
-                      staffId: id, 
-                      status: staffMember.status === 'active' ? 'suspended' : 'active' 
+                    await updateStaffStatus.mutateAsync({
+                      staffId: id,
+                      status: staffMember.status === 'active' ? 'suspended' : 'active'
                     });
                   }
                 },
@@ -206,6 +324,7 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
       {/* Confirmation Dialogs */}
       <blockConfirmation.ConfirmDialog />
       <deleteConfirmation.ConfirmDialog />
+      <handoverConfirmation.ConfirmDialog />
     </div>
   );
 }
