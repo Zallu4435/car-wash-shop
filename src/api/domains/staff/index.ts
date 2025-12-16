@@ -1,6 +1,3 @@
-// Staff Dashboard
-export * from './staff-dashboard/queries';
-
 // Staff Jobs
 export * from './staff-jobs/queries';
 

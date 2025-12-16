@@ -43,8 +43,8 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
     <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
-        <Button 
-          variant="ghost" 
+        <Button
+          variant="ghost"
           onClick={() => router.push(StaffRoutes.JOBS)}
           className="w-full sm:w-auto h-9 sm:h-10 text-xs sm:text-sm border-2"
         >
@@ -119,7 +119,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                     </p>
                   </div>
                   <p className="font-semibold text-xs sm:text-sm md:text-base text-foreground">
-                    {job.datetime?.split('T')[1]?.slice(0,5)}
+                    {job.datetime?.split('T')[1]?.slice(0, 5)}
                   </p>
                 </div>
               </div>
@@ -146,21 +146,72 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
               </div>
             </CardHeader>
             <CardContent className="space-y-2.5 sm:space-y-3">
+              {/* Total Amount */}
               <div className="flex justify-between items-center p-2.5 sm:p-3 bg-muted/50 rounded-lg">
                 <span className="text-[10px] sm:text-xs lg:text-sm text-muted-foreground">Total Amount</span>
                 <span className="font-bold text-sm sm:text-base lg:text-lg text-foreground">
-                  ₹{job.amount ?? 0}
+                  ₹{job.totalAmount ?? job.amount ?? 0}
                 </span>
               </div>
-              {/* Additional payment breakdown not available */}
+
+              {/* Payment Type Badge */}
+              {job.paymentType && (
+                <div className="flex justify-between items-center p-2.5 sm:p-3 bg-muted/50 rounded-lg">
+                  <span className="text-[10px] sm:text-xs lg:text-sm text-muted-foreground">Payment Type</span>
+                  <Badge variant={job.paymentType === 'full' ? 'default' : 'secondary'} className="text-[10px] sm:text-xs capitalize">
+                    {job.paymentType === 'full' ? 'Full Payment' : 'Advance Payment'}
+                  </Badge>
+                </div>
+              )}
+
+              {/* Show breakdown for advance payments */}
+              {job.paymentType === 'advance' && (job.advanceAmount ?? 0) > 0 && (
+                <>
+                  {/* Advance Paid */}
+                  <div className="flex justify-between items-center p-2.5 sm:p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
+                    <span className="text-[10px] sm:text-xs lg:text-sm text-green-700 dark:text-green-400">Already Paid (Advance)</span>
+                    <span className="font-semibold text-sm sm:text-base text-green-700 dark:text-green-400">
+                      ₹{job.advanceAmount ?? 0}
+                    </span>
+                  </div>
+
+                  {/* Balance Due */}
+                  <div className="flex justify-between items-center p-2.5 sm:p-3 bg-orange-500/10 border border-orange-500/20 rounded-lg">
+                    <span className="text-[10px] sm:text-xs lg:text-sm text-orange-700 dark:text-orange-400">Balance to Collect</span>
+                    <span className="font-bold text-sm sm:text-base lg:text-lg text-orange-700 dark:text-orange-400">
+                      ₹{(job.totalAmount ?? job.amount ?? 0) - (job.advanceAmount ?? 0)}
+                    </span>
+                  </div>
+                </>
+              )}
+
+              {/* Show full payment already collected message */}
+              {job.paymentType === 'full' && job.paymentStatus === 'paid' && (
+                <div className="flex justify-between items-center p-2.5 sm:p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
+                  <span className="text-[10px] sm:text-xs lg:text-sm text-green-700 dark:text-green-400">Payment Status</span>
+                  <Badge variant="default" className="bg-green-600 text-[10px] sm:text-xs">
+                    Fully Paid
+                  </Badge>
+                </div>
+              )}
+
+              {/* Payment Status (for pending payments) */}
+              {job.paymentStatus === 'pending' && (
+                <div className="flex justify-between items-center p-2.5 sm:p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+                  <span className="text-[10px] sm:text-xs lg:text-sm text-yellow-700 dark:text-yellow-400">Payment Status</span>
+                  <Badge variant="outline" className="border-yellow-500 text-yellow-700 dark:text-yellow-400 text-[10px] sm:text-xs">
+                    Pending
+                  </Badge>
+                </div>
+              )}
             </CardContent>
           </Card>
 
           {/* Complete Button */}
           {job.status !== BOOKING_STATUS.COMPLETED && (
-            <Button 
+            <Button
               onClick={() => router.push(StaffRoutes.JOB_COMPLETE(id))}
-              className="w-full shadow-lg h-10 sm:h-11 lg:h-12 text-xs sm:text-sm lg:text-base border-2" 
+              className="w-full shadow-lg h-10 sm:h-11 lg:h-12 text-xs sm:text-sm lg:text-base border-2"
               size="lg"
             >
               <CheckCircle className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
