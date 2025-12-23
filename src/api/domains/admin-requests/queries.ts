@@ -88,11 +88,22 @@ export const useAdminSlots = (date?: string) => {
 export const useGenerateSlots = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input: { date: string; startTime: string; endTime: string; capacity?: number }) =>
-      adminRequestsFetchers.createSlots(input),
+    mutationFn: (input: {
+      startDate: string;
+      endDate: string;
+      weekdayStartTime: string;
+      weekdayEndTime: string;
+      weekendStartTime: string;
+      weekendEndTime: string;
+      initialStatus: 'available' | 'unavailable';
+    }) => adminRequestsFetchers.createSlots(input),
     onSuccess: (data, variables) => {
-      queryClient.setQueryData([...adminRequestsKeys.all, 'slots', variables.date], data);
-      toast.success('Slots generated successfully');
+      // Invalidate all slots queries to ensure fresh data
+      queryClient.invalidateQueries({ queryKey: [...adminRequestsKeys.all, 'slots'] });
+      const message = data.daysGenerated && data.daysGenerated > 1
+        ? `Slots generated for ${data.daysGenerated} days`
+        : 'Slots generated successfully';
+      toast.success(message);
     },
     onError: (error: any) => {
       toast.error(error.message || 'Failed to generate slots');

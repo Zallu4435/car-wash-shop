@@ -256,8 +256,16 @@ export const adminRequestsFetchers = {
     return { slots };
   },
 
-  async createSlots(input: { date: string; startTime: string; endTime: string; capacity?: number }): Promise<{ slots: Array<any> }> {
-    const { data } = await apiClient.post<ApiResponse<{ slots: Array<any> }>>(
+  async createSlots(input: {
+    startDate: string;
+    endDate: string;
+    weekdayStartTime: string;
+    weekdayEndTime: string;
+    weekendStartTime: string;
+    weekendEndTime: string;
+    initialStatus: 'available' | 'unavailable';
+  }): Promise<{ slots: Array<any>; daysGenerated?: number; totalSlotsCreated?: number }> {
+    const { data } = await apiClient.post<ApiResponse<{ slots: Array<any>; daysGenerated?: number; totalSlotsCreated?: number }>>(
       '/admin/requests/slots',
       input
     );
@@ -268,7 +276,11 @@ export const adminRequestsFetchers = {
       booked: Boolean(slot.booked),
       capacity: slot.capacity,
     }));
-    return { slots };
+    return {
+      slots,
+      daysGenerated: data.data?.daysGenerated,
+      totalSlotsCreated: data.data?.totalSlotsCreated,
+    };
   },
 
   async updateSlot(slotId: string, input: { status?: 'available' | 'unavailable'; booked?: boolean }): Promise<{ slot: any }> {

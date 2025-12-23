@@ -137,13 +137,26 @@ export default function SlotManagementPage() {
     }
   };
 
-  const handleGenerateSlots = (formData: { date: string; startTime: string; endTime: string; capacity?: number }) => {
-    if (!formData.date) {
-      toast.error('Please select a date to generate slots');
-      return;
-    }
+  const handleGenerateSlots = (formData: {
+    startDate: string;
+    endDate: string;
+    weekdayStartTime: string;
+    weekdayEndTime: string;
+    weekendStartTime: string;
+    weekendEndTime: string;
+    makeAvailable: boolean;
+  }) => {
+    const payload = {
+      startDate: formData.startDate,
+      endDate: formData.endDate,
+      weekdayStartTime: formData.weekdayStartTime,
+      weekdayEndTime: formData.weekdayEndTime,
+      weekendStartTime: formData.weekendStartTime,
+      weekendEndTime: formData.weekendEndTime,
+      initialStatus: formData.makeAvailable ? 'available' as const : 'unavailable' as const,
+    };
 
-    generateSlotsMutation.mutate(formData, {
+    generateSlotsMutation.mutate(payload, {
       onSuccess: () => {
         setShowGenerateModal(false);
         refetch();
@@ -185,15 +198,8 @@ export default function SlotManagementPage() {
             <span className="xs:hidden">Enable All</span>
           </Button>
           <Button
-            onClick={() => {
-              if (!selectedDateISO) {
-                toast.error('Please select a date first');
-                return;
-              }
-              setShowGenerateModal(true);
-            }}
+            onClick={() => setShowGenerateModal(true)}
             className="h-9 sm:h-10 text-xs sm:text-sm w-full sm:w-auto border-2"
-            disabled={!selectedDateISO}
           >
             <Sparkles className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
             Generate Slots
@@ -211,7 +217,7 @@ export default function SlotManagementPage() {
           trend="up"
           description="Daily slots"
         />
-        
+
         <StatCard
           icon={CheckCircle}
           label="Available"
@@ -221,7 +227,7 @@ export default function SlotManagementPage() {
           trend="up"
           description="Ready to book"
         />
-        
+
         <StatCard
           icon={Ban}
           label="Unavailable"
@@ -238,7 +244,7 @@ export default function SlotManagementPage() {
           valueClassName="text-primary"
           description="Already assigned"
         />
-        
+
         <StatCard
           icon={AlertTriangle}
           label="Staff on Leave"
@@ -269,11 +275,11 @@ export default function SlotManagementPage() {
             {selectedDate && (
               <div className="mt-3 sm:mt-4 p-3 sm:p-4 bg-primary/10 rounded-lg sm:rounded-xl border-2 border-primary/20">
                 <p className="text-xs sm:text-sm font-semibold text-foreground">
-                  {selectedDate.toLocaleDateString('en-IN', { 
-                    weekday: 'long', 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
+                  {selectedDate.toLocaleDateString('en-IN', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
                   })}
                 </p>
               </div>
@@ -319,24 +325,21 @@ export default function SlotManagementPage() {
                       key={slot.id}
                       onClick={() => toggleSlot(slot)}
                       disabled={isDisabled}
-                      className={`p-3 sm:p-4 rounded-lg sm:rounded-xl border-2 transition-all duration-300 ${
-                        isBooked
+                      className={`p-3 sm:p-4 rounded-lg sm:rounded-xl border-2 transition-all duration-300 ${isBooked
                           ? 'opacity-60 cursor-not-allowed'
                           : isProcessing
-                          ? 'opacity-50 cursor-not-allowed'
-                          : 'hover:shadow-md active:scale-95 cursor-pointer'
-                      } ${
-                        isAvailable
+                            ? 'opacity-50 cursor-not-allowed'
+                            : 'hover:shadow-md active:scale-95 cursor-pointer'
+                        } ${isAvailable
                           ? 'border-green-300 bg-green-50 dark:bg-green-950/20 hover:bg-green-100/70'
                           : 'border-destructive bg-destructive/10 hover:bg-destructive/15'
-                      }`}
+                        }`}
                       title={isBooked ? 'This slot is booked and cannot be modified' : ''}
                     >
                       <div className="flex items-center justify-between mb-1.5 sm:mb-2">
                         <Clock
-                          className={`h-3.5 w-3.5 sm:h-4 sm:w-4 transition-colors ${
-                            isAvailable ? 'text-green-600 dark:text-green-400' : 'text-destructive'
-                          }`}
+                          className={`h-3.5 w-3.5 sm:h-4 sm:w-4 transition-colors ${isAvailable ? 'text-green-600 dark:text-green-400' : 'text-destructive'
+                            }`}
                         />
                         {slot.booked && (
                           <Badge variant="outline" className="text-[10px] bg-amber-100 text-amber-700 border-amber-200">
@@ -345,18 +348,16 @@ export default function SlotManagementPage() {
                         )}
                       </div>
                       <p
-                        className={`font-bold text-sm sm:text-base mb-1.5 sm:mb-2 transition-colors ${
-                          isAvailable ? 'text-foreground' : 'text-destructive'
-                        }`}
+                        className={`font-bold text-sm sm:text-base mb-1.5 sm:mb-2 transition-colors ${isAvailable ? 'text-foreground' : 'text-destructive'
+                          }`}
                       >
                         {formatTime(slot.time)}
                       </p>
                       <Badge
-                        className={`text-xs transition-all ${
-                          isAvailable
+                        className={`text-xs transition-all ${isAvailable
                             ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300 border-green-200 dark:border-green-800'
                             : 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300 border-red-200 dark:border-red-800'
-                        }`}
+                          }`}
                       >
                         {isAvailable ? 'Available' : 'Unavailable'}
                       </Badge>
@@ -384,18 +385,16 @@ export default function SlotManagementPage() {
               return (
                 <div
                   key={member.id}
-                  className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 p-3 sm:p-4 rounded-lg sm:rounded-xl border-2 transition-all ${
-                    isOnLeave 
-                      ? 'bg-destructive/5 border-destructive/20' 
+                  className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 p-3 sm:p-4 rounded-lg sm:rounded-xl border-2 transition-all ${isOnLeave
+                      ? 'bg-destructive/5 border-destructive/20'
                       : 'bg-muted border-border'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
-                    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center font-bold text-base sm:text-lg flex-shrink-0 ${
-                      isOnLeave 
-                        ? 'bg-destructive/10 text-destructive' 
+                    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center font-bold text-base sm:text-lg flex-shrink-0 ${isOnLeave
+                        ? 'bg-destructive/10 text-destructive'
                         : 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
-                    }`}>
+                      }`}>
                       {member.name.charAt(0)}
                     </div>
                     <div className="min-w-0 flex-1">
@@ -404,20 +403,18 @@ export default function SlotManagementPage() {
                     </div>
                   </div>
                   <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
-                    <Badge 
-                      className={`text-xs ${
-                        isOnLeave 
-                          ? 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300 border-red-200 dark:border-red-800' 
+                    <Badge
+                      className={`text-xs ${isOnLeave
+                          ? 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300 border-red-200 dark:border-red-800'
                           : 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300 border-green-200 dark:border-green-800'
-                      }`}
+                        }`}
                     >
                       {isOnLeave ? 'On Leave' : 'Available'}
                     </Badge>
-                    <div className={`flex items-center gap-2 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg border-2 transition-colors ${
-                      isOnLeave 
-                        ? 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800' 
+                    <div className={`flex items-center gap-2 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg border-2 transition-colors ${isOnLeave
+                        ? 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800'
                         : 'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800'
-                    }`}>
+                      }`}>
                       <Label htmlFor={`staff-${member.id}`} className="text-xs sm:text-sm font-medium cursor-pointer">
                         {isOnLeave ? 'Mark Available' : 'Mark on Leave'}
                       </Label>
@@ -438,7 +435,6 @@ export default function SlotManagementPage() {
       {/* Generate Slots Modal */}
       <CreateSlotModal
         isOpen={showGenerateModal}
-        selectedDate={selectedDateISO}
         onClose={() => setShowGenerateModal(false)}
         onGenerate={handleGenerateSlots}
       />
