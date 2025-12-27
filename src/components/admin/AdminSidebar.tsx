@@ -18,7 +18,6 @@ import {
   Clock,
   ChevronRight,
   Folder,
-  Star,
   X,
   CreditCard,
   Search,
@@ -79,7 +78,6 @@ const navigationGroups = [
   {
     title: 'Support',
     items: [
-      { name: 'Feedback', href: AdminRoutes.FEEDBACK, icon: Star },
       { name: 'Complaints', href: AdminRoutes.COMPLAINTS, icon: AlertTriangle },
     ]
   },

@@ -168,9 +168,6 @@ export const ROUTES = {
     // Reports
     REPORTS: '/admin/reports',
 
-    // Feedback
-    FEEDBACK: '/admin/feedback',
-
     // Settings
     SETTINGS: '/admin/settings',
     SETTINGS_DELIVERY: '/admin/settings/delivery-fees',
