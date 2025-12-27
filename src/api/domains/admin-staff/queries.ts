@@ -127,3 +127,59 @@ export const useMarkHandoverReceived = () => {
     },
   });
 };
+
+// ============ Staff Leave Hooks ============
+
+export const staffLeaveKeys = {
+  all: ['staff-leaves'] as const,
+  byDate: (date: string) => [...staffLeaveKeys.all, date] as const,
+};
+
+/**
+ * Get all staff on leave for a specific date
+ */
+export const useStaffLeavesByDate = (date?: string) => {
+  return useQuery({
+    queryKey: staffLeaveKeys.byDate(date || ''),
+    queryFn: () => adminStaffFetchers.getLeavesByDate(date!),
+    enabled: !!date,
+    staleTime: 30 * 1000, // 30 seconds
+  });
+};
+
+/**
+ * Mark a staff member as on leave
+ */
+export const useMarkStaffLeave = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ staffId, date, reason }: { staffId: string; date: string; reason?: string }) =>
+      adminStaffFetchers.markStaffLeave(staffId, date, reason),
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: staffLeaveKeys.byDate(variables.date) });
+      toast.success(`${data.staffName} marked on leave for ${new Date(variables.date).toLocaleDateString('en-IN')}`);
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Failed to mark staff on leave');
+    },
+  });
+};
+
+/**
+ * Remove leave for a staff member
+ */
+export const useRemoveStaffLeave = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ staffId, date }: { staffId: string; date: string }) =>
+      adminStaffFetchers.removeStaffLeave(staffId, date),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: staffLeaveKeys.byDate(variables.date) });
+      toast.success('Staff leave removed');
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Failed to remove leave');
+    },
+  });
+};
+

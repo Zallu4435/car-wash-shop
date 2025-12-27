@@ -6,8 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Calendar } from '@/components/ui/calendar';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Clock, Ban, CheckCircle, AlertTriangle, Users, Calendar as CalendarIcon, Sparkles } from 'lucide-react';
 import {
@@ -16,17 +14,18 @@ import {
   useUpdateSlotStatus,
   useUpdateSlotsStatus,
 } from '@/api/domains/admin-requests/queries';
+import {
+  useAdminStaffList,
+  useStaffLeavesByDate,
+  useMarkStaffLeave,
+  useRemoveStaffLeave,
+} from '@/api/domains/admin-staff/queries';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
 import { useConfirmation } from '@/hooks/useConfirmation';
 import { StatCard } from '@/components/admin/StatCard';
 import { CreateSlotModal } from '@/components/admin/CreateSlotModal';
 
-const staff = [
-  { id: 'staff_001', name: 'Rahul Kumar', role: 'Senior Detailer' },
-  { id: 'staff_002', name: 'Amit Sharma', role: 'Detailer' },
-  { id: 'staff_003', name: 'Vijay Patel', role: 'Senior Detailer' },
-];
 
 const formatTime = (time: string) => {
   if (!time) return '';
@@ -48,7 +47,15 @@ export default function SlotManagementPage() {
   const generateSlotsMutation = useGenerateSlots();
   const updateSlotStatusMutation = useUpdateSlotStatus();
   const updateSlotsStatusMutation = useUpdateSlotsStatus();
-  const [staffLeaves, setStaffLeaves] = useState<string[]>(['staff_002']);
+
+  // Dynamic staff and leave data
+  const { data: staffData, isLoading: isLoadingStaff } = useAdminStaffList({ status: 'active', limit: 100 });
+  const { data: leavesData } = useStaffLeavesByDate(selectedDateISO);
+  const markLeaveMutation = useMarkStaffLeave();
+  const removeLeaveMutation = useRemoveStaffLeave();
+
+  const staffList = useMemo(() => staffData?.data || [], [staffData?.data]);
+  const staffLeaveIds = useMemo(() => new Set(leavesData?.map((l) => l.staffId) || []), [leavesData]);
 
   const slots = useMemo(() => slotsData?.slots ?? [], [slotsData?.slots]);
 
@@ -56,7 +63,7 @@ export default function SlotManagementPage() {
   const unavailableCount = useMemo(() => slots.filter((slot: any) => slot.status === 'unavailable').length, [slots]);
   const bookedCount = useMemo(() => slots.filter((slot: any) => slot.booked).length, [slots]);
 
-  if (isLoading) {
+  if (isLoading || isLoadingStaff) {
     return <Loading text="Loading slots..." />;
   }
 
@@ -90,13 +97,17 @@ export default function SlotManagementPage() {
     );
   };
 
-  const toggleStaffLeave = (staffId: string) => {
-    if (staffLeaves.includes(staffId)) {
-      setStaffLeaves(staffLeaves.filter(s => s !== staffId));
-      toast.success('Staff leave removed');
+  const toggleStaffLeave = (staffId: string, staffName: string) => {
+    if (!selectedDateISO) {
+      toast.error('Please select a date first');
+      return;
+    }
+
+    const isOnLeave = staffLeaveIds.has(staffId);
+    if (isOnLeave) {
+      removeLeaveMutation.mutate({ staffId, date: selectedDateISO });
     } else {
-      setStaffLeaves([...staffLeaves, staffId]);
-      toast.success('Staff marked on leave');
+      markLeaveMutation.mutate({ staffId, date: selectedDateISO });
     }
   };
 
@@ -248,11 +259,9 @@ export default function SlotManagementPage() {
         <StatCard
           icon={AlertTriangle}
           label="Staff on Leave"
-          value={staffLeaves.length}
+          value={staffLeaveIds.size}
           valueClassName="text-primary"
-          change="+1"
-          trend="up"
-          description="Today"
+          description="Selected date"
         />
       </div>
 
@@ -326,10 +335,10 @@ export default function SlotManagementPage() {
                       onClick={() => toggleSlot(slot)}
                       disabled={isDisabled}
                       className={`p-3 sm:p-4 rounded-lg sm:rounded-xl border-2 transition-all duration-300 ${isBooked
-                          ? 'opacity-60 cursor-not-allowed'
-                          : isProcessing
-                            ? 'opacity-50 cursor-not-allowed'
-                            : 'hover:shadow-md active:scale-95 cursor-pointer'
+                        ? 'opacity-60 cursor-not-allowed'
+                        : isProcessing
+                          ? 'opacity-50 cursor-not-allowed'
+                          : 'hover:shadow-md active:scale-95 cursor-pointer'
                         } ${isAvailable
                           ? 'border-green-300 bg-green-50 dark:bg-green-950/20 hover:bg-green-100/70'
                           : 'border-destructive bg-destructive/10 hover:bg-destructive/15'
@@ -355,8 +364,8 @@ export default function SlotManagementPage() {
                       </p>
                       <Badge
                         className={`text-xs transition-all ${isAvailable
-                            ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300 border-green-200 dark:border-green-800'
-                            : 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300 border-red-200 dark:border-red-800'
+                          ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300 border-green-200 dark:border-green-800'
+                          : 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300 border-red-200 dark:border-red-800'
                           }`}
                       >
                         {isAvailable ? 'Available' : 'Unavailable'}
@@ -380,54 +389,59 @@ export default function SlotManagementPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-2.5 sm:space-y-3">
-            {staff.map((member) => {
-              const isOnLeave = staffLeaves.includes(member.id);
-              return (
-                <div
-                  key={member.id}
-                  className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 p-3 sm:p-4 rounded-lg sm:rounded-xl border-2 transition-all ${isOnLeave
+            {staffList.length === 0 ? (
+              <div className="text-center py-10 border-2 border-dashed rounded-xl">
+                <p className="text-sm text-muted-foreground">No active staff found.</p>
+              </div>
+            ) : (
+              staffList.map((member) => {
+                const isOnLeave = staffLeaveIds.has(member.id);
+                const isMutating = markLeaveMutation.isPending || removeLeaveMutation.isPending;
+                return (
+                  <div
+                    key={member.id}
+                    className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 p-3 sm:p-4 rounded-lg sm:rounded-xl border-2 transition-all ${isOnLeave
                       ? 'bg-destructive/5 border-destructive/20'
                       : 'bg-muted border-border'
-                    }`}
-                >
-                  <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
-                    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center font-bold text-base sm:text-lg flex-shrink-0 ${isOnLeave
+                      }`}
+                  >
+                    <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
+                      <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center font-bold text-base sm:text-lg flex-shrink-0 ${isOnLeave
                         ? 'bg-destructive/10 text-destructive'
                         : 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
-                      }`}>
-                      {member.name.charAt(0)}
+                        }`}>
+                        {member.name.charAt(0)}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-semibold text-sm sm:text-base text-foreground truncate">{member.name}</p>
+                        <p className="text-xs sm:text-sm text-muted-foreground truncate">{member.role || 'Staff'}</p>
+                      </div>
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="font-semibold text-sm sm:text-base text-foreground truncate">{member.name}</p>
-                      <p className="text-xs sm:text-sm text-muted-foreground truncate">{member.role}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
-                    <Badge
-                      className={`text-xs ${isOnLeave
+                    <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
+                      <Badge
+                        className={`text-xs ${isOnLeave
                           ? 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300 border-red-200 dark:border-red-800'
                           : 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300 border-green-200 dark:border-green-800'
-                        }`}
-                    >
-                      {isOnLeave ? 'On Leave' : 'Available'}
-                    </Badge>
-                    <div className={`flex items-center gap-2 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg border-2 transition-colors ${isOnLeave
-                        ? 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800'
-                        : 'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800'
-                      }`}>
-                      <Label htmlFor={`staff-${member.id}`} className="text-xs sm:text-sm font-medium cursor-pointer">
+                          }`}
+                      >
+                        {isOnLeave ? 'On Leave' : 'Available'}
+                      </Badge>
+                      <button
+                        type="button"
+                        onClick={() => toggleStaffLeave(member.id, member.name)}
+                        disabled={isMutating}
+                        className={`px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition-all duration-200 shadow-md hover:shadow-lg active:scale-95 disabled:opacity-50 ${isOnLeave
+                          ? 'bg-green-600 hover:bg-green-700 text-white'
+                          : 'bg-red-500 hover:bg-red-600 text-white'
+                          }`}
+                      >
                         {isOnLeave ? 'Mark Available' : 'Mark on Leave'}
-                      </Label>
-                      <Switch
-                        id={`staff-${member.id}`}
-                        checked={isOnLeave}
-                        onCheckedChange={() => toggleStaffLeave(member.id)}
-                      />
+                      </button>
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })
+            )}
           </div>
         </CardContent>
       </Card>

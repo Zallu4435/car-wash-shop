@@ -108,18 +108,11 @@ export default function HomePage() {
 
       {/* Marketing Posters section removed - using carousel only */}
 
-      {/* Wave Divider */}
-      <div className="relative h-12 sm:h-16">
-        <svg className="absolute bottom-0 w-full h-12 sm:h-16 text-muted" preserveAspectRatio="none" viewBox="0 0 1440 54">
-          <path
-            fill="currentColor"
-            d="M0,0 C480,54 960,54 1440,0 L1440,54 L0,54 Z"
-          ></path>
-        </svg>
-      </div>
+      {/* Section Divider */}
+      <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent"></div>
 
       {/* Popular Products */}
-      <section className="section-padding-lg bg-muted border-y border-border relative">
+      <section className="section-padding-lg bg-secondary border-y border-border relative">
         <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-1/3 bg-gradient-to-b from-transparent via-accent to-transparent"></div>
         <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-1/3 bg-gradient-to-b from-transparent via-accent to-transparent"></div>
 

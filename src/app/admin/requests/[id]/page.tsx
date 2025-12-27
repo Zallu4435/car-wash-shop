@@ -14,7 +14,7 @@ import { AdminRoutes } from '@/lib/constants/routes';
 import { DangerZone } from '@/components/admin/DangerZone';
 import { AssignStaffModal } from '@/components/admin/AssignStaffModal';
 import { useAdminBookingDetail, useAssignStaffToBooking, useRemoveStaffAssignment, useUpdateBookingStatus } from '@/api/domains/admin-requests/queries';
-import { useAdminStaffList } from '@/api/domains/admin-staff/queries';
+import { useAdminStaffList, useStaffLeavesByDate } from '@/api/domains/admin-staff/queries';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
 
@@ -27,18 +27,23 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
 
   const { data: booking, isLoading: isLoadingBooking, error: bookingError, refetch: refetchBooking } = useAdminBookingDetail(id);
   const { data: staffData } = useAdminStaffList({ status: 'active', limit: 100 });
+  const { data: leavesData } = useStaffLeavesByDate(booking?.scheduledDate);
   const assignStaffMutation = useAssignStaffToBooking();
   const removeStaffMutation = useRemoveStaffAssignment();
   const updateStatusMutation = useUpdateBookingStatus();
 
-  const availableStaff = (staffData?.data || []).map((staff) => ({
-    id: staff.id,
-    name: staff.name,
-    phone: staff.phone || '',
-    area: 'N/A', // Staff model doesn't have area field, you may need to add it
-    rating: staff.avgRating || 0,
-    completedJobs: staff.totalJobs || 0,
-  }));
+  // Filter out staff who are on leave for the booking's scheduled date
+  const staffOnLeaveIds = new Set(leavesData?.map((l) => l.staffId) || []);
+  const availableStaff = (staffData?.data || [])
+    .filter((staff) => !staffOnLeaveIds.has(staff.id))
+    .map((staff) => ({
+      id: staff.id,
+      name: staff.name,
+      phone: staff.phone || '',
+      area: 'N/A',
+      rating: staff.avgRating || 0,
+      completedJobs: staff.totalJobs || 0,
+    }));
 
   const handleAssign = async (staffId: string) => {
     try {

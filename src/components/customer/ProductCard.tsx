@@ -23,15 +23,15 @@ export function ProductCard({ product }: ProductCardProps) {
   };
 
   return (
-    <div className="group relative bg-slate-100 rounded-2xl border border-border/40 hover:border-border transition-all duration-300 overflow-hidden flex flex-col h-full">
+    <div className="group relative bg-card rounded-2xl border border-border/40 hover:border-border transition-all duration-300 overflow-hidden flex flex-col h-full">
       <Link href={`/products/${product._id}`} className="flex-1 flex flex-col">
         {/* Image Section - Clean & Airy */}
-        <div className="relative aspect-square p-6 flex items-center justify-center overflow-hidden">
+        <div className="relative aspect-square p-6 flex items-center justify-center overflow-hidden bg-slate-100 rounded-t-2xl">
           {product.image ? (
             <img
               src={product.image}
               alt={product.name}
-              className="w-full h-full object-contain mix-blend-multiply"
+              className="w-full h-full object-contain"
             />
           ) : (
             <span className="text-6xl text-muted-foreground/50">🧴</span>

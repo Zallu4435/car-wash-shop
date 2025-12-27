@@ -293,6 +293,61 @@ export const adminStaffFetchers = {
     );
     return data.data!;
   },
+
+  /**
+   * Get all staff on leave for a specific date
+   */
+  async getLeavesByDate(date: string): Promise<StaffLeave[]> {
+    if (USE_MOCK_DATA) {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      return [];
+    }
+
+    const { data } = await apiClient.get<ApiResponse<StaffLeave[]>>(
+      `${AdminRoutes.STAFF}/leaves`,
+      { params: { date } }
+    );
+    return data.data!;
+  },
+
+  /**
+   * Mark a staff member as on leave for a specific date
+   */
+  async markStaffLeave(staffId: string, date: string, reason?: string): Promise<StaffLeave> {
+    if (USE_MOCK_DATA) {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      return {
+        id: 'mock-leave',
+        staffId,
+        staffName: 'Mock Staff',
+        date,
+        reason: reason || null,
+        createdAt: new Date().toISOString(),
+      };
+    }
+
+    const { data } = await apiClient.post<ApiResponse<StaffLeave>>(
+      `${AdminRoutes.STAFF_DETAIL(staffId)}/leave`,
+      { date, reason }
+    );
+    return data.data!;
+  },
+
+  /**
+   * Remove leave for a staff member on a specific date
+   */
+  async removeStaffLeave(staffId: string, date: string): Promise<{ message: string }> {
+    if (USE_MOCK_DATA) {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      return { message: 'Leave removed successfully' };
+    }
+
+    const { data } = await apiClient.delete<ApiResponse<{ message: string }>>(
+      `${AdminRoutes.STAFF_DETAIL(staffId)}/leave`,
+      { params: { date } }
+    );
+    return data.data!;
+  },
 };
 
 // Types for staff collections
@@ -327,3 +382,14 @@ export interface HandoverResult {
   receivedBy: string;
   receivedAt: string;
 }
+
+// Types for staff leave
+export interface StaffLeave {
+  id: string;
+  staffId: string;
+  staffName: string;
+  date: string;
+  reason: string | null;
+  createdAt: string;
+}
+
