@@ -188,32 +188,35 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
                         key={addon._id}
                         onClick={() => toggleAddOn(addon._id)}
                         className={cn(
-                          "relative flex cursor-pointer items-start gap-4 rounded-xl border p-4 transition-all duration-200 hover:bg-accent",
+                          "relative flex cursor-pointer items-start gap-3 rounded-xl border p-3 sm:p-4 transition-all duration-200 hover:bg-accent overflow-hidden",
                           isSelected ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border"
                         )}
                       >
                         <Checkbox
                           id={addon._id}
                           checked={isSelected}
-                          className="mt-1"
+                          className="mt-0.5 flex-shrink-0"
                           onClick={(e) => e.stopPropagation()}
                           onCheckedChange={() => toggleAddOn(addon._id)}
                         />
-                        <div className="flex-1 space-y-1">
-                          <div className="flex items-center justify-between">
-                            <label htmlFor={addon._id} className="font-semibold cursor-pointer">
-                              {addon.name}
-                            </label>
-                            <span className="font-bold text-primary">
-                              +₹{addon.price}
-                            </span>
-                          </div>
-                          <p className="text-sm text-muted-foreground pr-8">
+                        <div className="flex-1 min-w-0">
+                          {/* Name */}
+                          <label htmlFor={addon._id} className="font-semibold cursor-pointer block truncate">
+                            {addon.name}
+                          </label>
+                          {/* Description */}
+                          <p className="text-sm text-muted-foreground mt-1 break-all line-clamp-2">
                             {addon.description}
                           </p>
-                          <div className="flex items-center gap-1 mt-2 text-xs font-medium text-muted-foreground">
-                            <Timer className="h-3 w-3" />
-                            <span>+{addon.duration} mins</span>
+                          {/* Footer: Duration + Price */}
+                          <div className="flex items-center justify-between mt-2">
+                            <div className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
+                              <Timer className="h-3 w-3" />
+                              <span>+{addon.duration} mins</span>
+                            </div>
+                            <span className="font-bold text-primary text-sm">
+                              +₹{addon.price}
+                            </span>
                           </div>
                         </div>
                       </div>
