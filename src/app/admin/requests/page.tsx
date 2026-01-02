@@ -2,8 +2,8 @@
 
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { 
-  Calendar, 
+import {
+  Calendar,
   Clock,
   TrendingUp,
   CheckCircle,
@@ -37,7 +37,7 @@ export default function RequestsPage() {
     limit: pageSize,
   }), [search, filterValues, page, pageSize]);
 
-  const { data: bookingData, isLoading, error, refetch} = useAdminBookingList(filters);
+  const { data: bookingData, isLoading, error, refetch } = useAdminBookingList(filters);
 
   const bookings = bookingData?.data || [];
   const totalItems = bookingData?.total || 0;
@@ -55,8 +55,8 @@ export default function RequestsPage() {
 
   if (error) {
     return (
-      <Error 
-        message="Failed to load bookings" 
+      <Error
+        message="Failed to load bookings"
         details={(error as any)?.message}
         onRetry={() => refetch()}
       />
@@ -89,7 +89,7 @@ export default function RequestsPage() {
           value={totalItems}
           description="All bookings"
         />
-        
+
         <StatCard
           icon={UserX}
           label="Unassigned"
@@ -97,14 +97,14 @@ export default function RequestsPage() {
           valueClassName="text-orange-600 dark:text-orange-400"
           description="Need staff assignment"
         />
-        
+
         <StatCard
           icon={UserCheck}
           label="Confirmed"
           value={confirmedCount}
           description="Staff assigned"
         />
-        
+
         <StatCard
           icon={CheckCircle}
           label="Completed"
@@ -165,66 +165,66 @@ export default function RequestsPage() {
           ) : (
             <div className="space-y-2.5 sm:space-y-3">
               {filteredBookings.map((booking) => {
-              const formatTime = (time: string) => {
-                if (!time) return 'N/A';
-                const [hours, minutes] = time.split(':');
-                const hour = parseInt(hours, 10);
-                const ampm = hour >= 12 ? 'PM' : 'AM';
-                const hour12 = hour % 12 || 12;
-                return `${hour12}:${minutes} ${ampm}`;
-              };
+                const formatTime = (time: string) => {
+                  if (!time) return 'N/A';
+                  const [hours, minutes] = time.split(':');
+                  const hour = parseInt(hours, 10);
+                  const ampm = hour >= 12 ? 'PM' : 'AM';
+                  const hour12 = hour % 12 || 12;
+                  return `${hour12}:${minutes} ${ampm}`;
+                };
 
-              return (
-                <TransactionCard
-                  key={booking.id}
-                  id={booking.id}
-                  icon={Calendar}
-                  primaryBadge={{
-                    label: booking.id,
-                    variant: 'outline',
-                  }}
-                  statusBadge={{
-                    label: booking.status,
-                    className: booking.status === 'pending' && !booking.assignedStaffId
-                      ? 'border-orange-500 text-orange-600 dark:text-orange-400'
-                      : booking.status === 'confirmed'
-                      ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                      : booking.status === 'completed'
-                      ? 'border-green-500 text-green-600 dark:text-green-400'
-                      : '',
-                  }}
-                  title={booking.customer}
-                  subtitle={
-                    <div className="flex flex-col gap-1">
-                      <span>{booking.service}</span>
-                      {booking.assignedStaff ? (
-                        <span className="text-xs text-muted-foreground flex items-center gap-1">
-                          <UserCheck className="h-3 w-3" />
-                          Assigned: {booking.assignedStaff}
-                        </span>
-                      ) : booking.status === 'pending' ? (
-                        <span className="text-xs text-orange-600 dark:text-orange-400 flex items-center gap-1">
-                          <UserX className="h-3 w-3" />
-                          Unassigned
-                        </span>
-                      ) : null}
-                    </div>
-                  }
-                  onView={() => router.push(AdminRoutes.REQUEST_DETAIL(booking.id))}
-                  viewButtonText="Assign Staff"
-                  additionalContent={
-                    <div className="mt-2 pt-2 border-t border-border md:hidden">
-                      <p className="text-xs text-muted-foreground">
-                        {booking.scheduledDate} • {booking.scheduledTime ? formatTime(booking.scheduledTime) : 'N/A'}
-                      </p>
-                    </div>
-                  }
-                />
-              );
-            })}
+                return (
+                  <TransactionCard
+                    key={booking.id}
+                    id={booking.id}
+                    icon={Calendar}
+                    primaryBadge={{
+                      label: booking.id,
+                      variant: 'outline',
+                    }}
+                    statusBadge={{
+                      label: booking.status,
+                      className: booking.status === 'pending' && !booking.assignedStaffId
+                        ? 'border-orange-500 text-orange-600 dark:text-orange-400'
+                        : booking.status === 'confirmed'
+                          ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                          : booking.status === 'completed'
+                            ? 'border-green-500 text-green-600 dark:text-green-400'
+                            : '',
+                    }}
+                    title={booking.customer}
+                    subtitle={
+                      <div className="flex flex-col gap-1">
+                        <span>{booking.service}</span>
+                        {booking.assignedStaff ? (
+                          <span className="text-xs text-muted-foreground flex items-center gap-1">
+                            <UserCheck className="h-3 w-3" />
+                            Assigned: {booking.assignedStaff}
+                          </span>
+                        ) : booking.status === 'pending' ? (
+                          <span className="text-xs text-orange-600 dark:text-orange-400 flex items-center gap-1">
+                            <UserX className="h-3 w-3" />
+                            Unassigned
+                          </span>
+                        ) : null}
+                      </div>
+                    }
+                    onView={() => router.push(AdminRoutes.REQUEST_DETAIL(booking.id))}
+                    viewButtonText={booking.status === 'completed' || booking.status === 'cancelled' ? 'View Details' : 'Assign Staff'}
+                    additionalContent={
+                      <div className="mt-2 pt-2 border-t border-border md:hidden">
+                        <p className="text-xs text-muted-foreground">
+                          {booking.scheduledDate} • {booking.scheduledTime ? formatTime(booking.scheduledTime) : 'N/A'}
+                        </p>
+                      </div>
+                    }
+                  />
+                );
+              })}
             </div>
           )}
-          
+
           {/* Pagination */}
           {filteredBookings.length > 0 && (
             <Pagination

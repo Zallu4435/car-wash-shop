@@ -9,6 +9,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { NotificationPanel } from '@/components/shared/notification/NotificationPanel';
 import { getVehicleDisplayType } from '@/utils/vehicle';
 import { useCart } from '@/api/domains/cart/queries';
+import { useNotifications } from '@/api/domains/notifications/queries';
 
 const navigation = [
   { name: 'Home', href: '/' },
@@ -34,6 +35,10 @@ export default function EnhancedHeader() {
 
   const { data: cartData } = useCart();
   const cartCount = cartData?.items?.length || 0;
+
+  // Fetch unread notifications count
+  const { data: notificationData } = useNotifications({ read: false }, isAuthenticated);
+  const unreadCount = notificationData?.total || 0;
 
   useEffect(() => {
     setAvatarError(false);
@@ -79,7 +84,7 @@ export default function EnhancedHeader() {
     { value: 'system' as const, label: 'System', icon: Monitor },
   ];
 
-  const unreadCount = 3;
+
 
   const getAvatarSrc = () => {
     if (avatarError || !user?.avatar) {

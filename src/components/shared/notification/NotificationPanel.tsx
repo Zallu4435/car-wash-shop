@@ -4,16 +4,18 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Bell, 
-  Package, 
-  ShoppingBag, 
-  CheckCircle, 
-  AlertCircle, 
+import {
+  Bell,
+  Package,
+  ShoppingBag,
+  CheckCircle,
+  AlertCircle,
   X,
   Settings,
   Loader2,
-  CheckCheck
+  CheckCheck,
+  BellRing,
+  BellOff
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
@@ -21,6 +23,13 @@ import { createPortal } from 'react-dom';
 import { useInfiniteNotifications, useMarkAsRead, useMarkAllAsRead } from '@/api/domains/notifications/queries';
 import type { Notification } from '@/types/notification';
 import Loading from '@/components/shared/display/Loading';
+import {
+  isPushSupported,
+  getPermissionStatus,
+  subscribeToPush,
+  isSubscribedToPush
+} from '@/lib/pushNotifications';
+import { toast } from 'sonner';
 
 interface NotificationPanelProps {
   isOpen: boolean;
@@ -68,9 +77,14 @@ export function NotificationPanel({ isOpen, onClose, isAuthenticated = false, is
   const [mounted, setMounted] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const observerTarget = useRef<HTMLDivElement>(null);
-  
+
+  // Push notification state
+  const [pushSupported, setPushSupported] = useState(false);
+  const [pushEnabled, setPushEnabled] = useState(false);
+  const [pushLoading, setPushLoading] = useState(false);
+
   // Fetch notifications with infinite scrolling - only if authenticated
-  const { 
+  const {
     data,
     isLoading,
     error,
@@ -81,16 +95,44 @@ export function NotificationPanel({ isOpen, onClose, isAuthenticated = false, is
     activeTab === 'unread' ? { read: false } : undefined,
     isAuthenticated
   );
-  
+
   const markAsReadMutation = useMarkAsRead();
   const markAllAsReadMutation = useMarkAllAsRead();
+
+  // Check push notification status on mount
+  useEffect(() => {
+    const checkPushStatus = async () => {
+      const supported = isPushSupported();
+      setPushSupported(supported);
+
+      if (supported && isAuthenticated) {
+        const subscribed = await isSubscribedToPush();
+        setPushEnabled(subscribed);
+      }
+    };
+    checkPushStatus();
+  }, [isAuthenticated]);
+
+  // Handle enable notifications
+  const handleEnablePush = async () => {
+    setPushLoading(true);
+    const result = await subscribeToPush();
+    setPushLoading(false);
+
+    if (result.success) {
+      setPushEnabled(true);
+      toast.success('Notifications enabled!');
+    } else {
+      toast.error(result.error || 'Failed to enable notifications');
+    }
+  };
 
   // Prevent body scroll when panel is open and prevent layout shift
   useEffect(() => {
     if (isOpen) {
       // Get scrollbar width before hiding it
       const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-      
+
       // Prevent scroll and add padding to compensate for scrollbar
       document.body.style.overflow = 'hidden';
       if (scrollbarWidth > 0) {
@@ -163,27 +205,24 @@ export function NotificationPanel({ isOpen, onClose, isAuthenticated = false, is
   return createPortal(
     <>
       {/* Backdrop - Higher z-index */}
-      <div 
-        className={`fixed inset-0 z-[1000] bg-black/60 backdrop-blur-sm lg:hidden transition-opacity duration-500 ${
-          isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
-        }`}
+      <div
+        className={`fixed inset-0 z-[1000] bg-black/60 backdrop-blur-sm lg:hidden transition-opacity duration-500 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          }`}
         onClick={onClose}
       />
-      
+
       {/* Desktop backdrop (subtle) */}
-      <div 
-        className={`hidden lg:block fixed inset-0 z-[1000] transition-opacity duration-500 ${
-          isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
-        }`}
+      <div
+        className={`hidden lg:block fixed inset-0 z-[1000] transition-opacity duration-500 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          }`}
         onClick={onClose}
       />
 
       {/* Notification Panel */}
-      <Card className={`fixed right-0 top-0 lg:top-16 lg:right-4 w-full lg:w-96 h-full lg:h-auto lg:min-h-[400px] lg:max-h-[85vh] rounded-none lg:rounded-lg shadow-2xl border-0 lg:border-2 lg:border-border z-[1001] overflow-hidden flex flex-col force-sheet-bg transition-all duration-500 ease-in-out ${
-        isOpen 
-          ? 'translate-x-0 opacity-100' 
-          : 'translate-x-full lg:translate-x-0 lg:translate-y-[-20px] opacity-0 pointer-events-none'
-      }`}>
+      <Card className={`fixed right-0 top-0 lg:top-16 lg:right-4 w-full lg:w-96 h-full lg:h-auto lg:min-h-[400px] lg:max-h-[85vh] rounded-none lg:rounded-lg shadow-2xl border-0 lg:border-2 lg:border-border z-[1001] overflow-hidden flex flex-col force-sheet-bg transition-all duration-500 ease-in-out ${isOpen
+        ? 'translate-x-0 opacity-100'
+        : 'translate-x-full lg:translate-x-0 lg:translate-y-[-20px] opacity-0 pointer-events-none'
+        }`}>
         {/* Header */}
         <div className="p-4 border-b border-border flex-shrink-0 bg-muted/30">
           <div className="flex items-center justify-between mb-3">
@@ -218,11 +257,10 @@ export function NotificationPanel({ isOpen, onClose, isAuthenticated = false, is
             >
               Unread
               {unreadCount > 0 && (
-                <Badge 
-                  variant="secondary" 
-                  className={`ml-1.5 text-xs ${
-                    activeTab === 'unread' ? 'bg-primary-foreground text-primary' : ''
-                  }`}
+                <Badge
+                  variant="secondary"
+                  className={`ml-1.5 text-xs ${activeTab === 'unread' ? 'bg-primary-foreground text-primary' : ''
+                    }`}
                 >
                   {unreadCount}
                 </Badge>
@@ -235,9 +273,8 @@ export function NotificationPanel({ isOpen, onClose, isAuthenticated = false, is
               onClick={() => setActiveTab('all')}
             >
               All
-              <Badge variant="secondary" className={`ml-1.5 text-xs ${
-                activeTab === 'all' ? 'bg-primary-foreground text-primary' : ''
-              }`}>
+              <Badge variant="secondary" className={`ml-1.5 text-xs ${activeTab === 'all' ? 'bg-primary-foreground text-primary' : ''
+                }`}>
                 {notifications.length}
               </Badge>
             </Button>
@@ -245,6 +282,29 @@ export function NotificationPanel({ isOpen, onClose, isAuthenticated = false, is
 
           {/* Actions */}
           <div className="flex gap-2">
+            {/* Enable Push Notifications Button */}
+            {pushSupported && !pushEnabled && isAuthenticated && (
+              <Button
+                variant="default"
+                size="sm"
+                className="text-xs flex-1 h-8"
+                onClick={handleEnablePush}
+                disabled={pushLoading}
+              >
+                {pushLoading ? (
+                  <Loader2 className="h-3 w-3 mr-1.5 animate-spin" />
+                ) : (
+                  <BellRing className="h-3 w-3 mr-1.5" />
+                )}
+                Enable Notifications
+              </Button>
+            )}
+            {pushEnabled && (
+              <div className="flex items-center gap-1.5 px-2 text-xs text-green-600 dark:text-green-400">
+                <BellRing className="h-3 w-3" />
+                <span>Push enabled</span>
+              </div>
+            )}
             <Button
               variant="outline"
               size="sm"
@@ -253,18 +313,6 @@ export function NotificationPanel({ isOpen, onClose, isAuthenticated = false, is
               disabled={unreadCount === 0 || markAllAsReadMutation.isPending}
             >
               Mark all read
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-xs px-3 h-8"
-              onClick={() => {
-                router.push(isAdmin ? '/admin/notifications' : '/notifications');
-                onClose();
-              }}
-            >
-              <Settings className="h-3 w-3 mr-1.5" />
-              Settings
             </Button>
           </div>
         </div>
@@ -303,14 +351,13 @@ export function NotificationPanel({ isOpen, onClose, isAuthenticated = false, is
               <div>
                 {displayNotifications.map((notification, index) => {
                   const Icon = getNotificationIcon(notification.type);
-                  
+
                   return (
                     <div key={notification.id}>
                       <button
                         onClick={() => handleNotificationClick(notification)}
-                        className={`w-full p-3 sm:p-4 hover:bg-accent transition-colors text-left cursor-pointer ${
-                          !notification.read ? 'bg-primary/5' : ''
-                        }`}
+                        className={`w-full p-3 sm:p-4 hover:bg-accent transition-colors text-left cursor-pointer ${!notification.read ? 'bg-primary/5' : ''
+                          }`}
                       >
                         <div className="flex items-start gap-3">
                           <div className="p-2 bg-primary/10 rounded-lg flex-shrink-0">
@@ -318,9 +365,8 @@ export function NotificationPanel({ isOpen, onClose, isAuthenticated = false, is
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-start justify-between gap-2 mb-1">
-                              <h4 className={`font-semibold text-xs sm:text-sm ${
-                                !notification.read ? 'text-foreground' : 'text-muted-foreground'
-                              }`}>
+                              <h4 className={`font-semibold text-xs sm:text-sm ${!notification.read ? 'text-foreground' : 'text-muted-foreground'
+                                }`}>
                                 {notification.title}
                               </h4>
                               {!notification.read && (
@@ -380,21 +426,6 @@ export function NotificationPanel({ isOpen, onClose, isAuthenticated = false, is
               </p>
             </div>
           )}
-        </div>
-
-        {/* Footer */}
-        <div className="p-3 border-t border-border flex-shrink-0 bg-muted/30">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="w-full text-xs h-9 font-medium"
-            onClick={() => {
-              router.push(isAdmin ? '/admin/notifications' : '/notifications');
-              onClose();
-            }}
-          >
-            View All Notifications
-          </Button>
         </div>
       </Card>
     </>,
