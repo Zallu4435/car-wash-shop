@@ -293,9 +293,9 @@ export default function ProductOrderDetailPage({ params }: { params: Promise<{ i
                             </h3>
                             <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">
                               If you experienced any problems with this order, let us know and we&apos;ll help resolve it
-                              {canFileData.daysRemaining && (
+                              {canFileData.hoursRemaining && (
                                 <span className="block mt-1 text-orange-600 dark:text-orange-400">
-                                  ⏰ {canFileData.daysRemaining} {canFileData.daysRemaining === 1 ? 'day' : 'days'} remaining to file
+                                  ⏰ {canFileData.hoursRemaining} {canFileData.hoursRemaining === 1 ? 'hour' : 'hours'} remaining to file
                                 </span>
                               )}
                             </p>
@@ -314,7 +314,7 @@ export default function ProductOrderDetailPage({ params }: { params: Promise<{ i
                               Complaint Window Closed
                             </h3>
                             <p className="text-xs sm:text-sm text-muted-foreground">
-                              The 7-day window to file a complaint has passed. Contact support for assistance.
+                              The 48-hour window to file a complaint has passed. Contact support for assistance.
                             </p>
                           </div>
                         ) : (
@@ -379,7 +379,7 @@ export default function ProductOrderDetailPage({ params }: { params: Promise<{ i
         referenceType="productOrder"
         referenceId={id}
         orderName={order.items?.[0]?.productName || 'Product Order'}
-        daysRemaining={canFileData?.daysRemaining}
+        hoursRemaining={canFileData?.hoursRemaining}
       />
     </div>
   );

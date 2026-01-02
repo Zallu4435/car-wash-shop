@@ -33,10 +33,10 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
   // Product not found
   if (!product) {
     return (
-      <Error 
-        message="Product Not Found" 
-        onRetry={() => router.push(CustomerRoutes.PRODUCTS)} 
-        details="The product you're looking for doesn't exist." 
+      <Error
+        message="Product Not Found"
+        onRetry={() => router.push(CustomerRoutes.PRODUCTS)}
+        details="The product you're looking for doesn't exist."
       />
     );
   }
@@ -103,7 +103,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               {/* Product Image */}
               <div className="relative h-[500px] bg-gradient-to-br from-primary/10 to-primary/5 rounded-2xl overflow-hidden border-2 border-border">
                 {product.image ? (
-                  <img 
+                  <img
                     src={product.image}
                     alt={product.name}
                     className="w-full h-full object-cover"
@@ -175,8 +175,8 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                       { key: 'Availability', value: product.isAvailable ? 'In Stock' : 'Out of Stock' },
                       { key: 'Quality', value: 'Professional Grade' },
                     ].map(({ key, value }) => (
-                      <div 
-                        key={key} 
+                      <div
+                        key={key}
                         className="flex justify-between items-center p-3 bg-muted rounded-lg"
                       >
                         <span className="text-muted-foreground font-medium">{key}</span>
@@ -198,10 +198,10 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                       {typeof product.category === 'string' ? product.category : (product.category as any)?.name || 'N/A'}
                     </Badge>
                     <h1 className="text-2xl font-bold text-foreground mb-3">{product.name}</h1>
-                    
+
                     {/* Stock */}
                     <div className="flex flex-wrap items-center gap-3">
-                      <Badge 
+                      <Badge
                         variant={product.isAvailable ? 'default' : 'error'}
                         className="px-2 py-1 text-xs"
                       >
@@ -260,19 +260,19 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
 
                   {/* Add to Cart */}
                   <div className="space-y-3">
-                    <Button 
-                      size="lg" 
-                      className="w-full h-12" 
+                    <Button
+                      size="lg"
+                      className="w-full h-12"
                       onClick={handleAddToCart}
                       disabled={!product.isAvailable || addToCartMutation.isPending}
                     >
                       <ShoppingCart className="mr-2 h-5 w-5" />
                       {addToCartMutation.isPending ? 'Adding...' : 'Add to Cart'}
                     </Button>
-                    <Button 
-                      size="lg" 
-                      variant="outline" 
-                      className="w-full h-12" 
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      className="w-full h-12"
                       onClick={handleBuyNow}
                       disabled={!product.isAvailable || addToCartMutation.isPending}
                     >
@@ -295,7 +295,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                     <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
                       <span className="text-2xl">🔄</span>
                       <div>
-                        <p className="text-sm font-semibold text-foreground">7 Day Returns</p>
+                        <p className="text-sm font-semibold text-foreground">48 Hour Returns</p>
                         <p className="text-xs text-muted-foreground">Easy return policy</p>
                       </div>
                     </div>

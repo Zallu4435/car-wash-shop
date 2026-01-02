@@ -47,7 +47,7 @@ interface ComplaintModalProps {
     referenceType: 'booking' | 'productOrder';
     referenceId: string;
     orderName: string;
-    daysRemaining?: number;
+    hoursRemaining?: number;
 }
 
 export function ComplaintModal({
@@ -56,7 +56,7 @@ export function ComplaintModal({
     referenceType,
     referenceId,
     orderName,
-    daysRemaining,
+    hoursRemaining,
 }: ComplaintModalProps) {
     const [showSuccess, setShowSuccess] = useState(false);
     const [mounted, setMounted] = useState(false);
@@ -204,10 +204,10 @@ export function ComplaintModal({
                 ) : (
                     <form onSubmit={handleSubmit(onSubmit)} className="px-3 sm:px-4 lg:px-6 py-4 sm:py-5 lg:py-6 space-y-4 sm:space-y-5 lg:space-y-6">
                         {/* Time remaining notice */}
-                        {daysRemaining !== undefined && daysRemaining > 0 && (
+                        {hoursRemaining !== undefined && hoursRemaining > 0 && (
                             <div className="p-2.5 sm:p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg">
                                 <p className="text-[10px] sm:text-xs text-amber-700 dark:text-amber-400">
-                                    ⏰ You have <strong>{daysRemaining} {daysRemaining === 1 ? 'day' : 'days'}</strong> remaining to file a complaint for this order
+                                    ⏰ You have <strong>{hoursRemaining} {hoursRemaining === 1 ? 'hour' : 'hours'}</strong> remaining to file a complaint for this order
                                 </p>
                             </div>
                         )}

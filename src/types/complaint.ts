@@ -34,8 +34,8 @@ export interface CreateComplaintInput {
 export interface CanFileComplaintResult {
     canFile: boolean;
     reason?: 'complaint_exists' | 'not_found' | 'not_completed' | 'not_delivered' | 'window_expired';
-    daysAgo?: number;
-    daysRemaining?: number;
+    hoursAgo?: number;
+    hoursRemaining?: number;
 }
 
 // Category labels for display

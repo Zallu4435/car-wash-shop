@@ -38,7 +38,7 @@ export function CartSummary({
           deliveryFee={deliveryFee}
           total={total}
         />
-        
+
         <Button
           onClick={onCheckout}
           disabled={isLoading}
@@ -67,7 +67,7 @@ export function CartSummary({
           </div>
           <div className="flex items-center gap-2 text-[10px] sm:text-xs text-muted-foreground">
             <div className="h-1 w-1 rounded-full bg-green-600 flex-shrink-0" />
-            <span>Easy returns within 7 days</span>
+            <span>Easy returns within 48 hours</span>
           </div>
         </div>
       </CardContent>
