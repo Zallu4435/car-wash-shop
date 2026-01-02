@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, Briefcase, User, LogOut, Menu, IndianRupee, Sun, Moon, Monitor } from 'lucide-react';
+import { LayoutDashboard, Briefcase, LogOut, Menu, IndianRupee, Sun, Moon, Monitor } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { toast } from 'sonner';
 import { useStaffLogout, useStaffProfile } from '@/api/domains/staff';
@@ -17,7 +17,6 @@ const navigation = [
   { name: 'Dashboard', href: StaffRoutes.DASHBOARD, icon: LayoutDashboard },
   { name: 'My Jobs', href: StaffRoutes.JOBS, icon: Briefcase },
   { name: 'Payments', href: StaffRoutes.PAYMENTS, icon: IndianRupee },
-  { name: 'Profile', href: StaffRoutes.PROFILE, icon: User },
 ];
 
 export default function StaffLayout({ children }: { children: React.ReactNode }) {

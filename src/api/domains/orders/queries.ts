@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { orderFetchers } from './fetchers';
-import type { CreateProductOrderInput, OrderFilters, OrderFeedbackInput } from '@/types/order';
+import type { CreateProductOrderInput, OrderFilters } from '@/types/order';
 import { toast } from 'sonner';
 
 // Query Keys
@@ -60,7 +60,7 @@ export const useDownloadInvoice = () => {
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-      
+
       toast.success('Invoice downloaded successfully');
     },
     onError: (error: any) => {
@@ -81,23 +81,6 @@ export const useCancelOrder = () => {
     },
     onError: (error: any) => {
       toast.error(error.message || 'Failed to cancel order');
-    },
-  });
-};
-
-export const useSubmitFeedback = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (input: OrderFeedbackInput) => orderFetchers.submitFeedback(input),
-    onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: orderKeys.detail(variables.orderId),
-      });
-      toast.success('Thank you for your feedback!');
-    },
-    onError: (error: any) => {
-      toast.error(error.message || 'Failed to submit feedback');
     },
   });
 };

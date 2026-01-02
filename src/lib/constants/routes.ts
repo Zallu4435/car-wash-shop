@@ -102,7 +102,6 @@ export const ROUTES = {
     PAYMENT_DETAIL: (id: string) => `/staff/payments/${id}`,
 
     // Other
-    PROFILE: '/staff/profile',
     LOGOUT: '/staff/logout',
     NOTIFICATIONS: '/staff/notifications',
     MARK_NOTIFICATION_AS_READ: '/staff/notifications/mark-read',

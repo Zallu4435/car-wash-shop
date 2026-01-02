@@ -3,7 +3,6 @@ import type { ApiResponse, PaginatedResponse } from '@/types/api';
 import type {
   CreateProductOrderInput,
   Order,
-  OrderFeedbackInput,
   OrderFilters,
 } from '@/types/order';
 import { CustomerRoutes } from '@/lib/constants/routes';
@@ -64,14 +63,4 @@ export const orderFetchers = {
     );
     return data.data!;
   },
-
-  async submitFeedback(input: OrderFeedbackInput): Promise<{ message: string }> {
-    const { orderId, ...feedbackData } = input;
-    const { data } = await apiClient.post<ApiResponse<{ message: string }>>(
-      `${CustomerRoutes.ORDERS}/${orderId}/feedback`,
-      feedbackData
-    );
-    return data.data!;
-  },
-
 };

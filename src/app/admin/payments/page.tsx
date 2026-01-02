@@ -207,17 +207,15 @@ export default function PaymentsPage() {
               color="bg-green-500"
             />
             <SummaryCard
-              title="Transactions"
-              value={summaryQuery.data.totalTransactions}
-              icon={CreditCard}
+              title="Order Transactions"
+              value={summaryQuery.data.orderCount}
+              icon={Package}
               color="bg-blue-500"
-              subtitle={`${summaryQuery.data.orderCount} orders · ${summaryQuery.data.bookingCount} bookings`}
             />
             <SummaryCard
-              title="Average Value"
-              value={summaryQuery.data.averageValue}
-              prefix="₹"
-              icon={TrendingUp}
+              title="Booking Transactions"
+              value={summaryQuery.data.bookingCount}
+              icon={Car}
               color="bg-purple-500"
             />
             <SummaryCard

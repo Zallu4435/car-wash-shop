@@ -56,19 +56,6 @@ export interface Order {
   meta?: Record<string, string | number | boolean | null | undefined>;
   createdAt: string;
   updatedAt: string;
-  feedback?: OrderFeedback;
-}
-
-export interface OrderFeedback {
-  rating: number;
-  comment?: string;
-  createdAt?: string;
-}
-
-export interface OrderFeedbackInput {
-  orderId: string;
-  rating: number;
-  comment?: string;
 }
 
 export interface OrderFilters {
