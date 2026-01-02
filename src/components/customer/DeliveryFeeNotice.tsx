@@ -3,19 +3,18 @@ import { AlertCircle, CheckCircle } from 'lucide-react';
 
 interface DeliveryFeeNoticeProps {
   orderAmount: number;
-  paymentMethod: 'cod' | 'online';
+  paymentMethod?: 'cod' | 'online';
   codFee?: number;
   freeDeliveryMin?: number;
 }
 
 export function DeliveryFeeNotice({
   orderAmount,
-  paymentMethod,
   codFee = 40,
   freeDeliveryMin = 500,
 }: DeliveryFeeNoticeProps) {
-  const isFreeDelivery = orderAmount >= freeDeliveryMin || paymentMethod === 'online';
-  const deliveryFee = paymentMethod === 'cod' && orderAmount < freeDeliveryMin ? codFee : 0;
+  const isFreeDelivery = orderAmount >= freeDeliveryMin;
+  const deliveryFee = orderAmount < freeDeliveryMin ? codFee : 0;
 
   if (isFreeDelivery) {
     return (
@@ -28,9 +27,7 @@ export function DeliveryFeeNotice({
             Free Delivery!
           </p>
           <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-            {paymentMethod === 'online'
-              ? 'No delivery fee for online payment'
-              : `Order above ₹${freeDeliveryMin} - Free delivery`}
+            Orders above ₹{freeDeliveryMin} qualify for free delivery
           </p>
         </div>
       </div>
@@ -47,9 +44,10 @@ export function DeliveryFeeNotice({
           Delivery Fee: ₹{deliveryFee}
         </p>
         <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-          Add ₹{freeDeliveryMin - orderAmount} more to get free delivery or choose online payment.
+          Add ₹{freeDeliveryMin - orderAmount} more to get free delivery
         </p>
       </div>
     </div>
   );
 }
+

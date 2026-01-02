@@ -39,4 +39,17 @@ export const checkoutFetchers = {
     );
     return data.data!;
   },
+
+  async getDeliverySettings(): Promise<{
+    deliveryFee: number;
+    freeDeliveryThreshold: number;
+    isEnabled: boolean;
+  }> {
+    const { data } = await apiClient.get<ApiResponse<{
+      deliveryFee: number;
+      freeDeliveryThreshold: number;
+      isEnabled: boolean;
+    }>>('/delivery-settings');
+    return data.data!;
+  },
 };

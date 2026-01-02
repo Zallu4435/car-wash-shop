@@ -13,10 +13,9 @@ const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true';
 
 // Mock data
 const mockDeliverySettings: DeliverySettings = {
-  baseDeliveryFee: 50,
+  deliveryFee: 40,
   freeDeliveryThreshold: 500,
-  deliveryRadius: 10,
-  estimatedDeliveryTime: '30-45 minutes',
+  isEnabled: true,
 };
 
 const mockPaymentSettings: PaymentSettings = {
@@ -64,19 +63,19 @@ export const adminSettingsFetchers = {
     }
 
     const { data } = await apiClient.get<ApiResponse<DeliverySettings>>(
-      AdminRoutes.SETTINGS_DELIVERY
+      '/delivery-settings'
     );
     return data.data!;
   },
 
-  async updateDeliverySettings(input: DeliverySettings): Promise<DeliverySettings> {
+  async updateDeliverySettings(input: Partial<DeliverySettings>): Promise<DeliverySettings> {
     if (USE_MOCK_DATA) {
       await new Promise(resolve => setTimeout(resolve, 500));
       return { ...mockDeliverySettings, ...input };
     }
 
-    const { data } = await apiClient.patch<ApiResponse<DeliverySettings>>(
-      AdminRoutes.SETTINGS_DELIVERY,
+    const { data } = await apiClient.put<ApiResponse<DeliverySettings>>(
+      '/admin/settings/delivery-settings',
       input
     );
     return data.data!;

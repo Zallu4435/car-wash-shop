@@ -13,6 +13,7 @@ import { ShoppingBag, MapPin, CreditCard, Lock } from 'lucide-react';
 import { useCart, useClearCart } from '@/api/domains/cart/queries';
 import { useAddresses } from '@/api/domains/addresses/queries';
 import { useCreateProductOrder } from '@/api/domains/orders/queries';
+import { useDeliverySettings } from '@/api/domains/checkout/queries';
 import Loading from '@/components/shared/display/Loading';
 import { toast } from 'sonner';
 import { useConfirmation } from '@/hooks/useConfirmation';
@@ -64,14 +65,17 @@ export default function CheckoutPage() {
 
   // Constants
   const MIN_ORDER_AMOUNT = 100;
-  const FREE_DELIVERY_MIN = 500;
-  const COD_FEE = 40;
 
   // API calls
   const { data: cart, isLoading: cartLoading } = useCart();
   const clearCartMutation = useClearCart();
   const { data: addresses = [], isLoading: addressesLoading } = useAddresses();
   const createProductOrderMutation = useCreateProductOrder();
+  const { data: deliverySettings, isLoading: deliverySettingsLoading } = useDeliverySettings();
+
+  // Delivery settings with defaults
+  const freeDeliveryThreshold = deliverySettings?.freeDeliveryThreshold ?? 500;
+  const deliveryFeeAmount = deliverySettings?.deliveryFee ?? 40;
 
   // Razorpay integration
   const { processPayment, isLoading: isRazorpayLoading } = useRazorpay({
@@ -149,7 +153,8 @@ export default function CheckoutPage() {
   const subtotal = isDirectPurchase
     ? directPurchase.price * directPurchase.quantity
     : cart?.subtotal || 0;
-  const deliveryFee = paymentMethod === 'cod' ? COD_FEE : 0;
+  // Delivery fee applies if subtotal is below threshold
+  const deliveryFee = subtotal < freeDeliveryThreshold ? deliveryFeeAmount : 0;
   const total = subtotal + deliveryFee;
   const orderItemCount = isDirectPurchase
     ? directPurchase.quantity
@@ -516,8 +521,8 @@ export default function CheckoutPage() {
               <DeliveryFeeNotice
                 orderAmount={subtotal}
                 paymentMethod={paymentMethod}
-                codFee={COD_FEE}
-                freeDeliveryMin={FREE_DELIVERY_MIN}
+                codFee={deliveryFeeAmount}
+                freeDeliveryMin={freeDeliveryThreshold}
               />
 
               {/* Minimum Order Warning */}

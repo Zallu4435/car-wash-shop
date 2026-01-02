@@ -12,7 +12,7 @@ import { orderKeys } from '../orders/queries';
 
 export const useCreateCheckoutSession = () => {
   const router = useRouter();
-  
+
   return useMutation({
     mutationFn: (input: CheckoutSessionInput) =>
       checkoutFetchers.createCheckoutSession(input),
@@ -63,5 +63,15 @@ export const useHandlePaymentFailure = () => {
       toast.error('Payment failed. Please try again.');
       router.push(`/bookings/${data.bookingId}?payment=failed`);
     },
+  });
+};
+
+import { useQuery } from '@tanstack/react-query';
+
+export const useDeliverySettings = () => {
+  return useQuery({
+    queryKey: ['delivery-settings'],
+    queryFn: checkoutFetchers.getDeliverySettings,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };

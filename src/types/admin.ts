@@ -406,10 +406,9 @@ export interface AdminNotification {
 
 // Settings Types
 export interface DeliverySettings {
-  baseDeliveryFee: number;
+  deliveryFee: number;
   freeDeliveryThreshold: number;
-  deliveryRadius: number;
-  estimatedDeliveryTime: string;
+  isEnabled: boolean;
 }
 
 export interface PaymentSettings {
