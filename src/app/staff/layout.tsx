@@ -149,7 +149,7 @@ export default function StaffLayout({ children }: { children: React.ReactNode })
 
       {/* Bottom Navigation - Responsive */}
       <nav className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-xl border-t border-border shadow-lg">
-        <div className="grid grid-cols-5 gap-0.5 sm:gap-1 max-w-screen-xl mx-auto">
+        <div className="grid grid-cols-3 gap-0.5 sm:gap-1 max-w-screen-xl mx-auto">
           {navigation.map((item) => {
             const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
             const Icon = item.icon;

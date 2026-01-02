@@ -60,8 +60,7 @@ export function LeafletMapComponent({
       }),
     }).addTo(map);
 
-    // Add popup with address
-    marker.bindPopup(`<div class="text-xs sm:text-sm"><strong>Service Location</strong><br/>${address}</div>`).openPopup();
+
 
     mapRef.current = map;
     markerRef.current = marker;
@@ -82,9 +81,8 @@ export function LeafletMapComponent({
       const newLatLng = L.latLng(latitude, longitude);
       markerRef.current.setLatLng(newLatLng);
       mapRef.current.setView(newLatLng, mapRef.current.getZoom());
-      
-      // Update popup
-      markerRef.current.setPopupContent(`<div class="text-xs sm:text-sm"><strong>Service Location</strong><br/>${address}</div>`);
+
+
     }
   }, [latitude, longitude, address]);
 

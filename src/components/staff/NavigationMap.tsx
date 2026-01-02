@@ -122,9 +122,9 @@ export function NavigationMap({
 
         {/* Action Buttons */}
         <div className="space-y-2">
-          <Button 
-            onClick={openGoogleMaps} 
-            className="w-full shadow-md h-10 sm:h-11 text-xs sm:text-sm border-2" 
+          <Button
+            onClick={openGoogleMaps}
+            className="w-full shadow-md h-10 sm:h-11 text-xs sm:text-sm border-2"
             size="lg"
           >
             <Navigation className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />

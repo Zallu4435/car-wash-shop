@@ -21,7 +21,7 @@ const PopoverContent = React.forwardRef<
         // Light Mode
         'bg-white border-gray-200 text-gray-900',
         // Dark Mode
-        'dark:bg-zinc-950 dark:border-zinc-800 dark:text-gray-50',
+        'dark:bg-zinc-900 dark:border-zinc-700 dark:text-gray-50',
         className
       )}
       {...props}

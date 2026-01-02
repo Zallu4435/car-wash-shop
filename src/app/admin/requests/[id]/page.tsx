@@ -329,27 +329,29 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
                         <UserCheck className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-primary" />
                         Assigned Staff
                       </h3>
-                      <div className="flex items-center gap-1.5 sm:gap-2 w-full xs:w-auto">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setIsAssignDialogOpen(true)}
-                          className="flex-1 xs:flex-initial h-8 sm:h-9 text-xs sm:text-sm border-2"
-                        >
-                          <UserCheck className="mr-1 sm:mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                          Change
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={handleRemoveStaff}
-                          disabled={removeStaffMutation.isPending}
-                          className="flex-1 xs:flex-initial h-8 sm:h-9 text-xs sm:text-sm border-2 text-destructive hover:text-destructive hover:bg-destructive/10"
-                        >
-                          <XCircle className="mr-1 sm:mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                          Remove
-                        </Button>
-                      </div>
+                      {booking.status !== 'completed' && (
+                        <div className="flex items-center gap-1.5 sm:gap-2 w-full xs:w-auto">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setIsAssignDialogOpen(true)}
+                            className="flex-1 xs:flex-initial h-8 sm:h-9 text-xs sm:text-sm border-2"
+                          >
+                            <UserCheck className="mr-1 sm:mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                            Change
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleRemoveStaff}
+                            disabled={removeStaffMutation.isPending}
+                            className="flex-1 xs:flex-initial h-8 sm:h-9 text-xs sm:text-sm border-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+                          >
+                            <XCircle className="mr-1 sm:mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                            Remove
+                          </Button>
+                        </div>
+                      )}
                     </div>
                     <div className="space-y-2 sm:space-y-2.5">
                       <p className="font-semibold text-sm sm:text-base text-foreground">{booking.assignedStaff.name}</p>
