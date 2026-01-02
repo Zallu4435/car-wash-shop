@@ -7,7 +7,6 @@ export const staffJobsKeys = {
   all: ['staff-jobs'] as const,
   list: (filters?: StaffJobFilters) => [...staffJobsKeys.all, 'list', filters] as const,
   detail: (id: string) => [...staffJobsKeys.all, 'detail', id] as const,
-  history: (filters?: StaffJobFilters) => [...staffJobsKeys.all, 'history', filters] as const,
 };
 
 export const useStaffJobs = (filters?: StaffJobFilters) => {
@@ -40,13 +39,5 @@ export const useUpdateJobStatus = () => {
     onError: (error: any) => {
       toast.error(error.message || 'Failed to update job status');
     },
-  });
-};
-
-export const useStaffWorkHistory = (filters?: StaffJobFilters) => {
-  return useQuery({
-    queryKey: staffJobsKeys.history(filters),
-    queryFn: () => staffJobsFetchers.getWorkHistory(filters),
-    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };

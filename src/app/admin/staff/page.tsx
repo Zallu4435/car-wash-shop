@@ -3,11 +3,11 @@
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { 
-  UserCog, 
-  Plus, 
-  Eye, 
-  Edit, 
+import {
+  UserCog,
+  Plus,
+  Eye,
+  Edit,
   Trash2,
   Briefcase,
   Ban,
@@ -73,11 +73,11 @@ export default function StaffPage() {
   const handleToggleStatus = async (staffId: string, currentStatus: string, staffName: string) => {
     const newStatus = currentStatus === 'suspended' ? 'active' : 'suspended';
     const action = newStatus === 'suspended' ? 'suspend' : 'activate';
-    
+
     const confirmed = await blockConfirmation.confirm({
       type: newStatus === 'suspended' ? 'block' : 'warning',
       title: newStatus === 'suspended' ? 'Suspend Staff Member?' : 'Activate Staff Member?',
-      description: newStatus === 'suspended' 
+      description: newStatus === 'suspended'
         ? 'This staff member will be suspended and unable to accept new jobs until reactivated.'
         : 'This staff member will be reactivated and able to accept jobs again.',
       confirmText: newStatus === 'suspended' ? 'Yes, Suspend Staff' : 'Yes, Activate Staff',
@@ -96,8 +96,8 @@ export default function StaffPage() {
 
   if (error) {
     return (
-      <Error 
-        message="Failed to load staff members" 
+      <Error
+        message="Failed to load staff members"
         details={(error as any)?.message}
         onRetry={() => refetch()}
       />
@@ -132,7 +132,7 @@ export default function StaffPage() {
           trend="up"
           description="All staff members"
         />
-        
+
         <StatCard
           icon={Briefcase}
           label="Active Members"
@@ -142,7 +142,7 @@ export default function StaffPage() {
           trend="up"
           description="Currently active"
         />
-        
+
         <StatCard
           icon={Briefcase}
           label="Total Jobs"
@@ -232,11 +232,6 @@ export default function StaffPage() {
                       label: 'Completed Jobs',
                       value: member.totalJobs,
                     },
-                    {
-                      icon: Star,
-                      label: 'Rating',
-                      value: `⭐ ${member.avgRating}`,
-                    },
                   ]}
                   actionButtons={[
                     {
@@ -256,8 +251,8 @@ export default function StaffPage() {
                       icon: member.status === 'suspended' ? CheckCircle : Ban,
                       onClick: () => handleToggleStatus(member.id, member.status, member.name),
                       disabled: updateStatusMutation.isPending,
-                      className: member.status === 'suspended' 
-                        ? 'text-green-600 hover:bg-green-50 dark:hover:bg-green-950/20 flex-initial px-3' 
+                      className: member.status === 'suspended'
+                        ? 'text-green-600 hover:bg-green-50 dark:hover:bg-green-950/20 flex-initial px-3'
                         : 'text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950/20 flex-initial px-3',
                     },
                     {
@@ -272,7 +267,7 @@ export default function StaffPage() {
               ))}
             </div>
           )}
-          
+
           {/* Pagination */}
           {filteredStaff.length > 0 && (
             <Pagination

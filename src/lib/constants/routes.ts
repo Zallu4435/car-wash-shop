@@ -102,7 +102,6 @@ export const ROUTES = {
     PAYMENT_DETAIL: (id: string) => `/staff/payments/${id}`,
 
     // Other
-    HISTORY: '/staff/history',
     PROFILE: '/staff/profile',
     LOGOUT: '/staff/logout',
     NOTIFICATIONS: '/staff/notifications',
@@ -169,7 +168,6 @@ export const ROUTES = {
     REPORTS: '/admin/reports',
 
     // Settings
-    SETTINGS: '/admin/settings',
     SETTINGS_DELIVERY: '/admin/settings/delivery-fees',
     SETTINGS_PAYMENT: '/admin/settings/payment-settings',
     PROFILE: '/admin/profile',

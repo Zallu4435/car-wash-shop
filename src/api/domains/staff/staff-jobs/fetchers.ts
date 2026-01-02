@@ -33,35 +33,27 @@ const mockJobDetails: Record<string, StaffJobDetail> = {
   },
 };
 
-const mockWorkHistory: StaffJob[] = [
-  { id: 'JOB101', service: 'Premium Car Wash', customer: 'Anita Desai', time: '9:00 AM', datetime: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), location: 'Koramangala', status: BOOKING_STATUS.COMPLETED, amount: 599, rating: 5 },
-  { id: 'JOB102', service: 'Bike Wash', customer: 'Ravi Kumar', time: '11:00 AM', datetime: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), location: 'HSR Layout', status: BOOKING_STATUS.COMPLETED, amount: 199, rating: 4 },
-  { id: 'JOB103', service: 'Interior Detailing', customer: 'Meera Patel', time: '2:00 PM', datetime: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), location: 'Indiranagar', status: BOOKING_STATUS.COMPLETED, amount: 899, rating: 5 },
-  { id: 'JOB104', service: 'Full Service', customer: 'Karthik Reddy', time: '4:00 PM', datetime: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), location: 'Whitefield', status: BOOKING_STATUS.COMPLETED, amount: 1299, rating: 4 },
-  { id: 'JOB105', service: 'Express Wash', customer: 'Deepa Singh', time: '5:30 PM', datetime: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), location: 'BTM Layout', status: BOOKING_STATUS.COMPLETED, amount: 399, rating: 5 },
-];
-
 export const staffJobsFetchers = {
   async getJobs(filters?: StaffJobFilters): Promise<PaginatedResponse<StaffJob>> {
     if (USE_MOCK_DATA) {
       await new Promise(resolve => setTimeout(resolve, 500));
       let filteredJobs = [...mockJobs];
-      
+
       // Apply search filter
       if (filters?.search) {
         const searchLower = filters.search.toLowerCase();
-        filteredJobs = filteredJobs.filter(job => 
+        filteredJobs = filteredJobs.filter(job =>
           job.customer.toLowerCase().includes(searchLower) ||
           job.service.toLowerCase().includes(searchLower) ||
           job.location.toLowerCase().includes(searchLower)
         );
       }
-      
+
       // Apply status filter
       if (filters?.status) {
         filteredJobs = filteredJobs.filter(job => job.status === filters.status);
       }
-      
+
       // Apply date range filters
       if (filters?.fromDate) {
         filteredJobs = filteredJobs.filter(job => {
@@ -69,21 +61,21 @@ export const staffJobsFetchers = {
           return jobDate >= filters.fromDate!;
         });
       }
-      
+
       if (filters?.toDate) {
         filteredJobs = filteredJobs.filter(job => {
           const jobDate = job.datetime.split('T')[0];
           return jobDate <= filters.toDate!;
         });
       }
-      
+
       // Apply pagination
       const page = filters?.page || 1;
       const limit = filters?.limit || 10;
       const startIndex = (page - 1) * limit;
       const endIndex = startIndex + limit;
       const paginatedJobs = filteredJobs.slice(startIndex, endIndex);
-      
+
       return {
         data: paginatedJobs,
         total: filteredJobs.length,
@@ -129,54 +121,9 @@ export const staffJobsFetchers = {
       return { ...jobDetail, status: input.status };
     }
 
-    const { data} = await apiClient.patch<ApiResponse<StaffJobDetail>>(
+    const { data } = await apiClient.patch<ApiResponse<StaffJobDetail>>(
       StaffRoutes.JOB_DETAIL(jobId),
       input
-    );
-    return data.data!;
-  },
-
-  async getWorkHistory(filters?: StaffJobFilters): Promise<StaffJob[]> {
-    if (USE_MOCK_DATA) {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      let filteredHistory = [...mockWorkHistory];
-      
-      // Apply search filter
-      if (filters?.search) {
-        const searchLower = filters.search.toLowerCase();
-        filteredHistory = filteredHistory.filter(job => 
-          job.customer.toLowerCase().includes(searchLower) ||
-          job.service.toLowerCase().includes(searchLower) ||
-          job.location.toLowerCase().includes(searchLower)
-        );
-      }
-      
-      // Apply status filter
-      if (filters?.status) {
-        filteredHistory = filteredHistory.filter(job => job.status === filters.status);
-      }
-      
-      // Apply date range filters
-      if (filters?.fromDate) {
-        filteredHistory = filteredHistory.filter(job => {
-          const jobDate = job.datetime.split('T')[0];
-          return jobDate >= filters.fromDate!;
-        });
-      }
-      
-      if (filters?.toDate) {
-        filteredHistory = filteredHistory.filter(job => {
-          const jobDate = job.datetime.split('T')[0];
-          return jobDate <= filters.toDate!;
-        });
-      }
-      
-      return filteredHistory;
-    }
-
-    const { data } = await apiClient.get<ApiResponse<StaffJob[]>>(
-      StaffRoutes.HISTORY,
-      { params: filters }
     );
     return data.data!;
   },

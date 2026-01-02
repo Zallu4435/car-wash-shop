@@ -23,7 +23,7 @@ export default function StaffProfilePage() {
   const router = useRouter();
   const { data: profile, isLoading, error } = useStaffProfile();
   const logoutMutation = useStaffLogout();
-  
+
   const [isEditing, setIsEditing] = useState(false);
 
   const {
@@ -96,8 +96,8 @@ export default function StaffProfilePage() {
           </p>
         </div>
         {!isEditing ? (
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={handleEdit}
             className="w-full sm:w-auto h-9 sm:h-10 text-xs sm:text-sm cursor-pointer border-2"
           >
@@ -106,15 +106,15 @@ export default function StaffProfilePage() {
           </Button>
         ) : (
           <div className="flex gap-2">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={handleCancel}
               className="flex-1 sm:flex-none h-9 sm:h-10 text-xs sm:text-sm cursor-pointer border-2"
             >
               <X className="mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
               Cancel
             </Button>
-            <Button 
+            <Button
               onClick={handleSubmit(onSubmit)}
               className="flex-1 sm:flex-none h-9 sm:h-10 text-xs sm:text-sm cursor-pointer border-2"
             >
@@ -140,9 +140,9 @@ export default function StaffProfilePage() {
               {/* Profile picture upload removed per requirements */}
               <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl">
                 <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
-                  <img 
-                    src={profile?.avatar || '/images/avatars/default-avatar.svg'} 
-                    alt="Profile" 
+                  <img
+                    src={profile?.avatar || '/images/avatars/default-avatar.svg'}
+                    alt="Profile"
                     className="w-full h-full object-cover"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
@@ -270,33 +270,25 @@ export default function StaffProfilePage() {
             <CardHeader className="pb-3 sm:pb-4">
               <CardTitle className="text-sm sm:text-base lg:text-lg">Quick Actions</CardTitle>
             </CardHeader>
-            <CardContent className="grid grid-cols-2 gap-2 sm:gap-3">
-              <Button 
-                variant="outline" 
+            <CardContent className="grid grid-cols-3 gap-2 sm:gap-3">
+              <Button
+                variant="outline"
                 className="h-auto py-3 sm:py-4 flex-col gap-1.5 sm:gap-2 cursor-pointer border-2"
                 onClick={() => router.push(StaffRoutes.JOBS)}
               >
                 <Briefcase className="h-4 w-4 sm:h-5 sm:w-5" />
                 <span className="text-xs sm:text-sm">View Jobs</span>
               </Button>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="h-auto py-3 sm:py-4 flex-col gap-1.5 sm:gap-2 cursor-pointer border-2"
                 onClick={() => router.push(StaffRoutes.PAYMENTS)}
               >
                 <IndianRupee className="h-4 w-4 sm:h-5 sm:w-5" />
                 <span className="text-xs sm:text-sm">Payments</span>
               </Button>
-              <Button 
-                variant="outline" 
-                className="h-auto py-3 sm:py-4 flex-col gap-1.5 sm:gap-2 cursor-pointer border-2"
-                onClick={() => router.push(StaffRoutes.HISTORY)}
-              >
-                <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5" />
-                <span className="text-xs sm:text-sm">History</span>
-              </Button>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="h-auto py-3 sm:py-4 flex-col gap-1.5 sm:gap-2 text-destructive hover:text-destructive hover:bg-destructive/10 cursor-pointer border-2"
                 onClick={handleLogout}
               >

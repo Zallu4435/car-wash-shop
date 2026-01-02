@@ -220,10 +220,10 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
-              {status === 'cancelled' ? (
+              {status === 'cancelled' || status === 'delivered' ? (
                 <div className="p-3 sm:p-4 bg-red-50 dark:bg-red-950/20 rounded-lg sm:rounded-xl border-2 border-red-200 dark:border-red-800">
                   <p className="text-xs sm:text-sm text-red-600 dark:text-red-400">
-                    This order has been cancelled. Status changes are no longer allowed.
+                    This order has been {status}. Status changes are no longer allowed.
                   </p>
                 </div>
               ) : (
@@ -289,8 +289,8 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                   <span className="text-muted-foreground">Delivery Fee</span>
                   <span
                     className={`font-semibold flex-shrink-0 ${(order.shippingFee || 0) === 0
-                        ? 'text-green-600 dark:text-green-400'
-                        : 'text-foreground'
+                      ? 'text-green-600 dark:text-green-400'
+                      : 'text-foreground'
                       }`}
                   >
                     {(order.shippingFee || 0) === 0 ? 'FREE' : formatCurrency(order.shippingFee)}

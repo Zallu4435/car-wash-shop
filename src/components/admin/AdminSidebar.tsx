@@ -84,7 +84,6 @@ const navigationGroups = [
   {
     title: 'System',
     items: [
-      { name: 'Settings', href: AdminRoutes.SETTINGS, icon: Settings },
       { name: 'Delivery Fees', href: AdminRoutes.SETTINGS_DELIVERY, icon: Car },
       { name: 'Contacts', href: AdminRoutes.CONTACTS, icon: Phone },
     ]

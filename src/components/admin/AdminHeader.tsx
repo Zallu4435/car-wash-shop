@@ -6,7 +6,6 @@ import {
   Menu,
   Bell,
   User,
-  Settings,
   LogOut,
   Search,
   Sun,
@@ -221,16 +220,6 @@ export function AdminHeader({ setSidebarOpen }: AdminHeaderProps) {
                     >
                       <User className="h-4 w-4 text-muted-foreground" />
                       <span>Profile</span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        router.push(AdminRoutes.SETTINGS);
-                        setShowUserMenu(false);
-                      }}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-muted cursor-pointer"
-                    >
-                      <Settings className="h-4 w-4 text-muted-foreground" />
-                      <span>Settings</span>
                     </button>
 
                     <div className="h-px bg-border my-2"></div>
