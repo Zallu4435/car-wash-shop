@@ -99,4 +99,30 @@ export const serviceFetchers = {
     const categories = data.data || [];
     return categories.map((name: string) => ({ id: name.toLowerCase().replace(/\s+/g, '-'), name }));
   },
+
+  async getTopReviews(limit: number = 3): Promise<{
+    id: string;
+    userName: string;
+    rating: number;
+    comment: string;
+    serviceName: string;
+    createdAt: string;
+  }[]> {
+    const { data } = await apiClient.get<ApiResponse<any[]>>(
+      `${CustomerRoutes.SERVICES}/top-reviews`,
+      { params: { limit } }
+    );
+    return data.data || [];
+  },
+
+  async getLandingPageStats(): Promise<{
+    customerCount: number;
+    staffCount: number;
+    averageRating: number;
+  }> {
+    const { data } = await apiClient.get<ApiResponse<any>>(
+      `${CustomerRoutes.SERVICES}/landing-stats`
+    );
+    return data.data || { customerCount: 0, staffCount: 0, averageRating: 0 };
+  },
 };

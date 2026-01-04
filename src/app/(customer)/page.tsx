@@ -7,28 +7,55 @@ import { Testimonials } from '@/components/customer/Testimonials';
 import { Button } from '@/components/ui/button';
 import { CustomerRoutes } from '@/lib/constants/routes';
 import Link from 'next/link';
-import { useServices } from '@/api/domains/services/queries';
+import { useServices, useTopReviews, useLandingPageStats } from '@/api/domains/services/queries';
 import { useProducts } from '@/api/domains/products/queries';
 import { useActivePosters } from '@/api/domains/public-posters/queries';
 import { ArrowRight, Sparkles, Users, Award, TrendingUp, MessageSquare } from 'lucide-react';
 import Loading from '@/components/shared/display/Loading';
-import { mockTestimonials, mockTrustStats } from '@/mocks/data/customer-mock-data';
 
 export default function HomePage() {
   // API calls
   const { data: servicesResponse, isLoading: servicesLoading } = useServices({ limit: 3 });
   const { data: productsResponse, isLoading: productsLoading } = useProducts({ limit: 4 });
   const { data: posters = [], isLoading: postersLoading } = useActivePosters();
+  const { data: topReviewsData, isLoading: reviewsLoading } = useTopReviews(3);
+  const { data: landingStats, isLoading: statsLoading } = useLandingPageStats();
 
   const services = servicesResponse?.data || [];
   const products = productsResponse?.data || [];
 
-  // Mock data from centralized file
-  const testimonials = mockTestimonials;
-  const trustStats = mockTrustStats;
+  // Build dynamic trust stats from API data
+  const trustStats = [
+    {
+      id: 'stat_001',
+      label: 'Happy Customers',
+      value: landingStats?.customerCount ? `${landingStats.customerCount}+` : '0',
+      icon: 'users',
+    },
+    {
+      id: 'stat_002',
+      label: 'Expert Staff',
+      value: landingStats?.staffCount ? `${landingStats.staffCount}+` : '0',
+      icon: 'award',
+    },
+    {
+      id: 'stat_003',
+      label: 'Average Rating',
+      value: landingStats?.averageRating ? landingStats.averageRating.toString() : '0',
+      icon: 'trending-up',
+    },
+  ];
+
+  // Convert top reviews to testimonials format
+  const testimonials = (topReviewsData || []).map((review) => ({
+    id: review.id,
+    name: review.userName,
+    role: review.serviceName,
+    content: review.comment,
+  }));
 
   // Loading state
-  if (servicesLoading || productsLoading || postersLoading) {
+  if (servicesLoading || productsLoading || postersLoading || reviewsLoading || statsLoading) {
     return <Loading />;
   }
 
@@ -152,30 +179,34 @@ export default function HomePage() {
       {/* Decorative Divider */}
       <div className="h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent"></div>
 
-      {/* Testimonials Section */}
-      <section className="section-padding-lg bg-secondary/50 relative overflow-hidden">
-        <div className="absolute top-20 left-20 w-64 h-64 bg-accent/5 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-20 right-20 w-64 h-64 bg-primary/5 rounded-full blur-3xl"></div>
+      {/* Testimonials Section - Only shown when there are reviews */}
+      {testimonials.length > 0 && (
+        <>
+          <section className="section-padding-lg bg-secondary/50 relative overflow-hidden">
+            <div className="absolute top-20 left-20 w-64 h-64 bg-accent/5 rounded-full blur-3xl"></div>
+            <div className="absolute bottom-20 right-20 w-64 h-64 bg-primary/5 rounded-full blur-3xl"></div>
 
-        <div className="container-custom relative z-10">
-          <div className="text-center mb-10 sm:mb-12 md:mb-16">
-            <div className="inline-flex items-center gap-2 mb-3 sm:mb-4 px-4 sm:px-5 py-2 sm:py-2.5 bg-accent/10 text-accent-foreground rounded-full text-xs sm:text-sm font-semibold border border-accent/20">
-              <MessageSquare className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              <span>Testimonials</span>
+            <div className="container-custom relative z-10">
+              <div className="text-center mb-10 sm:mb-12 md:mb-16">
+                <div className="inline-flex items-center gap-2 mb-3 sm:mb-4 px-4 sm:px-5 py-2 sm:py-2.5 bg-accent/10 text-accent-foreground rounded-full text-xs sm:text-sm font-semibold border border-accent/20">
+                  <MessageSquare className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  <span>Testimonials</span>
+                </div>
+                <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-2 sm:mb-3 md:mb-4">
+                  What Our Customers Say
+                </h2>
+                <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
+                  Don't just take our word for it - hear from our satisfied customers
+                </p>
+              </div>
+              <Testimonials testimonials={testimonials} />
             </div>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-2 sm:mb-3 md:mb-4">
-              What Our Customers Say
-            </h2>
-            <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
-              Don't just take our word for it - hear from our satisfied customers
-            </p>
-          </div>
-          <Testimonials testimonials={testimonials} />
-        </div>
-      </section>
+          </section>
 
-      {/* Simple Divider */}
-      <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent"></div>
+          {/* Simple Divider */}
+          <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent"></div>
+        </>
+      )}
 
       {/* Trust Section */}
       <section className="section-padding-lg bg-primary relative overflow-hidden">
