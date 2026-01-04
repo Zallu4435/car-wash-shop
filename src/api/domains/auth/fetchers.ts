@@ -29,6 +29,25 @@ export const authFetchers = {
     return data.data!;
   },
 
+  async sendEmailOtp(email: string): Promise<OtpResponse> {
+    const { data } = await apiClient.post<ApiResponse<OtpResponse>>(
+      '/auth/email/send-otp',
+      { email }
+    );
+    return data.data!;
+  },
+
+  async verifyEmailOtp(
+    email: string,
+    otp: string
+  ): Promise<AuthResponse> {
+    const { data } = await apiClient.post<ApiResponse<AuthResponse>>(
+      '/auth/email/verify',
+      { email, otp }
+    );
+    return data.data!;
+  },
+
   async register(input: RegisterInput): Promise<AuthResponse> {
     const { data } = await apiClient.post<ApiResponse<AuthResponse>>(
       '/auth/register',

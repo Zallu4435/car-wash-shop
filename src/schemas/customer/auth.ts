@@ -41,10 +41,9 @@ export const registerSchema = z
     email: z
       .string()
       .trim()
+      .min(1, 'Email is required')
       .email('Please enter a valid email address')
-      .max(100, 'Email is too long')
-      .optional()
-      .or(z.literal('')),
+      .max(100, 'Email is too long'),
     phone: phoneValidation,
     password: passwordValidation,
     confirmPassword: z.string().min(1, 'Please confirm your password'),
@@ -57,6 +56,14 @@ export const registerSchema = z
 // Additional schemas for specific use cases
 export const phoneOnlySchema = z.object({
   phone: phoneValidation,
+});
+
+export const emailOnlySchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .min(1, 'Email is required')
+    .email('Please enter a valid email address'),
 });
 
 export const otpOnlySchema = z.object({
@@ -108,6 +115,7 @@ export const forgotPasswordIdentifierObjectSchema = z.object({
 export type LoginInput = z.infer<typeof loginSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type PhoneOnlyInput = z.infer<typeof phoneOnlySchema>;
+export type EmailOnlyInput = z.infer<typeof emailOnlySchema>;
 export type OtpOnlyInput = z.infer<typeof otpOnlySchema>;
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
 export type ForgotPasswordIdentifierInput = z.infer<typeof forgotPasswordIdentifierObjectSchema>;

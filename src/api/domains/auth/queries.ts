@@ -47,6 +47,31 @@ export const useVerifyOtp = () => {
   });
 };
 
+export const useSendEmailOtp = () => {
+  return useMutation({
+    mutationFn: (email: string) => authFetchers.sendEmailOtp(email),
+  });
+};
+
+export const useVerifyEmailOtp = () => {
+  const queryClient = useQueryClient();
+  const router = useRouter();
+
+  return useMutation({
+    mutationFn: ({ email, otp }: { email: string; otp: string }) =>
+      authFetchers.verifyEmailOtp(email, otp),
+    onSuccess: (data) => {
+      setGlobalAccessToken(data.token);
+      queryClient.setQueryData(authKeys.currentUser(), data.user);
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: cartKeys.detail() });
+        queryClient.refetchQueries({ queryKey: cartKeys.detail() });
+      }, 0);
+      router.push(CustomerRoutes.HOME);
+    },
+  });
+};
+
 export const useRegister = () => {
   const queryClient = useQueryClient();
   const router = useRouter();

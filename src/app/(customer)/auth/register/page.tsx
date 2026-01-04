@@ -90,7 +90,7 @@ export default function RegisterPage() {
               {/* Email */}
               <div className="space-y-1.5 sm:space-y-2">
                 <Label htmlFor="email" className="text-xs sm:text-sm">
-                  Email <span className="text-[10px] sm:text-xs text-muted-foreground">(Optional)</span>
+                  Email
                 </Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
