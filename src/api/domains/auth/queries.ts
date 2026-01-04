@@ -72,12 +72,18 @@ export const useVerifyEmailOtp = () => {
   });
 };
 
+export const useSendRegistrationOtp = () => {
+  return useMutation({
+    mutationFn: (email: string) => authFetchers.sendRegistrationOtp(email),
+  });
+};
+
 export const useRegister = () => {
   const queryClient = useQueryClient();
   const router = useRouter();
 
   return useMutation({
-    mutationFn: (input: RegisterInput) => authFetchers.register(input),
+    mutationFn: (input: RegisterInput & { otp: string }) => authFetchers.register(input),
     onSuccess: (data) => {
       setGlobalAccessToken(data.token);
       queryClient.setQueryData(authKeys.currentUser(), data.user);

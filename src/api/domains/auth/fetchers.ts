@@ -48,7 +48,15 @@ export const authFetchers = {
     return data.data!;
   },
 
-  async register(input: RegisterInput): Promise<AuthResponse> {
+  async sendRegistrationOtp(email: string): Promise<OtpResponse> {
+    const { data } = await apiClient.post<ApiResponse<OtpResponse>>(
+      '/auth/register/send-otp',
+      { email }
+    );
+    return data.data!;
+  },
+
+  async register(input: RegisterInput & { otp: string }): Promise<AuthResponse> {
     const { data } = await apiClient.post<ApiResponse<AuthResponse>>(
       '/auth/register',
       input

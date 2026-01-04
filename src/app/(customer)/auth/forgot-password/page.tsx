@@ -7,11 +7,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Mail, Phone, Lock, ArrowLeft, KeyRound, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, KeyRound, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { forgotPasswordIdentifierSchema, otpOnlySchema, resetPasswordSchema } from '@/schemas/customer/auth';
+import { emailOnlySchema, otpOnlySchema, resetPasswordSchema } from '@/schemas/customer/auth';
 import { z } from 'zod';
 import { useSendPasswordResetOTP, useResetPasswordWithOTP } from '@/api/domains/auth/queries';
 import { CustomerRoutes } from '@/lib/constants/routes';
@@ -26,14 +26,14 @@ export default function ForgotPasswordPage() {
   const [errorMessage, setErrorMessage] = useState<string>('');
 
   const {
-    register: identifierRegister,
-    handleSubmit: handleIdentifierSubmit,
-    formState: { errors: identifierErrors },
-    getValues: getIdentifier,
-    reset: resetIdentifier,
-  } = useForm<{ identifier: string }>({
-    resolver: zodResolver(z.object({ identifier: forgotPasswordIdentifierSchema })),
-    defaultValues: { identifier: '' },
+    register: emailRegister,
+    handleSubmit: handleEmailSubmit,
+    formState: { errors: emailErrors },
+    getValues: getEmail,
+    reset: resetEmail,
+  } = useForm<{ email: string }>({
+    resolver: zodResolver(emailOnlySchema),
+    defaultValues: { email: '' },
   });
 
   const {
@@ -59,20 +59,18 @@ export default function ForgotPasswordPage() {
   const sendOtpMutation = useSendPasswordResetOTP();
   const resetPasswordMutation = useResetPasswordWithOTP();
 
-  const watchedIdentifier = identifier || getIdentifier('identifier');
-  const isEmail = watchedIdentifier?.includes('@');
+  const watchedEmail = identifier || getEmail('email');
 
-  const onSendOtp = ({ identifier }: { identifier: string }) => {
-    setIdentifier(identifier);
+  const onSendOtp = ({ email }: { email: string }) => {
+    setIdentifier(email);
     setErrorMessage('');
-    sendOtpMutation.mutate(identifier, {
+    sendOtpMutation.mutate(email, {
       onSuccess: () => {
-        toast.success('OTP sent successfully!');
+        toast.success('OTP sent to your email!');
         setStep('otp');
       },
       onError: (err: any) => {
         const errorMsg = err?.data?.message || 'Failed to send OTP';
-        // Surface specific errors inline
         const lower = errorMsg.toLowerCase();
         if (
           lower.includes('password not set') ||
@@ -80,10 +78,8 @@ export default function ForgotPasswordPage() {
           lower.includes('account not found') ||
           lower.includes('not found')
         ) {
-          // Friendly message for account not found
           if (lower.includes('account not found') || lower.includes('not found')) {
-            const isEmail = identifier.includes('@');
-            setErrorMessage(isEmail ? 'No account found with this email' : 'No account found with this phone number');
+            setErrorMessage('No account found with this email');
           } else {
             setErrorMessage(errorMsg);
           }
@@ -101,7 +97,7 @@ export default function ForgotPasswordPage() {
   };
 
   const onResetPassword = ({ password, confirmPassword }: { password: string; confirmPassword: string }) => {
-    const currentIdentifier = getIdentifier('identifier');
+    const currentEmail = getEmail('email');
     const otp = getOtp('otp');
 
     if (!otp || otp.length !== 6) {
@@ -113,7 +109,7 @@ export default function ForgotPasswordPage() {
     setErrorMessage('');
     resetPasswordMutation.mutate(
       {
-        identifier: currentIdentifier,
+        identifier: currentEmail,
         otp,
         newPassword: password,
       },
@@ -152,7 +148,7 @@ export default function ForgotPasswordPage() {
       <div className="w-full max-w-md">
         <Card className="border-2 relative">
           <CardHeader className="text-center space-y-1.5 sm:space-y-2 pb-4 sm:pb-6">
-            
+
             <div className="flex items-center justify-center gap-2 pt-10 sm:pt-12">
               <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
                 <KeyRound className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
@@ -160,41 +156,37 @@ export default function ForgotPasswordPage() {
               <CardTitle className="text-xl sm:text-2xl">Forgot Password</CardTitle>
             </div>
             <CardDescription className="text-xs sm:text-sm px-2">
-              {step === 'identifier' && 'Enter your email or phone number to reset password'}
-              {step === 'otp' && `Enter OTP sent to ${watchedIdentifier || 'your email/phone'}`}
+              {step === 'identifier' && 'Enter your email to reset password'}
+              {step === 'otp' && `Enter OTP sent to ${watchedEmail || 'your email'}`}
               {step === 'reset' && 'Create a new password'}
             </CardDescription>
           </CardHeader>
 
           <CardContent className="px-4 sm:px-6">
             {step === 'identifier' && (
-              <form onSubmit={handleIdentifierSubmit(onSendOtp)} className="space-y-4 sm:space-y-5">
+              <form onSubmit={handleEmailSubmit(onSendOtp)} className="space-y-4 sm:space-y-5">
                 <div className="space-y-1.5 sm:space-y-2">
-                  <Label htmlFor="identifier" className="text-xs sm:text-sm">
-                    Email or Phone Number
+                  <Label htmlFor="email" className="text-xs sm:text-sm">
+                    Email Address
                   </Label>
                   <div className="relative">
-                    {isEmail ? (
-                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
-                    ) : (
-                      <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
-                    )}
+                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
                     <Input
-                      id="identifier"
-                      type="text"
-                      placeholder="Enter email or phone number"
-                      {...identifierRegister('identifier')}
+                      id="email"
+                      type="email"
+                      placeholder="you@example.com"
+                      {...emailRegister('email')}
                       onChange={(e) => {
                         setIdentifier(e.target.value);
                         setErrorMessage('');
-                        identifierRegister('identifier').onChange(e);
+                        emailRegister('email').onChange(e);
                       }}
                       className="pl-10 h-11 sm:h-12 text-sm sm:text-base"
                       autoFocus
                     />
                   </div>
-                  {identifierErrors.identifier && (
-                    <p className="text-xs text-red-500">{identifierErrors.identifier.message}</p>
+                  {emailErrors.email && (
+                    <p className="text-xs text-red-500">{emailErrors.email.message}</p>
                   )}
                   {errorMessage && (
                     <p className="text-xs text-red-500">{errorMessage}</p>
@@ -246,7 +238,7 @@ export default function ForgotPasswordPage() {
                       size="sm"
                       className="text-[10px] sm:text-xs h-auto p-0"
                       onClick={() => {
-                        handleIdentifierSubmit(onSendOtp)();
+                        handleEmailSubmit(onSendOtp)();
                       }}
                     >
                       Resend OTP
@@ -273,7 +265,7 @@ export default function ForgotPasswordPage() {
                       setErrorMessage('');
                     }}
                   >
-                    Change Email/Phone Number
+                    Change Email
                   </Button>
                 </div>
               </form>

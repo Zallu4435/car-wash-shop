@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
@@ -11,36 +11,237 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { User, Phone, Mail, Lock, Eye, EyeOff, UserPlus, Droplet, CheckCircle } from 'lucide-react';
+import { User, Phone, Mail, Lock, Eye, EyeOff, UserPlus, Droplet, CheckCircle, ArrowLeft, KeyRound } from 'lucide-react';
 import { toast } from 'sonner';
-import { useRegister } from '@/api/domains/auth/queries';
+import { useRegister, useSendRegistrationOtp } from '@/api/domains/auth/queries';
 import { CustomerRoutes } from '@/lib/constants/routes';
+
+type Step = 'form' | 'otp';
 
 export default function RegisterPage() {
   const router = useRouter();
+  const [step, setStep] = useState<Step>('form');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [formData, setFormData] = useState<RegisterInput | null>(null);
+  const [otp, setOtp] = useState(['', '', '', '', '', '']);
+  const [countdown, setCountdown] = useState(0);
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
   const registerMutation = useRegister();
+  const sendOtpMutation = useSendRegistrationOtp();
 
   const {
     register,
     handleSubmit,
     formState: { errors },
+    getValues,
   } = useForm<RegisterInput>({
     resolver: zodResolver(registerSchema),
   });
 
-  const onSubmit = (data: RegisterInput) => {
-    registerMutation.mutate(data, {
+  // Countdown timer for resend
+  useEffect(() => {
+    if (countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [countdown]);
+
+  const handleFormSubmit = (data: RegisterInput) => {
+    setFormData(data);
+    sendOtpMutation.mutate(data.email, {
       onSuccess: () => {
-        toast.success('Registration successful!');
-        router.push(CustomerRoutes.HOME);
+        toast.success('OTP sent to your email!');
+        setStep('otp');
+        setCountdown(60);
+        // Focus first OTP input
+        setTimeout(() => inputRefs.current[0]?.focus(), 100);
       },
       onError: (err: any) => {
-        toast.error(err?.message || 'Registration failed');
+        toast.error(err?.message || 'Failed to send OTP');
       },
     });
   };
+
+  const handleOtpChange = (index: number, value: string) => {
+    if (!/^\d*$/.test(value)) return;
+
+    const newOtp = [...otp];
+    newOtp[index] = value.slice(-1);
+    setOtp(newOtp);
+
+    // Auto-focus next input
+    if (value && index < 5) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent) => {
+    if (e.key === 'Backspace' && !otp[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
+  };
+
+  const handleOtpPaste = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData('text').slice(0, 6);
+    if (!/^\d+$/.test(pastedData)) return;
+
+    const newOtp = [...otp];
+    pastedData.split('').forEach((char, index) => {
+      if (index < 6) newOtp[index] = char;
+    });
+    setOtp(newOtp);
+
+    // Focus the appropriate input after paste
+    const nextEmptyIndex = newOtp.findIndex((val) => !val);
+    if (nextEmptyIndex !== -1) {
+      inputRefs.current[nextEmptyIndex]?.focus();
+    } else {
+      inputRefs.current[5]?.focus();
+    }
+  };
+
+  const handleVerifyOtp = () => {
+    const otpCode = otp.join('');
+    if (otpCode.length !== 6) {
+      toast.error('Please enter the complete 6-digit OTP');
+      return;
+    }
+
+    if (!formData) {
+      toast.error('Form data missing. Please try again.');
+      setStep('form');
+      return;
+    }
+
+    registerMutation.mutate(
+      { ...formData, otp: otpCode },
+      {
+        onSuccess: () => {
+          toast.success('Registration successful!');
+          router.push(CustomerRoutes.HOME);
+        },
+        onError: (err: any) => {
+          toast.error(err?.message || 'Registration failed');
+        },
+      }
+    );
+  };
+
+  const handleResendOtp = () => {
+    if (countdown > 0 || !formData) return;
+
+    sendOtpMutation.mutate(formData.email, {
+      onSuccess: () => {
+        toast.success('OTP resent to your email!');
+        setCountdown(60);
+        setOtp(['', '', '', '', '', '']);
+        inputRefs.current[0]?.focus();
+      },
+      onError: (err: any) => {
+        toast.error(err?.message || 'Failed to resend OTP');
+      },
+    });
+  };
+
+  const handleBackToForm = () => {
+    setStep('form');
+    setOtp(['', '', '', '', '', '']);
+  };
+
+  if (step === 'otp') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background py-8 sm:py-12 px-4">
+        <div className="w-full max-w-md">
+          {/* Logo/Brand */}
+          <div className="text-center mb-6 sm:mb-8">
+            <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 bg-primary rounded-xl sm:rounded-2xl mb-3 sm:mb-4">
+              <KeyRound className="h-7 w-7 sm:h-8 sm:w-8 text-primary-foreground" />
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Verify Your Email</h1>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1 sm:mt-2">
+              We sent a 6-digit code to <span className="font-medium text-foreground">{formData?.email}</span>
+            </p>
+          </div>
+
+          <Card className="border-2">
+            <CardHeader className="text-center space-y-1.5 sm:space-y-2 pb-4 sm:pb-6">
+              <div className="flex items-center justify-center gap-2">
+                <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
+                  <Mail className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                </div>
+                <CardTitle className="text-xl sm:text-2xl">Enter OTP</CardTitle>
+              </div>
+              <CardDescription className="text-xs sm:text-sm">
+                Enter the verification code to complete registration
+              </CardDescription>
+            </CardHeader>
+
+            <CardContent className="px-4 sm:px-6">
+              <div className="space-y-6">
+                {/* OTP Input */}
+                <div className="flex justify-center gap-2 sm:gap-3">
+                  {otp.map((digit, index) => (
+                    <input
+                      key={index}
+                      ref={(el) => { inputRefs.current[index] = el; }}
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={1}
+                      value={digit}
+                      onChange={(e) => handleOtpChange(index, e.target.value)}
+                      onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                      onPaste={index === 0 ? handleOtpPaste : undefined}
+                      className="w-10 h-12 sm:w-12 sm:h-14 text-center text-lg sm:text-xl font-semibold border-2 rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all bg-background"
+                    />
+                  ))}
+                </div>
+
+                {/* Resend */}
+                <div className="text-center">
+                  {countdown > 0 ? (
+                    <p className="text-sm text-muted-foreground">
+                      Resend code in <span className="font-medium text-foreground">{countdown}s</span>
+                    </p>
+                  ) : (
+                    <button
+                      onClick={handleResendOtp}
+                      disabled={sendOtpMutation.isPending}
+                      className="text-sm text-primary hover:underline font-medium disabled:opacity-50"
+                    >
+                      Resend OTP
+                    </button>
+                  )}
+                </div>
+
+                {/* Verify Button */}
+                <Button
+                  onClick={handleVerifyOtp}
+                  className="w-full shadow-lg h-11 sm:h-12 text-sm sm:text-base border-2"
+                  size="lg"
+                  disabled={registerMutation.isPending || otp.join('').length !== 6}
+                >
+                  {registerMutation.isPending ? 'Verifying...' : 'Verify & Create Account'}
+                </Button>
+
+                {/* Back Button */}
+                <Button
+                  variant="ghost"
+                  onClick={handleBackToForm}
+                  className="w-full"
+                >
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Back to Registration Form
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background py-8 sm:py-12 px-4">
@@ -70,7 +271,7 @@ export default function RegisterPage() {
           </CardHeader>
 
           <CardContent className="px-4 sm:px-6">
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-3.5 sm:space-y-4">
+            <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-3.5 sm:space-y-4">
               {/* Name */}
               <div className="space-y-1.5 sm:space-y-2">
                 <Label htmlFor="name" className="text-xs sm:text-sm">Full Name</Label>
@@ -195,9 +396,9 @@ export default function RegisterPage() {
                   type="submit"
                   className="w-full shadow-lg h-11 sm:h-12 text-sm sm:text-base border-2"
                   size="lg"
-                  disabled={registerMutation.isPending}
+                  disabled={sendOtpMutation.isPending}
                 >
-                  {registerMutation.isPending ? 'Creating Account...' : 'Create Account'}
+                  {sendOtpMutation.isPending ? 'Sending OTP...' : 'Continue'}
                 </Button>
               </div>
             </form>
