@@ -243,6 +243,7 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
                         {collection.handoverStatus === 'pending' && (
                           <Button
                             size="sm"
+                            variant="default"
                             onClick={async () => {
                               const confirmed = await handoverConfirmation.confirm({
                                 title: 'Mark as Received',
@@ -255,7 +256,7 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
                               }
                             }}
                             disabled={markHandover.isPending}
-                            className="h-8 text-xs"
+                            className="h-8 text-xs !bg-green-600 hover:!bg-green-700 !text-white font-semibold shadow-md !border-2 !border-green-700 px-4 rounded-md"
                           >
                             {markHandover.isPending ? (
                               <Loader2 className="h-3 w-3 animate-spin mr-1" />

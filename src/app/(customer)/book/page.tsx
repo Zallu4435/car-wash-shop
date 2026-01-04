@@ -1100,7 +1100,7 @@ export default function BookServicePage() {
                     <div className="flex items-start gap-3">
                       <ShieldCheck className="mt-1 h-5 w-5 text-primary" />
                       <div className="space-y-2">
-                        <p className="text-sm font-semibold text-foreground">Cancellation Policy</p>
+                        <p className="text-sm font-semibold text-red-500">Cancellation Policy</p>
                         <p className="text-xs text-muted-foreground">
                           Full refund available if cancelled within 1 hour of booking. Refunds are processed within 3-5 business days.
                         </p>

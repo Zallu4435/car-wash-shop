@@ -143,67 +143,31 @@ export default function CancelOrderPage({ params }: { params: Promise<{ id: stri
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                  {/* Refund Eligibility Badge - only for bookings */}
-                  {isBooking && refundInfo.checked && (
-                    <div className={`rounded-xl p-4 border-2 ${refundInfo.eligible
-                      ? 'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800'
-                      : 'bg-orange-50 dark:bg-orange-950/20 border-orange-200 dark:border-orange-800'
-                      }`}>
-                      <div className="flex items-start gap-3">
-                        {refundInfo.eligible ? (
-                          <CheckCircle className="h-5 w-5 text-green-700 dark:text-green-400 mt-0.5 flex-shrink-0" />
-                        ) : (
-                          <Clock className="h-5 w-5 text-orange-600 dark:text-orange-400 mt-0.5 flex-shrink-0" />
-                        )}
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <p className={`font-semibold ${refundInfo.eligible
-                              ? 'text-green-900 dark:text-green-300'
-                              : 'text-orange-700 dark:text-orange-300'
-                              }`}>
-                              {refundInfo.eligible ? 'Eligible for Full Refund' : 'Not Eligible for Refund'}
-                            </p>
-                            <Badge variant={refundInfo.eligible ? 'default' : 'secondary'} className="text-xs">
-                              {refundInfo.eligible ? '✓ Refundable' : '✗ Non-refundable'}
-                            </Badge>
-                          </div>
-                          <p className={`text-sm ${refundInfo.eligible
-                            ? 'text-green-700 dark:text-green-400'
-                            : 'text-orange-600 dark:text-orange-400'
-                            }`}>
-                            {refundInfo.reason}
-                          </p>
-                          {refundInfo.eligible && refundInfo.minutesRemaining && refundInfo.minutesRemaining > 0 && (
-                            <p className="text-xs text-green-700 dark:text-green-500 mt-1">
-                              ⏰ {refundInfo.minutesRemaining} minutes remaining for full refund
-                            </p>
-                          )}
-                          {refundInfo.eligible && (
-                            <p className="text-xs text-green-700 dark:text-green-400 mt-2">
-                              Your refund will be processed within 3-5 business days.
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Warning */}
-                  <div className="bg-red-600 dark:bg-red-700 border-2 border-red-700 dark:border-red-600 rounded-xl p-4">
+                  {/* Warning with Refund Status */}
+                  <div className="bg-red-600 dark:bg-red-700 rounded-xl p-4">
                     <div className="flex items-start gap-3">
                       <AlertTriangle className="h-5 w-5 text-white mt-0.5 flex-shrink-0" />
-                      <div>
+                      <div className="flex-1">
                         <p className="font-semibold text-white mb-1">
                           Warning: This action cannot be undone
                         </p>
                         <p className="text-sm text-red-100">
                           {isBooking
                             ? refundInfo.eligible
-                              ? 'Your full refund will be processed within 3-5 business days after cancellation.'
-                              : 'This booking is no longer eligible for a refund as it was created more than 1 hour ago.'
-                            : 'Are you sure you want to cancel this order? Your refund will be processed within 5-7 business days.'}
+                              ? `Full refund available (${refundInfo.minutesRemaining} min left) • Processed in 3-5 business days`
+                              : 'No refund available — cancellation window has expired (1 hour limit)'
+                            : 'Your refund will be processed within 5-7 business days.'}
                         </p>
                       </div>
+                      {isBooking && refundInfo.checked && (
+                        <Badge
+                          className={refundInfo.eligible
+                            ? 'bg-emerald-500 hover:bg-emerald-600 text-white'
+                            : 'bg-red-800 text-red-200'}
+                        >
+                          {refundInfo.eligible ? 'Refundable' : 'No Refund'}
+                        </Badge>
+                      )}
                     </div>
                   </div>
 
