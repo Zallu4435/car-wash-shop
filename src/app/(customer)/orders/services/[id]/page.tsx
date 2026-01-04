@@ -13,7 +13,8 @@ import {
   AlertTriangle,
   CheckCircle2,
   Clock,
-  MessageSquare
+  MessageSquare,
+  Star
 } from 'lucide-react';
 import { CustomerRoutes } from '@/lib/constants/routes';
 import { Button } from '@/components/ui/button';
@@ -21,7 +22,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { OrderTracker } from '@/components/customer/OrderTracker';
 import { Separator } from '@/components/ui/separator';
-import { useBooking } from '@/api/domains/bookings/queries';
+import { Textarea } from '@/components/ui/textarea';
+import { useBooking, useSubmitBookingFeedback } from '@/api/domains/bookings/queries';
 import { useComplaintByReference, useCanFileComplaint } from '@/api/domains/complaints/queries';
 import { ComplaintModal } from '@/components/customer/ComplaintModal';
 import Loading from '@/components/shared/display/Loading';
@@ -50,6 +52,10 @@ const formatAddress = (address?: BookingAddress | string) => {
 export default function ServiceOrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const [showComplaintModal, setShowComplaintModal] = useState(false);
+  const [rating, setRating] = useState(0);
+  const [hoverRating, setHoverRating] = useState(0);
+  const [comment, setComment] = useState('');
+  const submitFeedback = useSubmitBookingFeedback();
 
   const {
     data: booking,
@@ -429,6 +435,91 @@ export default function ServiceOrderDetailPage({ params }: { params: Promise<{ i
                             >
                               <AlertTriangle className="mr-2 h-4 w-4" />
                               File a Complaint
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Rating Section - Only show for completed bookings */}
+              {isCompleted && (
+                <Card className="border-2 border-border">
+                  <CardContent className="p-4 sm:p-6">
+                    <div className="flex items-start gap-3 sm:gap-4">
+                      <Star className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-500 flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        {booking.feedback?.rating ? (
+                          // Show existing feedback
+                          <div className="space-y-3">
+                            <h3 className="font-semibold text-sm sm:text-base text-foreground">
+                              Your Rating
+                            </h3>
+                            <div className="flex items-center gap-1">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <Star
+                                  key={star}
+                                  className={`h-5 w-5 ${star <= booking.feedback!.rating ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground/30'}`}
+                                />
+                              ))}
+                              <span className="ml-2 text-sm text-muted-foreground">
+                                {booking.feedback.rating}/5
+                              </span>
+                            </div>
+                            {booking.feedback.comment && (
+                              <p className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg">
+                                "{booking.feedback.comment}"
+                              </p>
+                            )}
+                          </div>
+                        ) : (
+                          // Show rating form
+                          <div className="space-y-4">
+                            <div>
+                              <h3 className="font-semibold text-sm sm:text-base text-foreground mb-1">
+                                Rate Your Experience
+                              </h3>
+                              <p className="text-xs sm:text-sm text-muted-foreground">
+                                How was your service? Your feedback helps us improve.
+                              </p>
+                            </div>
+
+                            <div className="flex items-center gap-1">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <button
+                                  key={star}
+                                  type="button"
+                                  onClick={() => setRating(star)}
+                                  onMouseEnter={() => setHoverRating(star)}
+                                  onMouseLeave={() => setHoverRating(0)}
+                                  className="p-1 transition-transform hover:scale-110"
+                                >
+                                  <Star
+                                    className={`h-7 w-7 transition-colors ${star <= (hoverRating || rating)
+                                        ? 'fill-yellow-400 text-yellow-400'
+                                        : 'text-muted-foreground/30 hover:text-yellow-300'
+                                      }`}
+                                  />
+                                </button>
+                              ))}
+                            </div>
+
+                            <Textarea
+                              placeholder="Share your experience (optional)..."
+                              value={comment}
+                              onChange={(e) => setComment(e.target.value)}
+                              className="min-h-[80px] resize-none"
+                              maxLength={500}
+                            />
+
+                            <Button
+                              onClick={() => submitFeedback.mutate({ bookingId: id, rating, comment })}
+                              disabled={rating === 0 || submitFeedback.isPending}
+                              className="w-full sm:w-auto"
+                            >
+                              {submitFeedback.isPending ? 'Submitting...' : 'Submit Rating'}
                             </Button>
                           </div>
                         )}

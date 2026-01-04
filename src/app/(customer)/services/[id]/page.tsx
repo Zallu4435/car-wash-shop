@@ -5,14 +5,16 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   Clock, ArrowLeft, Sparkles, ShieldCheck,
-  Timer, Info, CarFront
+  Timer, Info, CarFront, Star
 } from 'lucide-react';
 
 import { CustomerRoutes } from '@/lib/constants/routes';
 import { useService } from '@/api/domains/services/queries';
+import { useServiceReviews } from '@/api/domains/reviews/queries';
 import { useActiveAddons } from '@/api/domains/addons/queries';
 import Loading from '@/components/shared/display/Loading';
 import Error from '@/components/shared/display/Error';
+import { ReviewsList } from '@/components/customer/ReviewsList';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -32,6 +34,7 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
     ? service.category
     : service?.category?.name;
   const { data: availableAddons = [], isLoading: addonsLoading } = useActiveAddons(categoryName);
+  const { data: reviewsData, isLoading: reviewsLoading } = useServiceReviews(id);
 
   const [selectedAddOns, setSelectedAddOns] = useState<string[]>([]);
 
@@ -102,11 +105,10 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
                     <CarFront className="h-20 w-20 text-muted-foreground/40" />
                   </div>
                 )}
-                {/* Rating badge removed */}
               </div>
 
               <div>
-                <div className="flex items-center gap-3 mb-2">
+                <div className="flex items-center gap-3 mb-2 flex-wrap">
                   <Badge variant="outline" className="rounded-md border-primary/20 bg-primary/5 text-primary">
                     {service.category?.name || service.categoryId || 'General'}
                   </Badge>
@@ -114,6 +116,15 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
                     <Clock className="mr-1 h-4 w-4" />
                     {service.duration} mins base time
                   </span>
+                  {service.averageRating && service.averageRating > 0 && (
+                    <span className="flex items-center text-sm text-muted-foreground">
+                      <Star className="mr-1 h-4 w-4 fill-yellow-400 text-yellow-400" />
+                      {service.averageRating.toFixed(1)}
+                      {service.totalReviews && service.totalReviews > 0 && (
+                        <span className="ml-1 text-xs">({service.totalReviews} reviews)</span>
+                      )}
+                    </span>
+                  )}
                 </div>
                 <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
                   {service.name}
@@ -225,6 +236,16 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ id: st
                 )}
               </CardContent>
             </Card>
+
+            {/* Customer Reviews Section */}
+            {!reviewsLoading && reviewsData && (
+              <ReviewsList
+                reviews={reviewsData.reviews}
+                averageRating={reviewsData.averageRating}
+                totalReviews={reviewsData.total}
+                serviceName={service.name}
+              />
+            )}
 
           </div>
 

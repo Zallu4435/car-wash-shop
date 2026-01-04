@@ -97,3 +97,19 @@ export const useCancelBooking = () => {
     },
   });
 };
+
+export const useSubmitBookingFeedback = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ bookingId, rating, comment }: { bookingId: string; rating: number; comment?: string }) =>
+      bookingFetchers.submitFeedback(bookingId, { rating, comment }),
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: bookingKeys.detail(variables.bookingId) });
+      toast.success('Thank you for your feedback!');
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Failed to submit feedback');
+    },
+  });
+};

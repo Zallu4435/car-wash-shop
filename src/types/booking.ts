@@ -50,10 +50,21 @@ export interface Booking {
   };
   assignedStaff?: string;
   completedAt?: string;
-  rating?: number;
-  review?: string;
+  feedback?: BookingFeedback;
   createdAt: string;
   updatedAt?: string;
+}
+
+export interface BookingFeedback {
+  rating: number;
+  comment?: string;
+  submittedAt?: string;
+}
+
+export interface BookingFeedbackInput {
+  bookingId: string;
+  rating: number;
+  comment?: string;
 }
 
 export interface AddOn {

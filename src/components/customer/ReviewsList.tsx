@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Star, ThumbsUp, ThumbsDown, Loader2 } from 'lucide-react';
+import { Star, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -69,10 +69,10 @@ export function ReviewsList({
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
     });
   };
 
@@ -100,11 +100,10 @@ export function ReviewsList({
               {[1, 2, 3, 4, 5].map((star) => (
                 <Star
                   key={star}
-                  className={`h-5 w-5 sm:h-6 sm:w-6 ${
-                    star <= Math.round(averageRating)
-                      ? 'fill-yellow-400 text-yellow-400'
-                      : 'text-gray-300'
-                  }`}
+                  className={`h-5 w-5 sm:h-6 sm:w-6 ${star <= Math.round(averageRating)
+                    ? 'fill-yellow-400 text-yellow-400'
+                    : 'text-gray-300'
+                    }`}
                 />
               ))}
             </div>
@@ -159,86 +158,72 @@ export function ReviewsList({
           <>
             <div className="space-y-4">
               {displayedReviews.map((review, index) => (
-              <div key={review.id}>
-                <div className="space-y-3">
-                  {/* Review Header */}
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-start gap-3 flex-1 min-w-0">
-                      {/* Avatar */}
-                      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <span className="text-sm sm:text-base font-semibold text-primary">
-                          {review.userName.charAt(0).toUpperCase()}
-                        </span>
-                      </div>
-                      
-                      {/* User Info */}
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-sm sm:text-base text-foreground truncate">
-                          {review.userName}
-                        </p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <div className="flex items-center gap-0.5">
-                            {[1, 2, 3, 4, 5].map((star) => (
-                              <Star
-                                key={star}
-                                className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${
-                                  star <= review.rating
-                                    ? 'fill-yellow-400 text-yellow-400'
-                                    : 'text-gray-300'
-                                }`}
-                              />
-                            ))}
-                          </div>
-                          <span className="text-[10px] sm:text-xs text-muted-foreground">
-                            {formatDate(review.createdAt)}
+                <div key={review.id}>
+                  <div className="space-y-3">
+                    {/* Review Header */}
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-start gap-3 flex-1 min-w-0">
+                        {/* Avatar */}
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                          <span className="text-sm sm:text-base font-semibold text-primary">
+                            {review.userName.charAt(0).toUpperCase()}
                           </span>
                         </div>
+
+                        {/* User Info */}
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-sm sm:text-base text-foreground truncate">
+                            {review.userName}
+                          </p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <div className="flex items-center gap-0.5">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <Star
+                                  key={star}
+                                  className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${star <= review.rating
+                                    ? 'fill-yellow-400 text-yellow-400'
+                                    : 'text-gray-300'
+                                    }`}
+                                />
+                              ))}
+                            </div>
+                            <span className="text-[10px] sm:text-xs text-muted-foreground">
+                              {formatDate(review.createdAt)}
+                            </span>
+                          </div>
+                        </div>
                       </div>
+
+                      {/* Verified Badge (optional) */}
+                      <Badge variant="outline" className="text-[10px] sm:text-xs flex-shrink-0">
+                        Verified
+                      </Badge>
                     </div>
-                    
-                    {/* Verified Badge (optional) */}
-                    <Badge variant="outline" className="text-[10px] sm:text-xs flex-shrink-0">
-                      Verified
-                    </Badge>
+
+                    {/* Review Content */}
+                    {review.comment && (
+                      <p className="text-sm sm:text-base text-foreground leading-relaxed pl-0 sm:pl-[60px]">
+                        {review.comment}
+                      </p>
+                    )}
+
+                    {/* Review Images (if any) */}
+                    {review.images && review.images.length > 0 && (
+                      <div className="flex gap-2 overflow-x-auto pl-0 sm:pl-[60px]">
+                        {review.images.map((image, idx) => (
+                          <img
+                            key={idx}
+                            src={image}
+                            alt={`Review image ${idx + 1}`}
+                            className="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-lg border border-border"
+                          />
+                        ))}
+                      </div>
+                    )}
                   </div>
 
-                  {/* Review Content */}
-                  {review.comment && (
-                    <p className="text-sm sm:text-base text-foreground leading-relaxed pl-0 sm:pl-[60px]">
-                      {review.comment}
-                    </p>
-                  )}
-
-                  {/* Review Images (if any) */}
-                  {review.images && review.images.length > 0 && (
-                    <div className="flex gap-2 overflow-x-auto pl-0 sm:pl-[60px]">
-                      {review.images.map((image, idx) => (
-                        <img
-                          key={idx}
-                          src={image}
-                          alt={`Review image ${idx + 1}`}
-                          className="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-lg border border-border"
-                        />
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Helpful Actions */}
-                  <div className="flex items-center gap-3 pl-0 sm:pl-[60px]">
-                    <span className="text-[10px] sm:text-xs text-muted-foreground">Was this helpful?</span>
-                    <Button variant="outline" size="sm" className="border-2 h-7 text-xs gap-1.5">
-                      <ThumbsUp className="h-3 w-3" />
-                      Yes
-                    </Button>
-                    <Button variant="outline" size="sm" className="border-2 h-7 text-xs gap-1.5">
-                      <ThumbsDown className="h-3 w-3" />
-                      No
-                    </Button>
-                  </div>
+                  {index < displayedReviews.length - 1 && <Separator className="mt-4" />}
                 </div>
-
-                {index < displayedReviews.length - 1 && <Separator className="mt-4" />}
-              </div>
               ))}
             </div>
 

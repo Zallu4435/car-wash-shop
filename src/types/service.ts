@@ -10,8 +10,8 @@ export interface Service {
   isAvailable: boolean;
   image?: string;
   imageUrl?: string;
-  rating?: number;
-  reviewCount?: number;
+  averageRating?: number | null;
+  totalReviews?: number;
   popular?: boolean;
   createdAt?: string;
   updatedAt?: string;

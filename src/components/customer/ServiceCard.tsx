@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Clock, ArrowRight } from 'lucide-react';
+import { Clock, ArrowRight, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface Service {
@@ -20,6 +20,8 @@ interface Service {
   pricing: Array<{ vehicleType: string; price: number }>;
   duration: number;
   imageUrl?: string;
+  averageRating?: number | null;
+  totalReviews?: number;
 }
 
 interface ServiceCardProps {
@@ -30,12 +32,12 @@ interface ServiceCardProps {
   showFromLabel?: boolean;
 }
 
-export function ServiceCard({ 
-  service, 
-  priceDisplay, 
-  pricingBadge, 
-  bodyTypeBadge, 
-  showFromLabel = true 
+export function ServiceCard({
+  service,
+  priceDisplay,
+  pricingBadge,
+  bodyTypeBadge,
+  showFromLabel = true
 }: ServiceCardProps) {
   return (
     <Card className="group hover:shadow-lg transition-all duration-300 cursor-pointer h-full overflow-hidden border-2">
@@ -43,7 +45,7 @@ export function ServiceCard({
         {/* Image Container */}
         <div className="relative h-44 sm:h-48 md:h-56 lg:h-64 bg-gradient-to-br from-primary/5 to-accent/5 overflow-hidden">
           {service.imageUrl ? (
-            <img 
+            <img
               src={service.imageUrl}
               alt={service.name}
               className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
@@ -55,7 +57,7 @@ export function ServiceCard({
               </span>
             </div>
           )}
-          
+
           {/* Category Badge */}
           {(service.category?.name || bodyTypeBadge) && (
             <div className="absolute top-2 sm:top-3 left-2 sm:left-3">
@@ -86,12 +88,21 @@ export function ServiceCard({
             {service.description}
           </p>
 
-          {/* Duration */}
+          {/* Duration and Rating */}
           <div className="flex items-center gap-2 sm:gap-3 md:gap-4 mb-3 sm:mb-4 md:mb-5 lg:mb-6 pb-3 sm:pb-4 md:pb-5 lg:pb-6 border-b border-border">
             <div className="flex items-center gap-1 sm:gap-1.5 text-muted-foreground">
               <Clock className="h-3 w-3 sm:h-3.5 sm:w-3.5 md:h-4 md:w-4 flex-shrink-0" />
               <span className="text-xs sm:text-sm font-medium">{service.duration} min</span>
             </div>
+            {service.averageRating && service.averageRating > 0 && (
+              <div className="flex items-center gap-1 text-muted-foreground">
+                <Star className="h-3 w-3 sm:h-3.5 sm:w-3.5 fill-yellow-400 text-yellow-400" />
+                <span className="text-xs sm:text-sm font-medium">{service.averageRating.toFixed(1)}</span>
+                {service.totalReviews && service.totalReviews > 0 && (
+                  <span className="text-[10px] sm:text-xs text-muted-foreground/70">({service.totalReviews})</span>
+                )}
+              </div>
+            )}
           </div>
 
           {/* CTA */}

@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Pagination } from '@/components/admin/Pagination';
-import { Package, Calendar, ChevronRight, ShoppingBag, Car, Bike, Home, ArrowLeft, Search, X } from 'lucide-react';
+import { Package, Calendar, ChevronRight, ShoppingBag, Car, Bike, Home, ArrowLeft, Search, X, Star } from 'lucide-react';
 import { useState, useEffect, useMemo } from 'react';
 import { EmptyState } from '@/components/shared/display/EmptyState';
 import { CustomerRoutes } from '@/lib/constants/routes';
@@ -177,7 +177,19 @@ export default function ServiceOrdersPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between sm:hidden mb-2">
                         <Icon className="h-5 w-5 text-muted-foreground" />
-                        <Badge variant={getStatusVariant(order.status) as any}>{order.status}</Badge>
+                        <div className="flex items-center gap-2">
+                          {order.feedback?.rating && (
+                            <div className="flex items-center gap-0.5">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <Star
+                                  key={star}
+                                  className={`h-3 w-3 ${star <= order.feedback!.rating ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground/30'}`}
+                                />
+                              ))}
+                            </div>
+                          )}
+                          <Badge variant={getStatusVariant(order.status) as any}>{order.status}</Badge>
+                        </div>
                       </div>
 
                       <h3 className="font-semibold truncate">{serviceName}</h3>
@@ -195,7 +207,17 @@ export default function ServiceOrdersPage() {
                     </div>
 
                     {/* Status Column (Desktop) */}
-                    <div className="hidden sm:block text-right min-w-[100px]">
+                    <div className="hidden sm:flex sm:items-center sm:gap-3 text-right min-w-[160px]">
+                      {order.feedback?.rating && (
+                        <div className="flex items-center gap-0.5">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star
+                              key={star}
+                              className={`h-3.5 w-3.5 ${star <= order.feedback!.rating ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground/30'}`}
+                            />
+                          ))}
+                        </div>
+                      )}
                       <Badge variant={getStatusVariant(order.status) as any}>{order.status}</Badge>
                     </div>
 

@@ -29,7 +29,7 @@ export const serviceFetchers = {
       } else if (p.category) {
         categoryName = String(p.category);
       }
-      
+
       return {
         id: p._id || p.id,
         name: p.name,
@@ -37,13 +37,13 @@ export const serviceFetchers = {
         pricing: Array.isArray(p.pricing) ? p.pricing : [],
         // default duration (minutes) if none provided by backend
         duration: typeof p.duration === 'number' ? p.duration : 60,
-        rating: typeof p.rating === 'number' ? p.rating : 0,
-        reviewCount: typeof p.reviewCount === 'number' ? p.reviewCount : 0,
+        averageRating: typeof p.averageRating === 'number' ? p.averageRating : null,
+        totalReviews: typeof p.totalReviews === 'number' ? p.totalReviews : 0,
         imageUrl: p.image,
         categoryId: categoryId,
-        category: categoryName ? { 
-          id: String(categoryId || categoryName).toLowerCase().replace(/\s+/g, '-'), 
-          name: categoryName 
+        category: categoryName ? {
+          id: String(categoryId || categoryName).toLowerCase().replace(/\s+/g, '-'),
+          name: categoryName
         } : undefined,
         isAvailable: typeof p.isAvailable === 'boolean' ? p.isAvailable : true,
       };
@@ -63,7 +63,7 @@ export const serviceFetchers = {
       `${CustomerRoutes.SERVICES}/${serviceId}`
     );
     const p = data.data!;
-    
+
     // Handle category - can be ObjectId string or populated object
     let categoryId = p.category;
     let categoryName = '';
@@ -73,20 +73,20 @@ export const serviceFetchers = {
     } else if (p.category) {
       categoryName = String(p.category);
     }
-    
+
     return {
       id: p._id || p.id,
       name: p.name,
       description: p.description,
       pricing: Array.isArray(p.pricing) ? p.pricing : [],
       duration: typeof p.duration === 'number' ? p.duration : 60,
-      rating: typeof p.rating === 'number' ? p.rating : 0,
-      reviewCount: typeof p.reviewCount === 'number' ? p.reviewCount : 0,
+      averageRating: typeof p.averageRating === 'number' ? p.averageRating : null,
+      totalReviews: typeof p.totalReviews === 'number' ? p.totalReviews : 0,
       imageUrl: p.image,
       categoryId: categoryId,
-      category: categoryName ? { 
-        id: String(categoryId || categoryName).toLowerCase().replace(/\s+/g, '-'), 
-        name: categoryName 
+      category: categoryName ? {
+        id: String(categoryId || categoryName).toLowerCase().replace(/\s+/g, '-'),
+        name: categoryName
       } : undefined,
       isAvailable: typeof p.isAvailable === 'boolean' ? p.isAvailable : true,
     } as unknown as Service;

@@ -90,4 +90,12 @@ export const bookingFetchers = {
     );
     return data.data!;
   },
+
+  async submitFeedback(bookingId: string, input: { rating: number; comment?: string }): Promise<{ message: string }> {
+    const { data } = await apiClient.post<ApiResponse<{ message: string }>>(
+      `${CustomerRoutes.BOOKINGS}/${bookingId}/feedback`,
+      input
+    );
+    return data.data!;
+  },
 };
