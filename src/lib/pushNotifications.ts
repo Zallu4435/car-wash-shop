@@ -1,6 +1,6 @@
 import { apiClient } from '@/api/client';
 
-const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || 'BMxCvVBna1BdaApXKz-r8agO0CptJMkEJdOotPlcCOLaJ808fxNNio5U5yyT3l4qUTEBHnJZYE_pdSUynfXqQSY';
 
 /**
  * Check if push notifications are supported
