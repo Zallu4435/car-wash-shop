@@ -26,6 +26,7 @@ export default function AdminForgotPasswordPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [identifier, setIdentifier] = useState('');
+  const [otp, setOtp] = useState('');
   const [errorMessage, setErrorMessage] = useState<string>('');
 
   const {
@@ -75,7 +76,7 @@ export default function AdminForgotPasswordPage() {
       },
       onError: (err: any) => {
         console.log('trigger error');
-        
+
         const errorMsg = err?.data?.message || 'Failed to send OTP';
         // Surface specific errors inline
         const lower = errorMsg.toLowerCase();
@@ -100,17 +101,17 @@ export default function AdminForgotPasswordPage() {
     });
   };
 
-  const onVerifyOtp = ({ otp }: { otp: string }) => {
-    // Move to password reset step
+  const onVerifyOtp = ({ otp: otpValue }: { otp: string }) => {
+    // Save OTP and move to password reset step
+    setOtp(otpValue);
     setErrorMessage('');
     setStep('reset');
   };
 
   const onResetPassword = ({ password, confirmPassword }: { password: string; confirmPassword: string }) => {
-    const currentIdentifier = getIdentifier('identifier');
-    const otp = getOtp('otp');
+    const currentIdentifier = identifier || getIdentifier('identifier');
 
-    if (!otp || otp.length !== 6) {
+    if (!otp) {
       toast.error('Please enter the OTP first');
       setStep('otp');
       return;
@@ -158,7 +159,7 @@ export default function AdminForgotPasswordPage() {
       <div className="w-full max-w-md">
         <Card className="border-2 relative">
           <CardHeader className="text-center space-y-1.5 sm:space-y-2 pb-4 sm:pb-6">
-            
+
             <div className="flex items-center justify-center gap-2 pt-10 sm:pt-12">
               <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
                 <KeyRound className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
