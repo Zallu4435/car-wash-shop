@@ -8,6 +8,7 @@ interface CartSummaryProps {
   subtotal: number;
   discount?: number;
   deliveryFee?: number;
+  freeDeliveryThreshold?: number;
   total: number;
   onCheckout: () => void;
   isLoading?: boolean;
@@ -17,6 +18,7 @@ export function CartSummary({
   subtotal,
   discount = 0,
   deliveryFee = 0,
+  freeDeliveryThreshold = 500,
   total,
   onCheckout,
   isLoading = false,
@@ -63,7 +65,7 @@ export function CartSummary({
           </div>
           <div className="flex items-center gap-2 text-[10px] sm:text-xs text-muted-foreground">
             <div className="h-1 w-1 rounded-full bg-green-600 flex-shrink-0" />
-            <span>Free delivery on orders above ₹500</span>
+            <span>Free delivery on orders above ₹{freeDeliveryThreshold}</span>
           </div>
           <div className="flex items-center gap-2 text-[10px] sm:text-xs text-muted-foreground">
             <div className="h-1 w-1 rounded-full bg-green-600 flex-shrink-0" />

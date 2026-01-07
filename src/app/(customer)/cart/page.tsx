@@ -1,12 +1,12 @@
 'use client';
 
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Trash2, Minus, Plus, ShoppingCart, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { CartSummary } from '@/components/customer/CartSummary';
 import { useCart, useUpdateCartItem, useRemoveFromCart } from '@/api/domains/cart/queries';
+import { useDeliverySettings } from '@/api/domains/checkout/queries';
 import Loading from '@/components/shared/display/Loading';
 import { EmptyState } from '@/components/shared/display/EmptyState';
 import { toast } from 'sonner';
@@ -19,10 +19,17 @@ export default function CartPage() {
   const { data: cart, isLoading: cartLoading } = useCart();
   const updateCartItemMutation = useUpdateCartItem();
   const removeFromCartMutation = useRemoveFromCart();
+  const { data: deliverySettings } = useDeliverySettings();
+
+  // Delivery settings with defaults
+  const freeDeliveryThreshold = deliverySettings?.freeDeliveryThreshold ?? 500;
+  const deliveryFeeAmount = deliverySettings?.deliveryFee ?? 40;
 
   const items = cart?.items || [];
   const subtotal = cart?.subtotal || 0;
-  const total = subtotal;
+  // Delivery fee applies if subtotal is below threshold
+  const deliveryFee = subtotal < freeDeliveryThreshold ? deliveryFeeAmount : 0;
+  const total = subtotal + deliveryFee;
 
   const updateQuantity = (id: string, change: number) => {
     const item = items.find(item => item.id === id);
@@ -155,6 +162,8 @@ export default function CartPage() {
                 <CartSummary
                   subtotal={subtotal}
                   discount={0}
+                  deliveryFee={deliveryFee}
+                  freeDeliveryThreshold={freeDeliveryThreshold}
                   total={total}
                   onCheckout={() => router.push(CustomerRoutes.CHECKOUT)}
                 />
