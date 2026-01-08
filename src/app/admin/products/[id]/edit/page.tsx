@@ -323,8 +323,8 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                 description="Product is visible in the store"
               />
 
-              <div className="flex items-center justify-between gap-3 p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl border-2 border-border">
-                <div className="min-w-0 flex-1">
+              <div className="flex items-center justify-between p-3 sm:p-4 bg-card rounded-lg sm:rounded-xl border-2 border-border">
+                <div className="min-w-0 flex-1 mr-3">
                   <Label htmlFor="comingSoon" className="cursor-pointer text-xs sm:text-sm font-medium">Coming Soon</Label>
                   <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">Product is visible but not purchasable</p>
                 </div>
@@ -336,6 +336,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                       id="comingSoon"
                       checked={field.value}
                       onCheckedChange={field.onChange}
+                      className="flex-shrink-0 bg-slate-300 data-[state=checked]:bg-primary [&>span]:bg-white [&>span]:data-[state=checked]:bg-slate-700"
                     />
                   )}
                 />

@@ -261,8 +261,8 @@ export default function NewProductPage() {
                 description="Product is visible in the store"
               />
 
-              <div className="flex items-center justify-between gap-3 p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl border-2 border-border">
-                <div className="min-w-0 flex-1">
+              <div className="flex items-center justify-between p-3 sm:p-4 bg-card rounded-lg sm:rounded-xl border-2 border-border">
+                <div className="min-w-0 flex-1 mr-3">
                   <Label htmlFor="featured" className="cursor-pointer text-xs sm:text-sm font-medium">Featured Product</Label>
                   <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">Show in featured section</p>
                 </div>
@@ -274,13 +274,14 @@ export default function NewProductPage() {
                       id="featured"
                       checked={field.value}
                       onCheckedChange={field.onChange}
+                      className="flex-shrink-0 bg-slate-300 data-[state=checked]:bg-primary [&>span]:bg-white [&>span]:data-[state=checked]:bg-slate-700"
                     />
                   )}
                 />
               </div>
 
-              <div className="flex items-center justify-between gap-3 p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl border-2 border-border">
-                <div className="min-w-0 flex-1">
+              <div className="flex items-center justify-between p-3 sm:p-4 bg-card rounded-lg sm:rounded-xl border-2 border-border">
+                <div className="min-w-0 flex-1 mr-3">
                   <Label htmlFor="comingSoon" className="cursor-pointer text-xs sm:text-sm font-medium">Coming Soon</Label>
                   <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">Product is visible but not purchasable</p>
                 </div>
@@ -292,6 +293,7 @@ export default function NewProductPage() {
                       id="comingSoon"
                       checked={field.value}
                       onCheckedChange={field.onChange}
+                      className="flex-shrink-0 bg-slate-300 data-[state=checked]:bg-primary [&>span]:bg-white [&>span]:data-[state=checked]:bg-slate-700"
                     />
                   )}
                 />
