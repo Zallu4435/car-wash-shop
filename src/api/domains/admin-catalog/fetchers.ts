@@ -30,7 +30,8 @@ function mapBackendProductToAdminProduct(p: any): AdminProduct {
     rating: typeof p.rating === 'number' ? p.rating : 0,
     createdAt: p.createdAt || new Date().toISOString(),
     active: Boolean(p.isAvailable), // backward-compat alias
-  };
+    comingSoon: Boolean(p.comingSoon),
+  } as AdminProduct;
 }
 
 export const adminCatalogFetchers = {
@@ -251,6 +252,7 @@ export const adminCatalogFetchers = {
       image: Array.isArray(input.images) && input.images[0] ? input.images[0] : input.image,
       isAvailable: typeof input.active === 'boolean' ? input.active : undefined,
       featured: typeof input.featured === 'boolean' ? input.featured : undefined,
+      comingSoon: typeof input.comingSoon === 'boolean' ? input.comingSoon : undefined,
       specifications: input.specifications,
     };
 
@@ -291,6 +293,9 @@ export const adminCatalogFetchers = {
     }
     if (input.featured !== undefined) {
       payload.featured = Boolean(input.featured);
+    }
+    if (input.comingSoon !== undefined) {
+      payload.comingSoon = Boolean(input.comingSoon);
     }
     if (input.specifications !== undefined) {
       payload.specifications = input.specifications;
