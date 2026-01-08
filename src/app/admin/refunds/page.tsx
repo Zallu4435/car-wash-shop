@@ -66,7 +66,7 @@ export default function AdminRefundsPage() {
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight">Refunds</h1>
                     <p className="text-muted-foreground">
-                        Manage refund requests for cancelled bookings
+                        Manage refund requests for cancelled bookings and orders
                     </p>
                 </div>
                 <Button variant="outline" onClick={() => refetch()}>
@@ -155,7 +155,10 @@ export default function AdminRefundsPage() {
                             <thead className="bg-muted/50">
                                 <tr>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                                        Booking ID
+                                        ID
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                                        Type
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                                         Customer
@@ -182,13 +185,24 @@ export default function AdminRefundsPage() {
                                     refundsData.data.map((refund) => (
                                         <tr key={refund.id} className="hover:bg-muted/50">
                                             <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                                <Link
-                                                    href={AdminRoutes.REQUEST_DETAIL(refund.bookingId)}
-                                                    className="flex items-center gap-1 text-primary hover:underline"
-                                                >
-                                                    #{refund.bookingId.slice(-6).toUpperCase()}
-                                                    <ExternalLink className="h-3 w-3" />
-                                                </Link>
+                                                {(refund as any).type === 'order' ? (
+                                                    <span className="font-mono text-primary">
+                                                        {(refund as any).orderId || refund.bookingId.slice(-6).toUpperCase()}
+                                                    </span>
+                                                ) : (
+                                                    <Link
+                                                        href={AdminRoutes.REQUEST_DETAIL(refund.bookingId)}
+                                                        className="flex items-center gap-1 text-primary hover:underline"
+                                                    >
+                                                        #{refund.bookingId.slice(-6).toUpperCase()}
+                                                        <ExternalLink className="h-3 w-3" />
+                                                    </Link>
+                                                )}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                                <Badge variant={(refund as any).type === 'order' ? 'secondary' : 'outline'}>
+                                                    {(refund as any).type === 'order' ? 'Order' : 'Booking'}
+                                                </Badge>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm">
                                                 <div>
@@ -250,7 +264,7 @@ export default function AdminRefundsPage() {
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan={7} className="px-6 py-12 text-center text-muted-foreground">
+                                        <td colSpan={8} className="px-6 py-12 text-center text-muted-foreground">
                                             No refunds found
                                         </td>
                                     </tr>
