@@ -35,9 +35,9 @@ function mapBackendProductToAdminProduct(p: any): AdminProduct {
 
 export const adminCatalogFetchers = {
   // Services
-  async getServiceList(filters?: { 
-    search?: string; 
-    status?: string; 
+  async getServiceList(filters?: {
+    search?: string;
+    status?: string;
     category?: string;
     page?: number;
     pageSize?: number;
@@ -100,6 +100,7 @@ export const adminCatalogFetchers = {
       pricing: Array.isArray(s.pricing) ? s.pricing : [],
       duration: s.duration,
       status: s.isAvailable ? 'active' : 'inactive',
+      isAvailable: Boolean(s.isAvailable),
       image: s.image,
       totalBookings: s.totalBookings || 0,
       rating: typeof s.rating === 'number' ? s.rating : 0,
@@ -114,7 +115,7 @@ export const adminCatalogFetchers = {
       category: input.categoryId || (input as any).category,
       pricing: input.pricing,
       duration: input.duration,
-      isAvailable: true,
+      isAvailable: (input as any).active ?? true,
       image: (input as any).image,
     };
     const { data } = await apiClient.post<ApiResponse<any>>(
@@ -191,10 +192,10 @@ export const adminCatalogFetchers = {
   },
 
   // Products
-  async getProductList(filters?: { 
-    search?: string; 
-    status?: string; 
-    category?: string; 
+  async getProductList(filters?: {
+    search?: string;
+    status?: string;
+    category?: string;
     stock?: string;
     page?: number;
     pageSize?: number;
@@ -238,7 +239,7 @@ export const adminCatalogFetchers = {
     // Accept flexible input (ProductFormInput or CreateProductInput) and map to backend schema
     // Convert empty SKU strings to undefined
     const skuValue = input.sku && input.sku.trim() !== '' ? input.sku.trim() : undefined;
-    
+
     const payload = {
       name: input.name,
       description: input.description,
@@ -269,7 +270,7 @@ export const adminCatalogFetchers = {
       price: input.price,
       stock: input.stock,
     };
-    
+
     // Optional fields - only include if they exist in input
     if (input.comparePrice !== undefined && input.comparePrice !== null) {
       payload.comparePrice = input.comparePrice;
@@ -279,8 +280,8 @@ export const adminCatalogFetchers = {
       payload.sku = input.sku && input.sku.trim() !== '' ? input.sku.trim() : undefined;
     }
     if (input.images !== undefined || input.image !== undefined) {
-      payload.image = Array.isArray(input.images) && input.images.length > 0 
-        ? input.images[0] 
+      payload.image = Array.isArray(input.images) && input.images.length > 0
+        ? input.images[0]
         : (input.image || '');
     }
     if (input.active !== undefined) {
@@ -310,8 +311,8 @@ export const adminCatalogFetchers = {
   },
 
   // Categories
-  async getCategoryList(filters?: { 
-    search?: string; 
+  async getCategoryList(filters?: {
+    search?: string;
     status?: string;
     type?: string;
     page?: number;
