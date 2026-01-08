@@ -17,6 +17,7 @@ export interface Product {
   brand?: string;
   category: string | Category; // Can be string (backward compat) or populated Category object
   isAvailable: boolean;
+  comingSoon?: boolean;
   rating?: number;
   stock?: number;
   reviewCount?: number;

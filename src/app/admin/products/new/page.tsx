@@ -35,6 +35,7 @@ export default function NewProductPage() {
     defaultValues: {
       active: true,
       featured: false,
+      comingSoon: false,
       images: [],
     },
   });
@@ -253,7 +254,7 @@ export default function NewProductPage() {
               </div>
             </div>
 
-            {/* Active & Featured Status */}
+            {/* Active & Featured & Coming Soon Status */}
             <div className="space-y-2 sm:space-y-3">
               <ActiveStatusField
                 control={control}
@@ -271,6 +272,24 @@ export default function NewProductPage() {
                   render={({ field }) => (
                     <Switch
                       id="featured"
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  )}
+                />
+              </div>
+
+              <div className="flex items-center justify-between gap-3 p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl border-2 border-border">
+                <div className="min-w-0 flex-1">
+                  <Label htmlFor="comingSoon" className="cursor-pointer text-xs sm:text-sm font-medium">Coming Soon</Label>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">Product is visible but not purchasable</p>
+                </div>
+                <Controller
+                  name="comingSoon"
+                  control={control}
+                  render={({ field }) => (
+                    <Switch
+                      id="comingSoon"
                       checked={field.value}
                       onCheckedChange={field.onChange}
                     />

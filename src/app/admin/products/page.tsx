@@ -3,10 +3,10 @@
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { 
-  Package, 
-  Plus, 
-  Eye, 
+import {
+  Package,
+  Plus,
+  Eye,
   Edit,
   Trash2,
   IndianRupee,
@@ -74,8 +74,8 @@ export default function ProductsPage() {
 
   if (error) {
     return (
-      <Error 
-        message="Failed to load products" 
+      <Error
+        message="Failed to load products"
         details={(error as any)?.message}
         onRetry={() => refetch()}
       />
@@ -112,7 +112,7 @@ export default function ProductsPage() {
           trend="up"
           description="All products"
         />
-        
+
         <StatCard
           icon={TrendingUp}
           label="Inventory Value"
@@ -122,7 +122,7 @@ export default function ProductsPage() {
           trend="up"
           description="Total value"
         />
-        
+
         <StatCard
           icon={Package}
           label="Total Stock"
@@ -131,7 +131,7 @@ export default function ProductsPage() {
           trend="up"
           description="Items in stock"
         />
-        
+
         <StatCard
           icon={AlertTriangle}
           label="Low Stock"
@@ -213,9 +213,9 @@ export default function ProductsPage() {
                 const stockColor = stockStatus === 'good'
                   ? 'text-green-600 dark:text-green-400'
                   : stockStatus === 'low'
-                  ? 'text-orange-600 dark:text-orange-400'
-                  : 'text-red-600 dark:text-red-400';
-                
+                    ? 'text-orange-600 dark:text-orange-400'
+                    : 'text-red-600 dark:text-red-400';
+
                 return (
                   <TransactionCard
                     key={product.id}
@@ -228,8 +228,8 @@ export default function ProductsPage() {
                       variant: 'outline',
                     }}
                     statusBadge={{
-                      label: product.active ? 'Active' : 'Inactive',
-                      className: '',
+                      label: (product as any).comingSoon ? 'Coming Soon' : product.active ? 'Active' : 'Inactive',
+                      className: (product as any).comingSoon ? 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-400' : '',
                     }}
                     title={product.name}
                     subtitle={typeof product.category === 'string' ? product.category : (product.category as any)?.name || 'N/A'}
@@ -273,7 +273,7 @@ export default function ProductsPage() {
               })}
             </div>
           )}
-          
+
           {/* Pagination */}
           {filteredProducts.length > 0 && (
             <Pagination

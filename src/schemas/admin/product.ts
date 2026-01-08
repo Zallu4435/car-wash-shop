@@ -41,6 +41,7 @@ export const productSchema = z.object({
     .max(5, 'Maximum 5 images allowed'),
   active: z.boolean().default(true),
   featured: z.boolean().default(false),
+  comingSoon: z.boolean().default(false),
 });
 
 export type ProductFormInput = z.infer<typeof productSchema>;

@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ActiveStatusField } from '@/components/shared/form/ActiveStatusField';
+import { Switch } from '@/components/ui/switch';
 import { ArrowLeft, Save, Image as ImageIcon, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { productSchema, ProductFormInput } from '@/schemas/admin/product';
@@ -40,6 +41,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     defaultValues: {
       active: true,
       featured: false,
+      comingSoon: false,
     },
   });
 
@@ -91,6 +93,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
         setValue('active', Boolean(product.active));
       }
       if (product.featured != null) setValue('featured', Boolean(product.featured));
+      if (product.comingSoon != null) setValue('comingSoon', Boolean(product.comingSoon));
       if (product.image) {
         setValue('images', [product.image]);
         setUploadedImage(product.image);
@@ -313,11 +316,31 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
               </div>
             </div>
 
-            {/* Active Status */}
-            <ActiveStatusField
-              control={control}
-              description="Product is visible in the store"
-            />
+            {/* Active & Coming Soon Status */}
+            <div className="space-y-2 sm:space-y-3">
+              <ActiveStatusField
+                control={control}
+                description="Product is visible in the store"
+              />
+
+              <div className="flex items-center justify-between gap-3 p-3 sm:p-4 bg-muted rounded-lg sm:rounded-xl border-2 border-border">
+                <div className="min-w-0 flex-1">
+                  <Label htmlFor="comingSoon" className="cursor-pointer text-xs sm:text-sm font-medium">Coming Soon</Label>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">Product is visible but not purchasable</p>
+                </div>
+                <Controller
+                  name="comingSoon"
+                  control={control}
+                  render={({ field }) => (
+                    <Switch
+                      id="comingSoon"
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  )}
+                />
+              </div>
+            </div>
 
             {/* Action Buttons */}
             <div className="flex flex-col xs:flex-row gap-2 sm:gap-3">

@@ -116,9 +116,14 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                     </div>
                   </div>
                 )}
-                {!product.isAvailable && (
+                {!product.isAvailable && !product.comingSoon && (
                   <Badge className="absolute top-4 left-4 bg-red-500 hover:bg-red-600 text-white shadow-lg">
                     Out of Stock
+                  </Badge>
+                )}
+                {product.comingSoon && (
+                  <Badge className="absolute top-4 left-4 bg-blue-500 hover:bg-blue-600 text-white shadow-lg">
+                    Coming Soon
                   </Badge>
                 )}
               </div>
@@ -172,7 +177,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                     {[
                       { key: 'Category', value: typeof product.category === 'string' ? product.category : (product.category as any)?.name || 'N/A' },
                       { key: 'Brand', value: product.brand || 'Premium' },
-                      { key: 'Availability', value: product.isAvailable ? 'In Stock' : 'Out of Stock' },
+                      { key: 'Availability', value: product.comingSoon ? 'Coming Soon' : product.isAvailable ? 'In Stock' : 'Out of Stock' },
                       { key: 'Quality', value: 'Professional Grade' },
                     ].map(({ key, value }) => (
                       <div
@@ -202,10 +207,10 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                     {/* Stock */}
                     <div className="flex flex-wrap items-center gap-3">
                       <Badge
-                        variant={product.isAvailable ? 'default' : 'error'}
-                        className="px-2 py-1 text-xs"
+                        variant={product.comingSoon ? 'default' : product.isAvailable ? 'default' : 'error'}
+                        className={`px-2 py-1 text-xs ${product.comingSoon ? 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-400' : ''}`}
                       >
-                        {product.isAvailable ? 'In Stock' : 'Out of Stock'}
+                        {product.comingSoon ? 'Coming Soon' : product.isAvailable ? 'In Stock' : 'Out of Stock'}
                       </Badge>
                     </div>
                   </div>
@@ -264,20 +269,20 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
                       size="lg"
                       className="w-full h-12"
                       onClick={handleAddToCart}
-                      disabled={!product.isAvailable || addToCartMutation.isPending}
+                      disabled={product.comingSoon || !product.isAvailable || addToCartMutation.isPending}
                     >
                       <ShoppingCart className="mr-2 h-5 w-5" />
-                      {addToCartMutation.isPending ? 'Adding...' : 'Add to Cart'}
+                      {product.comingSoon ? 'Coming Soon' : addToCartMutation.isPending ? 'Adding...' : 'Add to Cart'}
                     </Button>
                     <Button
                       size="lg"
                       variant="outline"
                       className="w-full h-12"
                       onClick={handleBuyNow}
-                      disabled={!product.isAvailable || addToCartMutation.isPending}
+                      disabled={product.comingSoon || !product.isAvailable || addToCartMutation.isPending}
                     >
                       <ShoppingBag className="mr-2 h-5 w-5" />
-                      Buy Now
+                      {product.comingSoon ? 'Coming Soon' : 'Buy Now'}
                     </Button>
                   </div>
 

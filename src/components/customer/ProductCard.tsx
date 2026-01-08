@@ -39,7 +39,15 @@ export function ProductCard({ product }: ProductCardProps) {
 
           {/* Minimalist Floating Badges - Removed Category */}
 
-          {(product.stock ?? 0) <= 0 && (
+          {product.comingSoon && (
+            <div className="absolute inset-0 bg-background/60 backdrop-blur-[2px] flex items-center justify-center z-10">
+              <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
+                Coming Soon
+              </span>
+            </div>
+          )}
+
+          {!product.comingSoon && (product.stock ?? 0) <= 0 && (
             <div className="absolute inset-0 bg-background/60 backdrop-blur-[2px] flex items-center justify-center z-10">
               <span className="bg-destructive text-destructive-foreground px-3 py-1 rounded-full text-xs font-semibold">
                 Out of Stock
@@ -73,7 +81,7 @@ export function ProductCard({ product }: ProductCardProps) {
             <Button
               size="icon"
               className="rounded-full w-10 h-10 shadow-sm hover:shadow-md transition-all duration-300 shrink-0"
-              disabled={(product.stock ?? 0) === 0 || addToCartMutation.isPending}
+              disabled={product.comingSoon || (product.stock ?? 0) === 0 || addToCartMutation.isPending}
               onClick={handleAddToCart}
             >
               {addToCartMutation.isPending ? (
