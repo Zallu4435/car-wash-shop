@@ -1,10 +1,36 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { authFetchers } from './fetchers';
 import { getAccessToken, setAccessToken as setGlobalAccessToken } from '@/state/authState';
-import type { RegisterInput } from '@/types/auth';
+import type { AuthUser, RegisterInput } from '@/types/auth';
 import { useRouter } from 'next/navigation';
 import { CustomerRoutes } from '@/lib/constants/routes';
 import { cartKeys } from '../cart/queries';
+
+// Cookie names - must match AuthContext
+const COOKIE_IS_LOGGED = 'auth_is_logged';
+const COOKIE_ROLE = 'auth_role';
+
+/**
+ * Sets auth cookies synchronously - MUST be called before any redirect
+ * to prevent race conditions with Next.js middleware
+ */
+function setAuthCookies(user: AuthUser) {
+  if (typeof document === 'undefined') return;
+  const maxAge = 7 * 24 * 60 * 60; // 7 days
+  document.cookie = `${COOKIE_IS_LOGGED}=true; Max-Age=${maxAge}; Path=/; SameSite=Lax`;
+  if (user.role) {
+    document.cookie = `${COOKIE_ROLE}=${encodeURIComponent(String(user.role))}; Max-Age=${maxAge}; Path=/; SameSite=Lax`;
+  }
+}
+
+/**
+ * Clears auth cookies synchronously
+ */
+function clearAuthCookies() {
+  if (typeof document === 'undefined') return;
+  document.cookie = `${COOKIE_IS_LOGGED}=; Max-Age=0; Path=/; SameSite=Lax`;
+  document.cookie = `${COOKIE_ROLE}=; Max-Age=0; Path=/; SameSite=Lax`;
+}
 
 export const authKeys = {
   all: ['auth'] as const,
@@ -17,33 +43,6 @@ export const useCurrentUser = () => {
     queryFn: authFetchers.getCurrentUser,
     staleTime: 5 * 60 * 1000,
     retry: false,
-  });
-};
-
-export const useSendOtp = () => {
-  return useMutation({
-    mutationFn: (phone: string) => authFetchers.sendOtp(phone),
-  });
-};
-
-export const useVerifyOtp = () => {
-  const queryClient = useQueryClient();
-  const router = useRouter();
-
-  return useMutation({
-    mutationFn: ({ phone, otp }: { phone: string; otp: string }) =>
-      authFetchers.verifyOtp(phone, otp),
-    onSuccess: (data) => {
-      setGlobalAccessToken(data.token);
-      queryClient.setQueryData(authKeys.currentUser(), data.user);
-      // Invalidate and refetch cart query with new auth token
-      // Using setTimeout to ensure auth context updates first
-      setTimeout(() => {
-        queryClient.invalidateQueries({ queryKey: cartKeys.detail() });
-        queryClient.refetchQueries({ queryKey: cartKeys.detail() });
-      }, 0);
-      router.push(CustomerRoutes.HOME);
-    },
   });
 };
 
@@ -61,6 +60,8 @@ export const useVerifyEmailOtp = () => {
     mutationFn: ({ email, otp }: { email: string; otp: string }) =>
       authFetchers.verifyEmailOtp(email, otp),
     onSuccess: (data) => {
+      // Set cookies FIRST (synchronously) before any other async operations
+      setAuthCookies(data.user);
       setGlobalAccessToken(data.token);
       queryClient.setQueryData(authKeys.currentUser(), data.user);
       setTimeout(() => {
@@ -85,6 +86,8 @@ export const useRegister = () => {
   return useMutation({
     mutationFn: (input: RegisterInput & { otp: string }) => authFetchers.register(input),
     onSuccess: (data) => {
+      // Set cookies FIRST (synchronously) before any other async operations
+      setAuthCookies(data.user);
       setGlobalAccessToken(data.token);
       queryClient.setQueryData(authKeys.currentUser(), data.user);
       // Invalidate and refetch cart query with new auth token
@@ -105,6 +108,8 @@ export const useLogout = () => {
   return useMutation({
     mutationFn: () => authFetchers.logout(),
     onSuccess: () => {
+      // Clear cookies FIRST (synchronously) before any other async operations
+      clearAuthCookies();
       setGlobalAccessToken(null);
       queryClient.clear();
       router.push(CustomerRoutes.LOGIN);
@@ -120,6 +125,8 @@ export const useLoginWithCredentials = () => {
     mutationFn: ({ identifier, password }: { identifier: string; password: string }) =>
       authFetchers.loginWithCredentials(identifier, password),
     onSuccess: (data) => {
+      // Set cookies FIRST (synchronously) before any other async operations
+      setAuthCookies(data.user);
       setGlobalAccessToken(data.token);
       queryClient.setQueryData(authKeys.currentUser(), data.user);
       // Invalidate and refetch cart query with new auth token

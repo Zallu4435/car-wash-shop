@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Phone, Lock, LogIn, Mail, Eye, EyeOff, ArrowLeft, KeyRound } from 'lucide-react';
+import { Lock, LogIn, Mail, Eye, EyeOff, ArrowLeft, KeyRound } from 'lucide-react';
 import { toast } from 'sonner';
 import { VehicleSelectionModal } from '@/components/shared/selectors/VehicleSelectionModal';
 import { useForm } from 'react-hook-form';
@@ -19,16 +19,11 @@ import Loading from '@/components/shared/display/Loading';
 import { CustomerRoutes } from '@/lib/constants/routes';
 import { z } from 'zod';
 
-type LoginMode = 'email' | 'phone' | 'email-otp';
+type LoginMode = 'email' | 'email-otp';
 type Step = 'credentials' | 'otp';
 
 const emailCredentialsSchema = z.object({
   email: z.string().min(1, 'Email is required').email('Please enter a valid email'),
-  password: z.string().min(1, 'Password is required'),
-});
-
-const phoneCredentialsSchema = z.object({
-  phone: z.string().min(10, 'Phone number is required').regex(/^[6-9]\d{9}$/, 'Enter valid 10-digit phone'),
   password: z.string().min(1, 'Password is required'),
 });
 
@@ -47,16 +42,6 @@ export default function LoginPage() {
   } = useForm<{ email: string; password: string }>({
     resolver: zodResolver(emailCredentialsSchema),
     defaultValues: { email: '', password: '' },
-  });
-
-  // Phone + Password form
-  const {
-    register: phoneCredReg,
-    handleSubmit: handlePhoneCredSubmit,
-    formState: { errors: phoneCredErrors },
-  } = useForm<{ phone: string; password: string }>({
-    resolver: zodResolver(phoneCredentialsSchema),
-    defaultValues: { phone: '', password: '' },
   });
 
   // Email for OTP form
@@ -88,19 +73,6 @@ export default function LoginPage() {
   const onEmailLogin = ({ email, password }: { email: string; password: string }) => {
     loginWithCredentialsMutation.mutate(
       { identifier: email, password },
-      {
-        onSuccess: () => {
-          toast.success('Login successful!');
-          router.push(CustomerRoutes.HOME);
-        },
-        onError: (err: any) => toast.error(err?.message || 'Invalid credentials'),
-      }
-    );
-  };
-
-  const onPhoneLogin = ({ phone, password }: { phone: string; password: string }) => {
-    loginWithCredentialsMutation.mutate(
-      { identifier: phone, password },
       {
         onSuccess: () => {
           toast.success('Login successful!');
@@ -171,9 +143,7 @@ export default function LoginPage() {
                 ? `Enter the code sent to ${getEmailOtpValues('email')}`
                 : mode === 'email'
                   ? 'Sign in to your account'
-                  : mode === 'phone'
-                    ? 'Sign in with your phone number'
-                    : 'Sign in with a one-time code'}
+                  : 'Sign in with a one-time code'}
             </CardDescription>
           </CardHeader>
 
@@ -244,16 +214,7 @@ export default function LoginPage() {
                   </span>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => switchMode('phone')}
-                    className="h-11 gap-2 border-2 hover:bg-muted/50 hover:border-primary/50 transition-all"
-                  >
-                    <Phone className="h-4 w-4" />
-                    <span className="text-sm">Phone</span>
-                  </Button>
+                <div className="flex justify-center">
                   <Button
                     type="button"
                     variant="outline"
@@ -261,58 +222,9 @@ export default function LoginPage() {
                     className="h-11 gap-2 border-2 hover:bg-muted/50 hover:border-primary/50 transition-all"
                   >
                     <KeyRound className="h-4 w-4" />
-                    <span className="text-sm">Email OTP</span>
+                    <span className="text-sm">Sign in with Email OTP</span>
                   </Button>
                 </div>
-              </form>
-            )}
-
-            {/* Phone + Password */}
-            {mode === 'phone' && step === 'credentials' && (
-              <form onSubmit={handlePhoneCredSubmit(onPhoneLogin)} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="phone" className="text-sm font-medium">Phone Number</Label>
-                  <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="phone"
-                      type="tel"
-                      placeholder="9876543210"
-                      {...phoneCredReg('phone')}
-                      className="pl-10 h-12 bg-muted/30 border-2 focus:bg-background transition-colors"
-                      maxLength={10}
-                      autoFocus
-                    />
-                  </div>
-                  {phoneCredErrors.phone && <p className="text-xs text-destructive">{phoneCredErrors.phone.message}</p>}
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="password" className="text-sm font-medium">Password</Label>
-                    <Link href={CustomerRoutes.AUTH_FORGOT_PASSWORD} className="text-xs text-primary hover:underline font-medium">
-                      Forgot?
-                    </Link>
-                  </div>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="password"
-                      type={showPassword ? 'text' : 'password'}
-                      placeholder="Enter your password"
-                      {...phoneCredReg('password')}
-                      className="pl-10 pr-10 h-12 bg-muted/30 border-2 focus:bg-background transition-colors"
-                    />
-                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
-                  {phoneCredErrors.password && <p className="text-xs text-destructive">{phoneCredErrors.password.message}</p>}
-                </div>
-
-                <Button type="submit" className="w-full h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-shadow" size="lg">
-                  Sign In
-                </Button>
               </form>
             )}
 

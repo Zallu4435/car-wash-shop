@@ -52,9 +52,9 @@ export const adminLoginSchema = z.object({
   password: passwordValidation,
 });
 
-// Forgot password schemas
+// Forgot password schemas (email only - OTP is sent via email)
 export const forgotPasswordIdentifierSchema = z.object({
-  identifier: identifierValidation,
+  identifier: emailValidation,
 });
 
 export const forgotPasswordOtpSchema = z.object({

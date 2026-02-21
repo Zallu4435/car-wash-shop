@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Mail, Phone, Lock, ArrowLeft, KeyRound, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, ArrowLeft, KeyRound, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -64,7 +64,6 @@ export default function AdminForgotPasswordPage() {
   const resetPasswordMutation = useResetPasswordWithOTP();
 
   const watchedIdentifier = identifier || getIdentifier('identifier');
-  const isEmail = watchedIdentifier?.includes('@');
 
   const onSendOtp = ({ identifier }: { identifier: string }) => {
     setIdentifier(identifier);
@@ -89,8 +88,7 @@ export default function AdminForgotPasswordPage() {
         ) {
           // Friendly message for account not found
           if (lower.includes('account not found') || lower.includes('not found')) {
-            const isEmail = identifier.includes('@');
-            setErrorMessage(isEmail ? 'No account found with this email' : 'No account found with this phone number');
+            setErrorMessage('No account found with this email');
           } else {
             setErrorMessage(errorMsg);
           }
@@ -167,8 +165,8 @@ export default function AdminForgotPasswordPage() {
               <CardTitle className="text-xl sm:text-2xl">Forgot Password</CardTitle>
             </div>
             <CardDescription className="text-xs sm:text-sm px-2">
-              {step === 'identifier' && 'Enter your email or phone number to reset password'}
-              {step === 'otp' && `Enter OTP sent to ${watchedIdentifier || 'your email/phone'}`}
+              {step === 'identifier' && 'Enter your email to reset password'}
+              {step === 'otp' && `Enter OTP sent to ${watchedIdentifier || 'your email'}`}
               {step === 'reset' && 'Create a new password'}
             </CardDescription>
           </CardHeader>
@@ -178,18 +176,14 @@ export default function AdminForgotPasswordPage() {
               <form onSubmit={handleIdentifierSubmit(onSendOtp)} className="space-y-4 sm:space-y-5">
                 <div className="space-y-1.5 sm:space-y-2">
                   <Label htmlFor="identifier" className="text-xs sm:text-sm">
-                    Email or Phone Number
+                    Email
                   </Label>
                   <div className="relative">
-                    {isEmail ? (
-                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
-                    ) : (
-                      <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
-                    )}
+                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
                     <Input
                       id="identifier"
-                      type="text"
-                      placeholder="Enter email or phone number"
+                      type="email"
+                      placeholder="Enter your email"
                       {...identifierRegister('identifier')}
                       onChange={(e) => {
                         setIdentifier(e.target.value);
@@ -283,7 +277,7 @@ export default function AdminForgotPasswordPage() {
                       setErrorMessage('');
                     }}
                   >
-                    Change Email/Phone Number
+                    Change Email
                   </Button>
                 </div>
               </form>

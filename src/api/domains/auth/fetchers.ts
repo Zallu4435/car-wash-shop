@@ -10,25 +10,6 @@ import type {
 } from '@/types/auth';
 
 export const authFetchers = {
-  async sendOtp(phone: string): Promise<OtpResponse> {
-    const { data } = await apiClient.post<ApiResponse<OtpResponse>>(
-      '/auth/phone/send-otp',
-      { phone }
-    );
-    return data.data!;
-  },
-
-  async verifyOtp(
-    phone: string,
-    otp: string
-  ): Promise<AuthResponse> {
-    const { data } = await apiClient.post<ApiResponse<AuthResponse>>(
-      '/auth/phone/verify',
-      { phone, otp }
-    );
-    return data.data!;
-  },
-
   async sendEmailOtp(email: string): Promise<OtpResponse> {
     const { data } = await apiClient.post<ApiResponse<OtpResponse>>(
       '/auth/email/send-otp',
