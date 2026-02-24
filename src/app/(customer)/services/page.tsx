@@ -150,7 +150,7 @@ export default function ServicesPage() {
       <section className="bg-gradient-to-br from-primary/5 to-background border-b border-border">
         <div className="container-custom py-6 sm:py-8 lg:py-12">
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2">Our Services</h1>
-          <p className="text-sm sm:text-base text-muted-foreground">Professional car, bike, and home cleaning services</p>
+          <p className="text-sm sm:text-base text-muted-foreground">Professional car cleaning services</p>
 
         </div>
       </section>
