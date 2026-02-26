@@ -188,6 +188,8 @@ export const ROUTES = {
 
     // Refunds
     REFUNDS: '/admin/refunds',
+    // Security / Logs
+    LOGIN_LOGS: '/admin/login-logs',
   },
 
   // Special Routes

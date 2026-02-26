@@ -25,7 +25,8 @@ import {
   CarFront,
   Sparkles,
   AlertTriangle,
-  RefreshCw
+  RefreshCw,
+  ShieldAlert
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -86,6 +87,7 @@ const navigationGroups = [
     items: [
       { name: 'Delivery Fees', href: AdminRoutes.SETTINGS_DELIVERY, icon: Car },
       { name: 'Contacts', href: AdminRoutes.CONTACTS, icon: Phone },
+    { name: 'Login Logs', href: AdminRoutes.LOGIN_LOGS, icon: ShieldAlert },
     ]
   }
 ];
